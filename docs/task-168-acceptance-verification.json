@@ -1,0 +1,924 @@
+{
+  "version": 1,
+  "owner": "TASK-168",
+  "parent": "TASK-85",
+  "freeze": "docs/task-168-acceptance-freeze.json",
+  "freeze_version": 2,
+  "immutable_prospective_archive": "docs/task-168-acceptance-freeze-v1.json",
+  "technical_implementation_head": "2dd6a7ab01f56cfe31fdac1fa03cfc2244c19c6f",
+  "technical_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41726837120",
+  "technical_ci_jobs": "9/9 passed",
+  "sql_tdg_pinned_consumer": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41726837214",
+  "consumer_commit": "3beaf7799ab54b2440ae34c917ff7eda6c11c398",
+  "review": "https://github.com/phdah/sql-semantic-protocol/pull/185#pullrequestreview-5760120574",
+  "review_identity": "author_account_matt_standards_and_spec_not_independent",
+  "scope": "Portable canonical INTEGER/NULL and parser equivalence; native DuckDB only",
+  "cases": [
+    {
+      "id": "85-C168-P-set-tuples",
+      "fixture": "85-C168-P",
+      "family": "set",
+      "required": true,
+      "expected": "Exact",
+      "observed": "Exact",
+      "technical_verified": true,
+      "full_physical_source_bag_verified": true,
+      "full_native_duckdb_terminal_bag_verified": true,
+      "source_and_output_identity_verified": true,
+      "typed_null_and_inclusive_bounds_verified": true,
+      "positive_or_negative_direction_verified": true,
+      "parser_dialects": [
+        {
+          "dialect": "generic",
+          "classification": "canonical_parser_equivalent",
+          "proof": "Exact",
+          "verified": true,
+          "native_vendor_certified": false
+        },
+        {
+          "dialect": "mysql",
+          "classification": "canonical_parser_equivalent",
+          "proof": "Exact",
+          "verified": true,
+          "native_vendor_certified": false
+        },
+        {
+          "dialect": "postgresql",
+          "classification": "canonical_parser_equivalent",
+          "proof": "Exact",
+          "verified": true,
+          "native_vendor_certified": false
+        },
+        {
+          "dialect": "hive",
+          "classification": "canonical_parser_equivalent",
+          "proof": "Exact",
+          "verified": true,
+          "native_vendor_certified": false
+        },
+        {
+          "dialect": "sqlite",
+          "classification": "canonical_parser_equivalent",
+          "proof": "Exact",
+          "verified": true,
+          "native_vendor_certified": false
+        },
+        {
+          "dialect": "snowflake",
+          "classification": "canonical_parser_equivalent",
+          "proof": "Exact",
+          "verified": true,
+          "native_vendor_certified": false
+        },
+        {
+          "dialect": "redshift",
+          "classification": "canonical_parser_equivalent",
+          "proof": "Exact",
+          "verified": true,
+          "native_vendor_certified": false
+        },
+        {
+          "dialect": "mssql",
+          "classification": "canonical_parser_equivalent",
+          "proof": "Exact",
+          "verified": true,
+          "native_vendor_certified": false
+        },
+        {
+          "dialect": "clickhouse",
+          "classification": "canonical_parser_equivalent",
+          "proof": "Exact",
+          "verified": true,
+          "native_vendor_certified": false
+        },
+        {
+          "dialect": "bigquery",
+          "classification": "canonical_parser_equivalent",
+          "proof": "Exact",
+          "verified": true,
+          "native_vendor_certified": false
+        },
+        {
+          "dialect": "ansi",
+          "classification": "canonical_parser_equivalent",
+          "proof": "Exact",
+          "verified": true,
+          "native_vendor_certified": false
+        },
+        {
+          "dialect": "duckdb",
+          "classification": "canonical_parser_equivalent",
+          "proof": "Exact",
+          "verified": true,
+          "native_vendor_certified": false
+        },
+        {
+          "dialect": "databricks",
+          "classification": "canonical_parser_equivalent",
+          "proof": "Exact",
+          "verified": true,
+          "native_vendor_certified": false
+        }
+      ],
+      "adapters": [
+        {
+          "name": "direct_sql",
+          "expected_verdict": "Exact",
+          "verified": true
+        },
+        {
+          "name": "compiled_dbt_catalog",
+          "expected_verdict": "Exact",
+          "verified": true
+        },
+        {
+          "name": "odcs",
+          "expected_verdict": "Exact",
+          "verified": true
+        }
+      ],
+      "external_owner": "TASK-168",
+      "native_vendor_release_disposition": "TASK-91 review; no non-DuckDB execution attested"
+    },
+    {
+      "id": "85-C168-N-set-correlation",
+      "fixture": "85-C168-N",
+      "family": "set",
+      "required": true,
+      "expected": "Impossible",
+      "observed": "Impossible",
+      "technical_verified": true,
+      "full_physical_source_bag_verified": true,
+      "full_native_duckdb_terminal_bag_verified": true,
+      "source_and_output_identity_verified": true,
+      "typed_null_and_inclusive_bounds_verified": true,
+      "positive_or_negative_direction_verified": true,
+      "parser_dialects": [
+        {
+          "dialect": "generic",
+          "classification": "canonical_parser_equivalent",
+          "proof": "Impossible",
+          "verified": true,
+          "native_vendor_certified": false
+        },
+        {
+          "dialect": "mysql",
+          "classification": "canonical_parser_equivalent",
+          "proof": "Impossible",
+          "verified": true,
+          "native_vendor_certified": false
+        },
+        {
+          "dialect": "postgresql",
+          "classification": "canonical_parser_equivalent",
+          "proof": "Impossible",
+          "verified": true,
+          "native_vendor_certified": false
+        },
+        {
+          "dialect": "hive",
+          "classification": "canonical_parser_equivalent",
+          "proof": "Impossible",
+          "verified": true,
+          "native_vendor_certified": false
+        },
+        {
+          "dialect": "sqlite",
+          "classification": "canonical_parser_equivalent",
+          "proof": "Impossible",
+          "verified": true,
+          "native_vendor_certified": false
+        },
+        {
+          "dialect": "snowflake",
+          "classification": "canonical_parser_equivalent",
+          "proof": "Impossible",
+          "verified": true,
+          "native_vendor_certified": false
+        },
+        {
+          "dialect": "redshift",
+          "classification": "canonical_parser_equivalent",
+          "proof": "Impossible",
+          "verified": true,
+          "native_vendor_certified": false
+        },
+        {
+          "dialect": "mssql",
+          "classification": "canonical_parser_equivalent",
+          "proof": "Impossible",
+          "verified": true,
+          "native_vendor_certified": false
+        },
+        {
+          "dialect": "clickhouse",
+          "classification": "canonical_parser_equivalent",
+          "proof": "Impossible",
+          "verified": true,
+          "native_vendor_certified": false
+        },
+        {
+          "dialect": "bigquery",
+          "classification": "canonical_parser_equivalent",
+          "proof": "Impossible",
+          "verified": true,
+          "native_vendor_certified": false
+        },
+        {
+          "dialect": "ansi",
+          "classification": "canonical_parser_equivalent",
+          "proof": "Impossible",
+          "verified": true,
+          "native_vendor_certified": false
+        },
+        {
+          "dialect": "duckdb",
+          "classification": "canonical_parser_equivalent",
+          "proof": "Impossible",
+          "verified": true,
+          "native_vendor_certified": false
+        },
+        {
+          "dialect": "databricks",
+          "classification": "canonical_parser_equivalent",
+          "proof": "Impossible",
+          "verified": true,
+          "native_vendor_certified": false
+        }
+      ],
+      "adapters": [
+        {
+          "name": "direct_sql",
+          "expected_verdict": "Impossible",
+          "verified": true
+        },
+        {
+          "name": "compiled_dbt_catalog",
+          "expected_verdict": "Impossible",
+          "verified": true
+        },
+        {
+          "name": "odcs",
+          "expected_verdict": "Impossible",
+          "verified": true
+        }
+      ],
+      "external_owner": "TASK-168",
+      "native_vendor_release_disposition": "TASK-91 review; no non-DuckDB execution attested"
+    },
+    {
+      "id": "85-C168-P-window-null",
+      "fixture": "85-C168-P",
+      "family": "window",
+      "required": true,
+      "expected": "Exact",
+      "observed": "Exact",
+      "technical_verified": true,
+      "full_physical_source_bag_verified": true,
+      "full_native_duckdb_terminal_bag_verified": true,
+      "source_and_output_identity_verified": true,
+      "typed_null_and_inclusive_bounds_verified": true,
+      "positive_or_negative_direction_verified": true,
+      "parser_dialects": [
+        {
+          "dialect": "generic",
+          "classification": "canonical_parser_equivalent",
+          "proof": "Exact",
+          "verified": true,
+          "native_vendor_certified": false
+        },
+        {
+          "dialect": "mysql",
+          "classification": "canonical_parser_equivalent",
+          "proof": "Exact",
+          "verified": true,
+          "native_vendor_certified": false
+        },
+        {
+          "dialect": "postgresql",
+          "classification": "canonical_parser_equivalent",
+          "proof": "Exact",
+          "verified": true,
+          "native_vendor_certified": false
+        },
+        {
+          "dialect": "hive",
+          "classification": "canonical_parser_equivalent",
+          "proof": "Exact",
+          "verified": true,
+          "native_vendor_certified": false
+        },
+        {
+          "dialect": "sqlite",
+          "classification": "canonical_parser_equivalent",
+          "proof": "Exact",
+          "verified": true,
+          "native_vendor_certified": false
+        },
+        {
+          "dialect": "snowflake",
+          "classification": "canonical_parser_equivalent",
+          "proof": "Exact",
+          "verified": true,
+          "native_vendor_certified": false
+        },
+        {
+          "dialect": "redshift",
+          "classification": "canonical_parser_equivalent",
+          "proof": "Exact",
+          "verified": true,
+          "native_vendor_certified": false
+        },
+        {
+          "dialect": "mssql",
+          "classification": "canonical_parser_equivalent",
+          "proof": "Exact",
+          "verified": true,
+          "native_vendor_certified": false
+        },
+        {
+          "dialect": "clickhouse",
+          "classification": "canonical_parser_equivalent",
+          "proof": "Exact",
+          "verified": true,
+          "native_vendor_certified": false
+        },
+        {
+          "dialect": "bigquery",
+          "classification": "canonical_parser_equivalent",
+          "proof": "Exact",
+          "verified": true,
+          "native_vendor_certified": false
+        },
+        {
+          "dialect": "ansi",
+          "classification": "canonical_parser_equivalent",
+          "proof": "Exact",
+          "verified": true,
+          "native_vendor_certified": false
+        },
+        {
+          "dialect": "duckdb",
+          "classification": "canonical_parser_equivalent",
+          "proof": "Exact",
+          "verified": true,
+          "native_vendor_certified": false
+        },
+        {
+          "dialect": "databricks",
+          "classification": "canonical_parser_equivalent",
+          "proof": "Exact",
+          "verified": true,
+          "native_vendor_certified": false
+        }
+      ],
+      "adapters": [
+        {
+          "name": "direct_sql",
+          "expected_verdict": "Exact",
+          "verified": true
+        },
+        {
+          "name": "compiled_dbt_catalog",
+          "expected_verdict": "Exact",
+          "verified": true
+        },
+        {
+          "name": "odcs",
+          "expected_verdict": "Exact",
+          "verified": true
+        }
+      ],
+      "external_owner": "TASK-168",
+      "native_vendor_release_disposition": "TASK-91 review; no non-DuckDB execution attested"
+    },
+    {
+      "id": "85-C168-N-window-correlation",
+      "fixture": "85-C168-N",
+      "family": "window",
+      "required": true,
+      "expected": "Impossible",
+      "observed": "Impossible",
+      "technical_verified": true,
+      "full_physical_source_bag_verified": true,
+      "full_native_duckdb_terminal_bag_verified": true,
+      "source_and_output_identity_verified": true,
+      "typed_null_and_inclusive_bounds_verified": true,
+      "positive_or_negative_direction_verified": true,
+      "parser_dialects": [
+        {
+          "dialect": "generic",
+          "classification": "canonical_parser_equivalent",
+          "proof": "Impossible",
+          "verified": true,
+          "native_vendor_certified": false
+        },
+        {
+          "dialect": "mysql",
+          "classification": "canonical_parser_equivalent",
+          "proof": "Impossible",
+          "verified": true,
+          "native_vendor_certified": false
+        },
+        {
+          "dialect": "postgresql",
+          "classification": "canonical_parser_equivalent",
+          "proof": "Impossible",
+          "verified": true,
+          "native_vendor_certified": false
+        },
+        {
+          "dialect": "hive",
+          "classification": "canonical_parser_equivalent",
+          "proof": "Impossible",
+          "verified": true,
+          "native_vendor_certified": false
+        },
+        {
+          "dialect": "sqlite",
+          "classification": "canonical_parser_equivalent",
+          "proof": "Impossible",
+          "verified": true,
+          "native_vendor_certified": false
+        },
+        {
+          "dialect": "snowflake",
+          "classification": "canonical_parser_equivalent",
+          "proof": "Impossible",
+          "verified": true,
+          "native_vendor_certified": false
+        },
+        {
+          "dialect": "redshift",
+          "classification": "canonical_parser_equivalent",
+          "proof": "Impossible",
+          "verified": true,
+          "native_vendor_certified": false
+        },
+        {
+          "dialect": "mssql",
+          "classification": "canonical_parser_equivalent",
+          "proof": "Impossible",
+          "verified": true,
+          "native_vendor_certified": false
+        },
+        {
+          "dialect": "clickhouse",
+          "classification": "canonical_parser_equivalent",
+          "proof": "Impossible",
+          "verified": true,
+          "native_vendor_certified": false
+        },
+        {
+          "dialect": "bigquery",
+          "classification": "canonical_parser_equivalent",
+          "proof": "Impossible",
+          "verified": true,
+          "native_vendor_certified": false
+        },
+        {
+          "dialect": "ansi",
+          "classification": "canonical_parser_equivalent",
+          "proof": "Impossible",
+          "verified": true,
+          "native_vendor_certified": false
+        },
+        {
+          "dialect": "duckdb",
+          "classification": "canonical_parser_equivalent",
+          "proof": "Impossible",
+          "verified": true,
+          "native_vendor_certified": false
+        },
+        {
+          "dialect": "databricks",
+          "classification": "canonical_parser_equivalent",
+          "proof": "Impossible",
+          "verified": true,
+          "native_vendor_certified": false
+        }
+      ],
+      "adapters": [
+        {
+          "name": "direct_sql",
+          "expected_verdict": "Impossible",
+          "verified": true
+        },
+        {
+          "name": "compiled_dbt_catalog",
+          "expected_verdict": "Impossible",
+          "verified": true
+        },
+        {
+          "name": "odcs",
+          "expected_verdict": "Impossible",
+          "verified": true
+        }
+      ],
+      "external_owner": "TASK-168",
+      "native_vendor_release_disposition": "TASK-91 review; no non-DuckDB execution attested"
+    },
+    {
+      "id": "85-C168-P-limit-fanout",
+      "fixture": "85-C168-P",
+      "family": "order_limit_fanout",
+      "required": true,
+      "expected": "Exact",
+      "observed": "Exact",
+      "technical_verified": true,
+      "full_physical_source_bag_verified": true,
+      "full_native_duckdb_terminal_bag_verified": true,
+      "source_and_output_identity_verified": true,
+      "typed_null_and_inclusive_bounds_verified": true,
+      "positive_or_negative_direction_verified": true,
+      "parser_dialects": [
+        {
+          "dialect": "generic",
+          "classification": "canonical_parser_equivalent",
+          "proof": "Exact",
+          "verified": true,
+          "native_vendor_certified": false
+        },
+        {
+          "dialect": "mysql",
+          "classification": "canonical_parser_equivalent",
+          "proof": "Exact",
+          "verified": true,
+          "native_vendor_certified": false
+        },
+        {
+          "dialect": "postgresql",
+          "classification": "canonical_parser_equivalent",
+          "proof": "Exact",
+          "verified": true,
+          "native_vendor_certified": false
+        },
+        {
+          "dialect": "hive",
+          "classification": "canonical_parser_equivalent",
+          "proof": "Exact",
+          "verified": true,
+          "native_vendor_certified": false
+        },
+        {
+          "dialect": "sqlite",
+          "classification": "canonical_parser_equivalent",
+          "proof": "Exact",
+          "verified": true,
+          "native_vendor_certified": false
+        },
+        {
+          "dialect": "snowflake",
+          "classification": "canonical_parser_equivalent",
+          "proof": "Exact",
+          "verified": true,
+          "native_vendor_certified": false
+        },
+        {
+          "dialect": "redshift",
+          "classification": "canonical_parser_equivalent",
+          "proof": "Exact",
+          "verified": true,
+          "native_vendor_certified": false
+        },
+        {
+          "dialect": "mssql",
+          "classification": "canonical_parser_equivalent",
+          "proof": "Exact",
+          "verified": true,
+          "native_vendor_certified": false
+        },
+        {
+          "dialect": "clickhouse",
+          "classification": "canonical_parser_equivalent",
+          "proof": "Exact",
+          "verified": true,
+          "native_vendor_certified": false
+        },
+        {
+          "dialect": "bigquery",
+          "classification": "canonical_parser_equivalent",
+          "proof": "Exact",
+          "verified": true,
+          "native_vendor_certified": false
+        },
+        {
+          "dialect": "ansi",
+          "classification": "canonical_parser_equivalent",
+          "proof": "Exact",
+          "verified": true,
+          "native_vendor_certified": false
+        },
+        {
+          "dialect": "duckdb",
+          "classification": "canonical_parser_equivalent",
+          "proof": "Exact",
+          "verified": true,
+          "native_vendor_certified": false
+        },
+        {
+          "dialect": "databricks",
+          "classification": "canonical_parser_equivalent",
+          "proof": "Exact",
+          "verified": true,
+          "native_vendor_certified": false
+        }
+      ],
+      "adapters": [
+        {
+          "name": "direct_sql",
+          "expected_verdict": "Exact",
+          "verified": true
+        },
+        {
+          "name": "compiled_dbt_catalog",
+          "expected_verdict": "Exact",
+          "verified": true
+        },
+        {
+          "name": "odcs",
+          "expected_verdict": "Exact",
+          "verified": true
+        }
+      ],
+      "external_owner": "TASK-168",
+      "native_vendor_release_disposition": "TASK-91 review; no non-DuckDB execution attested"
+    },
+    {
+      "id": "85-C168-N-qualify-fanout",
+      "fixture": "85-C168-N",
+      "family": "qualify_window_fanout",
+      "required": true,
+      "expected": "Residual",
+      "observed": "Residual",
+      "technical_verified": true,
+      "full_physical_source_bag_verified": true,
+      "full_native_duckdb_terminal_bag_verified": true,
+      "source_and_output_identity_verified": true,
+      "typed_null_and_inclusive_bounds_verified": false,
+      "positive_or_negative_direction_verified": true,
+      "parser_dialects": [
+        {
+          "dialect": "generic",
+          "classification": "canonical_parser_equivalent",
+          "proof": "Residual",
+          "verified": true,
+          "native_vendor_certified": false
+        },
+        {
+          "dialect": "mysql",
+          "classification": "canonical_parser_equivalent",
+          "proof": "Residual",
+          "verified": true,
+          "native_vendor_certified": false
+        },
+        {
+          "dialect": "postgresql",
+          "classification": "canonical_parser_equivalent",
+          "proof": "Residual",
+          "verified": true,
+          "native_vendor_certified": false
+        },
+        {
+          "dialect": "hive",
+          "classification": "canonical_parser_equivalent",
+          "proof": "Residual",
+          "verified": true,
+          "native_vendor_certified": false
+        },
+        {
+          "dialect": "sqlite",
+          "classification": "canonical_parser_equivalent",
+          "proof": "Residual",
+          "verified": true,
+          "native_vendor_certified": false
+        },
+        {
+          "dialect": "snowflake",
+          "classification": "canonical_parser_equivalent",
+          "proof": "Residual",
+          "verified": true,
+          "native_vendor_certified": false
+        },
+        {
+          "dialect": "redshift",
+          "classification": "canonical_parser_equivalent",
+          "proof": "Residual",
+          "verified": true,
+          "native_vendor_certified": false
+        },
+        {
+          "dialect": "mssql",
+          "classification": "canonical_parser_equivalent",
+          "proof": "Residual",
+          "verified": true,
+          "native_vendor_certified": false
+        },
+        {
+          "dialect": "clickhouse",
+          "classification": "canonical_parser_equivalent",
+          "proof": "Residual",
+          "verified": true,
+          "native_vendor_certified": false
+        },
+        {
+          "dialect": "bigquery",
+          "classification": "canonical_parser_equivalent",
+          "proof": "Residual",
+          "verified": true,
+          "native_vendor_certified": false
+        },
+        {
+          "dialect": "ansi",
+          "classification": "canonical_parser_equivalent",
+          "proof": "Residual",
+          "verified": true,
+          "native_vendor_certified": false
+        },
+        {
+          "dialect": "duckdb",
+          "classification": "canonical_parser_equivalent",
+          "proof": "Residual",
+          "verified": true,
+          "native_vendor_certified": false
+        },
+        {
+          "dialect": "databricks",
+          "classification": "canonical_parser_equivalent",
+          "proof": "Residual",
+          "verified": true,
+          "native_vendor_certified": false
+        }
+      ],
+      "adapters": [
+        {
+          "name": "direct_sql",
+          "expected_verdict": "Residual",
+          "verified": true
+        },
+        {
+          "name": "compiled_dbt_catalog",
+          "expected_verdict": "Residual",
+          "verified": true
+        },
+        {
+          "name": "odcs",
+          "expected_verdict": "Residual",
+          "verified": true
+        }
+      ],
+      "external_owner": "TASK-168",
+      "native_vendor_release_disposition": "TASK-91 review; no non-DuckDB execution attested"
+    },
+    {
+      "id": "85-C168-R-opaque-collation",
+      "fixture": "85-C168-N",
+      "family": "unproved_comparison_law",
+      "required": false,
+      "expected": "Residual",
+      "observed": "Residual",
+      "technical_verified": true,
+      "full_physical_source_bag_verified": true,
+      "full_native_duckdb_terminal_bag_verified": true,
+      "source_and_output_identity_verified": true,
+      "typed_null_and_inclusive_bounds_verified": false,
+      "positive_or_negative_direction_verified": true,
+      "parser_dialects": [
+        {
+          "dialect": "generic",
+          "classification": "canonical_parser_equivalent",
+          "proof": "Residual",
+          "verified": true,
+          "native_vendor_certified": false
+        },
+        {
+          "dialect": "mysql",
+          "classification": "canonical_parser_equivalent",
+          "proof": "Residual",
+          "verified": true,
+          "native_vendor_certified": false
+        },
+        {
+          "dialect": "postgresql",
+          "classification": "canonical_parser_equivalent",
+          "proof": "Residual",
+          "verified": true,
+          "native_vendor_certified": false
+        },
+        {
+          "dialect": "hive",
+          "classification": "canonical_parser_equivalent",
+          "proof": "Residual",
+          "verified": true,
+          "native_vendor_certified": false
+        },
+        {
+          "dialect": "sqlite",
+          "classification": "canonical_parser_equivalent",
+          "proof": "Residual",
+          "verified": true,
+          "native_vendor_certified": false
+        },
+        {
+          "dialect": "snowflake",
+          "classification": "canonical_parser_equivalent",
+          "proof": "Residual",
+          "verified": true,
+          "native_vendor_certified": false
+        },
+        {
+          "dialect": "redshift",
+          "classification": "canonical_parser_equivalent",
+          "proof": "Residual",
+          "verified": true,
+          "native_vendor_certified": false
+        },
+        {
+          "dialect": "mssql",
+          "classification": "canonical_parser_equivalent",
+          "proof": "Residual",
+          "verified": true,
+          "native_vendor_certified": false
+        },
+        {
+          "dialect": "clickhouse",
+          "classification": "canonical_parser_equivalent",
+          "proof": "Residual",
+          "verified": true,
+          "native_vendor_certified": false
+        },
+        {
+          "dialect": "bigquery",
+          "classification": "canonical_parser_equivalent",
+          "proof": "Residual",
+          "verified": true,
+          "native_vendor_certified": false
+        },
+        {
+          "dialect": "ansi",
+          "classification": "canonical_parser_equivalent",
+          "proof": "Residual",
+          "verified": true,
+          "native_vendor_certified": false
+        },
+        {
+          "dialect": "duckdb",
+          "classification": "canonical_parser_equivalent",
+          "proof": "Residual",
+          "verified": true,
+          "native_vendor_certified": false
+        },
+        {
+          "dialect": "databricks",
+          "classification": "canonical_parser_equivalent",
+          "proof": "Residual",
+          "verified": true,
+          "native_vendor_certified": false
+        }
+      ],
+      "adapters": [
+        {
+          "name": "direct_sql",
+          "expected_verdict": "Residual",
+          "verified": true
+        },
+        {
+          "name": "compiled_dbt_catalog",
+          "expected_verdict": "Residual",
+          "verified": true
+        },
+        {
+          "name": "odcs",
+          "expected_verdict": "Residual",
+          "verified": true
+        }
+      ],
+      "external_owner": "TASK-168",
+      "native_vendor_release_disposition": "TASK-91 review; no non-DuckDB execution attested"
+    }
+  ],
+  "mandatory_cases_verified": 6,
+  "conditional_cases_classified": 1,
+  "parser_cells_verified": 91,
+  "adapter_cells_verified": 21,
+  "original_parent_ac_mapped": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6
+  ],
+  "technical_ac_verified": [
+    2,
+    3,
+    4
+  ],
+  "not_signed_off": [
+    "AC #1 historical prospective-v1 incompleteness requires explicit owner disposition",
+    "AC #5 requires independent reviewer identity or task-specific owner waiver and final bookkeeping-head CI"
+  ],
+  "child_signed_off": false,
+  "parent_signed_off": false,
+  "protocol_v3_release_approved": false
+}
