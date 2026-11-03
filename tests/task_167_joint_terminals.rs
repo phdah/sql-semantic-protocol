@@ -150,7 +150,7 @@ fn row(values: &[(&str, Option<i64>)]) -> BTreeMap<String, LiteralValue> {
 fn frozen_matrix_has_stable_cases_and_all_parser_dialects() {
     let freeze: serde_json::Value =
         serde_json::from_str(include_str!("../docs/task-167-acceptance-freeze.json")).unwrap();
-    assert_eq!(freeze["version"], 1);
+    assert_eq!(freeze["version"], 2);
     let matrix = freeze["matrix"].as_array().unwrap();
     assert_eq!(matrix.len(), 6);
     for case in matrix {
