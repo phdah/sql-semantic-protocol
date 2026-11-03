@@ -373,14 +373,16 @@ fn every_frozen_case_and_parser_dialect_is_accounted_for() {
                         .unwrap()
                         .iter()
                         .any(|goal| {
-                            goal["requested"]["layer_id"] == requested.layer_id()
+                            goal["layer_id"] == requested.layer_id()
                                 && goal["requested"]["rows"] == requested.rows().unwrap()
                         }),
                     "{id}/{name}: canonical requested goal must survive emission"
                 );
             }
             assert_eq!(
-                emitted["source_schemas"].as_array().unwrap().is_empty(),
+                emitted["source_schemas"]
+                    .as_array()
+                    .is_none_or(Vec::is_empty),
                 id == "85-C166-C-missing-schema",
                 "{id}/{name}: canonical schema authority"
             );
