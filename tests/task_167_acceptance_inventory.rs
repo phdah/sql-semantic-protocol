@@ -181,12 +181,14 @@ fn expected_rows(value: &Value) -> Vec<BTreeMap<String, LiteralValue>> {
         .collect()
 }
 
-
 fn emitted_scalar(value: &Value) -> LiteralValue {
     match value["kind"].as_str().expect("emitted scalar kind") {
         "null" => LiteralValue::Null,
         "number" => LiteralValue::Number(
-            value["lexical"].as_str().expect("lossless number text").to_string(),
+            value["lexical"]
+                .as_str()
+                .expect("lossless number text")
+                .to_string(),
         ),
         "text" => LiteralValue::Text(value["value"].as_str().expect("source ID").to_string()),
         "boolean" => LiteralValue::Boolean(value["value"].as_bool().unwrap()),
@@ -607,7 +609,11 @@ fn every_frozen_mandatory_case_is_checked_across_all_13_dialects_with_native_duc
                         assert_eq!(emitted["relation"], frozen.relation());
                         assert_eq!(
                             emitted_rows(&emitted["rows"]),
-                            frozen.rows().iter().map(|row| row.values().clone()).collect::<Vec<_>>(),
+                            frozen
+                                .rows()
+                                .iter()
+                                .map(|row| row.values().clone())
+                                .collect::<Vec<_>>(),
                             "{id}/{dialect}: emitted complete physical source bag"
                         );
                     }
@@ -617,7 +623,9 @@ fn every_frozen_mandatory_case_is_checked_across_all_13_dialects_with_native_duc
                         "{id}/{dialect}: emitted exact grouped output"
                     );
                     assert_eq!(
-                        bag(&emitted_rows(&typed["evidence"]["secondary"]["proof"]["terminal"])),
+                        bag(&emitted_rows(
+                            &typed["evidence"]["secondary"]["proof"]["terminal"]
+                        )),
                         bag(&expected_rows(&case["observed_terminal_bags"]["other"])),
                         "{id}/{dialect}: emitted exact secondary output"
                     );
