@@ -218,8 +218,7 @@ fn shared_filtered_histogram_plan(
         };
         // This finite law requires a transparent terminal, not a broader
         // reversible scalar inversion or materialized producer.
-        if exact_transparent_source(bundle, whole.layer_id()).as_deref()
-            != Some(relation.as_str())
+        if exact_transparent_source(bundle, whole.layer_id()).as_deref() != Some(relation.as_str())
         {
             continue;
         }
