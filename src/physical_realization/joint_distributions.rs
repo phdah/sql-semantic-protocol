@@ -1,8 +1,8 @@
 //! Complete physical histograms shared by multiple independently proven terminals.
 //!
-//! Each supported terminal preserves the entire same physical bag. Reconcile
-//! columns by canonical physical identity before constructing a joint witness;
-//! independent feasible examples are never assumed jointly satisfiable.
+//! Transparent terminals preserve the whole source bag; one directly filtered
+//! terminal may instead select a proved subset of the same complete typed bag.
+//! Independent feasible examples are never assumed jointly satisfiable.
 
 use super::*;
 use crate::boolean_witness::{BooleanRowConstraint, BooleanTruthCase};
@@ -11,11 +11,11 @@ use crate::outcome_goals::{equivalent_frequencies, OutcomeGoal, OutputValueCount
 use crate::outcome_proofs::OutcomeWitness;
 use crate::protocol::ComparisonOperator;
 
-/// Prove a complete physical-source assignment for a set of terminal
-/// histograms. Each terminal must be a cardinality-preserving, schema-certified
-/// single-source DAG. Shared physical columns must have equal full frequency
-/// bags, while disjoint columns may be independently assigned over the same
-/// fixed row count. Source constraints and uncertain producer paths fail closed.
+/// Prove a complete physical-source assignment for a set of terminal goals.
+/// Transparent, schema-certified terminals share full frequency bags; a single
+/// direct filter may instead select SQL TRUE occurrences from the same closed
+/// physical bag. All requested terminal counts are reconciled against that
+/// one source. Source constraints and uncertain producers fail closed.
 ///
 /// A feasible case includes the canonical physical `source_rows` histogram
 /// witness, exact source-row cardinalities, closed-world coverage and every
