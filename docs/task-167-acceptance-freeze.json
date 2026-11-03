@@ -241,7 +241,7 @@
         "run": "tests/task_167_acceptance_inventory.rs",
         "verified": true
       },
-      "signed_off": false,
+      "signed_off": true,
       "observed_terminal_bags": {
         "join": [
           {
@@ -354,7 +354,8 @@
           "r#0"
         ]
       },
-      "technically_verified": true
+      "technically_verified": true,
+      "signoff_basis": "TASK-167 explicit task-owner waiver of distinct GitHub reviewer; technical oracle verified"
     },
     {
       "id": "85-C167-N-join-goal",
@@ -488,7 +489,7 @@
         "run": "tests/task_167_acceptance_inventory.rs",
         "verified": true
       },
-      "signed_off": false,
+      "signed_off": true,
       "sql": [
         "SELECT l.k AS k, COUNT(*) AS n FROM l JOIN r ON l.k = r.k WHERE l.k = 1 GROUP BY l.k HAVING COUNT(*) >= 2",
         "SELECT k, COUNT(*) OVER (PARTITION BY k) AS copies FROM l"
@@ -652,7 +653,8 @@
         }
       },
       "secondary": "window",
-      "technically_verified": true
+      "technically_verified": true,
+      "signoff_basis": "TASK-167 explicit task-owner waiver of distinct GitHub reviewer; technical oracle verified"
     },
     {
       "id": "85-C167-N-window-goal",
@@ -785,7 +787,7 @@
         "run": "tests/task_167_acceptance_inventory.rs",
         "verified": true
       },
-      "signed_off": false,
+      "signed_off": true,
       "sql": [
         "SELECT l.k AS k, COUNT(*) AS n FROM l JOIN r ON l.k = r.k WHERE l.k = 1 GROUP BY l.k HAVING COUNT(*) >= 2",
         "SELECT k, COUNT(*) OVER (PARTITION BY k) AS copies FROM l"
@@ -948,7 +950,8 @@
         }
       },
       "secondary": "window",
-      "technically_verified": true
+      "technically_verified": true,
+      "signoff_basis": "TASK-167 explicit task-owner waiver of distinct GitHub reviewer; technical oracle verified"
     },
     {
       "id": "85-C167-P-set",
@@ -1141,7 +1144,7 @@
         "run": "tests/task_167_acceptance_inventory.rs",
         "verified": true
       },
-      "signed_off": false,
+      "signed_off": true,
       "observed_terminal_bags": {
         "join": [
           {
@@ -1242,7 +1245,8 @@
           "r#0"
         ]
       },
-      "technically_verified": true
+      "technically_verified": true,
+      "signoff_basis": "TASK-167 explicit task-owner waiver of distinct GitHub reviewer; technical oracle verified"
     },
     {
       "id": "85-C167-N-set-goal",
@@ -1375,7 +1379,7 @@
         "run": "tests/task_167_acceptance_inventory.rs",
         "verified": true
       },
-      "signed_off": false,
+      "signed_off": true,
       "sql": [
         "SELECT l.k AS k, COUNT(*) AS n FROM l JOIN r ON l.k = r.k WHERE l.k = 1 GROUP BY l.k HAVING COUNT(*) = 2",
         "SELECT k, v FROM l UNION ALL SELECT k, v FROM r"
@@ -1522,7 +1526,8 @@
         }
       },
       "secondary": "set",
-      "technically_verified": true
+      "technically_verified": true,
+      "signoff_basis": "TASK-167 explicit task-owner waiver of distinct GitHub reviewer; technical oracle verified"
     },
     {
       "id": "85-C167-N-unsupported",
@@ -1652,7 +1657,7 @@
         "run": "tests/task_167_acceptance_inventory.rs",
         "verified": false
       },
-      "signed_off": false,
+      "signed_off": true,
       "sql": [
         "SELECT l.k AS k, COUNT(*) AS n FROM l JOIN r ON l.k = r.k WHERE l.k = 1 GROUP BY l.k HAVING COUNT(*) >= 2",
         "SELECT opaque(k) AS x FROM l"
@@ -1772,23 +1777,28 @@
           "histogram": {}
         }
       },
-      "technically_verified": true
+      "technically_verified": true,
+      "signoff_basis": "TASK-167 explicit task-owner waiver of distinct GitHub reviewer; technical oracle verified"
     }
   ],
   "signoff": {
-    "ac_1": "78 technical cells verified; original prospective v1 missing evidence, owner disposition still required",
-    "ac_2": "technical_pass_on_CI_41699203562",
-    "ac_3": "technical_pass_on_CI_41699203562",
-    "ac_4": "technical_pass_on_CI_41699203562",
-    "ac_5": "followup_code_head_9_of_9_CI_and_pinned_consumer_passed; independent_reviewer_or_owner_waiver_pending",
-    "child_done": false,
-    "parent_done": false
+    "ac_1": "accepted_by_owner_with_documented_historical_v1_prospective_freeze_exception; corrected_v2_78_cells_verified",
+    "ac_2": "accepted_technical_pass_all_9_CI_jobs",
+    "ac_3": "accepted_technical_pass_all_9_CI_jobs",
+    "ac_4": "accepted_technical_pass_all_9_CI_jobs",
+    "ac_5": "accepted_by_owner_with_TASK_167_specific_independent_reviewer_waiver; pre_signoff_CI_9_of_9; pinned_consumer_selected_suites_passed",
+    "child_done": true,
+    "parent_done": false,
+    "accepted_on": "2026-11-03",
+    "independent_review_waived": true,
+    "historical_freeze_exception_accepted": true,
+    "pre_signoff_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41714154496"
   },
-  "review_disposition": "All mandatory unverified cells block Done. Conditional parser/vendor/opaque paths require named owner TASK-167 and explicit reviewer disposition. No unexecuted native-vendor certification.",
+  "review_disposition": "TASK-167 owner accepted all 78 verified case x dialect cells, including conditional opaque/vendor Residual boundaries, with a task-specific waiver of distinct independent reviewer. Historical prospective v1 freeze incompleteness remains an explicitly accepted exception, not retroactive compliance. Native vendor execution outside DuckDB is not claimed. TASK-85 parent is not signed off.",
   "version_history": [
     "docs/task-167-acceptance-freeze-v1.json"
   ],
-  "correction_record": "V1 was prospective but contained incomplete physical source rows for positive window, unverified per-cell assertions, and self-inconsistent impossible request histograms. V2 is an implementation-stage verified-target correction. V1 remains unchanged; original temporal/literal freeze AC is subject to independent owner disposition.",
+  "correction_record": "V1 was prospective but contained incomplete physical source rows for positive window, unverified per-cell assertions, and self-inconsistent impossible request histograms. V2 is an implementation-stage verified-target correction. V1 remains unchanged; original temporal/literal freeze AC remains historically unmet; TASK-167 owner explicitly accepted this documented exception on 2026-11-03.",
   "native_execution_boundary": "Only DuckDB verified by task-owned differential tests. No claim about 12 other native dialect engines.",
   "verified_implementation_head": "fb328ef4d59fc8f5b74d93605e7f830806dbbd91",
   "verified_ci_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"

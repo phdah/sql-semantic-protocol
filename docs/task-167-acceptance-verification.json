@@ -58,7 +58,9 @@
       "native_execution": "duckdb_actual_source_and_both_output_bags",
       "externally_attested": false,
       "technically_verified": true,
-      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562",
+      "signed_off": true,
+      "signoff_basis": "TASK-167 task-owner explicit waiver of separate independent GitHub review"
     },
     {
       "case_id": "85-C167-P-window",
@@ -71,7 +73,9 @@
       "native_execution": "duckdb_actual_source_and_both_output_bags",
       "externally_attested": false,
       "technically_verified": true,
-      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562",
+      "signed_off": true,
+      "signoff_basis": "TASK-167 task-owner explicit waiver of separate independent GitHub review"
     },
     {
       "case_id": "85-C167-P-window",
@@ -84,7 +88,9 @@
       "native_execution": "duckdb_actual_source_and_both_output_bags",
       "externally_attested": false,
       "technically_verified": true,
-      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562",
+      "signed_off": true,
+      "signoff_basis": "TASK-167 task-owner explicit waiver of separate independent GitHub review"
     },
     {
       "case_id": "85-C167-P-window",
@@ -97,7 +103,9 @@
       "native_execution": "duckdb_actual_source_and_both_output_bags",
       "externally_attested": false,
       "technically_verified": true,
-      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562",
+      "signed_off": true,
+      "signoff_basis": "TASK-167 task-owner explicit waiver of separate independent GitHub review"
     },
     {
       "case_id": "85-C167-P-window",
@@ -110,7 +118,9 @@
       "native_execution": "duckdb_actual_source_and_both_output_bags",
       "externally_attested": false,
       "technically_verified": true,
-      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562",
+      "signed_off": true,
+      "signoff_basis": "TASK-167 task-owner explicit waiver of separate independent GitHub review"
     },
     {
       "case_id": "85-C167-P-window",
@@ -123,7 +133,9 @@
       "native_execution": "duckdb_actual_source_and_both_output_bags",
       "externally_attested": false,
       "technically_verified": true,
-      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562",
+      "signed_off": true,
+      "signoff_basis": "TASK-167 task-owner explicit waiver of separate independent GitHub review"
     },
     {
       "case_id": "85-C167-P-window",
@@ -136,7 +148,9 @@
       "native_execution": "duckdb_actual_source_and_both_output_bags",
       "externally_attested": false,
       "technically_verified": true,
-      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562",
+      "signed_off": true,
+      "signoff_basis": "TASK-167 task-owner explicit waiver of separate independent GitHub review"
     },
     {
       "case_id": "85-C167-P-window",
@@ -149,7 +163,9 @@
       "native_execution": "duckdb_actual_source_and_both_output_bags",
       "externally_attested": false,
       "technically_verified": true,
-      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562",
+      "signed_off": true,
+      "signoff_basis": "TASK-167 task-owner explicit waiver of separate independent GitHub review"
     },
     {
       "case_id": "85-C167-P-window",
@@ -162,7 +178,9 @@
       "native_execution": "duckdb_actual_source_and_both_output_bags",
       "externally_attested": false,
       "technically_verified": true,
-      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562",
+      "signed_off": true,
+      "signoff_basis": "TASK-167 task-owner explicit waiver of separate independent GitHub review"
     },
     {
       "case_id": "85-C167-P-window",
@@ -175,7 +193,9 @@
       "native_execution": "duckdb_actual_source_and_both_output_bags",
       "externally_attested": false,
       "technically_verified": true,
-      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562",
+      "signed_off": true,
+      "signoff_basis": "TASK-167 task-owner explicit waiver of separate independent GitHub review"
     },
     {
       "case_id": "85-C167-P-window",
@@ -188,7 +208,9 @@
       "native_execution": "duckdb_actual_source_and_both_output_bags",
       "externally_attested": false,
       "technically_verified": true,
-      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562",
+      "signed_off": true,
+      "signoff_basis": "TASK-167 task-owner explicit waiver of separate independent GitHub review"
     },
     {
       "case_id": "85-C167-P-window",
@@ -201,7 +223,9 @@
       "native_execution": "duckdb_actual_source_and_both_output_bags",
       "externally_attested": false,
       "technically_verified": true,
-      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562",
+      "signed_off": true,
+      "signoff_basis": "TASK-167 task-owner explicit waiver of separate independent GitHub review"
     },
     {
       "case_id": "85-C167-P-window",
@@ -214,7 +238,9 @@
       "native_execution": "duckdb_actual_source_and_both_output_bags",
       "externally_attested": false,
       "technically_verified": true,
-      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562",
+      "signed_off": true,
+      "signoff_basis": "TASK-167 task-owner explicit waiver of separate independent GitHub review"
     },
     {
       "case_id": "85-C167-N-join-goal",
@@ -227,7 +253,9 @@
       "native_execution": "duckdb_actual_source_and_both_output_bags",
       "externally_attested": false,
       "technically_verified": true,
-      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562",
+      "signed_off": true,
+      "signoff_basis": "TASK-167 task-owner explicit waiver of separate independent GitHub review"
     },
     {
       "case_id": "85-C167-N-join-goal",
@@ -240,7 +268,9 @@
       "native_execution": "duckdb_actual_source_and_both_output_bags",
       "externally_attested": false,
       "technically_verified": true,
-      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562",
+      "signed_off": true,
+      "signoff_basis": "TASK-167 task-owner explicit waiver of separate independent GitHub review"
     },
     {
       "case_id": "85-C167-N-join-goal",
@@ -253,7 +283,9 @@
       "native_execution": "duckdb_actual_source_and_both_output_bags",
       "externally_attested": false,
       "technically_verified": true,
-      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562",
+      "signed_off": true,
+      "signoff_basis": "TASK-167 task-owner explicit waiver of separate independent GitHub review"
     },
     {
       "case_id": "85-C167-N-join-goal",
@@ -266,7 +298,9 @@
       "native_execution": "duckdb_actual_source_and_both_output_bags",
       "externally_attested": false,
       "technically_verified": true,
-      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562",
+      "signed_off": true,
+      "signoff_basis": "TASK-167 task-owner explicit waiver of separate independent GitHub review"
     },
     {
       "case_id": "85-C167-N-join-goal",
@@ -279,7 +313,9 @@
       "native_execution": "duckdb_actual_source_and_both_output_bags",
       "externally_attested": false,
       "technically_verified": true,
-      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562",
+      "signed_off": true,
+      "signoff_basis": "TASK-167 task-owner explicit waiver of separate independent GitHub review"
     },
     {
       "case_id": "85-C167-N-join-goal",
@@ -292,7 +328,9 @@
       "native_execution": "duckdb_actual_source_and_both_output_bags",
       "externally_attested": false,
       "technically_verified": true,
-      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562",
+      "signed_off": true,
+      "signoff_basis": "TASK-167 task-owner explicit waiver of separate independent GitHub review"
     },
     {
       "case_id": "85-C167-N-join-goal",
@@ -305,7 +343,9 @@
       "native_execution": "duckdb_actual_source_and_both_output_bags",
       "externally_attested": false,
       "technically_verified": true,
-      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562",
+      "signed_off": true,
+      "signoff_basis": "TASK-167 task-owner explicit waiver of separate independent GitHub review"
     },
     {
       "case_id": "85-C167-N-join-goal",
@@ -318,7 +358,9 @@
       "native_execution": "duckdb_actual_source_and_both_output_bags",
       "externally_attested": false,
       "technically_verified": true,
-      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562",
+      "signed_off": true,
+      "signoff_basis": "TASK-167 task-owner explicit waiver of separate independent GitHub review"
     },
     {
       "case_id": "85-C167-N-join-goal",
@@ -331,7 +373,9 @@
       "native_execution": "duckdb_actual_source_and_both_output_bags",
       "externally_attested": false,
       "technically_verified": true,
-      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562",
+      "signed_off": true,
+      "signoff_basis": "TASK-167 task-owner explicit waiver of separate independent GitHub review"
     },
     {
       "case_id": "85-C167-N-join-goal",
@@ -344,7 +388,9 @@
       "native_execution": "duckdb_actual_source_and_both_output_bags",
       "externally_attested": false,
       "technically_verified": true,
-      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562",
+      "signed_off": true,
+      "signoff_basis": "TASK-167 task-owner explicit waiver of separate independent GitHub review"
     },
     {
       "case_id": "85-C167-N-join-goal",
@@ -357,7 +403,9 @@
       "native_execution": "duckdb_actual_source_and_both_output_bags",
       "externally_attested": false,
       "technically_verified": true,
-      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562",
+      "signed_off": true,
+      "signoff_basis": "TASK-167 task-owner explicit waiver of separate independent GitHub review"
     },
     {
       "case_id": "85-C167-N-join-goal",
@@ -370,7 +418,9 @@
       "native_execution": "duckdb_actual_source_and_both_output_bags",
       "externally_attested": false,
       "technically_verified": true,
-      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562",
+      "signed_off": true,
+      "signoff_basis": "TASK-167 task-owner explicit waiver of separate independent GitHub review"
     },
     {
       "case_id": "85-C167-N-join-goal",
@@ -383,7 +433,9 @@
       "native_execution": "duckdb_actual_source_and_both_output_bags",
       "externally_attested": false,
       "technically_verified": true,
-      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562",
+      "signed_off": true,
+      "signoff_basis": "TASK-167 task-owner explicit waiver of separate independent GitHub review"
     },
     {
       "case_id": "85-C167-N-window-goal",
@@ -396,7 +448,9 @@
       "native_execution": "duckdb_actual_source_and_both_output_bags",
       "externally_attested": false,
       "technically_verified": true,
-      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562",
+      "signed_off": true,
+      "signoff_basis": "TASK-167 task-owner explicit waiver of separate independent GitHub review"
     },
     {
       "case_id": "85-C167-N-window-goal",
@@ -409,7 +463,9 @@
       "native_execution": "duckdb_actual_source_and_both_output_bags",
       "externally_attested": false,
       "technically_verified": true,
-      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562",
+      "signed_off": true,
+      "signoff_basis": "TASK-167 task-owner explicit waiver of separate independent GitHub review"
     },
     {
       "case_id": "85-C167-N-window-goal",
@@ -422,7 +478,9 @@
       "native_execution": "duckdb_actual_source_and_both_output_bags",
       "externally_attested": false,
       "technically_verified": true,
-      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562",
+      "signed_off": true,
+      "signoff_basis": "TASK-167 task-owner explicit waiver of separate independent GitHub review"
     },
     {
       "case_id": "85-C167-N-window-goal",
@@ -435,7 +493,9 @@
       "native_execution": "duckdb_actual_source_and_both_output_bags",
       "externally_attested": false,
       "technically_verified": true,
-      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562",
+      "signed_off": true,
+      "signoff_basis": "TASK-167 task-owner explicit waiver of separate independent GitHub review"
     },
     {
       "case_id": "85-C167-N-window-goal",
@@ -448,7 +508,9 @@
       "native_execution": "duckdb_actual_source_and_both_output_bags",
       "externally_attested": false,
       "technically_verified": true,
-      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562",
+      "signed_off": true,
+      "signoff_basis": "TASK-167 task-owner explicit waiver of separate independent GitHub review"
     },
     {
       "case_id": "85-C167-N-window-goal",
@@ -461,7 +523,9 @@
       "native_execution": "duckdb_actual_source_and_both_output_bags",
       "externally_attested": false,
       "technically_verified": true,
-      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562",
+      "signed_off": true,
+      "signoff_basis": "TASK-167 task-owner explicit waiver of separate independent GitHub review"
     },
     {
       "case_id": "85-C167-N-window-goal",
@@ -474,7 +538,9 @@
       "native_execution": "duckdb_actual_source_and_both_output_bags",
       "externally_attested": false,
       "technically_verified": true,
-      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562",
+      "signed_off": true,
+      "signoff_basis": "TASK-167 task-owner explicit waiver of separate independent GitHub review"
     },
     {
       "case_id": "85-C167-N-window-goal",
@@ -487,7 +553,9 @@
       "native_execution": "duckdb_actual_source_and_both_output_bags",
       "externally_attested": false,
       "technically_verified": true,
-      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562",
+      "signed_off": true,
+      "signoff_basis": "TASK-167 task-owner explicit waiver of separate independent GitHub review"
     },
     {
       "case_id": "85-C167-N-window-goal",
@@ -500,7 +568,9 @@
       "native_execution": "duckdb_actual_source_and_both_output_bags",
       "externally_attested": false,
       "technically_verified": true,
-      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562",
+      "signed_off": true,
+      "signoff_basis": "TASK-167 task-owner explicit waiver of separate independent GitHub review"
     },
     {
       "case_id": "85-C167-N-window-goal",
@@ -513,7 +583,9 @@
       "native_execution": "duckdb_actual_source_and_both_output_bags",
       "externally_attested": false,
       "technically_verified": true,
-      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562",
+      "signed_off": true,
+      "signoff_basis": "TASK-167 task-owner explicit waiver of separate independent GitHub review"
     },
     {
       "case_id": "85-C167-N-window-goal",
@@ -526,7 +598,9 @@
       "native_execution": "duckdb_actual_source_and_both_output_bags",
       "externally_attested": false,
       "technically_verified": true,
-      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562",
+      "signed_off": true,
+      "signoff_basis": "TASK-167 task-owner explicit waiver of separate independent GitHub review"
     },
     {
       "case_id": "85-C167-N-window-goal",
@@ -539,7 +613,9 @@
       "native_execution": "duckdb_actual_source_and_both_output_bags",
       "externally_attested": false,
       "technically_verified": true,
-      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562",
+      "signed_off": true,
+      "signoff_basis": "TASK-167 task-owner explicit waiver of separate independent GitHub review"
     },
     {
       "case_id": "85-C167-N-window-goal",
@@ -552,7 +628,9 @@
       "native_execution": "duckdb_actual_source_and_both_output_bags",
       "externally_attested": false,
       "technically_verified": true,
-      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562",
+      "signed_off": true,
+      "signoff_basis": "TASK-167 task-owner explicit waiver of separate independent GitHub review"
     },
     {
       "case_id": "85-C167-P-set",
@@ -565,7 +643,9 @@
       "native_execution": "duckdb_actual_source_and_both_output_bags",
       "externally_attested": false,
       "technically_verified": true,
-      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562",
+      "signed_off": true,
+      "signoff_basis": "TASK-167 task-owner explicit waiver of separate independent GitHub review"
     },
     {
       "case_id": "85-C167-P-set",
@@ -578,7 +658,9 @@
       "native_execution": "duckdb_actual_source_and_both_output_bags",
       "externally_attested": false,
       "technically_verified": true,
-      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562",
+      "signed_off": true,
+      "signoff_basis": "TASK-167 task-owner explicit waiver of separate independent GitHub review"
     },
     {
       "case_id": "85-C167-P-set",
@@ -591,7 +673,9 @@
       "native_execution": "duckdb_actual_source_and_both_output_bags",
       "externally_attested": false,
       "technically_verified": true,
-      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562",
+      "signed_off": true,
+      "signoff_basis": "TASK-167 task-owner explicit waiver of separate independent GitHub review"
     },
     {
       "case_id": "85-C167-P-set",
@@ -604,7 +688,9 @@
       "native_execution": "duckdb_actual_source_and_both_output_bags",
       "externally_attested": false,
       "technically_verified": true,
-      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562",
+      "signed_off": true,
+      "signoff_basis": "TASK-167 task-owner explicit waiver of separate independent GitHub review"
     },
     {
       "case_id": "85-C167-P-set",
@@ -617,7 +703,9 @@
       "native_execution": "duckdb_actual_source_and_both_output_bags",
       "externally_attested": false,
       "technically_verified": true,
-      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562",
+      "signed_off": true,
+      "signoff_basis": "TASK-167 task-owner explicit waiver of separate independent GitHub review"
     },
     {
       "case_id": "85-C167-P-set",
@@ -630,7 +718,9 @@
       "native_execution": "duckdb_actual_source_and_both_output_bags",
       "externally_attested": false,
       "technically_verified": true,
-      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562",
+      "signed_off": true,
+      "signoff_basis": "TASK-167 task-owner explicit waiver of separate independent GitHub review"
     },
     {
       "case_id": "85-C167-P-set",
@@ -643,7 +733,9 @@
       "native_execution": "duckdb_actual_source_and_both_output_bags",
       "externally_attested": false,
       "technically_verified": true,
-      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562",
+      "signed_off": true,
+      "signoff_basis": "TASK-167 task-owner explicit waiver of separate independent GitHub review"
     },
     {
       "case_id": "85-C167-P-set",
@@ -656,7 +748,9 @@
       "native_execution": "duckdb_actual_source_and_both_output_bags",
       "externally_attested": false,
       "technically_verified": true,
-      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562",
+      "signed_off": true,
+      "signoff_basis": "TASK-167 task-owner explicit waiver of separate independent GitHub review"
     },
     {
       "case_id": "85-C167-P-set",
@@ -669,7 +763,9 @@
       "native_execution": "duckdb_actual_source_and_both_output_bags",
       "externally_attested": false,
       "technically_verified": true,
-      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562",
+      "signed_off": true,
+      "signoff_basis": "TASK-167 task-owner explicit waiver of separate independent GitHub review"
     },
     {
       "case_id": "85-C167-P-set",
@@ -682,7 +778,9 @@
       "native_execution": "duckdb_actual_source_and_both_output_bags",
       "externally_attested": false,
       "technically_verified": true,
-      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562",
+      "signed_off": true,
+      "signoff_basis": "TASK-167 task-owner explicit waiver of separate independent GitHub review"
     },
     {
       "case_id": "85-C167-P-set",
@@ -695,7 +793,9 @@
       "native_execution": "duckdb_actual_source_and_both_output_bags",
       "externally_attested": false,
       "technically_verified": true,
-      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562",
+      "signed_off": true,
+      "signoff_basis": "TASK-167 task-owner explicit waiver of separate independent GitHub review"
     },
     {
       "case_id": "85-C167-P-set",
@@ -708,7 +808,9 @@
       "native_execution": "duckdb_actual_source_and_both_output_bags",
       "externally_attested": false,
       "technically_verified": true,
-      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562",
+      "signed_off": true,
+      "signoff_basis": "TASK-167 task-owner explicit waiver of separate independent GitHub review"
     },
     {
       "case_id": "85-C167-P-set",
@@ -721,7 +823,9 @@
       "native_execution": "duckdb_actual_source_and_both_output_bags",
       "externally_attested": false,
       "technically_verified": true,
-      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562",
+      "signed_off": true,
+      "signoff_basis": "TASK-167 task-owner explicit waiver of separate independent GitHub review"
     },
     {
       "case_id": "85-C167-N-set-goal",
@@ -734,7 +838,9 @@
       "native_execution": "duckdb_actual_source_and_both_output_bags",
       "externally_attested": false,
       "technically_verified": true,
-      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562",
+      "signed_off": true,
+      "signoff_basis": "TASK-167 task-owner explicit waiver of separate independent GitHub review"
     },
     {
       "case_id": "85-C167-N-set-goal",
@@ -747,7 +853,9 @@
       "native_execution": "duckdb_actual_source_and_both_output_bags",
       "externally_attested": false,
       "technically_verified": true,
-      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562",
+      "signed_off": true,
+      "signoff_basis": "TASK-167 task-owner explicit waiver of separate independent GitHub review"
     },
     {
       "case_id": "85-C167-N-set-goal",
@@ -760,7 +868,9 @@
       "native_execution": "duckdb_actual_source_and_both_output_bags",
       "externally_attested": false,
       "technically_verified": true,
-      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562",
+      "signed_off": true,
+      "signoff_basis": "TASK-167 task-owner explicit waiver of separate independent GitHub review"
     },
     {
       "case_id": "85-C167-N-set-goal",
@@ -773,7 +883,9 @@
       "native_execution": "duckdb_actual_source_and_both_output_bags",
       "externally_attested": false,
       "technically_verified": true,
-      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562",
+      "signed_off": true,
+      "signoff_basis": "TASK-167 task-owner explicit waiver of separate independent GitHub review"
     },
     {
       "case_id": "85-C167-N-set-goal",
@@ -786,7 +898,9 @@
       "native_execution": "duckdb_actual_source_and_both_output_bags",
       "externally_attested": false,
       "technically_verified": true,
-      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562",
+      "signed_off": true,
+      "signoff_basis": "TASK-167 task-owner explicit waiver of separate independent GitHub review"
     },
     {
       "case_id": "85-C167-N-set-goal",
@@ -799,7 +913,9 @@
       "native_execution": "duckdb_actual_source_and_both_output_bags",
       "externally_attested": false,
       "technically_verified": true,
-      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562",
+      "signed_off": true,
+      "signoff_basis": "TASK-167 task-owner explicit waiver of separate independent GitHub review"
     },
     {
       "case_id": "85-C167-N-set-goal",
@@ -812,7 +928,9 @@
       "native_execution": "duckdb_actual_source_and_both_output_bags",
       "externally_attested": false,
       "technically_verified": true,
-      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562",
+      "signed_off": true,
+      "signoff_basis": "TASK-167 task-owner explicit waiver of separate independent GitHub review"
     },
     {
       "case_id": "85-C167-N-set-goal",
@@ -825,7 +943,9 @@
       "native_execution": "duckdb_actual_source_and_both_output_bags",
       "externally_attested": false,
       "technically_verified": true,
-      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562",
+      "signed_off": true,
+      "signoff_basis": "TASK-167 task-owner explicit waiver of separate independent GitHub review"
     },
     {
       "case_id": "85-C167-N-set-goal",
@@ -838,7 +958,9 @@
       "native_execution": "duckdb_actual_source_and_both_output_bags",
       "externally_attested": false,
       "technically_verified": true,
-      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562",
+      "signed_off": true,
+      "signoff_basis": "TASK-167 task-owner explicit waiver of separate independent GitHub review"
     },
     {
       "case_id": "85-C167-N-set-goal",
@@ -851,7 +973,9 @@
       "native_execution": "duckdb_actual_source_and_both_output_bags",
       "externally_attested": false,
       "technically_verified": true,
-      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562",
+      "signed_off": true,
+      "signoff_basis": "TASK-167 task-owner explicit waiver of separate independent GitHub review"
     },
     {
       "case_id": "85-C167-N-set-goal",
@@ -864,7 +988,9 @@
       "native_execution": "duckdb_actual_source_and_both_output_bags",
       "externally_attested": false,
       "technically_verified": true,
-      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562",
+      "signed_off": true,
+      "signoff_basis": "TASK-167 task-owner explicit waiver of separate independent GitHub review"
     },
     {
       "case_id": "85-C167-N-set-goal",
@@ -877,7 +1003,9 @@
       "native_execution": "duckdb_actual_source_and_both_output_bags",
       "externally_attested": false,
       "technically_verified": true,
-      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562",
+      "signed_off": true,
+      "signoff_basis": "TASK-167 task-owner explicit waiver of separate independent GitHub review"
     },
     {
       "case_id": "85-C167-N-set-goal",
@@ -890,7 +1018,9 @@
       "native_execution": "duckdb_actual_source_and_both_output_bags",
       "externally_attested": false,
       "technically_verified": true,
-      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562",
+      "signed_off": true,
+      "signoff_basis": "TASK-167 task-owner explicit waiver of separate independent GitHub review"
     },
     {
       "case_id": "85-C167-N-unsupported",
@@ -903,7 +1033,9 @@
       "native_execution": "opaque_other_not_executable",
       "externally_attested": false,
       "technically_verified": true,
-      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562",
+      "signed_off": true,
+      "signoff_basis": "TASK-167 task-owner explicit waiver of separate independent GitHub review"
     },
     {
       "case_id": "85-C167-N-unsupported",
@@ -916,7 +1048,9 @@
       "native_execution": "opaque_other_not_executable",
       "externally_attested": false,
       "technically_verified": true,
-      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562",
+      "signed_off": true,
+      "signoff_basis": "TASK-167 task-owner explicit waiver of separate independent GitHub review"
     },
     {
       "case_id": "85-C167-N-unsupported",
@@ -929,7 +1063,9 @@
       "native_execution": "opaque_other_not_executable",
       "externally_attested": false,
       "technically_verified": true,
-      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562",
+      "signed_off": true,
+      "signoff_basis": "TASK-167 task-owner explicit waiver of separate independent GitHub review"
     },
     {
       "case_id": "85-C167-N-unsupported",
@@ -942,7 +1078,9 @@
       "native_execution": "opaque_other_not_executable",
       "externally_attested": false,
       "technically_verified": true,
-      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562",
+      "signed_off": true,
+      "signoff_basis": "TASK-167 task-owner explicit waiver of separate independent GitHub review"
     },
     {
       "case_id": "85-C167-N-unsupported",
@@ -955,7 +1093,9 @@
       "native_execution": "opaque_other_not_executable",
       "externally_attested": false,
       "technically_verified": true,
-      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562",
+      "signed_off": true,
+      "signoff_basis": "TASK-167 task-owner explicit waiver of separate independent GitHub review"
     },
     {
       "case_id": "85-C167-N-unsupported",
@@ -968,7 +1108,9 @@
       "native_execution": "opaque_other_not_executable",
       "externally_attested": false,
       "technically_verified": true,
-      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562",
+      "signed_off": true,
+      "signoff_basis": "TASK-167 task-owner explicit waiver of separate independent GitHub review"
     },
     {
       "case_id": "85-C167-N-unsupported",
@@ -981,7 +1123,9 @@
       "native_execution": "opaque_other_not_executable",
       "externally_attested": false,
       "technically_verified": true,
-      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562",
+      "signed_off": true,
+      "signoff_basis": "TASK-167 task-owner explicit waiver of separate independent GitHub review"
     },
     {
       "case_id": "85-C167-N-unsupported",
@@ -994,7 +1138,9 @@
       "native_execution": "opaque_other_not_executable",
       "externally_attested": false,
       "technically_verified": true,
-      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562",
+      "signed_off": true,
+      "signoff_basis": "TASK-167 task-owner explicit waiver of separate independent GitHub review"
     },
     {
       "case_id": "85-C167-N-unsupported",
@@ -1007,7 +1153,9 @@
       "native_execution": "opaque_other_not_executable",
       "externally_attested": false,
       "technically_verified": true,
-      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562",
+      "signed_off": true,
+      "signoff_basis": "TASK-167 task-owner explicit waiver of separate independent GitHub review"
     },
     {
       "case_id": "85-C167-N-unsupported",
@@ -1020,7 +1168,9 @@
       "native_execution": "opaque_other_not_executable",
       "externally_attested": false,
       "technically_verified": true,
-      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562",
+      "signed_off": true,
+      "signoff_basis": "TASK-167 task-owner explicit waiver of separate independent GitHub review"
     },
     {
       "case_id": "85-C167-N-unsupported",
@@ -1033,7 +1183,9 @@
       "native_execution": "opaque_other_not_executable",
       "externally_attested": false,
       "technically_verified": true,
-      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562",
+      "signed_off": true,
+      "signoff_basis": "TASK-167 task-owner explicit waiver of separate independent GitHub review"
     },
     {
       "case_id": "85-C167-N-unsupported",
@@ -1046,7 +1198,9 @@
       "native_execution": "opaque_other_not_executable",
       "externally_attested": false,
       "technically_verified": true,
-      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562",
+      "signed_off": true,
+      "signoff_basis": "TASK-167 task-owner explicit waiver of separate independent GitHub review"
     },
     {
       "case_id": "85-C167-N-unsupported",
@@ -1059,17 +1213,22 @@
       "native_execution": "opaque_other_not_executable",
       "externally_attested": false,
       "technically_verified": true,
-      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"
+      "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562",
+      "signed_off": true,
+      "signoff_basis": "TASK-167 task-owner explicit waiver of separate independent GitHub review"
     }
   ],
   "signoff": {
-    "ac1": "technical_v2_cells_passed_but_original_v1_incompleteness_needs_owner_disposition",
-    "ac2": "technical_pass",
-    "ac3": "technical_pass",
-    "ac4": "technical_pass",
-    "ac5": "technical_9_of_9_ci_plus_pinned_consumer_pass_independent_review_pending",
-    "child_done": false,
-    "parent_done": false
+    "ac1": "owner_accepted_documented_historical_v1_freeze_exception_v2_technical_78_of_78",
+    "ac2": "accepted_technical_pass",
+    "ac3": "accepted_technical_pass",
+    "ac4": "accepted_technical_pass",
+    "ac5": "owner_waived_independent_reviewer_TASK_167_only; pre_signoff_CI_9_of_9_green; pinned_consumer_selected_suites_passed",
+    "child_done": true,
+    "parent_done": false,
+    "accepted_on": "2026-11-03",
+    "independent_review_waived": true,
+    "pre_signoff_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41714154496"
   },
   "verified_implementation_head": "fb328ef4d59fc8f5b74d93605e7f830806dbbd91",
   "verified_implementation_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562"

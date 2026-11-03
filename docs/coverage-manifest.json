@@ -2,7 +2,7 @@
   "task_167_joint_terminal_bags_acceptance": {
     "owner": "TASK-167",
     "parent": "TASK-85",
-    "status": "technical_78_cells_verified_pending_independent_review_and_owner_v1_disposition",
+    "status": "task_167_owner_accepted_signed_off_pending_merge",
     "freeze": "docs/task-167-acceptance-freeze.json",
     "freeze_version": 2,
     "fixture_ids": [
@@ -28,11 +28,11 @@
     "final_verified_code_head": "b694e8b1d6977861b388ce7b1483a1257cd24cda",
     "final_verified_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41713268383",
     "independent_review": false,
-    "child_signed_off": false,
+    "child_signed_off": true,
     "parent_signed_off": false,
     "remaining_gates": [
-      "independent TASK-167 Standards/Spec reviewer identity and per-case owner signoff, or explicit TASK-167-specific waiver",
-      "owner disposition on historically incomplete prospective v1 acceptance matrix; v2 correction archived and verified"
+      "Final PR head must pass 9/9 CI before merge",
+      "PR must be merged on main before TASK-168 unblocks"
     ],
     "freeze_history": [
       "docs/task-167-acceptance-freeze-v1.json"
@@ -46,17 +46,21 @@
     "dialect_parser_conditional_cells": 13,
     "sql_tdg_pinned_consumer_qualification": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41698923842",
     "verified_consumer_commit": "3beaf7799ab54b2440ae34c917ff7eda6c11c398",
-    "outstanding_owner_dispositions": [
-      "AC #1: original prospective v1 had incomplete physical/domain cells, corrected and archived in v2, literal prospective correctness cannot be restored",
-      "AC #5: distinct reviewer identity is not available from author account, no independent GitHub approval claimed"
-    ],
+    "outstanding_owner_dispositions": [],
     "verified_mandatory_parser_cells": 65,
     "verified_conditional_parser_cells": 13,
     "verified_implementation_head": "fb328ef4d59fc8f5b74d93605e7f830806dbbd91",
     "verified_implementation_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41699203562",
     "full_rust_checks": 9,
     "passing_rust_checks": 9,
-    "pinned_consumer_verified": true
+    "pinned_consumer_verified": true,
+    "independent_review_waived": true,
+    "review_waiver_scope": "TASK-167 only; author-account Matt technical review is not a distinct independent GitHub approval",
+    "owner_exception_scope": "AC #1 prospective v1 incomplete and not retroactively satisfied; corrected v2 accepted for TASK-167 only",
+    "owner_approval_date": "2026-11-03",
+    "owner_approval_basis": "User explicitly approves the assistant's recommendation to accept the v1 historical exception and task-specific independent-review waiver",
+    "latest_pre_signoff_verified_head": "0a195ac2cceb327f184f00e4c8d8ef56547edc13",
+    "latest_pre_signoff_verified_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41714154496"
   },
   "task_166_shared_terminal_goals_acceptance": {
     "owner": "TASK-166",
