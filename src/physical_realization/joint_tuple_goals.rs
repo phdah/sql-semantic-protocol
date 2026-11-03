@@ -12,8 +12,11 @@ use crate::outcome_goals::OutcomeGoal;
 use crate::protocol::LiteralValue;
 
 use super::{
-    physical_joint_terminal_bag_plan, PhysicalJointOtherExact, PhysicalJointTerminalProof,
-    PhysicalWriteState,
+    physical_finite_page_bag_plan, physical_finite_rank_bag_plan,
+    physical_finite_window_bag_plan, physical_joint_terminal_bag_plan, PhysicalFinitePageExact,
+    PhysicalFinitePageProof, PhysicalFiniteRankExact, PhysicalFiniteRankProof,
+    PhysicalFiniteWindowExact, PhysicalFiniteWindowProof, PhysicalJointOtherExact,
+    PhysicalJointTerminalProof, PhysicalWriteState,
 };
 
 /// An exact requested multiplicity for a typed, positional output tuple.
@@ -254,4 +257,100 @@ pub fn physical_joint_tuple_histogram_plan(
         }
     }
     proof
+}
+
+ 
+/// An exact page, window or ranking proof, including original source row IDs.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum PhysicalSingleTupleExact {
+    /// Deterministic ORDER BY/OFFSET/LIMIT full page bag and rejected identities.
+    Page(Box<PhysicalFinitePageExact>),
+    /// Exact window/QUALIFY full output and TRUE/NOT TRUE physical membership.
+    Window(Box<PhysicalFiniteWindowExact>),
+    /// Exact ranked ROW_NUMBER/RANK/DENSE_RANK output and rejected identities.
+    Rank(Box<PhysicalFiniteRankExact>),
+}
+
+/// Classification of a correlated histogram against one page or QUALIFY goal.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum PhysicalSingleTupleProof {
+    /// All typed tuple frequencies match a fully evaluated terminal bag.
+    Exact(PhysicalSingleTupleExact),
+    /// The complete source bag violates an enforced constraint or tuple request.
+    Impossible { reason: String },
+    /// A row order, column identity, SQL type or execution law is unproved.
+    Residual { reason: String },
+}
+
+/// Check a full typed tuple request against canonical LIMIT and QUALIFY execution.
+///
+/// Reuses the existing single-source page and window/rank interpreters instead
+/// of independently guessing SELECT/QUALIFY semantics or multiplying marginals.
+/// The complete ordered input, output, rejected physical rows and typed outcome
+/// bounds are retained in the returned proof. Unsupported dialect/session laws
+/// fail closed as Residual rather than a fabricated exact positive.
+pub fn physical_single_tuple_histogram_plan(
+    bundle: &AnalysisBundle,
+    snapshots: &[PhysicalWriteState],
+    goal: &PhysicalTupleHistogramGoal,
+) -> PhysicalSingleTupleProof {
+    let layer = bundle.layers().iter().find(|layer| layer.id() == goal.layer_id());
+    let Some(layer) = layer else {
+        return PhysicalSingleTupleProof::Residual {
+            reason: "tuple request references an unknown output layer".into(),
+        };
+    };
+    let Some(query) = super::query_for(bundle, layer) else {
+        return PhysicalSingleTupleProof::Residual {
+            reason: "tuple request has no canonical SQL query".into(),
+        };
+    };
+    if goal.columns.iter().any(|name| {
+        query.output().columns().iter().filter(|col| col.name() == name).count() != 1
+    }) {
+        return PhysicalSingleTupleProof::Residual {
+            reason: "tuple request lacks unique canonical projected column identities".into(),
+        };
+    }
+
+    let page = physical_finite_page_bag_plan(bundle, goal.layer_id(), snapshots);
+    let exact = match page {
+        PhysicalFinitePageProof::Exact(proof) => PhysicalSingleTupleExact::Page(proof),
+        PhysicalFinitePageProof::Impossible { reason } => {
+            return PhysicalSingleTupleProof::Impossible { reason };
+        }
+        PhysicalFinitePageProof::Residual { .. } => {
+            match physical_finite_window_bag_plan(bundle, goal.layer_id(), snapshots) {
+                PhysicalFiniteWindowProof::Exact(proof) => PhysicalSingleTupleExact::Window(proof),
+                PhysicalFiniteWindowProof::Impossible { reason } => {
+                    return PhysicalSingleTupleProof::Impossible { reason };
+                }
+                PhysicalFiniteWindowProof::Residual { .. } => {
+                    match physical_finite_rank_bag_plan(bundle, goal.layer_id(), snapshots) {
+                        PhysicalFiniteRankProof::Exact(proof) => PhysicalSingleTupleExact::Rank(proof),
+                        PhysicalFiniteRankProof::Impossible { reason } => {
+                            return PhysicalSingleTupleProof::Impossible { reason };
+                        }
+                        PhysicalFiniteRankProof::Residual { reason } => {
+                            return PhysicalSingleTupleProof::Residual { reason };
+                        }
+                    }
+                }
+            }
+        }
+    };
+    let terminal = match &exact {
+        PhysicalSingleTupleExact::Page(page) => &page.terminal,
+        PhysicalSingleTupleExact::Window(window) => &window.terminal,
+        PhysicalSingleTupleExact::Rank(rank) => &rank.terminal,
+    };
+    match compare_tuple_goal(goal, terminal) {
+        TupleMatch::Matching => PhysicalSingleTupleProof::Exact(exact),
+        TupleMatch::Contradictory => PhysicalSingleTupleProof::Impossible {
+            reason: "requested tuple histogram contradicts the complete page or QUALIFY bag".into(),
+        },
+        TupleMatch::Unproved => PhysicalSingleTupleProof::Residual {
+            reason: "correlated tuple comparison needs unproved scalar or output evidence".into(),
+        },
+    }
 }
