@@ -329,6 +329,13 @@ fn check_native_bags(case: &Value) {
 fn every_frozen_case_and_parser_dialect_is_accounted_for() {
     let fixture = freeze();
     assert_eq!(fixture["version"], 2);
+    // The prospective v1 existed before implementation, whereas the corrected
+    // v2 matrix was necessarily amended after the semantic changes.
+    let v1: Value = serde_json::from_str(include_str!("../docs/task-166-acceptance-freeze-v1.json"))
+        .expect("archived prospective freeze");
+    assert_eq!(v1["version"], 1);
+    assert_eq!(v1["frozen_before_semantic_changes"], true);
+    assert_eq!(fixture["frozen_before_semantic_changes"], false);
     let cases = fixture["cases"].as_array().expect("frozen cases");
     let dialects = fixture["dialects"].as_array().expect("13 dialects");
     assert_eq!(cases.len(), 6);
