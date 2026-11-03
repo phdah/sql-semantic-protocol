@@ -229,10 +229,15 @@ fn normalized(rows: &[BTreeMap<String, LiteralValue>]) -> Vec<String> {
     result
 }
 
-fn signature(
-    bundle: &AnalysisBundle,
-    requested_rows: u64,
-) -> Option<(Vec<String>, Vec<String>, Vec<String>, usize)> {
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct JointSignature {
+    grouped: Vec<String>,
+    window: Vec<String>,
+    sources: Vec<String>,
+    rejected_pairs: usize,
+}
+
+fn signature(bundle: &AnalysisBundle, requested_rows: u64) -> Option<JointSignature> {
     let result =
         physical_joint_terminal_bag_plan(bundle, &goals(bundle, requested_rows), &snapshots());
     let PhysicalJointTerminalProof::Exact(exact) = result else {
@@ -241,16 +246,16 @@ fn signature(
     let PhysicalJointOtherExact::Window(window) = exact.other else {
         return None;
     };
-    Some((
-        normalized(&exact.grouped.terminal),
-        normalized(&window.terminal),
-        exact
+    Some(JointSignature {
+        grouped: normalized(&exact.grouped.terminal),
+        window: normalized(&window.terminal),
+        sources: exact
             .sources
             .iter()
             .map(|source| source.relation().to_string())
             .collect(),
-        exact.grouped.rejected.len(),
-    ))
+        rejected_pairs: exact.grouped.rejected.len(),
+    })
 }
 
 #[test]
@@ -258,8 +263,8 @@ fn sql_dbt_odcs_have_identical_joint_bags_and_impossibility_boundaries() {
     let sql_bundle = direct(&RelationCatalog::from_schemas(&source_schemas()).unwrap());
     let dbt = dbt();
     let expected = signature(&sql_bundle, 3).expect("direct SQL exact pair");
-    assert_eq!(expected.2, vec![LEFT.to_string(), RIGHT.to_string()]);
-    assert_eq!(expected.3, 1);
+    assert_eq!(expected.sources, vec![LEFT.to_string(), RIGHT.to_string()]);
+    assert_eq!(expected.rejected_pairs, 1);
     assert_eq!(signature(&dbt, 3), Some(expected.clone()));
     for bundle in [&sql_bundle, &dbt] {
         assert!(matches!(
