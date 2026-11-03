@@ -1,0 +1,1382 @@
+{
+  "version": 2,
+  "owner": "TASK-166",
+  "parent": "TASK-85",
+  "created": "2026-11-03",
+  "frozen_before_semantic_changes": false,
+  "scope": "Complete one-source, two-terminal goals: transparent full typed signed INTEGER/NULL source histogram and directly filtered second output with SQL TRUE/NOT TRUE partition; no independent-source bag multiplication. No joins, grouping, or unproved vendor equality. Other DAGs conservatively Residual.",
+  "fixture_ids": [
+    "85-C166-P",
+    "85-C166-N"
+  ],
+  "dependencies": [
+    "TASK-165 (Done and merged on main)"
+  ],
+  "dialects": [
+    "generic",
+    "mysql",
+    "postgresql",
+    "hive",
+    "sqlite",
+    "snowflake",
+    "redshift",
+    "mssql",
+    "clickhouse",
+    "bigquery",
+    "ansi",
+    "duckdb",
+    "databricks"
+  ],
+  "typed_schema": {
+    "t.k": {
+      "sql_type": "INTEGER",
+      "nullable": true
+    }
+  },
+  "cases": [
+    {
+      "id": "85-C166-P-shared",
+      "fixture": "85-C166-P",
+      "requirement": "mandatory",
+      "sql": "SELECT k AS whole FROM t; SELECT k AS filtered FROM t WHERE k = 1",
+      "physical_source": "t",
+      "source_bag": [
+        1,
+        1,
+        2
+      ],
+      "terminal_a": [
+        1,
+        1,
+        2
+      ],
+      "terminal_b": [
+        1,
+        1
+      ],
+      "goals": {
+        "terminal_a": {
+          "rows": 3,
+          "histogram": [
+            {
+              "value": 1,
+              "rows": 2
+            },
+            {
+              "value": 2,
+              "rows": 1
+            }
+          ]
+        },
+        "terminal_b": {
+          "rows": 2,
+          "histogram": [
+            {
+              "value": 1,
+              "rows": 2
+            }
+          ]
+        }
+      },
+      "expected": {
+        "classification": "Exact",
+        "source_identity": "t.k",
+        "closed_world": true,
+        "positive_rows": [
+          0,
+          1
+        ],
+        "not_true_rows": [
+          2
+        ],
+        "reason": "Both terminal count/histogram assertions share t.k [1,1,2]; FALSE row index 2",
+        "native_actual_terminal_b": [
+          1,
+          1
+        ],
+        "typed_domains": {
+          "t.k": {
+            "type": "signed_integer",
+            "bits": 32,
+            "lower": 1,
+            "upper": 2,
+            "lower_inclusive": true,
+            "upper_inclusive": true,
+            "nullable": false
+          },
+          "terminal_a": {
+            "type": "signed_integer",
+            "bits": 32,
+            "lower": 1,
+            "upper": 2,
+            "lower_inclusive": true,
+            "upper_inclusive": true,
+            "nullable": false
+          },
+          "terminal_b": {
+            "type": "signed_integer",
+            "bits": 32,
+            "lower": 1,
+            "upper": 1,
+            "lower_inclusive": true,
+            "upper_inclusive": true,
+            "nullable": false
+          }
+        }
+      },
+      "dialect_parser_cells": [
+        {
+          "dialect": "generic",
+          "expected": "canonical_two_query_layers",
+          "verdict": "Exact",
+          "verified": false,
+          "engine_native": "not_executed_except_duckdb"
+        },
+        {
+          "dialect": "mysql",
+          "expected": "canonical_two_query_layers",
+          "verdict": "Exact",
+          "verified": false,
+          "engine_native": "not_executed_except_duckdb"
+        },
+        {
+          "dialect": "postgresql",
+          "expected": "canonical_two_query_layers",
+          "verdict": "Exact",
+          "verified": false,
+          "engine_native": "not_executed_except_duckdb"
+        },
+        {
+          "dialect": "hive",
+          "expected": "canonical_two_query_layers",
+          "verdict": "Exact",
+          "verified": false,
+          "engine_native": "not_executed_except_duckdb"
+        },
+        {
+          "dialect": "sqlite",
+          "expected": "canonical_two_query_layers",
+          "verdict": "Exact",
+          "verified": false,
+          "engine_native": "not_executed_except_duckdb"
+        },
+        {
+          "dialect": "snowflake",
+          "expected": "canonical_two_query_layers",
+          "verdict": "Exact",
+          "verified": false,
+          "engine_native": "not_executed_except_duckdb"
+        },
+        {
+          "dialect": "redshift",
+          "expected": "canonical_two_query_layers",
+          "verdict": "Exact",
+          "verified": false,
+          "engine_native": "not_executed_except_duckdb"
+        },
+        {
+          "dialect": "mssql",
+          "expected": "canonical_two_query_layers",
+          "verdict": "Exact",
+          "verified": false,
+          "engine_native": "not_executed_except_duckdb"
+        },
+        {
+          "dialect": "clickhouse",
+          "expected": "canonical_two_query_layers",
+          "verdict": "Exact",
+          "verified": false,
+          "engine_native": "not_executed_except_duckdb"
+        },
+        {
+          "dialect": "bigquery",
+          "expected": "canonical_two_query_layers",
+          "verdict": "Exact",
+          "verified": false,
+          "engine_native": "not_executed_except_duckdb"
+        },
+        {
+          "dialect": "ansi",
+          "expected": "canonical_two_query_layers",
+          "verdict": "Exact",
+          "verified": false,
+          "engine_native": "not_executed_except_duckdb"
+        },
+        {
+          "dialect": "duckdb",
+          "expected": "canonical_two_query_layers",
+          "verdict": "Exact",
+          "verified": false,
+          "engine_native": "not_executed_except_duckdb"
+        },
+        {
+          "dialect": "databricks",
+          "expected": "canonical_two_query_layers",
+          "verdict": "Exact",
+          "verified": false,
+          "engine_native": "not_executed_except_duckdb"
+        }
+      ],
+      "adapter_evidence": {
+        "sql": "schema supplied; asserted in test",
+        "dbt": "compiled code + authoritative warehouse catalog; asserted in test",
+        "odcs": "physical INTEGER schema; asserted under feature=odcs"
+      },
+      "native_oracle": "DuckDB complete physical source plus both terminal bags for executable cells",
+      "verified": false,
+      "sql_statements": [
+        "SELECT k AS whole FROM t",
+        "SELECT k AS filtered FROM t WHERE k = 1"
+      ],
+      "output_aliases": [
+        "whole",
+        "filtered"
+      ],
+      "native_snapshots": {
+        "source_bag": [
+          1,
+          1,
+          2
+        ],
+        "terminal_a_bag": [
+          1,
+          1,
+          2
+        ],
+        "terminal_b_bag": [
+          1,
+          1
+        ],
+        "execute_terminal_b": true,
+        "ordinal_order": "INSERT source order, 0-based",
+        "oracle_engine": "DuckDB (not vendor native)"
+      },
+      "verification_suite": "tests/task_166_acceptance_inventory.rs"
+    },
+    {
+      "id": "85-C166-P-null",
+      "fixture": "85-C166-P",
+      "requirement": "mandatory",
+      "sql": "SELECT k AS whole FROM t; SELECT k AS filtered FROM t WHERE k IS NULL",
+      "physical_source": "t",
+      "source_bag": [
+        1,
+        1,
+        null
+      ],
+      "terminal_a": [
+        1,
+        1,
+        null
+      ],
+      "terminal_b": [
+        null
+      ],
+      "goals": {
+        "terminal_a": {
+          "rows": 3,
+          "histogram": [
+            {
+              "value": 1,
+              "rows": 2
+            },
+            {
+              "value": null,
+              "rows": 1
+            }
+          ]
+        },
+        "terminal_b": {
+          "rows": 1,
+          "histogram": [
+            {
+              "value": null,
+              "rows": 1
+            }
+          ]
+        }
+      },
+      "expected": {
+        "classification": "Exact",
+        "source_identity": "t.k",
+        "closed_world": true,
+        "positive_rows": [
+          2
+        ],
+        "not_true_rows": [
+          0,
+          1
+        ],
+        "reason": "SQL NULL row index 2 selected, first two rows NOT TRUE",
+        "native_actual_terminal_b": [
+          null
+        ],
+        "typed_domains": {
+          "t.k": {
+            "type": "signed_integer",
+            "bits": 32,
+            "lower": 1,
+            "upper": 1,
+            "lower_inclusive": true,
+            "upper_inclusive": true,
+            "nullable": true
+          },
+          "terminal_a": {
+            "type": "signed_integer",
+            "bits": 32,
+            "lower": 1,
+            "upper": 1,
+            "lower_inclusive": true,
+            "upper_inclusive": true,
+            "nullable": true
+          },
+          "terminal_b": {
+            "type": "signed_integer",
+            "bits": 32,
+            "lower": null,
+            "upper": null,
+            "lower_inclusive": null,
+            "upper_inclusive": null,
+            "nullable": true
+          }
+        }
+      },
+      "dialect_parser_cells": [
+        {
+          "dialect": "generic",
+          "expected": "canonical_two_query_layers",
+          "verdict": "Exact",
+          "verified": false,
+          "engine_native": "not_executed_except_duckdb"
+        },
+        {
+          "dialect": "mysql",
+          "expected": "canonical_two_query_layers",
+          "verdict": "Exact",
+          "verified": false,
+          "engine_native": "not_executed_except_duckdb"
+        },
+        {
+          "dialect": "postgresql",
+          "expected": "canonical_two_query_layers",
+          "verdict": "Exact",
+          "verified": false,
+          "engine_native": "not_executed_except_duckdb"
+        },
+        {
+          "dialect": "hive",
+          "expected": "canonical_two_query_layers",
+          "verdict": "Exact",
+          "verified": false,
+          "engine_native": "not_executed_except_duckdb"
+        },
+        {
+          "dialect": "sqlite",
+          "expected": "canonical_two_query_layers",
+          "verdict": "Exact",
+          "verified": false,
+          "engine_native": "not_executed_except_duckdb"
+        },
+        {
+          "dialect": "snowflake",
+          "expected": "canonical_two_query_layers",
+          "verdict": "Exact",
+          "verified": false,
+          "engine_native": "not_executed_except_duckdb"
+        },
+        {
+          "dialect": "redshift",
+          "expected": "canonical_two_query_layers",
+          "verdict": "Exact",
+          "verified": false,
+          "engine_native": "not_executed_except_duckdb"
+        },
+        {
+          "dialect": "mssql",
+          "expected": "canonical_two_query_layers",
+          "verdict": "Exact",
+          "verified": false,
+          "engine_native": "not_executed_except_duckdb"
+        },
+        {
+          "dialect": "clickhouse",
+          "expected": "canonical_two_query_layers",
+          "verdict": "Exact",
+          "verified": false,
+          "engine_native": "not_executed_except_duckdb"
+        },
+        {
+          "dialect": "bigquery",
+          "expected": "canonical_two_query_layers",
+          "verdict": "Exact",
+          "verified": false,
+          "engine_native": "not_executed_except_duckdb"
+        },
+        {
+          "dialect": "ansi",
+          "expected": "canonical_two_query_layers",
+          "verdict": "Exact",
+          "verified": false,
+          "engine_native": "not_executed_except_duckdb"
+        },
+        {
+          "dialect": "duckdb",
+          "expected": "canonical_two_query_layers",
+          "verdict": "Exact",
+          "verified": false,
+          "engine_native": "not_executed_except_duckdb"
+        },
+        {
+          "dialect": "databricks",
+          "expected": "canonical_two_query_layers",
+          "verdict": "Exact",
+          "verified": false,
+          "engine_native": "not_executed_except_duckdb"
+        }
+      ],
+      "adapter_evidence": {
+        "sql": "schema supplied; asserted in test",
+        "dbt": "compiled code + authoritative warehouse catalog; asserted in test",
+        "odcs": "physical INTEGER schema; asserted under feature=odcs"
+      },
+      "native_oracle": "DuckDB complete physical source plus both terminal bags for executable cells",
+      "verified": false,
+      "sql_statements": [
+        "SELECT k AS whole FROM t",
+        "SELECT k AS filtered FROM t WHERE k IS NULL"
+      ],
+      "output_aliases": [
+        "whole",
+        "filtered"
+      ],
+      "native_snapshots": {
+        "source_bag": [
+          1,
+          1,
+          null
+        ],
+        "terminal_a_bag": [
+          1,
+          1,
+          null
+        ],
+        "terminal_b_bag": [
+          null
+        ],
+        "execute_terminal_b": true,
+        "ordinal_order": "INSERT source order, 0-based",
+        "oracle_engine": "DuckDB (not vendor native)"
+      },
+      "verification_suite": "tests/task_166_acceptance_inventory.rs"
+    },
+    {
+      "id": "85-C166-N-upper",
+      "fixture": "85-C166-N",
+      "requirement": "mandatory",
+      "sql": "SELECT k AS whole FROM t; SELECT k AS filtered FROM t WHERE k = 1",
+      "physical_source": "t",
+      "source_bag": [
+        1,
+        1,
+        2
+      ],
+      "terminal_a": [
+        1,
+        1,
+        2
+      ],
+      "terminal_b": null,
+      "goals": {
+        "terminal_a": {
+          "rows": 3,
+          "histogram": [
+            {
+              "value": 1,
+              "rows": 2
+            },
+            {
+              "value": 2,
+              "rows": 1
+            }
+          ]
+        },
+        "terminal_b": {
+          "rows": 4,
+          "histogram": null
+        }
+      },
+      "expected": {
+        "classification": "Impossible",
+        "source_identity": "t.k",
+        "closed_world": true,
+        "positive_rows": [
+          0,
+          1
+        ],
+        "not_true_rows": [
+          2
+        ],
+        "reason": "B cannot exceed three source occurrences",
+        "native_actual_terminal_b": [
+          1,
+          1
+        ],
+        "typed_domains": {
+          "t.k": {
+            "type": "signed_integer",
+            "bits": 32,
+            "lower": 1,
+            "upper": 2,
+            "lower_inclusive": true,
+            "upper_inclusive": true,
+            "nullable": false
+          },
+          "terminal_a": {
+            "type": "signed_integer",
+            "bits": 32,
+            "lower": 1,
+            "upper": 2,
+            "lower_inclusive": true,
+            "upper_inclusive": true,
+            "nullable": false
+          },
+          "terminal_b": {
+            "type": "signed_integer",
+            "bits": 32,
+            "lower": 1,
+            "upper": 1,
+            "lower_inclusive": true,
+            "upper_inclusive": true,
+            "nullable": false
+          }
+        }
+      },
+      "dialect_parser_cells": [
+        {
+          "dialect": "generic",
+          "expected": "canonical_two_query_layers",
+          "verdict": "Impossible",
+          "verified": false,
+          "engine_native": "not_executed_except_duckdb"
+        },
+        {
+          "dialect": "mysql",
+          "expected": "canonical_two_query_layers",
+          "verdict": "Impossible",
+          "verified": false,
+          "engine_native": "not_executed_except_duckdb"
+        },
+        {
+          "dialect": "postgresql",
+          "expected": "canonical_two_query_layers",
+          "verdict": "Impossible",
+          "verified": false,
+          "engine_native": "not_executed_except_duckdb"
+        },
+        {
+          "dialect": "hive",
+          "expected": "canonical_two_query_layers",
+          "verdict": "Impossible",
+          "verified": false,
+          "engine_native": "not_executed_except_duckdb"
+        },
+        {
+          "dialect": "sqlite",
+          "expected": "canonical_two_query_layers",
+          "verdict": "Impossible",
+          "verified": false,
+          "engine_native": "not_executed_except_duckdb"
+        },
+        {
+          "dialect": "snowflake",
+          "expected": "canonical_two_query_layers",
+          "verdict": "Impossible",
+          "verified": false,
+          "engine_native": "not_executed_except_duckdb"
+        },
+        {
+          "dialect": "redshift",
+          "expected": "canonical_two_query_layers",
+          "verdict": "Impossible",
+          "verified": false,
+          "engine_native": "not_executed_except_duckdb"
+        },
+        {
+          "dialect": "mssql",
+          "expected": "canonical_two_query_layers",
+          "verdict": "Impossible",
+          "verified": false,
+          "engine_native": "not_executed_except_duckdb"
+        },
+        {
+          "dialect": "clickhouse",
+          "expected": "canonical_two_query_layers",
+          "verdict": "Impossible",
+          "verified": false,
+          "engine_native": "not_executed_except_duckdb"
+        },
+        {
+          "dialect": "bigquery",
+          "expected": "canonical_two_query_layers",
+          "verdict": "Impossible",
+          "verified": false,
+          "engine_native": "not_executed_except_duckdb"
+        },
+        {
+          "dialect": "ansi",
+          "expected": "canonical_two_query_layers",
+          "verdict": "Impossible",
+          "verified": false,
+          "engine_native": "not_executed_except_duckdb"
+        },
+        {
+          "dialect": "duckdb",
+          "expected": "canonical_two_query_layers",
+          "verdict": "Impossible",
+          "verified": false,
+          "engine_native": "not_executed_except_duckdb"
+        },
+        {
+          "dialect": "databricks",
+          "expected": "canonical_two_query_layers",
+          "verdict": "Impossible",
+          "verified": false,
+          "engine_native": "not_executed_except_duckdb"
+        }
+      ],
+      "adapter_evidence": {
+        "sql": "schema supplied; asserted in test",
+        "dbt": "compiled code + authoritative warehouse catalog; asserted in test",
+        "odcs": "physical INTEGER schema; asserted under feature=odcs"
+      },
+      "native_oracle": "DuckDB complete physical source plus both terminal bags for executable cells",
+      "verified": false,
+      "sql_statements": [
+        "SELECT k AS whole FROM t",
+        "SELECT k AS filtered FROM t WHERE k = 1"
+      ],
+      "output_aliases": [
+        "whole",
+        "filtered"
+      ],
+      "native_snapshots": {
+        "source_bag": [
+          1,
+          1,
+          2
+        ],
+        "terminal_a_bag": [
+          1,
+          1,
+          2
+        ],
+        "terminal_b_bag": [
+          1,
+          1
+        ],
+        "execute_terminal_b": true,
+        "ordinal_order": "INSERT source order, 0-based",
+        "oracle_engine": "DuckDB (not vendor native)"
+      },
+      "verification_suite": "tests/task_166_acceptance_inventory.rs"
+    },
+    {
+      "id": "85-C166-N-histogram",
+      "fixture": "85-C166-N",
+      "requirement": "mandatory",
+      "sql": "SELECT k AS whole FROM t; SELECT k AS filtered FROM t WHERE k = 1",
+      "physical_source": "t",
+      "source_bag": [
+        1,
+        1,
+        2
+      ],
+      "terminal_a": [
+        1,
+        1,
+        2
+      ],
+      "terminal_b": [
+        2,
+        2
+      ],
+      "goals": {
+        "terminal_a": {
+          "rows": 3,
+          "histogram": [
+            {
+              "value": 1,
+              "rows": 2
+            },
+            {
+              "value": 2,
+              "rows": 1
+            }
+          ]
+        },
+        "terminal_b": {
+          "rows": 2,
+          "histogram": [
+            {
+              "value": 2,
+              "rows": 2
+            }
+          ]
+        }
+      },
+      "expected": {
+        "classification": "Impossible",
+        "source_identity": "t.k",
+        "closed_world": true,
+        "positive_rows": [
+          0,
+          1
+        ],
+        "not_true_rows": [
+          2
+        ],
+        "reason": "B requested value 2 rejected by k = 1",
+        "native_actual_terminal_b": [
+          1,
+          1
+        ],
+        "typed_domains": {
+          "t.k": {
+            "type": "signed_integer",
+            "bits": 32,
+            "lower": 1,
+            "upper": 2,
+            "lower_inclusive": true,
+            "upper_inclusive": true,
+            "nullable": false
+          },
+          "terminal_a": {
+            "type": "signed_integer",
+            "bits": 32,
+            "lower": 1,
+            "upper": 2,
+            "lower_inclusive": true,
+            "upper_inclusive": true,
+            "nullable": false
+          },
+          "terminal_b": {
+            "type": "signed_integer",
+            "bits": 32,
+            "lower": 1,
+            "upper": 1,
+            "lower_inclusive": true,
+            "upper_inclusive": true,
+            "nullable": false
+          }
+        }
+      },
+      "dialect_parser_cells": [
+        {
+          "dialect": "generic",
+          "expected": "canonical_two_query_layers",
+          "verdict": "Impossible",
+          "verified": false,
+          "engine_native": "not_executed_except_duckdb"
+        },
+        {
+          "dialect": "mysql",
+          "expected": "canonical_two_query_layers",
+          "verdict": "Impossible",
+          "verified": false,
+          "engine_native": "not_executed_except_duckdb"
+        },
+        {
+          "dialect": "postgresql",
+          "expected": "canonical_two_query_layers",
+          "verdict": "Impossible",
+          "verified": false,
+          "engine_native": "not_executed_except_duckdb"
+        },
+        {
+          "dialect": "hive",
+          "expected": "canonical_two_query_layers",
+          "verdict": "Impossible",
+          "verified": false,
+          "engine_native": "not_executed_except_duckdb"
+        },
+        {
+          "dialect": "sqlite",
+          "expected": "canonical_two_query_layers",
+          "verdict": "Impossible",
+          "verified": false,
+          "engine_native": "not_executed_except_duckdb"
+        },
+        {
+          "dialect": "snowflake",
+          "expected": "canonical_two_query_layers",
+          "verdict": "Impossible",
+          "verified": false,
+          "engine_native": "not_executed_except_duckdb"
+        },
+        {
+          "dialect": "redshift",
+          "expected": "canonical_two_query_layers",
+          "verdict": "Impossible",
+          "verified": false,
+          "engine_native": "not_executed_except_duckdb"
+        },
+        {
+          "dialect": "mssql",
+          "expected": "canonical_two_query_layers",
+          "verdict": "Impossible",
+          "verified": false,
+          "engine_native": "not_executed_except_duckdb"
+        },
+        {
+          "dialect": "clickhouse",
+          "expected": "canonical_two_query_layers",
+          "verdict": "Impossible",
+          "verified": false,
+          "engine_native": "not_executed_except_duckdb"
+        },
+        {
+          "dialect": "bigquery",
+          "expected": "canonical_two_query_layers",
+          "verdict": "Impossible",
+          "verified": false,
+          "engine_native": "not_executed_except_duckdb"
+        },
+        {
+          "dialect": "ansi",
+          "expected": "canonical_two_query_layers",
+          "verdict": "Impossible",
+          "verified": false,
+          "engine_native": "not_executed_except_duckdb"
+        },
+        {
+          "dialect": "duckdb",
+          "expected": "canonical_two_query_layers",
+          "verdict": "Impossible",
+          "verified": false,
+          "engine_native": "not_executed_except_duckdb"
+        },
+        {
+          "dialect": "databricks",
+          "expected": "canonical_two_query_layers",
+          "verdict": "Impossible",
+          "verified": false,
+          "engine_native": "not_executed_except_duckdb"
+        }
+      ],
+      "adapter_evidence": {
+        "sql": "schema supplied; asserted in test",
+        "dbt": "compiled code + authoritative warehouse catalog; asserted in test",
+        "odcs": "physical INTEGER schema; asserted under feature=odcs"
+      },
+      "native_oracle": "DuckDB complete physical source plus both terminal bags for executable cells",
+      "verified": false,
+      "sql_statements": [
+        "SELECT k AS whole FROM t",
+        "SELECT k AS filtered FROM t WHERE k = 1"
+      ],
+      "output_aliases": [
+        "whole",
+        "filtered"
+      ],
+      "native_snapshots": {
+        "source_bag": [
+          1,
+          1,
+          2
+        ],
+        "terminal_a_bag": [
+          1,
+          1,
+          2
+        ],
+        "terminal_b_bag": [
+          1,
+          1
+        ],
+        "execute_terminal_b": true,
+        "ordinal_order": "INSERT source order, 0-based",
+        "oracle_engine": "DuckDB (not vendor native)"
+      },
+      "verification_suite": "tests/task_166_acceptance_inventory.rs"
+    },
+    {
+      "id": "85-C166-C-opaque",
+      "fixture": "85-C166-P",
+      "requirement": "conditional",
+      "sql": "SELECT k AS whole FROM t; SELECT k AS filtered FROM t WHERE k = opaque(k)",
+      "physical_source": "t",
+      "source_bag": [
+        1,
+        1,
+        2
+      ],
+      "terminal_a": [
+        1,
+        1,
+        2
+      ],
+      "terminal_b": null,
+      "goals": {
+        "terminal_a": {
+          "rows": 3,
+          "histogram": [
+            {
+              "value": 1,
+              "rows": 2
+            },
+            {
+              "value": 2,
+              "rows": 1
+            }
+          ]
+        },
+        "terminal_b": {
+          "rows": 2,
+          "histogram": null
+        }
+      },
+      "expected": {
+        "classification": "Residual",
+        "source_identity": "t.k",
+        "closed_world": true,
+        "positive_rows": null,
+        "not_true_rows": null,
+        "reason": "Opaque comparison/function not proved, no guessed truth",
+        "native_actual_terminal_b": [
+          1,
+          1
+        ],
+        "typed_domains": {
+          "t.k": {
+            "type": "signed_integer",
+            "bits": 32,
+            "lower": 1,
+            "upper": 2,
+            "lower_inclusive": true,
+            "upper_inclusive": true,
+            "nullable": false
+          },
+          "terminal_a": {
+            "type": "signed_integer",
+            "bits": 32,
+            "lower": 1,
+            "upper": 2,
+            "lower_inclusive": true,
+            "upper_inclusive": true,
+            "nullable": false
+          },
+          "terminal_b": null
+        }
+      },
+      "dialect_parser_cells": [
+        {
+          "dialect": "generic",
+          "expected": "canonical_two_query_layers",
+          "verdict": "Residual",
+          "verified": false,
+          "engine_native": "not_executed_except_duckdb"
+        },
+        {
+          "dialect": "mysql",
+          "expected": "canonical_two_query_layers",
+          "verdict": "Residual",
+          "verified": false,
+          "engine_native": "not_executed_except_duckdb"
+        },
+        {
+          "dialect": "postgresql",
+          "expected": "canonical_two_query_layers",
+          "verdict": "Residual",
+          "verified": false,
+          "engine_native": "not_executed_except_duckdb"
+        },
+        {
+          "dialect": "hive",
+          "expected": "canonical_two_query_layers",
+          "verdict": "Residual",
+          "verified": false,
+          "engine_native": "not_executed_except_duckdb"
+        },
+        {
+          "dialect": "sqlite",
+          "expected": "canonical_two_query_layers",
+          "verdict": "Residual",
+          "verified": false,
+          "engine_native": "not_executed_except_duckdb"
+        },
+        {
+          "dialect": "snowflake",
+          "expected": "canonical_two_query_layers",
+          "verdict": "Residual",
+          "verified": false,
+          "engine_native": "not_executed_except_duckdb"
+        },
+        {
+          "dialect": "redshift",
+          "expected": "canonical_two_query_layers",
+          "verdict": "Residual",
+          "verified": false,
+          "engine_native": "not_executed_except_duckdb"
+        },
+        {
+          "dialect": "mssql",
+          "expected": "canonical_two_query_layers",
+          "verdict": "Residual",
+          "verified": false,
+          "engine_native": "not_executed_except_duckdb"
+        },
+        {
+          "dialect": "clickhouse",
+          "expected": "canonical_two_query_layers",
+          "verdict": "Residual",
+          "verified": false,
+          "engine_native": "not_executed_except_duckdb"
+        },
+        {
+          "dialect": "bigquery",
+          "expected": "canonical_two_query_layers",
+          "verdict": "Residual",
+          "verified": false,
+          "engine_native": "not_executed_except_duckdb"
+        },
+        {
+          "dialect": "ansi",
+          "expected": "canonical_two_query_layers",
+          "verdict": "Residual",
+          "verified": false,
+          "engine_native": "not_executed_except_duckdb"
+        },
+        {
+          "dialect": "duckdb",
+          "expected": "canonical_two_query_layers",
+          "verdict": "Residual",
+          "verified": false,
+          "engine_native": "not_executed_except_duckdb"
+        },
+        {
+          "dialect": "databricks",
+          "expected": "canonical_two_query_layers",
+          "verdict": "Residual",
+          "verified": false,
+          "engine_native": "not_executed_except_duckdb"
+        }
+      ],
+      "adapter_evidence": {
+        "sql": "schema supplied; asserted in test",
+        "dbt": "compiled code + authoritative warehouse catalog; asserted in test",
+        "odcs": "physical INTEGER schema; asserted under feature=odcs"
+      },
+      "native_oracle": "DuckDB complete physical source plus both terminal bags for executable cells",
+      "verified": false,
+      "sql_statements": [
+        "SELECT k AS whole FROM t",
+        "SELECT k AS filtered FROM t WHERE k = opaque(k)"
+      ],
+      "output_aliases": [
+        "whole",
+        "filtered"
+      ],
+      "native_snapshots": {
+        "source_bag": [
+          1,
+          1,
+          2
+        ],
+        "terminal_a_bag": [
+          1,
+          1,
+          2
+        ],
+        "terminal_b_bag": null,
+        "execute_terminal_b": false,
+        "ordinal_order": "INSERT source order, 0-based",
+        "oracle_engine": "DuckDB (not vendor native)"
+      },
+      "verification_suite": "tests/task_166_acceptance_inventory.rs"
+    },
+    {
+      "id": "85-C166-C-missing-schema",
+      "fixture": "85-C166-P",
+      "requirement": "conditional",
+      "sql": "SELECT k AS whole FROM t; SELECT k AS filtered FROM t WHERE k = 1",
+      "physical_source": "t",
+      "source_bag": [
+        1,
+        1,
+        2
+      ],
+      "terminal_a": [
+        1,
+        1,
+        2
+      ],
+      "terminal_b": [
+        1,
+        1
+      ],
+      "goals": {
+        "terminal_a": {
+          "rows": 3,
+          "histogram": [
+            {
+              "value": 1,
+              "rows": 2
+            },
+            {
+              "value": 2,
+              "rows": 1
+            }
+          ]
+        },
+        "terminal_b": {
+          "rows": 2,
+          "histogram": [
+            {
+              "value": 1,
+              "rows": 2
+            }
+          ]
+        }
+      },
+      "expected": {
+        "classification": "Residual",
+        "source_identity": "t.k",
+        "closed_world": true,
+        "positive_rows": [
+          0,
+          1
+        ],
+        "not_true_rows": [
+          2
+        ],
+        "reason": "No authoritative INTEGER source type",
+        "native_actual_terminal_b": [
+          1,
+          1
+        ],
+        "typed_domains": {
+          "t.k": {
+            "type": "signed_integer",
+            "bits": 32,
+            "lower": 1,
+            "upper": 2,
+            "lower_inclusive": true,
+            "upper_inclusive": true,
+            "nullable": false
+          },
+          "terminal_a": {
+            "type": "signed_integer",
+            "bits": 32,
+            "lower": 1,
+            "upper": 2,
+            "lower_inclusive": true,
+            "upper_inclusive": true,
+            "nullable": false
+          },
+          "terminal_b": {
+            "type": "signed_integer",
+            "bits": 32,
+            "lower": 1,
+            "upper": 1,
+            "lower_inclusive": true,
+            "upper_inclusive": true,
+            "nullable": false
+          }
+        },
+        "source_schema_certified": false
+      },
+      "dialect_parser_cells": [
+        {
+          "dialect": "generic",
+          "expected": "canonical_two_query_layers",
+          "verdict": "Residual",
+          "verified": false,
+          "engine_native": "not_executed_except_duckdb"
+        },
+        {
+          "dialect": "mysql",
+          "expected": "canonical_two_query_layers",
+          "verdict": "Residual",
+          "verified": false,
+          "engine_native": "not_executed_except_duckdb"
+        },
+        {
+          "dialect": "postgresql",
+          "expected": "canonical_two_query_layers",
+          "verdict": "Residual",
+          "verified": false,
+          "engine_native": "not_executed_except_duckdb"
+        },
+        {
+          "dialect": "hive",
+          "expected": "canonical_two_query_layers",
+          "verdict": "Residual",
+          "verified": false,
+          "engine_native": "not_executed_except_duckdb"
+        },
+        {
+          "dialect": "sqlite",
+          "expected": "canonical_two_query_layers",
+          "verdict": "Residual",
+          "verified": false,
+          "engine_native": "not_executed_except_duckdb"
+        },
+        {
+          "dialect": "snowflake",
+          "expected": "canonical_two_query_layers",
+          "verdict": "Residual",
+          "verified": false,
+          "engine_native": "not_executed_except_duckdb"
+        },
+        {
+          "dialect": "redshift",
+          "expected": "canonical_two_query_layers",
+          "verdict": "Residual",
+          "verified": false,
+          "engine_native": "not_executed_except_duckdb"
+        },
+        {
+          "dialect": "mssql",
+          "expected": "canonical_two_query_layers",
+          "verdict": "Residual",
+          "verified": false,
+          "engine_native": "not_executed_except_duckdb"
+        },
+        {
+          "dialect": "clickhouse",
+          "expected": "canonical_two_query_layers",
+          "verdict": "Residual",
+          "verified": false,
+          "engine_native": "not_executed_except_duckdb"
+        },
+        {
+          "dialect": "bigquery",
+          "expected": "canonical_two_query_layers",
+          "verdict": "Residual",
+          "verified": false,
+          "engine_native": "not_executed_except_duckdb"
+        },
+        {
+          "dialect": "ansi",
+          "expected": "canonical_two_query_layers",
+          "verdict": "Residual",
+          "verified": false,
+          "engine_native": "not_executed_except_duckdb"
+        },
+        {
+          "dialect": "duckdb",
+          "expected": "canonical_two_query_layers",
+          "verdict": "Residual",
+          "verified": false,
+          "engine_native": "not_executed_except_duckdb"
+        },
+        {
+          "dialect": "databricks",
+          "expected": "canonical_two_query_layers",
+          "verdict": "Residual",
+          "verified": false,
+          "engine_native": "not_executed_except_duckdb"
+        }
+      ],
+      "adapter_evidence": {
+        "sql": "schema supplied; asserted in test",
+        "dbt": "compiled code + authoritative warehouse catalog; asserted in test",
+        "odcs": "physical INTEGER schema; asserted under feature=odcs"
+      },
+      "native_oracle": "DuckDB complete physical source plus both terminal bags for executable cells",
+      "verified": false,
+      "sql_statements": [
+        "SELECT k AS whole FROM t",
+        "SELECT k AS filtered FROM t WHERE k = 1"
+      ],
+      "output_aliases": [
+        "whole",
+        "filtered"
+      ],
+      "native_snapshots": {
+        "source_bag": [
+          1,
+          1,
+          2
+        ],
+        "terminal_a_bag": [
+          1,
+          1,
+          2
+        ],
+        "terminal_b_bag": [
+          1,
+          1
+        ],
+        "execute_terminal_b": true,
+        "ordinal_order": "INSERT source order, 0-based",
+        "oracle_engine": "DuckDB (not vendor native)"
+      },
+      "verification_suite": "tests/task_166_acceptance_inventory.rs"
+    }
+  ],
+  "original_child_ac_map": {
+    "1": [
+      "85-C166-P-shared",
+      "85-C166-P-null",
+      "85-C166-N-upper",
+      "85-C166-N-histogram",
+      "85-C166-C-opaque",
+      "85-C166-C-missing-schema"
+    ],
+    "2": [
+      "85-C166-P-shared",
+      "85-C166-P-null",
+      "85-C166-N-upper",
+      "85-C166-N-histogram"
+    ],
+    "3": [
+      "85-C166-P-shared",
+      "85-C166-P-null",
+      "85-C166-N-upper",
+      "85-C166-N-histogram"
+    ],
+    "4": [
+      "85-C166-P-shared",
+      "85-C166-P-null",
+      "85-C166-N-upper",
+      "85-C166-N-histogram",
+      "85-C166-C-opaque",
+      "85-C166-C-missing-schema"
+    ],
+    "5": [
+      "85-C166-P-shared",
+      "85-C166-P-null",
+      "85-C166-N-upper",
+      "85-C166-N-histogram",
+      "85-C166-C-opaque",
+      "85-C166-C-missing-schema"
+    ]
+  },
+  "original_parent_ac": [
+    1,
+    3,
+    4,
+    5,
+    6
+  ],
+  "source_and_terminal_execution": "DuckDB single complete t bag; separately execute both SELECT statements, preserve duplicate and SQL NULL occurrences",
+  "conditional_release_disposition": "Opaque SQL, absent typed evidence and nonportable session/vendor laws remain Residual; native vendor engines not claimed.",
+  "ci_signoff": {
+    "cargo_fmt_check": false,
+    "cargo_clippy_strict": false,
+    "cargo_test": false,
+    "cargo_test_no_default_features": false,
+    "cargo_doc": false,
+    "dbt_e2e": false,
+    "adapter_and_dialect_cells_verified": false,
+    "independent_review": false
+  },
+  "status": "frozen_v2_before_inventory_runner; case verification and final CI pending",
+  "freeze_history": [
+    "docs/task-166-acceptance-freeze-v1.json"
+  ],
+  "freeze_revision_reason": "V1 mistakenly recorded inverted TRUE/NOT TRUE ordinals for impossible histogram and conflated requested output bag with actually observed terminal bag. V2 keeps the exact finite inventory but distinguishes requested vs native observed output, pins alias SQL executed by the canonical API, and adds complete per-case typed domains. V1 stays immutable.",
+  "sql_semantic_seam": "physical_joint_distribution_plan: one full typed source_histogram plus direct projected/filtered terminal goals; all proof identities source complete",
+  "dialect_cell_count": 78
+}

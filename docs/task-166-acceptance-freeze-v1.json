@@ -1,0 +1,787 @@
+{
+  "version": 1,
+  "owner": "TASK-166",
+  "parent": "TASK-85",
+  "created": "2026-11-03",
+  "frozen_before_semantic_changes": true,
+  "scope": "Complete one-source, two-terminal goals: transparent full typed signed INTEGER/NULL source histogram and directly filtered second output with SQL TRUE/NOT TRUE partition; no independent-source bag multiplication. No joins, grouping, or unproved vendor equality. Other DAGs conservatively Residual.",
+  "fixture_ids": [
+    "85-C166-P",
+    "85-C166-N"
+  ],
+  "dependencies": [
+    "TASK-165 (Done and merged on main)"
+  ],
+  "dialects": [
+    "generic",
+    "mysql",
+    "postgresql",
+    "hive",
+    "sqlite",
+    "snowflake",
+    "redshift",
+    "mssql",
+    "clickhouse",
+    "bigquery",
+    "ansi",
+    "duckdb",
+    "databricks"
+  ],
+  "typed_schema": {
+    "t.k": {
+      "sql_type": "INTEGER",
+      "nullable": true
+    }
+  },
+  "cases": [
+    {
+      "id": "85-C166-P-shared",
+      "fixture": "85-C166-P",
+      "requirement": "mandatory",
+      "sql": "SELECT k FROM t; SELECT k FROM t WHERE k = 1",
+      "physical_source": "t",
+      "source_bag": [
+        1,
+        1,
+        2
+      ],
+      "terminal_a": [
+        1,
+        1,
+        2
+      ],
+      "terminal_b": [
+        1,
+        1
+      ],
+      "goals": {
+        "terminal_a": {
+          "rows": 3,
+          "histogram": "complete typed source k distribution"
+        },
+        "terminal_b": {
+          "rows": 2,
+          "histogram": "complete typed projected k distribution"
+        }
+      },
+      "expected": {
+        "classification": "Exact",
+        "source_identity": "t.k",
+        "closed_world": true,
+        "positive_rows": [
+          0,
+          1
+        ],
+        "not_true_rows": [
+          2
+        ],
+        "reason": "Both terminal count/histogram assertions share t.k [1,1,2]; FALSE row index 2"
+      },
+      "dialect_parser_cells": [
+        {
+          "dialect": "generic",
+          "expected": "portable_or_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "mysql",
+          "expected": "portable_or_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "postgresql",
+          "expected": "portable_or_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "hive",
+          "expected": "portable_or_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "sqlite",
+          "expected": "portable_or_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "snowflake",
+          "expected": "portable_or_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "redshift",
+          "expected": "portable_or_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "mssql",
+          "expected": "portable_or_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "clickhouse",
+          "expected": "portable_or_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "bigquery",
+          "expected": "portable_or_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "ansi",
+          "expected": "portable_or_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "duckdb",
+          "expected": "portable_or_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "databricks",
+          "expected": "portable_or_parser_boundary",
+          "verified": false
+        }
+      ],
+      "adapter_evidence": {
+        "sql": "required",
+        "dbt": "required_where_catalog_equal",
+        "odcs": "required_where_type_equal"
+      },
+      "native_oracle": "DuckDB complete physical source plus both terminal bags for executable cells",
+      "verified": false
+    },
+    {
+      "id": "85-C166-P-null",
+      "fixture": "85-C166-P",
+      "requirement": "mandatory",
+      "sql": "SELECT k FROM t; SELECT k FROM t WHERE k IS NULL",
+      "physical_source": "t",
+      "source_bag": [
+        1,
+        1,
+        null
+      ],
+      "terminal_a": [
+        1,
+        1,
+        null
+      ],
+      "terminal_b": [
+        null
+      ],
+      "goals": {
+        "terminal_a": {
+          "rows": 3,
+          "histogram": "complete typed source k distribution"
+        },
+        "terminal_b": {
+          "rows": 1,
+          "histogram": "complete typed projected k distribution"
+        }
+      },
+      "expected": {
+        "classification": "Exact",
+        "source_identity": "t.k",
+        "closed_world": true,
+        "positive_rows": [
+          2
+        ],
+        "not_true_rows": [
+          0,
+          1
+        ],
+        "reason": "SQL NULL row index 2 selected, first two rows NOT TRUE"
+      },
+      "dialect_parser_cells": [
+        {
+          "dialect": "generic",
+          "expected": "portable_or_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "mysql",
+          "expected": "portable_or_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "postgresql",
+          "expected": "portable_or_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "hive",
+          "expected": "portable_or_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "sqlite",
+          "expected": "portable_or_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "snowflake",
+          "expected": "portable_or_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "redshift",
+          "expected": "portable_or_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "mssql",
+          "expected": "portable_or_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "clickhouse",
+          "expected": "portable_or_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "bigquery",
+          "expected": "portable_or_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "ansi",
+          "expected": "portable_or_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "duckdb",
+          "expected": "portable_or_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "databricks",
+          "expected": "portable_or_parser_boundary",
+          "verified": false
+        }
+      ],
+      "adapter_evidence": {
+        "sql": "required",
+        "dbt": "required_where_catalog_equal",
+        "odcs": "required_where_type_equal"
+      },
+      "native_oracle": "DuckDB complete physical source plus both terminal bags for executable cells",
+      "verified": false
+    },
+    {
+      "id": "85-C166-N-upper",
+      "fixture": "85-C166-N",
+      "requirement": "mandatory",
+      "sql": "SELECT k FROM t; SELECT k FROM t WHERE k = 1",
+      "physical_source": "t",
+      "source_bag": [
+        1,
+        1,
+        2
+      ],
+      "terminal_a": [
+        1,
+        1,
+        2
+      ],
+      "terminal_b": null,
+      "goals": {
+        "terminal_a": {
+          "rows": 3,
+          "histogram": "complete typed source k distribution"
+        },
+        "terminal_b": {
+          "rows": 4,
+          "histogram": null
+        }
+      },
+      "expected": {
+        "classification": "Impossible",
+        "source_identity": "t.k",
+        "closed_world": true,
+        "positive_rows": null,
+        "not_true_rows": null,
+        "reason": "B cannot exceed three source occurrences"
+      },
+      "dialect_parser_cells": [
+        {
+          "dialect": "generic",
+          "expected": "portable_or_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "mysql",
+          "expected": "portable_or_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "postgresql",
+          "expected": "portable_or_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "hive",
+          "expected": "portable_or_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "sqlite",
+          "expected": "portable_or_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "snowflake",
+          "expected": "portable_or_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "redshift",
+          "expected": "portable_or_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "mssql",
+          "expected": "portable_or_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "clickhouse",
+          "expected": "portable_or_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "bigquery",
+          "expected": "portable_or_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "ansi",
+          "expected": "portable_or_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "duckdb",
+          "expected": "portable_or_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "databricks",
+          "expected": "portable_or_parser_boundary",
+          "verified": false
+        }
+      ],
+      "adapter_evidence": {
+        "sql": "required",
+        "dbt": "required_where_catalog_equal",
+        "odcs": "required_where_type_equal"
+      },
+      "native_oracle": "DuckDB complete physical source plus both terminal bags for executable cells",
+      "verified": false
+    },
+    {
+      "id": "85-C166-N-histogram",
+      "fixture": "85-C166-N",
+      "requirement": "mandatory",
+      "sql": "SELECT k FROM t; SELECT k FROM t WHERE k = 1",
+      "physical_source": "t",
+      "source_bag": [
+        1,
+        1,
+        2
+      ],
+      "terminal_a": [
+        1,
+        1,
+        2
+      ],
+      "terminal_b": [
+        2,
+        2
+      ],
+      "goals": {
+        "terminal_a": {
+          "rows": 3,
+          "histogram": "complete typed source k distribution"
+        },
+        "terminal_b": {
+          "rows": 2,
+          "histogram": "complete typed projected k distribution"
+        }
+      },
+      "expected": {
+        "classification": "Impossible",
+        "source_identity": "t.k",
+        "closed_world": true,
+        "positive_rows": [
+          2
+        ],
+        "not_true_rows": [
+          0,
+          1
+        ],
+        "reason": "B requested value 2 rejected by k = 1"
+      },
+      "dialect_parser_cells": [
+        {
+          "dialect": "generic",
+          "expected": "portable_or_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "mysql",
+          "expected": "portable_or_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "postgresql",
+          "expected": "portable_or_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "hive",
+          "expected": "portable_or_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "sqlite",
+          "expected": "portable_or_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "snowflake",
+          "expected": "portable_or_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "redshift",
+          "expected": "portable_or_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "mssql",
+          "expected": "portable_or_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "clickhouse",
+          "expected": "portable_or_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "bigquery",
+          "expected": "portable_or_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "ansi",
+          "expected": "portable_or_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "duckdb",
+          "expected": "portable_or_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "databricks",
+          "expected": "portable_or_parser_boundary",
+          "verified": false
+        }
+      ],
+      "adapter_evidence": {
+        "sql": "required",
+        "dbt": "required_where_catalog_equal",
+        "odcs": "required_where_type_equal"
+      },
+      "native_oracle": "DuckDB complete physical source plus both terminal bags for executable cells",
+      "verified": false
+    },
+    {
+      "id": "85-C166-C-opaque",
+      "fixture": "85-C166-P",
+      "requirement": "conditional",
+      "sql": "SELECT k FROM t; SELECT k FROM t WHERE k = opaque(k)",
+      "physical_source": "t",
+      "source_bag": [
+        1,
+        1,
+        2
+      ],
+      "terminal_a": [
+        1,
+        1,
+        2
+      ],
+      "terminal_b": null,
+      "goals": {
+        "terminal_a": {
+          "rows": 3,
+          "histogram": "complete typed source k distribution"
+        },
+        "terminal_b": {
+          "rows": 2,
+          "histogram": null
+        }
+      },
+      "expected": {
+        "classification": "Residual",
+        "source_identity": "t.k",
+        "closed_world": true,
+        "positive_rows": null,
+        "not_true_rows": null,
+        "reason": "Opaque comparison/function not proved, no guessed truth"
+      },
+      "dialect_parser_cells": [
+        {
+          "dialect": "generic",
+          "expected": "portable_or_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "mysql",
+          "expected": "portable_or_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "postgresql",
+          "expected": "portable_or_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "hive",
+          "expected": "portable_or_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "sqlite",
+          "expected": "portable_or_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "snowflake",
+          "expected": "portable_or_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "redshift",
+          "expected": "portable_or_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "mssql",
+          "expected": "portable_or_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "clickhouse",
+          "expected": "portable_or_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "bigquery",
+          "expected": "portable_or_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "ansi",
+          "expected": "portable_or_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "duckdb",
+          "expected": "portable_or_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "databricks",
+          "expected": "portable_or_parser_boundary",
+          "verified": false
+        }
+      ],
+      "adapter_evidence": {
+        "sql": "required",
+        "dbt": "required_where_catalog_equal",
+        "odcs": "required_where_type_equal"
+      },
+      "native_oracle": "DuckDB complete physical source plus both terminal bags for executable cells",
+      "verified": false
+    },
+    {
+      "id": "85-C166-C-missing-schema",
+      "fixture": "85-C166-P",
+      "requirement": "conditional",
+      "sql": "SELECT k FROM t; SELECT k FROM t WHERE k = 1",
+      "physical_source": "t",
+      "source_bag": [
+        1,
+        1,
+        2
+      ],
+      "terminal_a": [
+        1,
+        1,
+        2
+      ],
+      "terminal_b": [
+        1,
+        1
+      ],
+      "goals": {
+        "terminal_a": {
+          "rows": 3,
+          "histogram": "complete typed source k distribution"
+        },
+        "terminal_b": {
+          "rows": 2,
+          "histogram": "complete typed projected k distribution"
+        }
+      },
+      "expected": {
+        "classification": "Residual",
+        "source_identity": "t.k",
+        "closed_world": true,
+        "positive_rows": [
+          0,
+          1
+        ],
+        "not_true_rows": [
+          2
+        ],
+        "reason": "No authoritative INTEGER source type"
+      },
+      "dialect_parser_cells": [
+        {
+          "dialect": "generic",
+          "expected": "portable_or_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "mysql",
+          "expected": "portable_or_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "postgresql",
+          "expected": "portable_or_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "hive",
+          "expected": "portable_or_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "sqlite",
+          "expected": "portable_or_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "snowflake",
+          "expected": "portable_or_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "redshift",
+          "expected": "portable_or_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "mssql",
+          "expected": "portable_or_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "clickhouse",
+          "expected": "portable_or_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "bigquery",
+          "expected": "portable_or_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "ansi",
+          "expected": "portable_or_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "duckdb",
+          "expected": "portable_or_parser_boundary",
+          "verified": false
+        },
+        {
+          "dialect": "databricks",
+          "expected": "portable_or_parser_boundary",
+          "verified": false
+        }
+      ],
+      "adapter_evidence": {
+        "sql": "required",
+        "dbt": "required_where_catalog_equal",
+        "odcs": "required_where_type_equal"
+      },
+      "native_oracle": "DuckDB complete physical source plus both terminal bags for executable cells",
+      "verified": false
+    }
+  ],
+  "original_child_ac_map": {
+    "1": [
+      "85-C166-P-shared",
+      "85-C166-P-null",
+      "85-C166-N-upper",
+      "85-C166-N-histogram",
+      "85-C166-C-opaque",
+      "85-C166-C-missing-schema"
+    ],
+    "2": [
+      "85-C166-P-shared",
+      "85-C166-P-null",
+      "85-C166-N-upper",
+      "85-C166-N-histogram"
+    ],
+    "3": [
+      "85-C166-P-shared",
+      "85-C166-P-null",
+      "85-C166-N-upper",
+      "85-C166-N-histogram"
+    ],
+    "4": [
+      "85-C166-P-shared",
+      "85-C166-P-null",
+      "85-C166-N-upper",
+      "85-C166-N-histogram",
+      "85-C166-C-opaque",
+      "85-C166-C-missing-schema"
+    ],
+    "5": [
+      "85-C166-P-shared",
+      "85-C166-P-null",
+      "85-C166-N-upper",
+      "85-C166-N-histogram",
+      "85-C166-C-opaque",
+      "85-C166-C-missing-schema"
+    ]
+  },
+  "original_parent_ac": [
+    1,
+    3,
+    4,
+    5,
+    6
+  ],
+  "source_and_terminal_execution": "DuckDB single complete t bag; separately execute both SELECT statements, preserve duplicate and SQL NULL occurrences",
+  "conditional_release_disposition": "Opaque SQL, absent typed evidence and nonportable session/vendor laws remain Residual; native vendor engines not claimed.",
+  "ci_signoff": {
+    "cargo_fmt_check": false,
+    "cargo_clippy_strict": false,
+    "cargo_test": false,
+    "cargo_test_no_default_features": false,
+    "cargo_doc": false,
+    "dbt_e2e": false,
+    "adapter_and_dialect_cells_verified": false,
+    "independent_review": false
+  },
+  "status": "frozen_preimplementation; mandatory and conditional cells unverified"
+}
