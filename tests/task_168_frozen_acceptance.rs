@@ -155,10 +155,8 @@ fn joint_case(case: &Value, dialect: &str, bundle: &AnalysisBundle) {
         panic!("{} / {dialect}: frozen source must have exact base bag: {original:?}",case["id"]);
     };
     assert_eq!(normalized(&exact.grouped.terminal),expected(case,"grouped_terminal"));
-    assert_eq!(exact.grouped.selected.len(),2);
-    assert_eq!(exact.grouped.rejected.len(),u64::from(
-        case["source_bags"]["l"].as_array().unwrap().len() == 3
-    ) as usize);
+    assert_eq!(json!(exact.grouped.selected),case["physical_truth_partitions"]["join_true_pairs"]);
+    assert_eq!(json!(exact.grouped.rejected),case["physical_truth_partitions"]["join_not_true_pairs"]);
     let second = match &exact.other {
         PhysicalJointOtherExact::Window(window) => {
             assert_eq!(window.source_row_ids.len(),case["source_bags"]["l"].as_array().unwrap().len());
@@ -202,7 +200,11 @@ fn single_case(case: &Value, dialect: &str, bundle: &AnalysisBundle) {
 fn versioned_inventory_covers_every_frozen_family_and_named_dialect() {
     let matrix = freeze();
     assert_eq!(matrix["owner"],"TASK-168");
-    assert!(matrix["frozen_before_semantic_changes"].as_bool().unwrap());
+    assert_eq!(matrix["version"],2);
+    assert_eq!(matrix["freeze_history"],json!(["docs/task-168-acceptance-freeze-v1.json"]));
+    let v1: Value = serde_json::from_str(include_str!("../docs/task-168-acceptance-freeze-v1.json")).unwrap();
+    assert!(v1["frozen_before_semantic_changes"].as_bool().unwrap());
+    assert!(!matrix["frozen_before_semantic_changes"].as_bool().unwrap());
     assert_eq!(matrix["fixtures"],json!(["85-C168-P","85-C168-N"]));
     let cases = matrix["matrix"].as_array().unwrap();
     assert_eq!(cases.len(),7);
