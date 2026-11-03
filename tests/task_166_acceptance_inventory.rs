@@ -10,8 +10,8 @@ use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, dialect_from_name, physical_joint_distribution_plan,
     to_bundle_json, AnalysisBundle, ClosedWorldCoverage, ConfiguredSqlInput, ConstraintValue,
     GroupBoundaryKind, OutcomeGoal, OutcomeWitness, OutputDistribution, OutputValueCount,
-    RelationCatalog, RelationSchema, RowQuantifier, SchemaColumn, SqlInput, WitnessDirection,
-    WitnessObligation,
+    ProtocolStatement, RelationCatalog, RelationSchema, RowQuantifier, SchemaColumn, SqlInput,
+    WitnessDirection, WitnessObligation,
 };
 
 fn freeze() -> Value {
@@ -385,6 +385,13 @@ fn every_frozen_case_and_parser_dialect_is_accounted_for() {
                 "{id}/{name}: no frozen parser-classification cell"
             );
             let mut bundle = analyze(case, name);
+            assert_eq!(bundle.inputs().len(), 2, "{id}/{name}: two SQL inputs");
+            for input in bundle.inputs() {
+                assert!(
+                    matches!(input.statements().first(), Some(ProtocolStatement::Query(_))),
+                    "{id}/{name}: canonical query required, not parser acceptance alone"
+                );
+            }
             let targets = goals(case, &bundle);
             let plan = physical_joint_distribution_plan(&bundle, &targets);
             match expected {
