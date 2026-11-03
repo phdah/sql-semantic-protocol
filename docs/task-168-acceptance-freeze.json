@@ -306,13 +306,19 @@
         }
       ],
       "physical_truth_partitions": {
-        "join_true_pair_ids": [
-          "l#0:r#0",
-          "l#1:r#0"
-        ],
-        "join_not_true_pair_ids": [],
         "selected_rows": 3,
-        "rejected_rows": 0
+        "rejected_rows": 0,
+        "join_true_pairs": [
+          [
+            "l#0",
+            "r#0"
+          ],
+          [
+            "l#1",
+            "r#0"
+          ]
+        ],
+        "join_not_true_pairs": []
       }
     },
     {
@@ -598,13 +604,19 @@
         }
       ],
       "physical_truth_partitions": {
-        "join_true_pair_ids": [
-          "l#0:r#0",
-          "l#1:r#0"
-        ],
-        "join_not_true_pair_ids": [],
         "selected_rows": 3,
-        "rejected_rows": 0
+        "rejected_rows": 0,
+        "join_true_pairs": [
+          [
+            "l#0",
+            "r#0"
+          ],
+          [
+            "l#1",
+            "r#0"
+          ]
+        ],
+        "join_not_true_pairs": []
       }
     },
     {
@@ -895,15 +907,24 @@
         }
       ],
       "physical_truth_partitions": {
-        "join_true_pair_ids": [
-          "l#0:r#0",
-          "l#1:r#0"
-        ],
-        "join_not_true_pair_ids": [
-          "l#2:r#0"
-        ],
         "selected_rows": 3,
-        "rejected_rows": 0
+        "rejected_rows": 0,
+        "join_true_pairs": [
+          [
+            "l#0",
+            "r#0"
+          ],
+          [
+            "l#1",
+            "r#0"
+          ]
+        ],
+        "join_not_true_pairs": [
+          [
+            "l#2",
+            "r#0"
+          ]
+        ]
       }
     },
     {
@@ -1202,15 +1223,24 @@
         }
       ],
       "physical_truth_partitions": {
-        "join_true_pair_ids": [
-          "l#0:r#0",
-          "l#1:r#0"
-        ],
-        "join_not_true_pair_ids": [
-          "l#2:r#0"
-        ],
         "selected_rows": 3,
-        "rejected_rows": 0
+        "rejected_rows": 0,
+        "join_true_pairs": [
+          [
+            "l#0",
+            "r#0"
+          ],
+          [
+            "l#1",
+            "r#0"
+          ]
+        ],
+        "join_not_true_pairs": [
+          [
+            "l#2",
+            "r#0"
+          ]
+        ]
       }
     },
     {
