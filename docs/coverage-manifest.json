@@ -1,42 +1,56 @@
 {
-    "task_167_joint_terminal_bags_acceptance": {
-      "owner": "TASK-167",
-      "parent": "TASK-85",
-      "status": "in_progress_implementation_pending_verification",
-      "freeze": "docs/task-167-acceptance-freeze.json",
-      "freeze_version": 1,
-      "fixture_ids": [
-        "85-C167-P",
-        "85-C167-N"
-      ],
-      "mandatory_cases": 5,
-      "conditional_cases": 1,
-      "parser_dialect_cells": 78,
-      "original_parent_ac_mapping": [
-        1,
-        2,
-        4,
-        5,
-        6
-      ],
-      "source_of_truth": "src/physical_realization/joint_terminals.rs",
-      "public_api_oracles": "tests/task_167_joint_terminals.rs",
-      "mandatory_cells_verified": false,
-      "dbt_odcs_parity_verified": false,
-      "native_duckdb_verified": false,
-      "final_ci_verified": false,
-      "independent_review": false,
-      "child_signed_off": false,
-      "parent_signed_off": false,
-      "remaining_gates": [
-        "full 13-dialect parser matrix",
-        "DBT/ODCS canonical fact parity",
-        "independent DuckDB snapshot checks in CI",
-        "full fmt/clippy/tests/docs/no-default-features",
-        "dbt E2E and pinned sql-tdg consumer suite",
-        "independent review"
-      ]
-    },
+  "task_167_joint_terminal_bags_acceptance": {
+    "owner": "TASK-167",
+    "parent": "TASK-85",
+    "status": "implementation_complete_technical_verification_in_progress",
+    "freeze": "docs/task-167-acceptance-freeze.json",
+    "freeze_version": 2,
+    "fixture_ids": [
+      "85-C167-P",
+      "85-C167-N"
+    ],
+    "mandatory_cases": 5,
+    "conditional_cases": 1,
+    "parser_dialect_cells": 78,
+    "original_parent_ac_mapping": [
+      1,
+      2,
+      4,
+      5,
+      6
+    ],
+    "source_of_truth": "src/physical_realization/joint_terminals.rs",
+    "public_api_oracles": "tests/task_167_acceptance_inventory.rs",
+    "mandatory_cells_verified": false,
+    "dbt_odcs_parity_verified": false,
+    "native_duckdb_verified": false,
+    "final_ci_verified": false,
+    "independent_review": false,
+    "child_signed_off": false,
+    "parent_signed_off": false,
+    "remaining_gates": [
+      "final-head CI all 9 jobs and pinned schema/golden checks",
+      "independent review of frozen case verdicts and mapped original parent AC",
+      "explicit TASK-167 owner acceptance for archived v1 process discrepancy if required",
+      "distinct reviewer identity or explicit task-specific waiver before marking Done"
+    ],
+    "freeze_history": [
+      "docs/task-167-acceptance-freeze-v1.json"
+    ],
+    "acceptance_audit": "docs/task-167-acceptance-audit.md",
+    "verification": "docs/task-167-acceptance-verification.json",
+    "native_full_bag_oracles": "tests/task_167_acceptance_inventory.rs",
+    "adapter_parity": "tests/task_167_adapter_parity.rs",
+    "typed_evidence_emission": "src/emission/joint_terminals.rs::to_physical_joint_terminal_json",
+    "dialect_parser_mandatory_cells": 65,
+    "dialect_parser_conditional_cells": 13,
+    "sql_tdg_pinned_consumer_qualification": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41698923842",
+    "verified_consumer_commit": "3beaf7799ab54b2440ae34c917ff7eda6c11c398",
+    "outstanding_owner_dispositions": [
+      "AC #1: original prospective v1 had incomplete physical/domain cells, corrected and archived in v2, literal prospective correctness cannot be restored",
+      "AC #5: distinct reviewer identity is not available from author account, no independent GitHub approval claimed"
+    ]
+  },
   "task_166_shared_terminal_goals_acceptance": {
     "owner": "TASK-166",
     "parent": "TASK-85",
