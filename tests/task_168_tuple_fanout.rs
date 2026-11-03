@@ -159,3 +159,37 @@ fn explicit_limit_parser_equivalence_is_not_an_engine_portability_claim() {
         );
     }
 }
+
+#[test]
+fn empty_page_has_exact_zero_tuple_histogram_with_attested_columns() {
+    let b = bundle("SELECT k, v FROM l ORDER BY v LIMIT 0", "duckdb");
+    let target = b.layers().last().unwrap().id();
+    let empty = PhysicalTupleHistogramGoal::new(
+        target,
+        vec!["k".into(), "v".into()],
+        vec![],
+    )
+    .unwrap();
+    let proof = physical_single_tuple_histogram_plan(&b, &[snapshot()], &empty);
+    let PhysicalSingleTupleProof::Exact(PhysicalSingleTupleExact::Page(page)) = proof else {
+        panic!("empty page has a complete source bag and an exact zero-row output: {proof:?}");
+    };
+    assert!(page.terminal.is_empty());
+    assert_eq!(page.rows.len(), 3);
+    assert!(page.rows.iter().all(|row| !row.survives));
+    assert!(native("SELECT k,v FROM l ORDER BY v LIMIT 0").is_empty());
+
+    let impossible = PhysicalTupleHistogramGoal::new(
+        target,
+        vec!["k".into(), "v".into()],
+        vec![PhysicalTupleBucket::new(
+            vec![ConstraintValue::Integer(1), ConstraintValue::Integer(10)],
+            1,
+        )],
+    )
+    .unwrap();
+    assert!(matches!(
+        physical_single_tuple_histogram_plan(&b, &[snapshot()], &impossible),
+        PhysicalSingleTupleProof::Impossible { .. }
+    ));
+}
