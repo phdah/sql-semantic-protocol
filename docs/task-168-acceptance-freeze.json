@@ -1,10 +1,10 @@
 {
-  "version": 1,
+  "version": 2,
   "owner": "TASK-168",
   "parent": "TASK-85",
   "created": "2026-11-03",
-  "frozen_before_semantic_changes": true,
-  "status": "frozen_pending_implementation_and_verification",
+  "frozen_before_semantic_changes": false,
+  "status": "execution_matrix_expected_pending_ci_and_review",
   "fixtures": [
     "85-C168-P",
     "85-C168-N"
@@ -98,85 +98,222 @@
       "dialect_cells": [
         {
           "dialect": "generic",
-          "classification": "pending_evidence",
-          "native_engine": "not_executed"
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Exact",
+          "verified": false
         },
         {
           "dialect": "mysql",
-          "classification": "pending_evidence",
-          "native_engine": "not_executed"
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Exact",
+          "verified": false
         },
         {
           "dialect": "postgresql",
-          "classification": "pending_evidence",
-          "native_engine": "not_executed"
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Exact",
+          "verified": false
         },
         {
           "dialect": "hive",
-          "classification": "pending_evidence",
-          "native_engine": "not_executed"
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Exact",
+          "verified": false
         },
         {
           "dialect": "sqlite",
-          "classification": "pending_evidence",
-          "native_engine": "not_executed"
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Exact",
+          "verified": false
         },
         {
           "dialect": "snowflake",
-          "classification": "pending_evidence",
-          "native_engine": "not_executed"
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Exact",
+          "verified": false
         },
         {
           "dialect": "redshift",
-          "classification": "pending_evidence",
-          "native_engine": "not_executed"
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Exact",
+          "verified": false
         },
         {
           "dialect": "mssql",
-          "classification": "pending_evidence",
-          "native_engine": "not_executed"
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Exact",
+          "verified": false
         },
         {
           "dialect": "clickhouse",
-          "classification": "pending_evidence",
-          "native_engine": "not_executed"
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Exact",
+          "verified": false
         },
         {
           "dialect": "bigquery",
-          "classification": "pending_evidence",
-          "native_engine": "not_executed"
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Exact",
+          "verified": false
         },
         {
           "dialect": "ansi",
-          "classification": "pending_evidence",
-          "native_engine": "not_executed"
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Exact",
+          "verified": false
         },
         {
           "dialect": "duckdb",
-          "classification": "pending_evidence",
-          "native_engine": "pending_full_bag_oracle"
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "native_full_bag_oracle_required",
+          "expected_verdict": "Exact",
+          "verified": false
         },
         {
           "dialect": "databricks",
-          "classification": "pending_evidence",
-          "native_engine": "not_executed"
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Exact",
+          "verified": false
         }
       ],
       "adapter_cells": [
         {
           "adapter": "direct_sql",
-          "classification": "pending_evidence"
+          "classification": "equivalent_metadata_requires_executable_parity",
+          "expected_verdict": "Exact",
+          "verified": false
         },
         {
           "adapter": "compiled_dbt_catalog",
-          "classification": "pending_evidence"
+          "classification": "equivalent_metadata_requires_executable_parity",
+          "expected_verdict": "Exact",
+          "verified": false
         },
         {
           "adapter": "odcs",
-          "classification": "pending_evidence"
+          "classification": "equivalent_metadata_requires_executable_parity",
+          "expected_verdict": "Exact",
+          "verified": false
         }
       ],
-      "verified": false
+      "verified": false,
+      "source_row_instance_ids": {
+        "l": [
+          "l0",
+          "l1"
+        ],
+        "r": [
+          "r0"
+        ]
+      },
+      "native_terminal_domains": {
+        "k": {
+          "null_allowed": false,
+          "values": [
+            1
+          ],
+          "lower": 1,
+          "upper": 1,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "exact": true
+        },
+        "v": {
+          "null_allowed": false,
+          "values": [
+            10,
+            20
+          ],
+          "lower": 10,
+          "upper": 20,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "exact": true
+        }
+      },
+      "grouped_terminal_domains": {
+        "k": {
+          "null_allowed": false,
+          "values": [
+            1
+          ],
+          "lower": 1,
+          "upper": 1,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "exact": true
+        },
+        "n": {
+          "null_allowed": false,
+          "values": [
+            2
+          ],
+          "lower": 2,
+          "upper": 2,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "exact": true
+        }
+      },
+      "typed_goal_domains": {
+        "k": {
+          "null_allowed": false,
+          "requested_values": [
+            1
+          ],
+          "lower": 1,
+          "upper": 1,
+          "lower_inclusive": true,
+          "upper_inclusive": true
+        },
+        "v": {
+          "null_allowed": false,
+          "requested_values": [
+            10,
+            20
+          ],
+          "lower": 10,
+          "upper": 20,
+          "lower_inclusive": true,
+          "upper_inclusive": true
+        }
+      },
+      "terminal_classification": "Exact",
+      "native_duckdb_expected_bag": [
+        {
+          "k": 1,
+          "v": 10
+        },
+        {
+          "k": 1,
+          "v": 20
+        },
+        {
+          "k": 1,
+          "v": 10
+        }
+      ],
+      "physical_truth_partitions": {
+        "join_true_pair_ids": [
+          "l#0:r#0",
+          "l#1:r#0"
+        ],
+        "join_not_true_pair_ids": [],
+        "selected_rows": 3,
+        "rejected_rows": 0
+      }
     },
     {
       "id": "85-C168-N-set-correlation",
@@ -253,85 +390,222 @@
       "dialect_cells": [
         {
           "dialect": "generic",
-          "classification": "pending_evidence",
-          "native_engine": "not_executed"
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Impossible",
+          "verified": false
         },
         {
           "dialect": "mysql",
-          "classification": "pending_evidence",
-          "native_engine": "not_executed"
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Impossible",
+          "verified": false
         },
         {
           "dialect": "postgresql",
-          "classification": "pending_evidence",
-          "native_engine": "not_executed"
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Impossible",
+          "verified": false
         },
         {
           "dialect": "hive",
-          "classification": "pending_evidence",
-          "native_engine": "not_executed"
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Impossible",
+          "verified": false
         },
         {
           "dialect": "sqlite",
-          "classification": "pending_evidence",
-          "native_engine": "not_executed"
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Impossible",
+          "verified": false
         },
         {
           "dialect": "snowflake",
-          "classification": "pending_evidence",
-          "native_engine": "not_executed"
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Impossible",
+          "verified": false
         },
         {
           "dialect": "redshift",
-          "classification": "pending_evidence",
-          "native_engine": "not_executed"
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Impossible",
+          "verified": false
         },
         {
           "dialect": "mssql",
-          "classification": "pending_evidence",
-          "native_engine": "not_executed"
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Impossible",
+          "verified": false
         },
         {
           "dialect": "clickhouse",
-          "classification": "pending_evidence",
-          "native_engine": "not_executed"
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Impossible",
+          "verified": false
         },
         {
           "dialect": "bigquery",
-          "classification": "pending_evidence",
-          "native_engine": "not_executed"
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Impossible",
+          "verified": false
         },
         {
           "dialect": "ansi",
-          "classification": "pending_evidence",
-          "native_engine": "not_executed"
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Impossible",
+          "verified": false
         },
         {
           "dialect": "duckdb",
-          "classification": "pending_evidence",
-          "native_engine": "pending_full_bag_oracle"
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "native_full_bag_oracle_required",
+          "expected_verdict": "Impossible",
+          "verified": false
         },
         {
           "dialect": "databricks",
-          "classification": "pending_evidence",
-          "native_engine": "not_executed"
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Impossible",
+          "verified": false
         }
       ],
       "adapter_cells": [
         {
           "adapter": "direct_sql",
-          "classification": "pending_evidence"
+          "classification": "equivalent_metadata_requires_executable_parity",
+          "expected_verdict": "Impossible",
+          "verified": false
         },
         {
           "adapter": "compiled_dbt_catalog",
-          "classification": "pending_evidence"
+          "classification": "equivalent_metadata_requires_executable_parity",
+          "expected_verdict": "Impossible",
+          "verified": false
         },
         {
           "adapter": "odcs",
-          "classification": "pending_evidence"
+          "classification": "equivalent_metadata_requires_executable_parity",
+          "expected_verdict": "Impossible",
+          "verified": false
         }
       ],
-      "verified": false
+      "verified": false,
+      "source_row_instance_ids": {
+        "l": [
+          "l0",
+          "l1"
+        ],
+        "r": [
+          "r0"
+        ]
+      },
+      "native_terminal_domains": {
+        "k": {
+          "null_allowed": false,
+          "values": [
+            1
+          ],
+          "lower": 1,
+          "upper": 1,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "exact": true
+        },
+        "v": {
+          "null_allowed": false,
+          "values": [
+            10,
+            20
+          ],
+          "lower": 10,
+          "upper": 20,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "exact": true
+        }
+      },
+      "grouped_terminal_domains": {
+        "k": {
+          "null_allowed": false,
+          "values": [
+            1
+          ],
+          "lower": 1,
+          "upper": 1,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "exact": true
+        },
+        "n": {
+          "null_allowed": false,
+          "values": [
+            2
+          ],
+          "lower": 2,
+          "upper": 2,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "exact": true
+        }
+      },
+      "typed_goal_domains": {
+        "k": {
+          "null_allowed": false,
+          "requested_values": [
+            1
+          ],
+          "lower": 1,
+          "upper": 1,
+          "lower_inclusive": true,
+          "upper_inclusive": true
+        },
+        "v": {
+          "null_allowed": false,
+          "requested_values": [
+            10,
+            20
+          ],
+          "lower": 10,
+          "upper": 20,
+          "lower_inclusive": true,
+          "upper_inclusive": true
+        }
+      },
+      "terminal_classification": "Impossible",
+      "native_duckdb_expected_bag": [
+        {
+          "k": 1,
+          "v": 10
+        },
+        {
+          "k": 1,
+          "v": 20
+        },
+        {
+          "k": 1,
+          "v": 10
+        }
+      ],
+      "physical_truth_partitions": {
+        "join_true_pair_ids": [
+          "l#0:r#0",
+          "l#1:r#0"
+        ],
+        "join_not_true_pair_ids": [],
+        "selected_rows": 3,
+        "rejected_rows": 0
+      }
     },
     {
       "id": "85-C168-P-window-null",
@@ -412,85 +686,225 @@
       "dialect_cells": [
         {
           "dialect": "generic",
-          "classification": "pending_evidence",
-          "native_engine": "not_executed"
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Exact",
+          "verified": false
         },
         {
           "dialect": "mysql",
-          "classification": "pending_evidence",
-          "native_engine": "not_executed"
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Exact",
+          "verified": false
         },
         {
           "dialect": "postgresql",
-          "classification": "pending_evidence",
-          "native_engine": "not_executed"
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Exact",
+          "verified": false
         },
         {
           "dialect": "hive",
-          "classification": "pending_evidence",
-          "native_engine": "not_executed"
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Exact",
+          "verified": false
         },
         {
           "dialect": "sqlite",
-          "classification": "pending_evidence",
-          "native_engine": "not_executed"
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Exact",
+          "verified": false
         },
         {
           "dialect": "snowflake",
-          "classification": "pending_evidence",
-          "native_engine": "not_executed"
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Exact",
+          "verified": false
         },
         {
           "dialect": "redshift",
-          "classification": "pending_evidence",
-          "native_engine": "not_executed"
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Exact",
+          "verified": false
         },
         {
           "dialect": "mssql",
-          "classification": "pending_evidence",
-          "native_engine": "not_executed"
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Exact",
+          "verified": false
         },
         {
           "dialect": "clickhouse",
-          "classification": "pending_evidence",
-          "native_engine": "not_executed"
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Exact",
+          "verified": false
         },
         {
           "dialect": "bigquery",
-          "classification": "pending_evidence",
-          "native_engine": "not_executed"
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Exact",
+          "verified": false
         },
         {
           "dialect": "ansi",
-          "classification": "pending_evidence",
-          "native_engine": "not_executed"
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Exact",
+          "verified": false
         },
         {
           "dialect": "duckdb",
-          "classification": "pending_evidence",
-          "native_engine": "pending_full_bag_oracle"
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "native_full_bag_oracle_required",
+          "expected_verdict": "Exact",
+          "verified": false
         },
         {
           "dialect": "databricks",
-          "classification": "pending_evidence",
-          "native_engine": "not_executed"
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Exact",
+          "verified": false
         }
       ],
       "adapter_cells": [
         {
           "adapter": "direct_sql",
-          "classification": "pending_evidence"
+          "classification": "equivalent_metadata_requires_executable_parity",
+          "expected_verdict": "Exact",
+          "verified": false
         },
         {
           "adapter": "compiled_dbt_catalog",
-          "classification": "pending_evidence"
+          "classification": "equivalent_metadata_requires_executable_parity",
+          "expected_verdict": "Exact",
+          "verified": false
         },
         {
           "adapter": "odcs",
-          "classification": "pending_evidence"
+          "classification": "equivalent_metadata_requires_executable_parity",
+          "expected_verdict": "Exact",
+          "verified": false
         }
       ],
-      "verified": false
+      "verified": false,
+      "source_row_instance_ids": {
+        "l": [
+          "l0",
+          "l1",
+          "l2"
+        ],
+        "r": [
+          "r0"
+        ]
+      },
+      "native_terminal_domains": {
+        "k": {
+          "null_allowed": true,
+          "values": [
+            1
+          ],
+          "lower": 1,
+          "upper": 1,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "exact": true
+        },
+        "copies": {
+          "null_allowed": false,
+          "values": [
+            1,
+            2
+          ],
+          "lower": 1,
+          "upper": 2,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "exact": true
+        }
+      },
+      "grouped_terminal_domains": {
+        "k": {
+          "null_allowed": false,
+          "values": [
+            1
+          ],
+          "lower": 1,
+          "upper": 1,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "exact": true
+        },
+        "n": {
+          "null_allowed": false,
+          "values": [
+            2
+          ],
+          "lower": 2,
+          "upper": 2,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "exact": true
+        }
+      },
+      "typed_goal_domains": {
+        "k": {
+          "null_allowed": true,
+          "requested_values": [
+            1
+          ],
+          "lower": 1,
+          "upper": 1,
+          "lower_inclusive": true,
+          "upper_inclusive": true
+        },
+        "copies": {
+          "null_allowed": false,
+          "requested_values": [
+            1,
+            2
+          ],
+          "lower": 1,
+          "upper": 2,
+          "lower_inclusive": true,
+          "upper_inclusive": true
+        }
+      },
+      "terminal_classification": "Exact",
+      "native_duckdb_expected_bag": [
+        {
+          "k": 1,
+          "copies": 2
+        },
+        {
+          "k": 1,
+          "copies": 2
+        },
+        {
+          "k": null,
+          "copies": 1
+        }
+      ],
+      "physical_truth_partitions": {
+        "join_true_pair_ids": [
+          "l#0:r#0",
+          "l#1:r#0"
+        ],
+        "join_not_true_pair_ids": [
+          "l#2:r#0"
+        ],
+        "selected_rows": 3,
+        "rejected_rows": 0
+      }
     },
     {
       "id": "85-C168-N-window-correlation",
@@ -579,85 +993,225 @@
       "dialect_cells": [
         {
           "dialect": "generic",
-          "classification": "pending_evidence",
-          "native_engine": "not_executed"
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Impossible",
+          "verified": false
         },
         {
           "dialect": "mysql",
-          "classification": "pending_evidence",
-          "native_engine": "not_executed"
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Impossible",
+          "verified": false
         },
         {
           "dialect": "postgresql",
-          "classification": "pending_evidence",
-          "native_engine": "not_executed"
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Impossible",
+          "verified": false
         },
         {
           "dialect": "hive",
-          "classification": "pending_evidence",
-          "native_engine": "not_executed"
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Impossible",
+          "verified": false
         },
         {
           "dialect": "sqlite",
-          "classification": "pending_evidence",
-          "native_engine": "not_executed"
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Impossible",
+          "verified": false
         },
         {
           "dialect": "snowflake",
-          "classification": "pending_evidence",
-          "native_engine": "not_executed"
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Impossible",
+          "verified": false
         },
         {
           "dialect": "redshift",
-          "classification": "pending_evidence",
-          "native_engine": "not_executed"
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Impossible",
+          "verified": false
         },
         {
           "dialect": "mssql",
-          "classification": "pending_evidence",
-          "native_engine": "not_executed"
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Impossible",
+          "verified": false
         },
         {
           "dialect": "clickhouse",
-          "classification": "pending_evidence",
-          "native_engine": "not_executed"
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Impossible",
+          "verified": false
         },
         {
           "dialect": "bigquery",
-          "classification": "pending_evidence",
-          "native_engine": "not_executed"
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Impossible",
+          "verified": false
         },
         {
           "dialect": "ansi",
-          "classification": "pending_evidence",
-          "native_engine": "not_executed"
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Impossible",
+          "verified": false
         },
         {
           "dialect": "duckdb",
-          "classification": "pending_evidence",
-          "native_engine": "pending_full_bag_oracle"
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "native_full_bag_oracle_required",
+          "expected_verdict": "Impossible",
+          "verified": false
         },
         {
           "dialect": "databricks",
-          "classification": "pending_evidence",
-          "native_engine": "not_executed"
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Impossible",
+          "verified": false
         }
       ],
       "adapter_cells": [
         {
           "adapter": "direct_sql",
-          "classification": "pending_evidence"
+          "classification": "equivalent_metadata_requires_executable_parity",
+          "expected_verdict": "Impossible",
+          "verified": false
         },
         {
           "adapter": "compiled_dbt_catalog",
-          "classification": "pending_evidence"
+          "classification": "equivalent_metadata_requires_executable_parity",
+          "expected_verdict": "Impossible",
+          "verified": false
         },
         {
           "adapter": "odcs",
-          "classification": "pending_evidence"
+          "classification": "equivalent_metadata_requires_executable_parity",
+          "expected_verdict": "Impossible",
+          "verified": false
         }
       ],
-      "verified": false
+      "verified": false,
+      "source_row_instance_ids": {
+        "l": [
+          "l0",
+          "l1",
+          "l2"
+        ],
+        "r": [
+          "r0"
+        ]
+      },
+      "native_terminal_domains": {
+        "k": {
+          "null_allowed": true,
+          "values": [
+            1
+          ],
+          "lower": 1,
+          "upper": 1,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "exact": true
+        },
+        "copies": {
+          "null_allowed": false,
+          "values": [
+            1,
+            2
+          ],
+          "lower": 1,
+          "upper": 2,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "exact": true
+        }
+      },
+      "grouped_terminal_domains": {
+        "k": {
+          "null_allowed": false,
+          "values": [
+            1
+          ],
+          "lower": 1,
+          "upper": 1,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "exact": true
+        },
+        "n": {
+          "null_allowed": false,
+          "values": [
+            2
+          ],
+          "lower": 2,
+          "upper": 2,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "exact": true
+        }
+      },
+      "typed_goal_domains": {
+        "k": {
+          "null_allowed": true,
+          "requested_values": [
+            1
+          ],
+          "lower": 1,
+          "upper": 1,
+          "lower_inclusive": true,
+          "upper_inclusive": true
+        },
+        "copies": {
+          "null_allowed": false,
+          "requested_values": [
+            1,
+            2
+          ],
+          "lower": 1,
+          "upper": 2,
+          "lower_inclusive": true,
+          "upper_inclusive": true
+        }
+      },
+      "terminal_classification": "Impossible",
+      "native_duckdb_expected_bag": [
+        {
+          "k": 1,
+          "copies": 2
+        },
+        {
+          "k": 1,
+          "copies": 2
+        },
+        {
+          "k": null,
+          "copies": 1
+        }
+      ],
+      "physical_truth_partitions": {
+        "join_true_pair_ids": [
+          "l#0:r#0",
+          "l#1:r#0"
+        ],
+        "join_not_true_pair_ids": [
+          "l#2:r#0"
+        ],
+        "selected_rows": 3,
+        "rejected_rows": 0
+      }
     },
     {
       "id": "85-C168-P-limit-fanout",
@@ -721,85 +1275,194 @@
       "dialect_cells": [
         {
           "dialect": "generic",
-          "classification": "pending_evidence",
-          "native_engine": "not_executed"
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Exact",
+          "verified": false
         },
         {
           "dialect": "mysql",
-          "classification": "pending_evidence",
-          "native_engine": "not_executed"
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Exact",
+          "verified": false
         },
         {
           "dialect": "postgresql",
-          "classification": "pending_evidence",
-          "native_engine": "not_executed"
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Exact",
+          "verified": false
         },
         {
           "dialect": "hive",
-          "classification": "pending_evidence",
-          "native_engine": "not_executed"
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Exact",
+          "verified": false
         },
         {
           "dialect": "sqlite",
-          "classification": "pending_evidence",
-          "native_engine": "not_executed"
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Exact",
+          "verified": false
         },
         {
           "dialect": "snowflake",
-          "classification": "pending_evidence",
-          "native_engine": "not_executed"
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Exact",
+          "verified": false
         },
         {
           "dialect": "redshift",
-          "classification": "pending_evidence",
-          "native_engine": "not_executed"
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Exact",
+          "verified": false
         },
         {
           "dialect": "mssql",
-          "classification": "pending_evidence",
-          "native_engine": "not_executed"
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Exact",
+          "verified": false
         },
         {
           "dialect": "clickhouse",
-          "classification": "pending_evidence",
-          "native_engine": "not_executed"
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Exact",
+          "verified": false
         },
         {
           "dialect": "bigquery",
-          "classification": "pending_evidence",
-          "native_engine": "not_executed"
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Exact",
+          "verified": false
         },
         {
           "dialect": "ansi",
-          "classification": "pending_evidence",
-          "native_engine": "not_executed"
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Exact",
+          "verified": false
         },
         {
           "dialect": "duckdb",
-          "classification": "pending_evidence",
-          "native_engine": "pending_full_bag_oracle"
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "native_full_bag_oracle_required",
+          "expected_verdict": "Exact",
+          "verified": false
         },
         {
           "dialect": "databricks",
-          "classification": "pending_evidence",
-          "native_engine": "not_executed"
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Exact",
+          "verified": false
         }
       ],
       "adapter_cells": [
         {
           "adapter": "direct_sql",
-          "classification": "pending_evidence"
+          "classification": "equivalent_metadata_requires_executable_parity",
+          "expected_verdict": "Exact",
+          "verified": false
         },
         {
           "adapter": "compiled_dbt_catalog",
-          "classification": "pending_evidence"
+          "classification": "equivalent_metadata_requires_executable_parity",
+          "expected_verdict": "Exact",
+          "verified": false
         },
         {
           "adapter": "odcs",
-          "classification": "pending_evidence"
+          "classification": "equivalent_metadata_requires_executable_parity",
+          "expected_verdict": "Exact",
+          "verified": false
         }
       ],
-      "verified": false
+      "verified": false,
+      "source_row_instance_ids": {
+        "l": [
+          "l0",
+          "l1",
+          "l2"
+        ]
+      },
+      "native_terminal_domains": {
+        "k": {
+          "null_allowed": false,
+          "values": [
+            1
+          ],
+          "lower": 1,
+          "upper": 1,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "exact": true
+        },
+        "v": {
+          "null_allowed": false,
+          "values": [
+            10,
+            20
+          ],
+          "lower": 10,
+          "upper": 20,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "exact": true
+        }
+      },
+      "grouped_terminal_domains": null,
+      "typed_goal_domains": {
+        "k": {
+          "null_allowed": false,
+          "requested_values": [
+            1
+          ],
+          "lower": 1,
+          "upper": 1,
+          "lower_inclusive": true,
+          "upper_inclusive": true
+        },
+        "v": {
+          "null_allowed": false,
+          "requested_values": [
+            10,
+            20
+          ],
+          "lower": 10,
+          "upper": 20,
+          "lower_inclusive": true,
+          "upper_inclusive": true
+        }
+      },
+      "terminal_classification": "Exact",
+      "native_duckdb_expected_bag": [
+        {
+          "k": 1,
+          "v": 10
+        },
+        {
+          "k": 1,
+          "v": 20
+        }
+      ],
+      "physical_truth_partitions": {
+        "selected_source_row_ids": [
+          "l#0",
+          "l#1"
+        ],
+        "not_true_source_row_ids": [
+          "l#2"
+        ],
+        "rejected_count": 1
+      }
     },
     {
       "id": "85-C168-N-qualify-fanout",
@@ -854,85 +1517,194 @@
       "dialect_cells": [
         {
           "dialect": "generic",
-          "classification": "pending_evidence",
-          "native_engine": "not_executed"
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Residual",
+          "verified": false
         },
         {
           "dialect": "mysql",
-          "classification": "pending_evidence",
-          "native_engine": "not_executed"
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Residual",
+          "verified": false
         },
         {
           "dialect": "postgresql",
-          "classification": "pending_evidence",
-          "native_engine": "not_executed"
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Residual",
+          "verified": false
         },
         {
           "dialect": "hive",
-          "classification": "pending_evidence",
-          "native_engine": "not_executed"
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Residual",
+          "verified": false
         },
         {
           "dialect": "sqlite",
-          "classification": "pending_evidence",
-          "native_engine": "not_executed"
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Residual",
+          "verified": false
         },
         {
           "dialect": "snowflake",
-          "classification": "pending_evidence",
-          "native_engine": "not_executed"
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Residual",
+          "verified": false
         },
         {
           "dialect": "redshift",
-          "classification": "pending_evidence",
-          "native_engine": "not_executed"
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Residual",
+          "verified": false
         },
         {
           "dialect": "mssql",
-          "classification": "pending_evidence",
-          "native_engine": "not_executed"
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Residual",
+          "verified": false
         },
         {
           "dialect": "clickhouse",
-          "classification": "pending_evidence",
-          "native_engine": "not_executed"
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Residual",
+          "verified": false
         },
         {
           "dialect": "bigquery",
-          "classification": "pending_evidence",
-          "native_engine": "not_executed"
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Residual",
+          "verified": false
         },
         {
           "dialect": "ansi",
-          "classification": "pending_evidence",
-          "native_engine": "not_executed"
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Residual",
+          "verified": false
         },
         {
           "dialect": "duckdb",
-          "classification": "pending_evidence",
-          "native_engine": "pending_full_bag_oracle"
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "native_full_bag_oracle_required",
+          "expected_verdict": "Residual",
+          "verified": false
         },
         {
           "dialect": "databricks",
-          "classification": "pending_evidence",
-          "native_engine": "not_executed"
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Residual",
+          "verified": false
         }
       ],
       "adapter_cells": [
         {
           "adapter": "direct_sql",
-          "classification": "pending_evidence"
+          "classification": "equivalent_metadata_requires_executable_parity",
+          "expected_verdict": "Residual",
+          "verified": false
         },
         {
           "adapter": "compiled_dbt_catalog",
-          "classification": "pending_evidence"
+          "classification": "equivalent_metadata_requires_executable_parity",
+          "expected_verdict": "Residual",
+          "verified": false
         },
         {
           "adapter": "odcs",
-          "classification": "pending_evidence"
+          "classification": "equivalent_metadata_requires_executable_parity",
+          "expected_verdict": "Residual",
+          "verified": false
         }
       ],
-      "verified": false
+      "verified": false,
+      "source_row_instance_ids": {
+        "l": [
+          "l0",
+          "l1",
+          "l2"
+        ]
+      },
+      "native_terminal_domains": {
+        "k": {
+          "null_allowed": true,
+          "values": [
+            1
+          ],
+          "lower": 1,
+          "upper": 1,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "exact": true
+        },
+        "v": {
+          "null_allowed": false,
+          "values": [
+            10,
+            30
+          ],
+          "lower": 10,
+          "upper": 30,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "exact": true
+        }
+      },
+      "grouped_terminal_domains": null,
+      "typed_goal_domains": {
+        "k": {
+          "null_allowed": true,
+          "requested_values": [
+            1
+          ],
+          "lower": 1,
+          "upper": 1,
+          "lower_inclusive": true,
+          "upper_inclusive": true
+        },
+        "v": {
+          "null_allowed": false,
+          "requested_values": [
+            10,
+            30
+          ],
+          "lower": 10,
+          "upper": 30,
+          "lower_inclusive": true,
+          "upper_inclusive": true
+        }
+      },
+      "terminal_classification": "Residual",
+      "native_duckdb_expected_bag": [
+        {
+          "k": 1,
+          "v": 10
+        },
+        {
+          "k": null,
+          "v": 30
+        }
+      ],
+      "physical_truth_partitions": {
+        "duckdb_selected_source_row_ids": [
+          "l0",
+          "l2"
+        ],
+        "duckdb_rejected_source_row_ids": [
+          "l1"
+        ],
+        "portable_proof": "Residual due to implicit SQL NULL/peer ordering; no exact certification"
+      }
     },
     {
       "id": "85-C168-R-opaque-collation",
@@ -982,85 +1754,210 @@
       "dialect_cells": [
         {
           "dialect": "generic",
-          "classification": "pending_evidence",
-          "native_engine": "not_executed"
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Residual",
+          "verified": false
         },
         {
           "dialect": "mysql",
-          "classification": "pending_evidence",
-          "native_engine": "not_executed"
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Residual",
+          "verified": false
         },
         {
           "dialect": "postgresql",
-          "classification": "pending_evidence",
-          "native_engine": "not_executed"
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Residual",
+          "verified": false
         },
         {
           "dialect": "hive",
-          "classification": "pending_evidence",
-          "native_engine": "not_executed"
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Residual",
+          "verified": false
         },
         {
           "dialect": "sqlite",
-          "classification": "pending_evidence",
-          "native_engine": "not_executed"
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Residual",
+          "verified": false
         },
         {
           "dialect": "snowflake",
-          "classification": "pending_evidence",
-          "native_engine": "not_executed"
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Residual",
+          "verified": false
         },
         {
           "dialect": "redshift",
-          "classification": "pending_evidence",
-          "native_engine": "not_executed"
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Residual",
+          "verified": false
         },
         {
           "dialect": "mssql",
-          "classification": "pending_evidence",
-          "native_engine": "not_executed"
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Residual",
+          "verified": false
         },
         {
           "dialect": "clickhouse",
-          "classification": "pending_evidence",
-          "native_engine": "not_executed"
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Residual",
+          "verified": false
         },
         {
           "dialect": "bigquery",
-          "classification": "pending_evidence",
-          "native_engine": "not_executed"
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Residual",
+          "verified": false
         },
         {
           "dialect": "ansi",
-          "classification": "pending_evidence",
-          "native_engine": "not_executed"
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Residual",
+          "verified": false
         },
         {
           "dialect": "duckdb",
-          "classification": "pending_evidence",
-          "native_engine": "pending_full_bag_oracle"
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "native_full_bag_oracle_required",
+          "expected_verdict": "Residual",
+          "verified": false
         },
         {
           "dialect": "databricks",
-          "classification": "pending_evidence",
-          "native_engine": "not_executed"
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Residual",
+          "verified": false
         }
       ],
       "adapter_cells": [
         {
           "adapter": "direct_sql",
-          "classification": "pending_evidence"
+          "classification": "equivalent_metadata_requires_executable_parity",
+          "expected_verdict": "Residual",
+          "verified": false
         },
         {
           "adapter": "compiled_dbt_catalog",
-          "classification": "pending_evidence"
+          "classification": "equivalent_metadata_requires_executable_parity",
+          "expected_verdict": "Residual",
+          "verified": false
         },
         {
           "adapter": "odcs",
-          "classification": "pending_evidence"
+          "classification": "equivalent_metadata_requires_executable_parity",
+          "expected_verdict": "Residual",
+          "verified": false
         }
       ],
-      "verified": false
+      "verified": false,
+      "source_row_instance_ids": {
+        "l": [
+          "l0",
+          "l1"
+        ],
+        "r": [
+          "r0"
+        ]
+      },
+      "native_terminal_domains": {
+        "k": {
+          "null_allowed": true,
+          "values": [
+            1
+          ],
+          "lower": 1,
+          "upper": 1,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "exact": true
+        },
+        "v": {
+          "null_allowed": false,
+          "values": [
+            10,
+            30
+          ],
+          "lower": 10,
+          "upper": 30,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "exact": true
+        }
+      },
+      "grouped_terminal_domains": null,
+      "typed_goal_domains": {
+        "k": {
+          "null_allowed": false,
+          "requested_values": [],
+          "lower": null,
+          "upper": null,
+          "lower_inclusive": false,
+          "upper_inclusive": false
+        },
+        "v": {
+          "null_allowed": false,
+          "requested_values": [
+            10
+          ],
+          "lower": 10,
+          "upper": 10,
+          "lower_inclusive": true,
+          "upper_inclusive": true
+        }
+      },
+      "terminal_classification": "Residual",
+      "native_duckdb_expected_bag": [
+        {
+          "k": 1,
+          "v": 10
+        },
+        {
+          "k": null,
+          "v": 30
+        }
+      ],
+      "physical_truth_partitions": {}
     }
-  ]
+  ],
+  "prospective_v1_frozen_before_semantic_changes": true,
+  "freeze_history": [
+    "docs/task-168-acceptance-freeze-v1.json"
+  ],
+  "historical_policy": "The prospective v1 was created before semantic changes; v2 adds per-cell parser/adapter/domain evidence after implementation and does not retroactively satisfy prospective completeness. Owner must disposition this explicitly before accepting AC #1.",
+  "dialects": [
+    "generic",
+    "mysql",
+    "postgresql",
+    "hive",
+    "sqlite",
+    "snowflake",
+    "redshift",
+    "mssql",
+    "clickhouse",
+    "bigquery",
+    "ansi",
+    "duckdb",
+    "databricks"
+  ],
+  "adapter_policies": {
+    "direct_sql": "Must prove equivalent canonical facts and physical classifications",
+    "compiled_dbt_catalog": "Model compiled SQL plus warehouse catalog source types; no manifest-only type guesses",
+    "odcs": "Same source facts when contract can represent them",
+    "native_vendor": "Only DuckDB execution observed; no inference to other dialect engines"
+  }
 }
