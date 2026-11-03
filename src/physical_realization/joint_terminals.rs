@@ -60,7 +60,10 @@ fn snapshots_for_join(
     goal: &OutcomeGoal,
     snapshots: &[PhysicalWriteState],
 ) -> Option<[PhysicalWriteState; 2]> {
-    let layer = bundle.layers().iter().find(|layer| layer.id() == goal.layer_id())?;
+    let layer = bundle
+        .layers()
+        .iter()
+        .find(|layer| layer.id() == goal.layer_id())?;
     let query = query_for(bundle, layer)?;
     if query.joins().len() != 1 || query.aggregation().is_none() {
         return None;
@@ -72,8 +75,14 @@ fn snapshots_for_join(
         return None;
     }
     Some([
-        snapshots.iter().find(|item| item.relation() == left.name())?.clone(),
-        snapshots.iter().find(|item| item.relation() == right.name())?.clone(),
+        snapshots
+            .iter()
+            .find(|item| item.relation() == left.name())?
+            .clone(),
+        snapshots
+            .iter()
+            .find(|item| item.relation() == right.name())?
+            .clone(),
     ])
 }
 
@@ -100,7 +109,11 @@ fn matches_goal(
     let Ok(actual) = u64::try_from(rows.len()) else {
         return GoalMatch::Unproved;
     };
-    if actual != wanted || goal.groups().is_some_and(|groups| !grouped || groups != actual) {
+    if actual != wanted
+        || goal
+            .groups()
+            .is_some_and(|groups| !grouped || groups != actual)
+    {
         return GoalMatch::Contradictory;
     }
     let Some(layer) = bundle
@@ -171,10 +184,7 @@ pub fn physical_joint_terminal_bag_plan(
     let [first, second] = goals else {
         return residual("TASK-167 requires exactly two terminal goals");
     };
-    if first.layer_id() == second.layer_id()
-        || first.rows().is_none()
-        || second.rows().is_none()
-    {
+    if first.layer_id() == second.layer_id() || first.rows().is_none() || second.rows().is_none() {
         return residual("joint goals require distinct layer IDs and exact row targets");
     }
     let [source_a, source_b] = snapshots else {
@@ -193,10 +203,8 @@ pub fn physical_joint_terminal_bag_plan(
 
     let mut ordered = goals.iter().collect::<Vec<_>>();
     ordered.sort_by(|left, right| left.layer_id().cmp(right.layer_id()));
-    let Some((group_index, joined_sources)) = ordered
-        .iter()
-        .enumerate()
-        .find_map(|(index, goal)| {
+    let Some((group_index, joined_sources)) =
+        ordered.iter().enumerate().find_map(|(index, goal)| {
             snapshots_for_join(bundle, goal, snapshots).map(|sources| (index, sources))
         })
     else {
@@ -204,56 +212,56 @@ pub fn physical_joint_terminal_bag_plan(
     };
     let grouped_goal = ordered[group_index];
     let other_goal = ordered[1 - group_index];
-    let grouped = match physical_finite_join_aggregate_plan(
-        bundle,
-        grouped_goal.layer_id(),
-        &joined_sources,
-    ) {
-        PhysicalJoinedAggregateProof::Exact(proof) => proof,
-        PhysicalJoinedAggregateProof::Impossible { reason } => {
-            return PhysicalJointTerminalProof::Impossible { reason };
-        }
-        PhysicalJoinedAggregateProof::Residual { reason } => return residual(reason),
-    };
+    let grouped =
+        match physical_finite_join_aggregate_plan(bundle, grouped_goal.layer_id(), &joined_sources)
+        {
+            PhysicalJoinedAggregateProof::Exact(proof) => proof,
+            PhysicalJoinedAggregateProof::Impossible { reason } => {
+                return PhysicalJointTerminalProof::Impossible { reason };
+            }
+            PhysicalJoinedAggregateProof::Residual { reason } => return residual(reason),
+        };
 
     let second_sources = physical_source_plan(bundle, other_goal.layer_id());
     if second_sources.sources().is_empty()
-        || second_sources
-            .sources()
-            .iter()
-            .any(|source| !joined_sources.iter().any(|state| state.relation() == source))
+        || second_sources.sources().iter().any(|source| {
+            !joined_sources
+                .iter()
+                .any(|state| state.relation() == source)
+        })
     {
         return residual("second terminal requires an unattested physical source");
     }
     let second_snapshots = second_sources
         .sources()
         .iter()
-        .filter_map(|source| joined_sources.iter().find(|state| state.relation() == source))
+        .filter_map(|source| {
+            joined_sources
+                .iter()
+                .find(|state| state.relation() == source)
+        })
         .cloned()
         .collect::<Vec<_>>();
-    let other = match physical_finite_window_bag_plan(
-        bundle,
-        other_goal.layer_id(),
-        &second_snapshots,
-    ) {
-        PhysicalFiniteWindowProof::Exact(proof) => PhysicalJointOtherExact::Window(proof),
-        PhysicalFiniteWindowProof::Impossible { reason } => {
-            return PhysicalJointTerminalProof::Impossible { reason };
-        }
-        PhysicalFiniteWindowProof::Residual { .. } => {
-            match physical_finite_set_tree_plan(
-                bundle,
-                other_goal.layer_id(),
-                &second_snapshots,
-            ) {
-                PhysicalFiniteSetTreeProof::Exact(proof) => PhysicalJointOtherExact::Set(proof),
-                PhysicalFiniteSetTreeProof::Impossible { reason } => {
-                    return PhysicalJointTerminalProof::Impossible { reason };
-                }
-                PhysicalFiniteSetTreeProof::Residual { reason } => return residual(reason),
+    let other =
+        match physical_finite_window_bag_plan(bundle, other_goal.layer_id(), &second_snapshots) {
+            PhysicalFiniteWindowProof::Exact(proof) => PhysicalJointOtherExact::Window(proof),
+            PhysicalFiniteWindowProof::Impossible { reason } => {
+                return PhysicalJointTerminalProof::Impossible { reason };
             }
-        }
-    };
+            PhysicalFiniteWindowProof::Residual { .. } => {
+                match physical_finite_set_tree_plan(
+                    bundle,
+                    other_goal.layer_id(),
+                    &second_snapshots,
+                ) {
+                    PhysicalFiniteSetTreeProof::Exact(proof) => PhysicalJointOtherExact::Set(proof),
+                    PhysicalFiniteSetTreeProof::Impossible { reason } => {
+                        return PhysicalJointTerminalProof::Impossible { reason };
+                    }
+                    PhysicalFiniteSetTreeProof::Residual { reason } => return residual(reason),
+                }
+            }
+        };
 
     // Do not publish a positive proof based on either operator alone. The
     // complete source bags are shared and both terminal histograms are checked.
