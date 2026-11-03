@@ -5,10 +5,10 @@
 //! independent feasible examples are never assumed jointly satisfiable.
 
 use super::*;
-use crate::outcome_goals::{equivalent_frequencies, OutcomeGoal, OutputValueCount};
-use crate::outcome_proofs::OutcomeWitness;
 use crate::boolean_witness::{BooleanRowConstraint, BooleanTruthCase};
 use crate::constraints::ConstraintValue;
+use crate::outcome_goals::{equivalent_frequencies, OutcomeGoal, OutputValueCount};
+use crate::outcome_proofs::OutcomeWitness;
 use crate::protocol::ComparisonOperator;
 
 /// Prove a complete physical-source assignment for a set of terminal
@@ -219,9 +219,11 @@ fn shared_filtered_histogram_plan(
         let [source_column] = columns.as_slice() else {
             continue;
         };
-        if source_column.values().iter().try_fold(0_u64, |sum, value| {
-            sum.checked_add(value.rows())
-        }) != Some(rows)
+        if source_column
+            .values()
+            .iter()
+            .try_fold(0_u64, |sum, value| sum.checked_add(value.rows()))
+            != Some(rows)
         {
             continue;
         }
@@ -244,9 +246,11 @@ fn shared_filtered_histogram_plan(
             || !query.joins().is_empty()
             || !query.diagnostics().is_empty()
             || query.predicates().where_predicate().is_none()
-            || query.output().columns().iter().any(|column| {
-                column.plain_copy_source().is_none()
-            })
+            || query
+                .output()
+                .columns()
+                .iter()
+                .any(|column| column.plain_copy_source().is_none())
         {
             continue;
         }
@@ -354,10 +358,7 @@ fn shared_filtered_histogram_plan(
                 },
             },
         ];
-        let mut outputs = [
-            (whole.layer_id(), rows),
-            (filtered.layer_id(), requested),
-        ];
+        let mut outputs = [(whole.layer_id(), rows), (filtered.layer_id(), requested)];
         outputs.sort();
         for (layer_id, rows) in outputs {
             obligations.push(WitnessObligation::OutputRows {
@@ -397,14 +398,10 @@ fn known_histogram_filter_truth(
             }
             Some(matches)
         }
-        BooleanRowConstraint::NullTest { column, negated }
-            if column.name() == column_name =>
-        {
+        BooleanRowConstraint::NullTest { column, negated } if column.name() == column_name => {
             Some(matches!(value, ConstraintValue::Null) != *negated)
         }
-        BooleanRowConstraint::UnknownNullComparison { column }
-            if column.name() == column_name =>
-        {
+        BooleanRowConstraint::UnknownNullComparison { column } if column.name() == column_name => {
             Some(false)
         }
         BooleanRowConstraint::IntegerComparison {
@@ -414,12 +411,8 @@ fn known_histogram_filter_truth(
         } if column.name() == column_name => match value {
             ConstraintValue::Null => Some(matches!(operator, ComparisonOperator::IsDistinctFrom)),
             ConstraintValue::Integer(actual) => Some(match operator {
-                ComparisonOperator::Eq | ComparisonOperator::IsNotDistinctFrom => {
-                    actual == literal
-                }
-                ComparisonOperator::Neq | ComparisonOperator::IsDistinctFrom => {
-                    actual != literal
-                }
+                ComparisonOperator::Eq | ComparisonOperator::IsNotDistinctFrom => actual == literal,
+                ComparisonOperator::Neq | ComparisonOperator::IsDistinctFrom => actual != literal,
                 ComparisonOperator::Lt => actual < literal,
                 ComparisonOperator::Lte => actual <= literal,
                 ComparisonOperator::Gt => actual > literal,
