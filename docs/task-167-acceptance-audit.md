@@ -1,33 +1,53 @@
-# TASK-167 technical review and acceptance gates
+# TASK-167 complete-source multi-terminal acceptance audit
 
-Date: 2026-11-03. Parent TASK-85 stays open.
+**Owner:** TASK-167. **Parent:** TASK-85 (remains open). **Review base:** `main`, PR #184. **Status:** Technical implementation complete; formal owner/process exceptions and distinct independent reviewer signoff remain open.
 
-## Prospective freeze
+## Freeze history and acceptance scope
 
-- The pre-implementation v1 acceptance inventory is in `docs/task-167-acceptance-freeze.json` and linked by `docs/coverage-manifest.json`.
-- Mandatory families: positive JOIN/WHERE/GROUP/HAVING + window, negative joint grouped and window goals, positive shared-source positional UNION ALL, and negative set histogram/count. Conditional family: unknown vendor/opaque terminal remains Residual.
-- Stable fixture IDs are `85-C167-P` and `85-C167-N`.
-- Canonical parser dialect inventory is 13 (the test helper includes `postgres` as an additional PostgreSQL alias, not a 14th supported dialect).
-- Native evidence: DuckDB only. No native vendor-engine claims.
+The original pre-implementation matrix was committed before the semantic implementation and is preserved unchanged as [v1](task-167-acceptance-freeze-v1.json). It contained the required six family IDs but omitted complete physical column/row identities, exact NULL domains and resolved per-cell outcomes, and made some negative requested histograms internally inconsistent. Those original cells cannot be described as correctly frozen prospectively. The active [v2](task-167-acceptance-freeze.json) retains the original fixture IDs `85-C167-P` and `85-C167-N`, all mandatory family identities, source assignment and SQL shapes, and independently frozen output/oracle values. It was corrected *after* implementation began, not presented as the original prospective freeze. Literal AC #1 historical correctness needs explicit TASK-167 owner disposition rather than silent retrospective approval.
 
-## Standards review
+There are six named cases: five mandatory (65 case x dialect cells), one conditional (13 cells), **78 canonical parser/classification cells** total. The `postgres` parser alias is exercised separately in the lightweight regression suite but is not falsely counted as a fourteenth project dialect. Machine-readable [per-cell verification](task-167-acceptance-verification.json) links every case to its original expected classification, native proof, adapter seam and original parent AC mapping `[1,2,4,5,6]`. TASK-85 parent signoff is not implied.
 
-- The proof reuses the existing canonical `physical_finite_join_aggregate_plan`, `physical_finite_window_bag_plan`, `physical_finite_set_tree_plan`, and closed-world schema validation. It does not parse SQL inside the physical interpreter or conjure independent writable producer rows.
-- It refuses unsupported or opaque operations, and reports contradictions only against the caller-attested complete source bags.
-- Initial GitHub CI established compiled Rust lint and documentation passes; initial formatting discrepancies were corrected using its exact rustfmt patch. The first full test run identified a mismatch between the 13 canonical dialects and the 14-entry helper with the extra `postgres` alias; this was corrected. Final-head verification is outstanding.
+## Native and public API proof (AC #2 and #3 technical evidence)
 
-## Spec review and remaining work
-
-| AC | Current status | Remaining acceptance gate |
+| Case | Closed physical bags, full native outputs | Requested and classification |
 | --- | --- | --- |
-| #1 | Freeze v1 created before implementation; manifest linked | Verify each mandatory and conditional cell independently; capture signed output bounds and source ordinals |
-| #2 | Bounded joint interpretation implemented | Check complete source/terminal correlation and arbitrary alternate witnesses outside this snapshot-relative API; all unsupported families explicitly remain Residual |
-| #3 | Public API and independent DuckDB snapshots added | Verify final-head CI plus exact protocol claims and all negative native replay cases |
-| #4 | All canonical dialect cases included in frozen matrix; direct SQL/dbt/ODCS test added | Confirm CI for adapter parity and record per-dialect parser verdicts and vendor limitations |
-| #5 | CI started, with initial failures addressed | Final-head full Rust, no-default, fmt, Clippy, docs, dbt E2E, pinned sql-tdg consumer and independent reviewer acceptance |
+| `85-C167-P-window` | L IDs l0=1,l1=1,l2=NULL; R r0=1. JOIN ON+WHERE TRUE has two pairs, NOT TRUE one NULL pair; grouped terminal `[(k=1,n=2)]`; window terminal `[(1,2),(1,2),(NULL,1)]` | Same complete two-source assignment realizes all terminal histograms: **Exact** |
+| `85-C167-N-join-goal` | Same complete physical/native terminal bags as P-window | Requests two groups/rows; native grouping has exactly one, so **Impossible relative to the supplied assignment** |
+| `85-C167-N-window-goal` | Same complete bags; native window has three rows | Requests two window rows; **Impossible relative to the supplied assignment** |
+| `85-C167-P-set` | L (k,v)=(1,10),(1,20); R (1,10). JOIN emits `[(1,2)]`; set UNION ALL emits `[(1,10),(1,20),(1,10)]` | One shared assignment, correlated tuple multiplicity: **Exact** |
+| `85-C167-N-set-goal` | Same native set bag of three occurrences | Requests four rows and an internally consistent four-row histogram, so **Impossible relative to the supplied assignment** |
+| `85-C167-N-unsupported` | Joined side executable; second `opaque(k)` has no certified canonical/native execution law | **Residual**, not a fictitious empty/Impossible result; native opaque terminal is not executed |
 
-This draft is **not** an acceptance signoff. All five child criteria remain unchecked and no unverified cell is marked Done. Formal signoff requires a later independently reviewed revision; TASK-168 remains blocked until TASK-167 is Done and merged.
+`tests/task_167_acceptance_inventory.rs` owns the public-API differential matrix: for each mandatory case and each of 13 named parsers, it asserts both canonical query layers, exact `OutcomeGoal` requests, source physical row maps, JOIN SQL TRUE/NOT TRUE pair identities, full intermediate contributor and terminal bags, typed INTEGER value sets and SQL NULL domains, and explicit inclusive lower/upper bounds. Native DuckDB independently reads back every source row, executes the grouped and second terminal SQL, checks **actual** full output bags (not the intentionally impossible requested bags), and executes independent `IS TRUE`/`IS NOT TRUE` pair queries. That test separately guards all 78 verification-cell IDs.
 
-## Review disposition
+The bounded public `physical_joint_terminal_bag_plan` does not reparse SQL, synthesize independent terminal witnesses or create writable producers. Instead it composes the existing canonical typed `physical_finite_join_aggregate_plan`, `physical_finite_window_bag_plan` and `physical_finite_set_tree_plan` against the **same closed physical source assignment**. When either interpreter lacks type/operator evidence the result is `Residual`. The exported proof retains complete source populations, explicit grouped/secondary layer IDs, actual terminal results and canonical exact domains.
 
-Matt Pocock `engineering/implement` was used for this implementation, and `engineering/code-review` Standards/Spec axes were applied as a first-pass author review of the branch against `main`. This is not independent reviewer identity signoff. The outstanding spec findings are the same explicit gates above, rather than silently reclassifying unsupported proofs as Exact.
+`to_bundle_json` emits the canonical query/source-schema/requested-goal facts. The opt-in `to_physical_joint_terminal_json` sidecar emits exact source rows (with lexical signed numerics and NULL), canonical layer references, SQL TRUE/NOT TRUE pair identities, complete grouped and secondary terminal output bags, exact typed domains and positional set tuple multiplicity. `Impossible` and `Residual` sidecars expose only reason and status, never fabricated output rows. This is not a breaking change to the active protocol root; existing schema/golden conformance is covered by the normal Rust CI.
+
+**Proof boundary:** `Impossible` means contradictory to the complete **provided** physical assignment or an enforced schema constraint. It does not certify that *no unknown alternative source assignment* could achieve the goals; that wider existential objective belongs to TASK-85/TASK-168.
+
+## Dialects, metadata parity and external limitations (AC #4)
+
+- All 13 advertised parser dialect IDs are asserted against the same canonical SQL shape, goal classification, source and terminal bags for each mandatory frozen case. The conditional opaque function remains named `Residual`. Parser acceptance is not native vendor execution.
+- `tests/task_167_adapter_parity.rs` compares the **same exact source assignment** and classifications for two terminal families through direct SQL+typed catalog, compiled dbt manifest SQL plus authoritative dbt warehouse catalog datatypes, and representable ODCS `INTEGER`/`VARCHAR` source facts. Both feasible and conflicting goal directions are exercised. No adapter re-implements the SQL physical interpreter.
+- Only DuckDB is independently executed as native SQL. Snowflake/BigQuery/MSSQL/ClickHouse/Redshift/Hive/PostgreSQL/MySQL/SQLite/Databricks vendor runtime, engine/session-specific NULL ordering, transaction laws, collation, implicit casts, and external consumer execution require separate native evidence and are not claimed here. TASK-167 owns this boundary; unsupported cases stay `Residual` rather than being promoted by parser-only evidence.
+- Pinned `sql-tdg` consumer revision `3beaf7799ab54b2440ae34c917ff7eda6c11c398` passed [TASK-167 qualification run 41698923842](https://github.com/phdah/sql-semantic-protocol/actions/runs/41698923842), using the candidate protocol checkout via Cargo's `[patch.crates-io]`. Library, output-generation, boundary, type, full-query and exactness selected suites pass. Two separately owned timestamp baseline failures are skipped by name; **full** sql-tdg clean certification is not claimed. The temporary qualification workflow was removed from the PR after evidence collection.
+
+## Matt Standards and Spec technical review against `main...HEAD`
+
+**Standards axis:** The finite composition reuses the canonical interpreter/physical schema seams, avoids duplicated parsing and source synthesis, keeps the optional sidecar in the emission module, preserves deterministic `BTreeMap` ordering and exact numeric text, and documents its limits. The first review discovered missing explicit output layer identities in the sidecar; both IDs were added. The v1 incomplete prospective freeze was archived and transparently corrected, not rewritten.
+
+**Spec axis:** All five mandatory families and the conditional Residual case are represented by a reviewed, versioned six-case matrix, independent native execution, 13 dialects and direct SQL/dbt/ODCS parity. Exact scalar domains, bags, source tuple correlations and false/unknown rejections are tested. The retrospective correctness of v1 cannot be made prospective, and a distinct reviewer identity is not established merely by an author-account technical review. These remain separate formal signoff decisions.
+
+## Child criteria and mapped parent AC
+
+| Child AC | Parent AC | Technical evidence | Formal disposition |
+| --- | --- | --- | --- |
+| #1 prospective matrix | #1, #2, #5, #6 | Original v1 immutable; corrected, complete v2 + 78-cell verification | Historical incompleteness needs owner decision |
+| #2 whole-bag composition | #1, #2, #4 | Exact typed canonical witness against one shared assignment; checked negative and Residual | Technical tests, pending final-head CI |
+| #3 native differential and emission | #5, #6 | Complete physical/terminal DuckDB oracle, 3VL source identities and typed sidecar | Technical tests, pending final-head CI |
+| #4 dialects/adapters/vendor boundaries | #1, #6 | 65 mandatory and 13 conditional parser cells, two SQL/dbt/ODCS parity families, pinned consumer | Technical tests, pending final-head CI |
+| #5 verification and independent signoff | #5, #6 | Rust full/default and no-default, strict Clippy, docs, fmt, dbt E2E, active schema/golden plus pinned sql-tdg selected suite | Final-head CI and independent reviewer identity or explicit owner waiver outstanding |
+
+A technical Matt Standards/Spec author-account review does not equal an independent GitHub reviewer. No missing native vendor evidence is silently waived or called a verified mandatory cell. The child must remain **In Progress** until final checks and explicit formal acceptance; its parent TASK-85 remains **To Do** for independent parent signoff and TASK-168 is blocked until merge.
