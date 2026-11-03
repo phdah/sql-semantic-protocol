@@ -565,12 +565,19 @@ fn independent_duckdb_executes_each_frozen_physical_source_and_output_bag() {
             let selected = db
                 .prepare("SELECT id FROM l ORDER BY v LIMIT 2")
                 .unwrap()
-                .query_map([],|row|row.get::<_,String>(0))
+                .query_map([], |row| row.get::<_, String>(0))
                 .unwrap()
-                .collect::<Result<Vec<_>,_>>().unwrap();
-            assert_eq!(selected,vec!["l0".to_string(),"l1".to_string()]);
-            assert_eq!(case["physical_truth_partitions"]["selected_source_row_ids"],json!(["l#0","l#1"]));
-            assert_eq!(case["physical_truth_partitions"]["not_true_source_row_ids"],json!(["l#2"]));
+                .collect::<Result<Vec<_>, _>>()
+                .unwrap();
+            assert_eq!(selected, vec!["l0".to_string(), "l1".to_string()]);
+            assert_eq!(
+                case["physical_truth_partitions"]["selected_source_row_ids"],
+                json!(["l#0", "l#1"])
+            );
+            assert_eq!(
+                case["physical_truth_partitions"]["not_true_source_row_ids"],
+                json!(["l#2"])
+            );
         } else {
             // Native DuckDB gives an independently fixed output even if the
             // portable protocol must return Residual for implicit tie/NULL laws.
@@ -585,14 +592,26 @@ fn independent_duckdb_executes_each_frozen_physical_source_and_output_bag() {
                 "SELECT id, ROW_NUMBER() OVER (PARTITION BY k ORDER BY v) AS rn FROM l ORDER BY id"
             ).unwrap().query_map([],|row|Ok((row.get::<_,String>(0)?,row.get::<_,i64>(1)?)))
                 .unwrap().collect::<Result<Vec<_>,_>>().unwrap();
-            let selected = native_ranks.iter().filter(|(_,rank)|*rank==1)
-                .map(|(id,_)|id.to_owned()).collect::<Vec<_>>();
-            let rejected = native_ranks.iter().filter(|(_,rank)|*rank!=1)
-                .map(|(id,_)|id.to_owned()).collect::<Vec<_>>();
-            assert_eq!(selected,vec!["l0".to_string(),"l2".to_string()]);
-            assert_eq!(rejected,vec!["l1".to_string()]);
-            assert_eq!(case["physical_truth_partitions"]["duckdb_selected_source_row_ids"],json!(selected));
-            assert_eq!(case["physical_truth_partitions"]["duckdb_rejected_source_row_ids"],json!(rejected));
+            let selected = native_ranks
+                .iter()
+                .filter(|(_, rank)| *rank == 1)
+                .map(|(id, _)| id.to_owned())
+                .collect::<Vec<_>>();
+            let rejected = native_ranks
+                .iter()
+                .filter(|(_, rank)| *rank != 1)
+                .map(|(id, _)| id.to_owned())
+                .collect::<Vec<_>>();
+            assert_eq!(selected, vec!["l0".to_string(), "l2".to_string()]);
+            assert_eq!(rejected, vec!["l1".to_string()]);
+            assert_eq!(
+                case["physical_truth_partitions"]["duckdb_selected_source_row_ids"],
+                json!(selected)
+            );
+            assert_eq!(
+                case["physical_truth_partitions"]["duckdb_rejected_source_row_ids"],
+                json!(rejected)
+            );
         }
     }
 }
