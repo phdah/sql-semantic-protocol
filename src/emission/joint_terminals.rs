@@ -106,6 +106,7 @@ pub fn to_physical_joint_terminal_json(
                 "status": "exact",
                 "sources": exact.sources.iter().map(source_to_value).collect::<Vec<_>>(),
                 "grouped": {
+                    "layer_id": exact.grouped_layer_id,
                     "selected": exact.grouped.selected,
                     "not_true": exact.grouped.rejected,
                     "groups": exact.grouped.groups.iter().map(|group| json!({
@@ -116,7 +117,10 @@ pub fn to_physical_joint_terminal_json(
                     "terminal": terminal_to_value(&exact.grouped.terminal),
                     "domains": domains_to_value(&exact.grouped.terminal_domains)
                 },
-                "secondary": secondary
+                "secondary": {
+                    "layer_id": exact.other_layer_id,
+                    "proof": secondary
+                }
             })
         }
         PhysicalJointTerminalProof::Impossible { reason } => {
