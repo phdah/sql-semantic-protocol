@@ -107,7 +107,10 @@ fn goals(
                 vec![histogram(
                     "v",
                     &[
-                        (ConstraintValue::Integer(10), 2),
+                        (
+                            ConstraintValue::Integer(10),
+                            if secondary_rows == 4 { 3 } else { 2 },
+                        ),
                         (ConstraintValue::Integer(20), 1),
                     ],
                 )]
@@ -116,7 +119,10 @@ fn goals(
                     "copies",
                     &[
                         (ConstraintValue::Integer(1), 1),
-                        (ConstraintValue::Integer(2), 2),
+                        (
+                            ConstraintValue::Integer(2),
+                            if secondary_rows == 2 { 1 } else { 2 },
+                        ),
                     ],
                 )]
             },
