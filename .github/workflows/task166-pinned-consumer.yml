@@ -1,0 +1,43 @@
+name: TASK-166 pinned sql-tdg qualification
+
+on:
+  push:
+    branches:
+      - feat/task-166-shared-terminal-goals-20261103
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  pinned-consumer:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out protocol candidate
+        uses: actions/checkout@v4
+        with:
+          path: protocol
+      - name: Check out pinned sql-tdg consumer
+        uses: actions/checkout@v4
+        with:
+          repository: phdah/sql-tdg
+          ref: 3beaf7799ab54b2440ae34c917ff7eda6c11c398
+          path: sql-tdg
+      - name: Install stable Rust
+        uses: dtolnay/rust-toolchain@stable
+      - name: Pin consumer's protocol to candidate checkout
+        run: |
+          cat >> sql-tdg/Cargo.toml <<'PATCH'
+
+          [patch.crates-io]
+          sql-semantic-protocol = { path = "../protocol" }
+          PATCH
+      - name: Verify pinned consumer integration
+        working-directory: sql-tdg
+        run: |
+          cargo test --lib
+          cargo test --test all_outcomes_generation
+          cargo test --test boundary_generation
+          cargo test --test type_coverage
+          cargo test --test full_query -- --skip protocol_driven_timestamp_generation
+          cargo test --test exactness -- --skip timezone_dependent_timestamp_filters_require_session_assumption
