@@ -181,6 +181,34 @@ fn expected_rows(value: &Value) -> Vec<BTreeMap<String, LiteralValue>> {
         .collect()
 }
 
+
+fn emitted_scalar(value: &Value) -> LiteralValue {
+    match value["kind"].as_str().expect("emitted scalar kind") {
+        "null" => LiteralValue::Null,
+        "number" => LiteralValue::Number(
+            value["lexical"].as_str().expect("lossless number text").to_string(),
+        ),
+        "text" => LiteralValue::Text(value["value"].as_str().expect("source ID").to_string()),
+        "boolean" => LiteralValue::Boolean(value["value"].as_bool().unwrap()),
+        other => panic!("uncertified emitted scalar {other}"),
+    }
+}
+
+fn emitted_rows(value: &Value) -> Vec<BTreeMap<String, LiteralValue>> {
+    value
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|row| {
+            row.as_object()
+                .expect("emitted entire row")
+                .iter()
+                .map(|(column, scalar)| (column.clone(), emitted_scalar(scalar)))
+                .collect()
+        })
+        .collect()
+}
+
 fn bag(rows: &[BTreeMap<String, LiteralValue>]) -> Vec<String> {
     let mut output = rows
         .iter()
@@ -573,7 +601,26 @@ fn every_frozen_mandatory_case_is_checked_across_all_13_dialects_with_native_duc
                         typed["evidence"]["secondary"]["layer_id"],
                         goals[1].layer_id()
                     );
-                    assert_eq!(typed["evidence"]["sources"].as_array().unwrap().len(), 2);
+                    let source_evidence = typed["evidence"]["sources"].as_array().unwrap();
+                    assert_eq!(source_evidence.len(), 2);
+                    for (emitted, frozen) in source_evidence.iter().zip(snapshots(case)) {
+                        assert_eq!(emitted["relation"], frozen.relation());
+                        assert_eq!(
+                            emitted_rows(&emitted["rows"]),
+                            frozen.rows().iter().map(|row| row.values().clone()).collect::<Vec<_>>(),
+                            "{id}/{dialect}: emitted complete physical source bag"
+                        );
+                    }
+                    assert_eq!(
+                        bag(&emitted_rows(&typed["evidence"]["grouped"]["terminal"])),
+                        bag(&expected_rows(&case["observed_terminal_bags"]["join"])),
+                        "{id}/{dialect}: emitted exact grouped output"
+                    );
+                    assert_eq!(
+                        bag(&emitted_rows(&typed["evidence"]["secondary"]["proof"]["terminal"])),
+                        bag(&expected_rows(&case["observed_terminal_bags"]["other"])),
+                        "{id}/{dialect}: emitted exact secondary output"
+                    );
                     assert_eq!(
                         typed["evidence"]["grouped"]["selected"]
                             .as_array()
