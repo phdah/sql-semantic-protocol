@@ -5,10 +5,9 @@ use serde_json::json;
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, analyze_dbt_artifacts, dialect_from_name,
     parse_dbt_catalog, parse_dbt_manifest, physical_joint_terminal_bag_plan,
-    physical_joint_tuple_histogram_plan, AnalysisBundle,
-    ConfiguredSqlInput, ConstraintValue, LiteralValue, OutcomeGoal, OutputDistribution,
-    OutputValueCount, PhysicalJointOtherExact, PhysicalJointTerminalProof, PhysicalTupleBucket,
-    PhysicalTupleHistogramGoal, PhysicalWriteRow,
+    physical_joint_tuple_histogram_plan, AnalysisBundle, ConfiguredSqlInput, ConstraintValue,
+    LiteralValue, OutcomeGoal, OutputDistribution, OutputValueCount, PhysicalJointOtherExact,
+    PhysicalJointTerminalProof, PhysicalTupleBucket, PhysicalTupleHistogramGoal, PhysicalWriteRow,
     PhysicalWriteState, RelationCatalog, RelationSchema, SchemaColumn, SqlInput,
 };
 use std::collections::BTreeMap;
@@ -376,14 +375,18 @@ fn task_168_correlated_tuples_preserve_sql_dbt_odcs_full_bag_evidence() {
                     ],
                 )
             };
-            let matched = PhysicalTupleHistogramGoal::new(second_id, columns.clone(), positive).unwrap();
+            let matched =
+                PhysicalTupleHistogramGoal::new(second_id, columns.clone(), positive).unwrap();
             let mismatched = PhysicalTupleHistogramGoal::new(second_id, columns, negative).unwrap();
             let source = snapshots();
             let scalar_goals = goals(bundle, rows, set);
             assert!(
                 matches!(
                     physical_joint_tuple_histogram_plan(
-                        bundle, &scalar_goals, &source, &[grouped.clone(), matched],
+                        bundle,
+                        &scalar_goals,
+                        &source,
+                        &[grouped.clone(), matched],
                     ),
                     PhysicalJointTerminalProof::Exact(_)
                 ),
@@ -392,7 +395,10 @@ fn task_168_correlated_tuples_preserve_sql_dbt_odcs_full_bag_evidence() {
             assert!(
                 matches!(
                     physical_joint_tuple_histogram_plan(
-                        bundle, &scalar_goals, &source, &[grouped, mismatched],
+                        bundle,
+                        &scalar_goals,
+                        &source,
+                        &[grouped, mismatched],
                     ),
                     PhysicalJointTerminalProof::Impossible { .. }
                 ),
