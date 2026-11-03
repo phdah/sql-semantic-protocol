@@ -146,6 +146,29 @@ enum TupleMatch {
     Unproved,
 }
 
+/// An empty terminal still has certified output-column identity in the query.
+fn output_columns_attested(bundle: &AnalysisBundle, goal: &PhysicalTupleHistogramGoal) -> bool {
+    let Some(layer) = bundle
+        .layers()
+        .iter()
+        .find(|layer| layer.id() == goal.layer_id())
+    else {
+        return false;
+    };
+    let Some(query) = super::query_for(bundle, layer) else {
+        return false;
+    };
+    goal.columns.iter().all(|name| {
+        query
+            .output()
+            .columns()
+            .iter()
+            .filter(|column| column.name() == name)
+            .count()
+            == 1
+    })
+}
+
 fn actual_tuple_frequencies(
     rows: &[BTreeMap<String, LiteralValue>],
     columns: &[String],
@@ -172,10 +195,6 @@ fn compare_tuple_goal(
     goal: &PhysicalTupleHistogramGoal,
     rows: &[BTreeMap<String, LiteralValue>],
 ) -> TupleMatch {
-    // Empty results do not attest their column identities; refuse false exactness.
-    if rows.is_empty() {
-        return TupleMatch::Unproved;
-    }
     if goal
         .buckets
         .iter()
@@ -225,6 +244,11 @@ pub fn physical_joint_tuple_histogram_plan(
     };
     let mut seen = BTreeSet::new();
     for target in tuple_goals {
+        if !output_columns_attested(bundle, target) {
+            return PhysicalJointTerminalProof::Residual {
+                reason: "tuple histogram lacks unique canonical projected column identities".into(),
+            };
+        }
         if !seen.insert(target.layer_id()) {
             return PhysicalJointTerminalProof::Residual {
                 reason: "duplicate tuple histogram for one terminal".into(),
@@ -297,29 +321,7 @@ pub fn physical_single_tuple_histogram_plan(
     snapshots: &[PhysicalWriteState],
     goal: &PhysicalTupleHistogramGoal,
 ) -> PhysicalSingleTupleProof {
-    let layer = bundle
-        .layers()
-        .iter()
-        .find(|layer| layer.id() == goal.layer_id());
-    let Some(layer) = layer else {
-        return PhysicalSingleTupleProof::Residual {
-            reason: "tuple request references an unknown output layer".into(),
-        };
-    };
-    let Some(query) = super::query_for(bundle, layer) else {
-        return PhysicalSingleTupleProof::Residual {
-            reason: "tuple request has no canonical SQL query".into(),
-        };
-    };
-    if goal.columns.iter().any(|name| {
-        query
-            .output()
-            .columns()
-            .iter()
-            .filter(|col| col.name() == name)
-            .count()
-            != 1
-    }) {
+    if !output_columns_attested(bundle, goal) {
         return PhysicalSingleTupleProof::Residual {
             reason: "tuple request lacks unique canonical projected column identities".into(),
         };
