@@ -26,5 +26,6 @@ fn task_168_frozen_qualify_parser_classes() {
         let class = if result.is_ok() { "accepted" } else { "boundary" };
         summary.push(format!("{dialect}:{class}"));
     }
-    panic!("TASK-168 PROBE {}", summary.join(","));
+    assert_eq!(summary.len(), DIALECTS.len());
+    assert!(summary.iter().all(|entry| entry.ends_with(":accepted")), "frozen QUALIFY parser classification: {summary:?}");
 }
