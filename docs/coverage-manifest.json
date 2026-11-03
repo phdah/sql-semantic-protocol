@@ -2,19 +2,41 @@
   "task_166_shared_terminal_goals_acceptance": {
     "owner": "TASK-166",
     "parent": "TASK-85",
-    "status": "frozen_implementation_in_progress",
+    "status": "technical_ac2_ac4_verified_ac1_process_and_ac5_review_pending",
     "freeze": "docs/task-166-acceptance-freeze.json",
-    "freeze_version": 1,
-    "fixture_ids": ["85-C166-P", "85-C166-N"],
+    "freeze_version": 2,
+    "fixture_ids": [
+      "85-C166-P",
+      "85-C166-N"
+    ],
     "mandatory_cases": 4,
     "conditional_cases": 2,
     "parser_dialect_cells": 78,
-    "original_parent_ac_mapping": [1, 3, 4, 5, 6],
-    "mandatory_cells_verified": false,
-    "dbt_odcs_parity_verified": false,
+    "original_parent_ac_mapping": [
+      1,
+      3,
+      4,
+      5,
+      6
+    ],
+    "mandatory_cells_verified": true,
+    "dbt_odcs_parity_verified": true,
     "final_ci_verified": false,
     "child_signed_off": false,
-    "parent_signed_off": false
+    "parent_signed_off": false,
+    "freeze_history": [
+      "docs/task-166-acceptance-freeze-v1.json"
+    ],
+    "verification": "docs/task-166-acceptance-verification.json",
+    "acceptance_audit": "docs/task-166-acceptance-audit.md",
+    "verified_mandatory_parser_cells": 52,
+    "verified_conditional_parser_cells": 26,
+    "native_source_and_a_bags_verified": 6,
+    "native_terminal_b_bags_verified": 5,
+    "sql_tdg_pinned_consumer_qualification": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41646120167",
+    "full_frozen_case_runner": "tests/task_166_acceptance_inventory.rs",
+    "historical_v1_freeze_correction_requires_owner_disposition": true,
+    "independent_review": false
   },
   "task_165_standalone_output_goal_acceptance": {
     "owner": "TASK-165",
