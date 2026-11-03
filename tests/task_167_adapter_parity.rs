@@ -240,13 +240,13 @@ fn signature(bundle: &AnalysisBundle, requested_rows: u64) -> Option<(Vec<String
 
 #[test]
 fn sql_dbt_odcs_have_identical_joint_bags_and_impossibility_boundaries() {
-    let direct = direct(&RelationCatalog::from_schemas(&source_schemas()).unwrap());
+    let sql_bundle = direct(&RelationCatalog::from_schemas(&source_schemas()).unwrap());
     let dbt = dbt();
-    let expected = signature(&direct, 3).expect("direct SQL exact pair");
+    let expected = signature(&sql_bundle, 3).expect("direct SQL exact pair");
     assert_eq!(expected.2, vec![LEFT.to_string(), RIGHT.to_string()]);
     assert_eq!(expected.3, 1);
     assert_eq!(signature(&dbt, 3), Some(expected.clone()));
-    for bundle in [&direct, &dbt] {
+    for bundle in [&sql_bundle, &dbt] {
         assert!(matches!(
             physical_joint_terminal_bag_plan(bundle, &goals(bundle, 2), &snapshots()),
             PhysicalJointTerminalProof::Impossible { .. }
