@@ -5,9 +5,9 @@ use serde_json::json;
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, analyze_dbt_artifacts, dialect_from_name,
     parse_dbt_catalog, parse_dbt_manifest, physical_joint_distribution_plan, AnalysisBundle,
-    ConfiguredSqlInput, ConstraintValue, OutcomeGoal, OutputDistribution, OutputValueCount,
-    RelationCatalog, RelationSchema, SchemaColumn, SqlInput, WitnessDirection,
-    WitnessObligation, OutcomeWitness,
+    ConfiguredSqlInput, ConstraintValue, OutcomeGoal, OutcomeWitness, OutputDistribution,
+    OutputValueCount, RelationCatalog, RelationSchema, SchemaColumn, SqlInput, WitnessDirection,
+    WitnessObligation,
 };
 
 const SOURCE: &str = "warehouse.raw.s";
@@ -15,12 +15,12 @@ const WHOLE: &str = "SELECT k AS whole FROM warehouse.raw.s";
 const FILTERED: &str = "SELECT k AS filtered FROM warehouse.raw.s WHERE k = 1";
 
 fn catalog() -> RelationCatalog {
-    RelationCatalog::from_schemas(&[
-        RelationSchema::new(
-            SOURCE,
-            vec![SchemaColumn::from_sql_type("k", "INTEGER", "postgresql").unwrap()],
-        ).unwrap(),
-    ]).unwrap()
+    RelationCatalog::from_schemas(&[RelationSchema::new(
+        SOURCE,
+        vec![SchemaColumn::from_sql_type("k", "INTEGER", "postgresql").unwrap()],
+    )
+    .unwrap()])
+    .unwrap()
 }
 
 fn direct_with_catalog(catalog: &RelationCatalog) -> AnalysisBundle {
@@ -28,7 +28,12 @@ fn direct_with_catalog(catalog: &RelationCatalog) -> AnalysisBundle {
     let sql = [SqlInput::inline(WHOLE), SqlInput::inline(FILTERED)];
     let configured = [
         ConfiguredSqlInput::new("model.demo.whole", &sql[0], "postgresql", parser.as_ref()),
-        ConfiguredSqlInput::new("model.demo.filtered", &sql[1], "postgresql", parser.as_ref()),
+        ConfiguredSqlInput::new(
+            "model.demo.filtered",
+            &sql[1],
+            "postgresql",
+            parser.as_ref(),
+        ),
     ];
     analyze_configured_inputs_with_catalog(&configured, catalog).unwrap()
 }
@@ -111,14 +116,26 @@ schema:
 }
 
 fn proof(bundle: &AnalysisBundle, requested_filtered: u64) -> WitnessDirection {
-    let whole = bundle.layers().iter()
-        .find(|layer| layer.input_id() == "model.demo.whole").unwrap().id();
-    let filtered = bundle.layers().iter()
-        .find(|layer| layer.input_id() == "model.demo.filtered").unwrap().id();
-    let anchor = OutputDistribution::new("whole", vec![
-        OutputValueCount::new(ConstraintValue::Integer(1), 2),
-        OutputValueCount::new(ConstraintValue::Integer(2), 1),
-    ]).unwrap();
+    let whole = bundle
+        .layers()
+        .iter()
+        .find(|layer| layer.input_id() == "model.demo.whole")
+        .unwrap()
+        .id();
+    let filtered = bundle
+        .layers()
+        .iter()
+        .find(|layer| layer.input_id() == "model.demo.filtered")
+        .unwrap()
+        .id();
+    let anchor = OutputDistribution::new(
+        "whole",
+        vec![
+            OutputValueCount::new(ConstraintValue::Integer(1), 2),
+            OutputValueCount::new(ConstraintValue::Integer(2), 1),
+        ],
+    )
+    .unwrap();
     let targets = [
         OutcomeGoal::new(whole, Some(3), None, vec![anchor]).unwrap(),
         OutcomeGoal::new(filtered, Some(requested_filtered), None, vec![]).unwrap(),
@@ -126,15 +143,26 @@ fn proof(bundle: &AnalysisBundle, requested_filtered: u64) -> WitnessDirection {
     physical_joint_distribution_plan(bundle, &targets)
 }
 
-fn signature(direction: &WitnessDirection) -> Option<(String, u64, Vec<OutputValueCount>, Vec<u64>)> {
-    let WitnessDirection::Feasible(cases) = direction else { return None };
-    let [case] = cases.as_slice() else { return None };
+fn signature(
+    direction: &WitnessDirection,
+) -> Option<(String, u64, Vec<OutputValueCount>, Vec<u64>)> {
+    let WitnessDirection::Feasible(cases) = direction else {
+        return None;
+    };
+    let [case] = cases.as_slice() else {
+        return None;
+    };
     let mut source = None;
     let mut output_counts = Vec::new();
     for obligation in case.obligations() {
         match obligation {
             WitnessObligation::OperatorPopulation {
-                witness: OutcomeWitness::SourceRows { relation, rows, columns }
+                witness:
+                    OutcomeWitness::SourceRows {
+                        relation,
+                        rows,
+                        columns,
+                    },
             } if columns.len() == 1 => {
                 source = Some((relation.clone(), *rows, columns[0].values().to_vec()));
             }
