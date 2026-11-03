@@ -1,22 +1,23 @@
-# TASK-168 acceptance audit (draft, not signed off)
+# TASK-168 acceptance audit: technical evidence verified, owner signoff pending
 
-This bounded child implements correlated terminal histograms without claiming independently realizable source populations. The [preimplementation v1 acceptance freeze](task-168-acceptance-freeze.json) contains seven cases (six mandatory, one conditional), their exact physical sources and terminal requests, and 13 parser identities per case. Every mandatory cell must be reconciled before this child may be marked Done; original TASK-85 parent criteria remain separate.
+**Technical verification:** all six mandatory and one conditional frozen cases are independently asserted by native DuckDB and the canonical public API. The 91 parser/dialect and 21 SQL/dbt/ODCS adapter cells are accounted for in [v2 acceptance freeze](task-168-acceptance-freeze.json) and [per-cell verification](task-168-acceptance-verification.json). The [prospective original v1](task-168-acceptance-freeze-v1.json) is preserved unchanged. This child is not marked Done, and TASK-85 remains open.
 
-## Implementation boundaries
+## Canonical technical implementation
 
-- `src/physical_realization/joint_tuple_goals.rs::physical_joint_tuple_histogram_plan` verifies full correlated INTEGER/NULL tuple frequencies against **the same** closed physical JOIN/GROUP and WINDOW/SET source/terminal bags. It never multiplies marginal histograms. Contradictions against exact full bags are `Impossible`, while unverified typed scalar laws and absent output identities are `Residual`.
-- `physical_single_tuple_histogram_plan` reuses the canonical `physical_finite_page_bag_plan`, `physical_finite_window_bag_plan` and `physical_finite_rank_bag_plan`, retaining complete source/terminal identities, rejected rows and exact typed domains for the supported ORDER/LIMIT and QUALIFY subset. Unsupported sort/session/tie semantics stay `Residual`.
-- `tests/task_167_joint_terminals.rs` tests a correlated wrong-pair histogram with **identical per-column marginals** across the 13 portable parser identities, and complete SET duplicate/NULL bags. `tests/task_168_tuple_fanout.rs` asserts page/QUALIFY source, selected/rejected output, exact tuples, contradiction and independent DuckDB results.
-- Existing canonical SQL output, parser model and protocol root are unchanged. No new top-level v3 schema or consumer contract is implied by these library-only typed proof entry points.
+- `src/physical_realization/joint_tuple_goals.rs` checks complete, typed INTEGER/NULL positional tuple frequencies across two joined/grouped and window/set terminals using one shared physical assignment. Equal scalar marginals do not prove correlated tuples. Contradictory full bags are `Impossible`; unsupported type/collation, missing output identities and unsupported operators are `Residual`.
+- The same module certifies deterministic LIMIT and bounded QUALIFY/ranking fanout by reusing canonical single-source physical interpreters. It preserves complete source/terminal bags, individual source identities, multiplicity, TRUE/NOT TRUE memberships and strongest safe finite domains (including NULL and inclusive numeric bounds). No sql-tdg reparsing or invented source rows.
+- `src/emission/tuple_goals.rs::to_physical_single_tuple_json` emits deterministic, opt-in typed sidecar evidence, keeping `Impossible` and `Residual` free of invented physical rows. It does not alter the active protocol root or schema.
+- `tests/task_168_frozen_acceptance.rs` executes all seven frozen cases against native DuckDB source and terminal bags and asserts 91 canonical parser/dialect cells. `tests/task_168_tuple_fanout.rs` checks LIMIT, QUALIFY, selected/rejected row IDs, empty output and typed emitted proof. `tests/task_167_joint_terminals.rs` independently checks wrong-pair correlations across dialects. `tests/task_167_adapter_parity.rs` covers direct SQL, compiled dbt plus authoritative catalog, and ODCS for shared tuple, LIMIT, QUALIFY and fail-closed collation.
+- Native vendor runtime/session behavior outside DuckDB is **not certified**. Each conditional boundary names TASK-168 and required future vendor evidence; release disposition belongs to TASK-91.
 
-## Open signoff obligations
+## Acceptance reconciliation
 
-| Requirement | Evidence currently present | Still required |
-|---|---|---|
-| AC #1 frozen matrix | v1 frozen before code, linked by coverage manifest; seven named cases | Reconcile every mandatory cell to versioned executable output/domain/adapter and explicit 13-dialect parser status |
-| AC #2 semantics | Source-attested tuple equality and full-bag contradiction; LIMIT and QUALIFY interpreter reuse | Full upstream source tuple-correlation/fanout proof for every frozen case; no ad hoc residual promotion |
-| AC #3 native oracle | Full DuckDB source and tuple output assertions for window, set, page and QUALIFY | Frozen row identities and exact terminal domains for each individual case, including all rejected/Impossible counterparts |
-| AC #4 adapters/dialects | Shared LIMIT and window/set parser examples | dbt + ODCS equivalent metadata parity and explicit classification for all 91 parser cells; vendor/session review |
-| AC #5 final-head signoff | PR CI pipeline triggered | Complete fmt/strict Clippy/full/default/no-default/doc/dbt/golden + pinned sql-tdg consumer suite and independent reviewer approval |
+| AC | Technical finding | Signoff |
+| --- | --- | --- |
+| #1 | Original fixture IDs and case scope frozen in v1; expanded v2 includes output domains, full source/terminal bags, every dialect/adapter and evidence. Historical v1 was **incomplete before the first semantic change**, so v2 cannot retroactively satisfy that timing requirement. | **Blocked: explicit TASK-168 owner disposition of the documented historical exception required** |
+| #2 | Canonical proof and fail-closed classification cover every mandatory finite variant, preserve shared physical bag multiplicity and typed NULL/bounds. | Technically verified |
+| #3 | Public-API and independent native DuckDB complete physical input/output bags, selected/NOT TRUE identities, positive/impossible/residual oracles, typed emitted witness. | Technically verified |
+| #4 | All 91 dialect/parser classifications checked; all 21 direct SQL/dbt/ODCS evidence cells exercised for equivalent schema facts. Native vendor/session limitations explicit. | Technically verified |
+| #5 | [All 9 standard CI jobs passed on semantic implementation head `2dd6a7ab`](https://github.com/phdah/sql-semantic-protocol/actions/runs/41726837120), including fmt, strict Clippy, full/no-default Rust tests and docs, dbt Core E2E and schema/golden. [Pinned sql-tdg qualification passed](https://github.com/phdah/sql-semantic-protocol/actions/runs/41726837214) against consumer `3beaf7799ab54b2440ae34c917ff7eda6c11c398`. Two pre-existing timestamp residual cases were compared with a fixed baseline and excluded from selected green suites. [Matt engineering/code-review Standards/Spec technical review](https://github.com/phdah/sql-semantic-protocol/pull/185#pullrequestreview-5760120574) found no code blocker, but uses the PR author's connected account. | **Blocked: distinct independent GitHub reviewer or explicit TASK-168-only owner waiver, plus final post-bookkeeping CI** |
 
-**Status:** In Progress, no acceptance criteria checked, not merge-ready. `TASK-85` parent and `TASK-91` release gate remain open. A green ordinary CI run is necessary but not sufficient for signoff. The previous TASK-167 owner waiver does not transfer to this child.
+**Task status: In Progress.** AC #2, #3 and #4 are technically satisfied; AC #1 and #5 remain open for the identified process gaps. No process waiver from TASK-167 transfers to TASK-168. TASK-85 parent AC and TASK-91 protocol v3 release approval are separate. This is not a recommendation to merge without completing the gates.
