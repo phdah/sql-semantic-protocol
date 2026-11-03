@@ -323,9 +323,10 @@ fn task_168_correlated_tuples_preserve_sql_dbt_odcs_full_bag_evidence() {
         let dbt_bundle = dbt(sql);
         #[cfg(feature = "odcs")]
         let odcs_bundle = direct(&odcs_catalog(), sql);
-        let mut bundles = vec![&direct_bundle, &dbt_bundle];
         #[cfg(feature = "odcs")]
-        bundles.push(&odcs_bundle);
+        let bundles = vec![&direct_bundle, &dbt_bundle, &odcs_bundle];
+        #[cfg(not(feature = "odcs"))]
+        let bundles = vec![&direct_bundle, &dbt_bundle];
 
         for bundle in bundles {
             let second_id = bundle
