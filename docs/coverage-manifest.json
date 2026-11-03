@@ -2,7 +2,7 @@
   "task_166_shared_terminal_goals_acceptance": {
     "owner": "TASK-166",
     "parent": "TASK-85",
-    "status": "technical_ac2_ac4_verified_ac1_process_and_ac5_review_pending",
+    "status": "child_done_owner_waivers_accepted_technical_review_passed",
     "freeze": "docs/task-166-acceptance-freeze.json",
     "freeze_version": 2,
     "fixture_ids": [
@@ -22,7 +22,7 @@
     "mandatory_cells_verified": true,
     "dbt_odcs_parity_verified": true,
     "final_ci_verified": true,
-    "child_signed_off": false,
+    "child_signed_off": true,
     "parent_signed_off": false,
     "freeze_history": [
       "docs/task-166-acceptance-freeze-v1.json"
@@ -35,10 +35,15 @@
     "native_terminal_b_bags_verified": 5,
     "sql_tdg_pinned_consumer_qualification": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41646120167",
     "full_frozen_case_runner": "tests/task_166_acceptance_inventory.rs",
-    "historical_v1_freeze_correction_requires_owner_disposition": true,
+    "historical_v1_freeze_correction_requires_owner_disposition": false,
     "independent_review": false,
-    "verified_metadata_head_before_tracking_commit": "8899a587c48a63f060e8b2bb5c84dc518a5c99c9",
-    "verified_metadata_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41646921872"
+    "owner_signoff_date": "2026-11-03",
+    "owner_process_waiver_accepted": true,
+    "independent_reviewer_identity_waived_by_owner": true,
+    "review_evidence": "PR #183 Matt code-review: https://github.com/phdah/sql-semantic-protocol/pull/183#pullrequestreview-5755210020",
+    "final_tracking_ci_required_before_merge": true,
+    "verified_metadata_head_before_tracking_commit": "be2ab0bfaba5df864c55dca92af7711579b43291",
+    "verified_metadata_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41667049421"
   },
   "task_165_standalone_output_goal_acceptance": {
     "owner": "TASK-165",
