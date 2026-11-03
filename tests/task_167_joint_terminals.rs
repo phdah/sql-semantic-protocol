@@ -356,3 +356,239 @@ fn independent_duckdb_oracle_attests_complete_source_and_both_terminal_bags() {
     set.sort();
     assert_eq!(set, vec![(1, 10), (1, 10), (1, 20)]);
 }
+
+#[test]
+fn task_168_correlated_window_histograms_reject_same_marginals_wrong_pairs() {
+    use sql_semantic_protocol::{
+        physical_joint_tuple_histogram_plan, PhysicalTupleBucket, PhysicalTupleHistogramGoal,
+    };
+
+    for dialect in DIALECTS {
+        let bundle = analyze(JOIN, WINDOW, dialect);
+        let requested = goals(&bundle, 3, 1, false);
+        let exact_window = PhysicalTupleHistogramGoal::new(
+            bundle.layers()[1].id(),
+            vec!["k".into(), "copies".into()],
+            vec![
+                PhysicalTupleBucket::new(
+                    vec![ConstraintValue::Integer(1), ConstraintValue::Integer(2)],
+                    2,
+                ),
+                PhysicalTupleBucket::new(
+                    vec![ConstraintValue::Null, ConstraintValue::Integer(1)],
+                    1,
+                ),
+            ],
+        )
+        .unwrap();
+        let exact_group = PhysicalTupleHistogramGoal::new(
+            bundle.layers()[0].id(),
+            vec!["k".into(), "n".into()],
+            vec![PhysicalTupleBucket::new(
+                vec![ConstraintValue::Integer(1), ConstraintValue::Integer(2)],
+                1,
+            )],
+        )
+        .unwrap();
+
+        let physical = sources(true);
+        assert!(
+            matches!(
+                physical_joint_tuple_histogram_plan(
+                    &bundle,
+                    &requested,
+                    &physical,
+                    &[exact_window, exact_group],
+                ),
+                PhysicalJointTerminalProof::Exact(_)
+            ),
+            "{dialect}: same source assignment must certify both joint histograms"
+        );
+
+        // Both projections independently have k={1:2,NULL:1} and
+        // copies={1:1,2:2}. No row in the actual full bag has (NULL,2).
+        let wrong_pairs = PhysicalTupleHistogramGoal::new(
+            bundle.layers()[1].id(),
+            vec!["k".into(), "copies".into()],
+            vec![
+                PhysicalTupleBucket::new(
+                    vec![ConstraintValue::Integer(1), ConstraintValue::Integer(1)],
+                    1,
+                ),
+                PhysicalTupleBucket::new(
+                    vec![ConstraintValue::Integer(1), ConstraintValue::Integer(2)],
+                    1,
+                ),
+                PhysicalTupleBucket::new(
+                    vec![ConstraintValue::Null, ConstraintValue::Integer(2)],
+                    1,
+                ),
+            ],
+        )
+        .unwrap();
+        assert!(
+            matches!(
+                physical_joint_tuple_histogram_plan(
+                    &bundle,
+                    &requested,
+                    &physical,
+                    &[wrong_pairs],
+                ),
+                PhysicalJointTerminalProof::Impossible { .. }
+            ),
+            "{dialect}: independent marginal agreement is not a tuple proof"
+        );
+    }
+}
+
+#[test]
+fn task_168_set_tuples_preserve_duplicate_multiplicity_and_fail_closed() {
+    use sql_semantic_protocol::{
+        physical_joint_tuple_histogram_plan, PhysicalTupleBucket, PhysicalTupleHistogramGoal,
+    };
+
+    let bundle = analyze(JOIN, SET, "duckdb");
+    let goals = goals(&bundle, 3, 1, true);
+    let expected = PhysicalTupleHistogramGoal::new(
+        bundle.layers()[1].id(),
+        vec!["k".into(), "v".into()],
+        vec![
+            PhysicalTupleBucket::new(
+                vec![ConstraintValue::Integer(1), ConstraintValue::Integer(10)],
+                2,
+            ),
+            PhysicalTupleBucket::new(
+                vec![ConstraintValue::Integer(1), ConstraintValue::Integer(20)],
+                1,
+            ),
+        ],
+    )
+    .unwrap();
+    assert!(matches!(
+        physical_joint_tuple_histogram_plan(&bundle, &goals, &sources(false), &[expected]),
+        PhysicalJointTerminalProof::Exact(_)
+    ));
+
+    let wrong = PhysicalTupleHistogramGoal::new(
+        bundle.layers()[1].id(),
+        vec!["k".into(), "v".into()],
+        vec![
+            PhysicalTupleBucket::new(
+                vec![ConstraintValue::Integer(1), ConstraintValue::Integer(10)],
+                1,
+            ),
+            PhysicalTupleBucket::new(
+                vec![ConstraintValue::Integer(1), ConstraintValue::Integer(20)],
+                2,
+            ),
+        ],
+    )
+    .unwrap();
+    assert!(matches!(
+        physical_joint_tuple_histogram_plan(&bundle, &goals, &sources(false), &[wrong]),
+        PhysicalJointTerminalProof::Impossible { .. }
+    ));
+
+    let unknown_column = PhysicalTupleHistogramGoal::new(
+        bundle.layers()[1].id(),
+        vec!["k".into(), "not_in_output".into()],
+        vec![PhysicalTupleBucket::new(
+            vec![ConstraintValue::Integer(1), ConstraintValue::Integer(10)],
+            3,
+        )],
+    )
+    .unwrap();
+    assert!(matches!(
+        physical_joint_tuple_histogram_plan(
+            &bundle,
+            &goals,
+            &sources(false),
+            &[unknown_column],
+        ),
+        PhysicalJointTerminalProof::Residual { .. }
+    ));
+}
+
+#[test]
+fn task_168_tuple_goal_constructor_rejects_ambiguous_or_incomplete_shapes() {
+    use sql_semantic_protocol::{
+        PhysicalTupleBucket, PhysicalTupleGoalError, PhysicalTupleHistogramGoal,
+    };
+
+    let bucket = PhysicalTupleBucket::new(
+        vec![ConstraintValue::Integer(1), ConstraintValue::Integer(2)],
+        1,
+    );
+    assert_eq!(
+        PhysicalTupleHistogramGoal::new(
+            "target",
+            vec!["k".into(), "k".into()],
+            vec![bucket.clone()],
+        )
+        .unwrap_err(),
+        PhysicalTupleGoalError::DuplicateColumn
+    );
+    assert_eq!(
+        PhysicalTupleHistogramGoal::new(
+            "target",
+            vec!["k".into(), "v".into()],
+            vec![bucket.clone(), bucket],
+        )
+        .unwrap_err(),
+        PhysicalTupleGoalError::DuplicateTuple
+    );
+    assert_eq!(
+        PhysicalTupleHistogramGoal::new(
+            "target",
+            vec!["k".into(), "v".into()],
+            vec![PhysicalTupleBucket::new(vec![ConstraintValue::Integer(1)], 1)],
+        )
+        .unwrap_err(),
+        PhysicalTupleGoalError::TupleArityMismatch
+    );
+}
+
+#[test]
+fn task_168_native_duckdb_confirms_complete_null_and_duplicate_tuple_bags() {
+    let db = Connection::open_in_memory().unwrap();
+    db.execute_batch(
+        "CREATE TABLE l(id VARCHAR, k INTEGER, v INTEGER);
+         CREATE TABLE r(id VARCHAR, k INTEGER, v INTEGER);
+         INSERT INTO l VALUES ('l0',1,10),('l1',1,20),('l2',NULL,30);
+         INSERT INTO r VALUES ('r0',1,10);",
+    )
+    .unwrap();
+    let mut actual_window = db
+        .prepare(WINDOW)
+        .unwrap()
+        .query_map([], |r| {
+            Ok((r.get::<_, Option<i64>>(0)?, r.get::<_, i64>(1)?))
+        })
+        .unwrap()
+        .collect::<Result<Vec<_>, _>>()
+        .unwrap();
+    actual_window.sort();
+    assert_eq!(
+        actual_window,
+        vec![(None, 1), (Some(1), 2), (Some(1), 2)],
+    );
+    let mut actual_set = db
+        .prepare(SET)
+        .unwrap()
+        .query_map([], |r| {
+            Ok((r.get::<_, Option<i64>>(0)?, r.get::<_, i64>(1)?))
+        })
+        .unwrap()
+        .collect::<Result<Vec<_>, _>>()
+        .unwrap();
+    actual_set.sort();
+    assert_eq!(
+        actual_set,
+        vec![
+            (None, 30),
+            (Some(1), 10),
+            (Some(1), 10),
+            (Some(1), 20),
+        ],
+    );
+}
