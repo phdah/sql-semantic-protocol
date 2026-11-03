@@ -2,8 +2,8 @@
 mod common;
 use common::DIALECTS;
 use sql_semantic_protocol::{
-    analyze_configured_inputs_with_catalog, dialect_from_name, ConfiguredSqlInput,
-    RelationCatalog, RelationSchema, SchemaColumn, SqlInput,
+    analyze_configured_inputs_with_catalog, dialect_from_name, ConfiguredSqlInput, RelationCatalog,
+    RelationSchema, SchemaColumn, SqlInput,
 };
 
 #[test]
@@ -16,16 +16,25 @@ fn task_168_frozen_qualify_parser_classes() {
             .map(|(name, kind)| SchemaColumn::from_sql_type(name, kind, "postgresql").unwrap())
             .collect(),
     )
-    .unwrap()]).unwrap();
+    .unwrap()])
+    .unwrap();
     let mut summary = Vec::new();
     for dialect in DIALECTS {
         let parser = dialect_from_name(dialect).unwrap();
         let input = SqlInput::inline(sql);
-        let configured = ConfiguredSqlInput::new("task168-qualify", &input, dialect, parser.as_ref());
+        let configured =
+            ConfiguredSqlInput::new("task168-qualify", &input, dialect, parser.as_ref());
         let result = analyze_configured_inputs_with_catalog(&[configured], &catalog);
-        let class = if result.is_ok() { "accepted" } else { "boundary" };
+        let class = if result.is_ok() {
+            "accepted"
+        } else {
+            "boundary"
+        };
         summary.push(format!("{dialect}:{class}"));
     }
     assert_eq!(summary.len(), DIALECTS.len());
-    assert!(summary.iter().all(|entry| entry.ends_with(":accepted")), "frozen QUALIFY parser classification: {summary:?}");
+    assert!(
+        summary.iter().all(|entry| entry.ends_with(":accepted")),
+        "frozen QUALIFY parser classification: {summary:?}"
+    );
 }
