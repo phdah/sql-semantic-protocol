@@ -34,9 +34,9 @@ type: feature
 
 <!-- AC:BEGIN -->
 - [ ] #1 Before implementing, freeze all named variants and fixture IDs in a task-owned versioned acceptance matrix linked from `docs/coverage-manifest.json`: SQL shape, dialect/parser equivalence, typed output domains (NULL/inclusive-exclusive), exact source and terminal snapshots, TRUE/NOT TRUE/Impossible/Residual proof, source identities, adapter and external-engine evidence. Unverified mandatory cells block Done.
-- [ ] #2 Implement only the finite listed mandatory families and their stated oracle behavior, preserving strongest sound value domains, cross-source correlation, whole-bag multiplicity, complete downstream outputs and deterministic canonical proof. Do not infer independent witness conjunction, silently discard data, or rely on sql-tdg reparsing.
-- [ ] #3 Add executable, public-API DuckDB differential cases for positive and rejected or impossible directions, including fixed NULL/duplicate or counterexample scenarios. Compare complete physical inputs, emitted typed protocol claims and full terminal bags/replay artifacts, not only parsing or generated expectations.
-- [ ] #4 Check the 13 project dialect parser/equivalence cases where meaningful and direct SQL/dbt/ODCS parity for available facts. Record named vendor/session or external consumer limitations, exact evidence required, stable Residual/Impossible classification and explicit review disposition. No unexecuted native-engine claim.
+- [x] #2 Implement only the finite listed mandatory families and their stated oracle behavior, preserving strongest sound value domains, cross-source correlation, whole-bag multiplicity, complete downstream outputs and deterministic canonical proof. Do not infer independent witness conjunction, silently discard data, or rely on sql-tdg reparsing.
+- [x] #3 Add executable, public-API DuckDB differential cases for positive and rejected or impossible directions, including fixed NULL/duplicate or counterexample scenarios. Compare complete physical inputs, emitted typed protocol claims and full terminal bags/replay artifacts, not only parsing or generated expectations.
+- [x] #4 Check the 13 project dialect parser/equivalence cases where meaningful and direct SQL/dbt/ODCS parity for available facts. Record named vendor/session or external consumer limitations, exact evidence required, stable Residual/Impossible classification and explicit review disposition. No unexecuted native-engine claim.
 - [ ] #5 Verify final-head fmt, strict Clippy, full Rust tests/docs/no-default-features, dbt E2E, active schema/golden and relevant pinned sql-tdg tests. Independently sign off each frozen mandatory cell and its mapped parent AC before Done/merge; TASK-85 stays open until all children and original AC pass.
 <!-- AC:END -->
 
@@ -47,3 +47,10 @@ Next: [TASK-167](task-167%20-%20compose-join-filter-group-and-another-window-set
 ## TASK-166 implementation (2026-11-03)
 
 Frozen before semantic implementation: [v1 task-owned complete-source/terminal inventory](../../docs/task-166-acceptance-freeze.json). The full original AC #1..#5 remain unchecked pending executable evidence, independent review and final-head CI. TASK-85 remains open.
+
+## Technical verification and formal signoff status (2026-11-03)
+
+- TASK-166 implements and independently tests the bounded shared-source TRUE/NOT TRUE, duplicate, NULL, impossible and residual cases. The [v2 freeze](../../docs/task-166-acceptance-freeze.json) and [78-cell verification](../../docs/task-166-acceptance-verification.json) map the original child AC and preserve the immutable v1 inventory. Child AC #2, #3 and #4 have executable technical pass evidence. This checkmark denotes technical verification, not an independent identity review.
+- The v1 pre-implementation freeze had an incorrect rejected/selected row partition for the impossible histogram and conflated a requested histogram with native output. Its original content remains in `docs/task-166-acceptance-freeze-v1.json`. Corrected v2 was reviewed via native differential oracles, but the historical freeze defect is not erased. Child AC #1 awaits explicit owner disposition of this deviation.
+- Full Rust default/no-default, strict lint, documentation, dbt E2E, and pinned sql-tdg qualification have passed on implementation heads (see the verification matrix). A final metadata-head CI pass and **a distinct independent reviewer or explicit owner waiver** are still needed to complete child AC #5. Do not claim another GitHub identity reviewed this PR.
+- Parent TASK-85 stays open and TASK-167 remains gated on TASK-166 merge.
