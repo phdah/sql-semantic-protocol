@@ -241,15 +241,14 @@ fn check_set_domains(
         let values = actual
             .values
             .iter()
-            .copied()
-            .map(|value| json!(value))
+            .map(ToString::to_string)
             .collect::<BTreeSet<_>>();
         let expected_values = frozen["values"]
             .as_array()
             .unwrap()
             .iter()
             .filter(|value| !value.is_null())
-            .cloned()
+            .map(Value::to_string)
             .collect::<BTreeSet<_>>();
         assert_eq!(values, expected_values, "{case_id}/{name} tuple positions");
         assert_eq!(actual.contains_null, frozen["contains_null"]);
