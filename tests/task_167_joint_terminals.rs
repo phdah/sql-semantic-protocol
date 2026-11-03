@@ -61,7 +61,10 @@ fn physical_row(id: &str, k: Option<i64>, v: i64) -> PhysicalWriteRow {
 }
 
 fn sources(null_row: bool) -> Vec<PhysicalWriteState> {
-    let mut left = vec![physical_row("l0", Some(1), 10), physical_row("l1", Some(1), 20)];
+    let mut left = vec![
+        physical_row("l0", Some(1), 10),
+        physical_row("l1", Some(1), 20),
+    ];
     if null_row {
         left.push(physical_row("l2", None, 30));
     }
@@ -82,7 +85,12 @@ fn histogram(column: &str, values: &[(ConstraintValue, u64)]) -> OutputDistribut
     .unwrap()
 }
 
-fn goals(bundle: &AnalysisBundle, secondary_rows: u64, join_rows: u64, set: bool) -> Vec<OutcomeGoal> {
+fn goals(
+    bundle: &AnalysisBundle,
+    secondary_rows: u64,
+    join_rows: u64,
+    set: bool,
+) -> Vec<OutcomeGoal> {
     vec![
         OutcomeGoal::new(
             bundle.layers()[0].id(),
@@ -147,7 +155,7 @@ fn frozen_matrix_has_stable_cases_and_all_parser_dialects() {
         let dialects = case["dialect_cells"].as_array().unwrap();
         assert_eq!(dialects.len(), DIALECTS.len());
         for (expected, actual) in DIALECTS.iter().zip(dialects) {
-            assert_eq!(&actual["dialect"], expected);
+            assert_eq!(actual["dialect"].as_str(), Some(*expected));
         }
     }
 }
@@ -217,7 +225,8 @@ fn set_and_join_reconcile_multiplicities_from_the_same_two_sources() {
         "duckdb",
     );
     let assignment = sources(false);
-    let exact = physical_joint_terminal_bag_plan(&bundle, &goals(&bundle, 3, 1, true), &assignment);
+    let exact =
+        physical_joint_terminal_bag_plan(&bundle, &goals(&bundle, 3, 1, true), &assignment);
     let PhysicalJointTerminalProof::Exact(exact) = exact else {
         panic!("set branch and join must share complete bags: {exact:?}");
     };
