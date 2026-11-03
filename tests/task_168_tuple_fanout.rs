@@ -27,7 +27,7 @@ fn bundle(sql: &str, dialect: &str) -> sql_semantic_protocol::AnalysisBundle {
         "l",
         ["id", "k", "v"]
             .iter()
-            .map(|column| SchemaColumn::from_sql_type(column, "INTEGER", "duckdb").unwrap())
+            .map(|column| SchemaColumn::from_sql_type(*column, "INTEGER", "duckdb").unwrap())
             .collect(),
     )
     .unwrap();
