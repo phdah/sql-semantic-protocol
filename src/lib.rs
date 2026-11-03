@@ -36,6 +36,7 @@
 //! - physical_joint_terminal_bag_plan certifies joined and window/set terminals against shared complete source bags.
 //! - physical_joint_tuple_histogram_plan verifies exact multi-column correlations over those same complete output bags.
 //! - physical_single_tuple_histogram_plan certifies correlated typed tuples through complete LIMIT and QUALIFY physical bags.
+//! - to_physical_single_tuple_json emits deterministic source-complete tuple witness sidecars without altering the protocol root.
 //! - to_physical_joint_terminal_json emits deterministic exact joint witness sidecars.
 //! - physical_joint_source_plan returns one canonical topologically ordered source graph and typed joint goal proof.
 //! - physical_rejected_row_count_plan constructs complete nonempty source sets whose rows all fail a proved filter.
@@ -153,7 +154,8 @@ pub use dbt::{
     DbtManifest, DbtManifestError, SUPPORTED_DBT_CATALOG_VERSIONS, SUPPORTED_DBT_MANIFEST_VERSIONS,
 };
 pub use emission::{
-    to_bundle_json, to_json, to_physical_joint_terminal_json, to_physical_typed_population_json,
+    to_bundle_json, to_json, to_physical_joint_terminal_json, to_physical_single_tuple_json,
+    to_physical_typed_population_json,
 };
 pub use group_witness::{
     GroupAggregate, GroupValueTest, GroupWitness, GroupWitnessCase, GroupWitnessDirection,
