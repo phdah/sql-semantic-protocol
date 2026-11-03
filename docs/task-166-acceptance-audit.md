@@ -1,32 +1,53 @@
-# TASK-166 acceptance audit (2026-11-03)
+# TASK-166 acceptance and review audit
 
-**Owner:** TASK-166, child 2/4 of TASK-85. **Parent status:** open. **Freeze:** `docs/task-166-acceptance-freeze.json` v1, committed before the first semantic implementation.
+**Status (2026-11-03):** Technical AC #2, #3 and #4 verified, but AC #1 and #5 remain formal gates. Do **not** mark the child Done before those dispositions. Parent TASK-85 is independently open.
 
-## Proven implementation scope
+## Frozen contract, correction, and evidence
 
-- The proof in `src/physical_realization/joint_distributions.rs::shared_filtered_histogram_plan` uses a **single** complete `SourceRows` assignment. The transparent terminal fixes the physical source count and complete typed distribution. A directly filtered terminal reuses that exact physical column and evaluates SQL TRUE on every typed histogram bucket, preserving duplicates and SQL NULL rejection.
-- A filtered output requiring more occurrences than the complete source is Impossible. A contradictory filtered count or projected complete histogram is Impossible **only** when the underlying exact predicate and shared column identities are verified. Missing typed/schema evidence, unassigned filter columns, joins and non-copy outputs remain Residual.
-- The existing joint-histogram path is reused for transparent/transparent terminals; the new path cannot multiply independent sufficient sources or fabricate rows in derived relations. Proofs retain a canonical physical source identity, closed-world obligations and exact OutputRows targets for both queries.
+- The original prospective v1 inventory was committed before semantic edits and is preserved unchanged as [v1](task-166-acceptance-freeze-v1.json). V1 accidentally inverted the SQL TRUE/NOT TRUE source ordinals in the impossible-histogram case and described a **requested**, false terminal bag as if it were the **observed** DuckDB result. That means literal pre-implementation fixture correctness cannot be asserted retrospectively.
+- Corrected [v2](task-166-acceptance-freeze.json) retains the original six named cases and fixture IDs `85-C166-P`, `85-C166-N`, explicitly freezes the two aliased SQL terminal shapes, separates the requested goal from the native observed bag, and pins schema/source identity and exact signed-integer/NULL interval domains (with bound inclusivity). Its corrections are versioned; neither the mistake nor its timing is hidden.
+- [Machine-readable verification](task-166-acceptance-verification.json) links all **78 case/dialect cells** (52 mandatory, 26 conditional), the native full-bag oracles, typed claims and external-engine restrictions. `tests/task_166_acceptance_inventory.rs` checks each cell, not merely an aggregate count.
 
-## Mandatory and conditional cases
+## Scope and constructive obligations (AC #2 technical pass)
 
-| Frozen case | Expected | Evidence | Status |
-| --- | --- | --- | --- |
-| `85-C166-P-shared` | Exact count 3 and filtered count 2, physical `[1,1,2]` | `tests/task_166_shared_goals.rs`, DuckDB duplicate bag | Code + test added |
-| `85-C166-P-null` | Exact NULL-aware filtered count 1 | `tests/task_166_shared_goals.rs`, DuckDB NULL bag | Code + test added |
-| `85-C166-N-upper` | Impossible count 4 from complete source count 3 | `tests/task_166_shared_goals.rs` | Code + test added |
-| `85-C166-N-histogram` | Impossible `WHERE k = 1` output bag `[2,2]` | `tests/task_166_shared_goals.rs` | Code + test added |
-| `85-C166-C-opaque` | Residual, unknown function semantics | `tests/task_166_shared_goals.rs` | Conditional |
-| `85-C166-C-missing-schema` | Residual, unattested source type | `tests/task_166_shared_goals.rs` | Conditional |
+`src/physical_realization/joint_distributions.rs::shared_filtered_histogram_plan` composes one full, typed `SourceRows` histogram with a directly filtered terminal sharing the same attested physical column. The filter is a normalized exact INTEGER/NULL comparison or NULL test, evaluated against **every** complete-bag bucket under SQL TRUE/NOT TRUE. A returned `WitnessCase` keeps **one** physical population, one closed-world obligation and exact OutputRows for **both** terminals.
 
-The 13 standard dialect identities are exercised by the public API tests for the portable cases. `tests/task_166_adapter_parity.rs` checks typed direct SQL, compiled dbt plus catalog, and (when enabled) ODCS source metadata against the same shared count goals. No vendor-native execution is claimed.
+A terminal requiring 4 rows from a complete 3-occurrence source, or a requested filtered histogram inconsistent with the exact predicate, is necessarily `Impossible`. The unsupported function and missing source schema are `Residual`, not fabricated rows or guessed engine behavior. Grouping, joins, unassigned columns, non-copy projections and other unproved semantics do not inherit this finite proof. No sql-tdg SQL reparsing is involved.
 
-## Unclosed original acceptance gates
+## Native oracle and emitted evidence (AC #3 technical pass)
 
-1. **AC #1:** The v1 named variants and 78 parser cells are frozen, but their individual independently verified statuses and full per-cell typed domains/NULL/inclusivity evidence must be recorded before signoff.
-2. **AC #2:** The positive and impossible shared-source subsets are implemented. Broader correlated goals, additional source columns, and unproved expressions must remain deliberately Residual; assess exact terminal domains and proof identity in an independent review.
-3. **AC #3:** Focused DuckDB full-bag oracles exist, but a frozen-case-driven public-API inventory that compares all source/terminal snapshots with emitted `to_bundle_json` typed claims and TRUE/NOT TRUE identities is still required for full acceptance.
-4. **AC #4:** Direct/dbt/ODCS parity tests are added. Record each dialect/parser and adapter cell's CI result and a reviewed, named vendor/session/external-consumer conditional disposition.
-5. **AC #5:** Require **final-PR-head** fmt, strict Clippy, full default/no-default Rust tests, docs, dbt E2E and relevant pinned sql-tdg consumer qualification. Complete independent standards/spec review of the final diff and source cells, then owner signoff. Do **not** mark TASK-166 Done before all gates close. TASK-85 remains open.
+| Frozen case | Source | Actually executed terminal A / B | Joint verdict | SQL TRUE / NOT TRUE indices |
+| --- | --- | --- | --- | --- |
+| `85-C166-P-shared` | [1,1,2] | [1,1,2] / [1,1] | Exact | [0,1] / [2] |
+| `85-C166-P-null` | [1,1,NULL] | [1,1,NULL] / [NULL] | Exact | [2] / [0,1] |
+| `85-C166-N-upper` | [1,1,2] | [1,1,2] / [1,1] | Impossible (request B=4) | [0,1] / [2] |
+| `85-C166-N-histogram` | [1,1,2] | [1,1,2] / [1,1] | Impossible (request B=[2,2]) | [0,1] / [2] |
+| `85-C166-C-opaque` | [1,1,2] | [1,1,2] / not executed | Residual | unknown |
+| `85-C166-C-missing-schema` | [1,1,2] | [1,1,2] / [1,1] | Residual without typed evidence | [0,1] / [2] |
 
-No independent-review approval, native vendor proof or final-head CI success is asserted by this audit.
+The acceptance test independently inserts every source occurrence into DuckDB, executes the **entire** source and both representable terminal outputs, checks exact multiset multiplicity, compares SQL TRUE and IS NOT TRUE source ordinals, and validates native INTEGER min/max/NULL/inclusive domain oracles against frozen typed domains. It checks the returned typed public `WitnessDirection` and both requested goals in `to_bundle_json`, including canonical source schema data types and source identities. A jointly feasible proof is not inferred by combining standalone outcomes. The two explicitly impossible targets are **requests**, not claims about native observed output.
+
+## Dialects, adapters, and external boundary (AC #4 technical pass)
+
+- All 13 parser dialect identities are exercised for each frozen case with **two canonical Query statements**, and each case's expected Exact/Impossible/Residual verdict is asserted through the public API.
+- `tests/task_166_adapter_parity.rs` compares direct typed SQL, compiled dbt manifest+warehouse catalog, and ODCS physical INTEGER schema under the default feature. It checks a positive shared bag and the necessary B>source impossibility; no adapter invents a physical producer.
+- Only DuckDB is a native SQL execution oracle. Parser acceptance for Snowflake, BigQuery, MSSQL, etc. is **not** evidence of native vendor execution or collation/session behavior.
+- The opaque predicate and absent type evidence remain named, owner TASK-166, **Residual** with no automatic release promotion. Unexecuted vendor/session laws require an independent versioned attestation.
+
+## CI and downstream consumer evidence
+
+- [9/9 previous standard jobs](https://github.com/phdah/sql-semantic-protocol/actions/runs/41645707286) passed after the native typed-domain differential runner.
+- [Full parser/emitted-type verification](https://github.com/phdah/sql-semantic-protocol/actions/runs/41646128619) passed Rust tests, strict Clippy, docs, no-default tests and dbt E2E. Its only failing job was rustfmt; the exact rustfmt patch was committed as `a661009`. A **fully green final PR head** still needs independent confirmation after documentation cleanup.
+- [Pinned sql-tdg compatibility run](https://github.com/phdah/sql-semantic-protocol/actions/runs/41646120167) passed on consumer commit `3beaf7799ab54b2440ae34c917ff7eda6c11c398` with the PR protocol patched in. This covers library, output generation, boundaries, types, full-query and exactness suites. Two preexisting, separately owned timestamp failures were excluded; full sql-tdg green is not claimed. The qualification-only workflow is temporary and must be removed from the final PR.
+
+## Original child criteria and remaining formal decisions
+
+| Child AC | Original parent AC | Result |
+| --- | --- | --- |
+| #1 prospective exact freeze | #1, #3, #5, #6 | Prospective v1 exists but contained wrong expected ordinal and confused requested/native B bag; v2 corrected and validated. **Owner disposition of historical deviation pending**, so unchecked. |
+| #2 shared source and sound negative proof | #1, #3, #4 | **Technical pass**, 4 mandatory finite cases and conservative conditional boundary |
+| #3 full native differential and canonical claims | #5, #6 | **Technical pass**, all executable full-bag/oracle/typed domain checks |
+| #4 13 dialect and SQL/dbt/ODCS equivalence | #1, #6 | **Technical pass**, 78 explicit parser+classification cells and conditional evidence |
+| #5 final CI and independent review | #5, #6 | **Pending**, final-head CI and independent reviewer/explicit owner waiver. No independent GitHub approval claimed. |
+
+The task cannot honestly be marked Done until the owner resolves the v1 process deviation and independent review requirement. A Standards/Spec technical pass submitted by the PR author's own connected GitHub account **does not** constitute a separate reviewer identity. TASK-85 parent remains open until all its children merge and original parent AC independently pass.
