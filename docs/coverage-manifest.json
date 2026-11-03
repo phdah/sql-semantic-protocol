@@ -14576,5 +14576,40 @@
     "implementation_head_sha": "c3fa5c2b7951b11428f8873ab029783b8d56c8f1",
     "implementation_head_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41248576810",
     "final_metadata_head_ci": "must pass before merge"
+  },
+  "task_168_correlated_tuple_goals_acceptance": {
+    "owner": "TASK-168",
+    "parent": "TASK-85",
+    "status": "frozen_pending_implementation_and_review",
+    "freeze": "docs/task-168-acceptance-freeze.json",
+    "freeze_version": 1,
+    "fixture_ids": [
+      "85-C168-P",
+      "85-C168-N"
+    ],
+    "mandatory_cases": 6,
+    "conditional_cases": 1,
+    "dialect_parser_cells": 91,
+    "original_parent_ac_mapping": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+    ],
+    "mandatory_cells_verified": false,
+    "native_duckdb_verified": false,
+    "adapter_parity_verified": false,
+    "full_rust_ci_verified": false,
+    "independent_review": false,
+    "child_signed_off": false,
+    "parent_signed_off": false,
+    "remaining_gates": [
+      "Implement and independently verify every mandatory tuple/LIMIT/QUALIFY/fanout case",
+      "Run 13 dialect and SQL/dbt/ODCS parity matrix",
+      "Run complete DuckDB native source and terminal oracles, fmt, Clippy, Rust/default/no-default, docs, dbt E2E, schema and pinned sql-tdg CI",
+      "Obtain independent review and owner signoff; parent TASK-85 remains open"
+    ]
   }
 }
