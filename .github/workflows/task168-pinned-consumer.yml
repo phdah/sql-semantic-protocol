@@ -1,0 +1,74 @@
+name: TASK-168 pinned sql-tdg consumer qualification (temporary)
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/task168-pinned-consumer.yml'
+      - 'src/**'
+      - 'tests/task_168_*.rs'
+      - 'docs/task-168-acceptance-freeze.json'
+permissions:
+  contents: read
+jobs:
+  pinned-consumer:
+    name: Pinned sql-tdg compatibility
+    runs-on: ubuntu-latest
+    env:
+      CARGO_PROFILE_DEV_DEBUG: "0"
+      CARGO_PROFILE_TEST_DEBUG: "0"
+      DUCKDB_DOWNLOAD_LIB: "1"
+    steps:
+      - name: Checkout protocol candidate
+        uses: actions/checkout@v4
+      - name: Checkout pinned sql-tdg consumer
+        uses: actions/checkout@v4
+        with:
+          repository: phdah/sql-tdg
+          ref: 3beaf7799ab54b2440ae34c917ff7eda6c11c398
+          path: .task168-consumer
+      - name: Checkout frozen pre-task baseline
+        uses: actions/checkout@v4
+        with:
+          ref: d64d47da6f0fc444461dcacf368a3417e1c26630
+          path: .task168-baseline
+      - name: Install Rust
+        run: |
+          rustup toolchain install stable --profile minimal --component rustfmt,clippy
+          rustup default stable
+      - name: Validate pinned downstream consumer suites against PR
+        run: |
+          cargo test --manifest-path .task168-consumer/Cargo.toml \
+            --config "patch.crates-io.sql-semantic-protocol.path='$GITHUB_WORKSPACE'" \
+            --lib --test type_coverage
+          cargo test --manifest-path .task168-consumer/Cargo.toml \
+            --config "patch.crates-io.sql-semantic-protocol.path='$GITHUB_WORKSPACE'" \
+            --test full_query -- --skip protocol_driven_timestamp_generation
+          cargo test --manifest-path .task168-consumer/Cargo.toml \
+            --config "patch.crates-io.sql-semantic-protocol.path='$GITHUB_WORKSPACE'" \
+            --test exactness -- --skip timezone_dependent_timestamp_filters_require_session_assumption
+      - name: Qualify two known timestamp cases against unchanged baseline
+        run: |
+          for case in "exactness timezone_dependent_timestamp_filters_require_session_assumption" "full_query protocol_driven_timestamp_generation"; do
+            set -- $case
+            suite="$1"
+            testcase="$2"
+            set +e
+            cargo test --manifest-path .task168-consumer/Cargo.toml \
+              --config "patch.crates-io.sql-semantic-protocol.path='$GITHUB_WORKSPACE/.task168-baseline'" \
+              --test "$suite" "$testcase" > "/tmp/baseline-$suite.log" 2>&1
+            baseline=$?
+            cargo test --manifest-path .task168-consumer/Cargo.toml \
+              --config "patch.crates-io.sql-semantic-protocol.path='$GITHUB_WORKSPACE'" \
+              --test "$suite" "$testcase" > "/tmp/head-$suite.log" 2>&1
+            head=$?
+            set -e
+            echo "$suite/$testcase baseline_exit=$baseline head_exit=$head"
+            if [ "$baseline" -ne "$head" ]; then
+              echo "TASK-168 changed pinned consumer test verdict"
+              exit 1
+            fi
+            if [ "$baseline" -ne 0 ]; then
+              grep -F 'reason=computed_expression clause=where' "/tmp/baseline-$suite.log"
+              grep -F 'reason=computed_expression clause=where' "/tmp/head-$suite.log"
+              echo "$suite: pre-existing baseline failure, not TASK-168 regression"
+            fi
+          done
