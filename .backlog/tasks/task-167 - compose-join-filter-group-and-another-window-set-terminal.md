@@ -1,10 +1,10 @@
 ---
 id: TASK-167
 title: Compose join filter group and another window/set terminal
-status: To Do
+status: In Progress
 assignee: []
 created_date: '2026-10-17'
-updated_date: '2026-10-17'
+updated_date: '2026-11-03'
 labels: []
 milestone: m-3
 dependencies:
@@ -43,3 +43,10 @@ type: feature
 ## Next
 
 Next: [TASK-168](task-168%20-%20classify-correlations-fanout-and-certify-task-85-goals.md), only after completion and merge.
+
+## TASK-167 implementation (2026-11-03)
+
+- Prospective acceptance matrix: [v1](../../docs/task-167-acceptance-freeze.json), linked from the coverage manifest.
+- Initial implementation: snapshot-relative joint certification of a two-source INNER JOIN/WHERE/GROUP/HAVING terminal and an independent window or set-tree terminal using the *same* complete physical source bags. Unsupported semantics remain Residual; exact full-bag contradictions are Impossible.
+- Public API and full-bag DuckDB tests: `src/physical_realization/joint_terminals.rs` and `tests/task_167_joint_terminals.rs`.
+- **Not Done:** CI, independent review, task-owned adapter parity, source-to-protocol serialization, and pinned sql-tdg qualification are not yet independently verified. No acceptance criteria have been signed off. Parent TASK-85 remains open; TASK-168 remains blocked until this child is Done and merged.
