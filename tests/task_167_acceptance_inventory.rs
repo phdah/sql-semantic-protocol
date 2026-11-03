@@ -565,8 +565,14 @@ fn every_frozen_mandatory_case_is_checked_across_all_13_dialects_with_native_duc
             );
             match &proof {
                 PhysicalJointTerminalProof::Exact(_) => {
-                    assert_eq!(typed["evidence"]["grouped"]["layer_id"], goals[0].layer_id());
-                    assert_eq!(typed["evidence"]["secondary"]["layer_id"], goals[1].layer_id());
+                    assert_eq!(
+                        typed["evidence"]["grouped"]["layer_id"],
+                        goals[0].layer_id()
+                    );
+                    assert_eq!(
+                        typed["evidence"]["secondary"]["layer_id"],
+                        goals[1].layer_id()
+                    );
                     assert_eq!(typed["evidence"]["sources"].as_array().unwrap().len(), 2);
                     assert_eq!(
                         typed["evidence"]["grouped"]["selected"]
