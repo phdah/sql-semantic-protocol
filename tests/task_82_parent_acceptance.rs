@@ -127,7 +127,9 @@ fn every_child_case_and_parent_ac_is_accounted_for_without_reclassification() {
 
 #[test]
 fn parent_replay_inventory_and_active_coverage_manifest_are_consistent() {
-    let freeze = parse(include_str!("../docs/task-82-parent-acceptance-freeze.json"));
+    let freeze = parse(include_str!(
+        "../docs/task-82-parent-acceptance-freeze.json"
+    ));
     let manifest = parse(include_str!("../docs/coverage-manifest.json"));
     let parent = &manifest["task_82_parent_merge_closure_acceptance"];
     assert_eq!(parent["owner"], "TASK-82");
