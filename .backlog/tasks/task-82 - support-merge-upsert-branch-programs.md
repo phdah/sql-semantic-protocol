@@ -1,10 +1,10 @@
 ---
 id: TASK-82
 title: Prove complete MERGE and UPSERT branch/state semantics
-status: To Do
+status: In Progress
 assignee: []
 created_date: '2026-10-09'
-updated_date: '2026-10-09'
+updated_date: '2026-11-04'
 labels: []
 milestone: m-3
 dependencies: 
@@ -72,3 +72,19 @@ TASK-82 is a **parent signoff**, not a single implementation PR. Preserve all or
 **Original AC mapping:** #1 -> TASK-153, TASK-154, TASK-155, TASK-156; #2 -> TASK-153, TASK-154, TASK-155, TASK-156; #3 -> TASK-153, TASK-154, TASK-155, TASK-156; #4 -> TASK-154, TASK-156; #5 -> TASK-153, TASK-154, TASK-155, TASK-156; #6 -> TASK-153, TASK-154, TASK-155, TASK-156.
 
 **No premature completion:** Each child freezes and verifies its own exact expected source/target data, output domains, dual-direction witnesses, parser/dialect/adapter cells, and final CI; the parent gets separate whole-AC closure. A conditional vendor limitation must name an owner and approved evidence boundary; it cannot hide a mandatory unimplemented family.
+
+## Independent parent closure in progress (2026-11-04)
+
+All four dependency children TASK-153..156 are marked Done and their implementation PRs
+[#174](https://github.com/phdah/sql-semantic-protocol/pull/174),
+[#175](https://github.com/phdah/sql-semantic-protocol/pull/175),
+[#176](https://github.com/phdah/sql-semantic-protocol/pull/176) and
+[#177](https://github.com/phdah/sql-semantic-protocol/pull/177) are merged into `main`.
+
+The [independent parent acceptance crosswalk](../../docs/task-82-parent-acceptance-audit.md)
+links each original AC to its child proof and introduces a frozen, parent-level mixed
+MERGE/DuckDB replay. This **does not** automatically sign off the original criteria.
+Parent AC #1..#6 remain unchecked until PR-head CI, independent parent review, and
+all mandatory/conditional disposition gates are verified. The earlier child-specific
+reviewer exceptions do not waive independent TASK-82 closure. TASK-84 and TASK-91
+remain blocked and unsigned.
