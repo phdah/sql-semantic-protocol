@@ -88,3 +88,23 @@ Parent AC #1..#6 remain unchecked until PR-head CI, independent parent review, a
 all mandatory/conditional disposition gates are verified. The earlier child-specific
 reviewer exceptions do not waive independent TASK-82 closure. TASK-84 and TASK-91
 remain blocked and unsigned.
+
+## Parent technical completion evidence (2026-11-04)
+
+- The active parent v3 freeze, with preserved v1/v2 histories, checks 38
+  child-owned proof cases without reclassification (23 Exact, 5 Impossible,
+  10 Residual), all six original AC mappings, 13 parser dialect identities,
+  and equivalent available SQL/dbt/ODCS evidence.
+- Four parent fixtures independently exercise native DuckDB two-step MERGE,
+  TRUE/NOT TRUE membership, complete source/target bags, INTEGER/NULL domains,
+  impossible/residual boundaries, bounded idempotence and non-idempotence.
+  The reviewed correction counts two updates on the unchanged second MERGE.
+- The implementation head `2f5b4c8157f37e2d018a5f99d6d93f53f7cb6ef0`
+  passed [all nine CI jobs](https://github.com/phdah/sql-semantic-protocol/actions/runs/41925632614).
+- Parent Standards/Spec independent-review identity remains unverified. No
+  child review waiver extends to this parent, and no separate account
+  approval is claimed. Thus original AC #1..#6 stay unchecked and status
+  remains **In Progress** despite technical evidence completion. Require
+  a distinct independent reviewer or explicit owner exception before Done.
+- TASK-91 is a separate release decision; vendor-native, FK/UNIQUE and
+  transaction laws remain typed conditional boundaries, never Exact by default.
