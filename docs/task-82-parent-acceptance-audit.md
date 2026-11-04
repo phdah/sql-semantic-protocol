@@ -28,9 +28,9 @@ individual child tasks apply to those children only, never to this parent.
 | #5 Native and dialect evidence | Child-specific full DuckDB before/after oracles; native two-step parent replay against an independent frozen bag. Existing child matrices enumerate 13 parser dialect identities, not 13 native engines. |
 | #6 Tests, docs, schema and adapters | Child acceptance inventories, default/no-default Rust test suites, strict lint, dbt E2E, direct SQL/dbt/ODCS parity and protocol/schema regressions. No new public protocol shape or API is introduced here. |
 
-## Parent-owned finite oracle
+## Parent-owned finite oracle (v1 preserved; v2 adds fixed-point proof)
 
-`docs/task-82-parent-acceptance-freeze.json` v1 fixes two additional
+`docs/task-82-parent-acceptance-freeze-v1.json` preserves the initial two-case inventory. The active v2 adds complete 38-case child reconciliation and two bounded repeat-application cases. The original v1 fixes two
 fixtures before their test implementation:
 
 - `82-PARENT-MIXED-P`: initial target `[(1,10),(2,20),(NULL,8)]`;
@@ -60,3 +60,101 @@ conditional vendor dispositions. No child review waiver is inherited.
 Original TASK-82 AC #1..#6 stay unchecked until those gates are satisfied.
 TASK-83, TASK-85 and TASK-91 require their own independent closure, and
 TASK-161 cannot begin until TASK-82 and TASK-83 are Done and merged.
+
+
+## Full child inventory reconciliation (active v2)
+
+The parent freeze indexes **38** child-owned cases, preserving their frozen
+proof strengths: **23 Exact, 5 Impossible, 10 Residual**. The immutable
+child contracts remain authoritative. `tests/task_82_parent_acceptance.rs`
+verifies identity and classification equality against all four active child
+freeze files, stable fixture roots, the 13-dialect parser identity lists,
+declared parser/adapter counts, original parent AC #1..#6 mappings,
+and mutable coverage-manifest child signoff. This does **not** treat
+parser success or an inventory count as native-engine execution.
+
+Frozen historical signoff flags in TASK-153..156 are retained. Their
+child task files and mutable coverage-manifest records reflect subsequent
+approved completion. No freeze is rewritten to retroactively claim a
+prospective implementation review.
+
+## Parent AC #3 bounded MERGE idempotence
+
+Two independently executable parent cases were added after preserving
+`docs/task-82-parent-acceptance-freeze-v1.json` as historical evidence:
+
+- `82-PARENT-IDEMPOTENT-P` starts with target [(1,10),(2,30)] and immutable
+  source [(1,20),(3,40)]. The first MERGE updates key 1 and inserts key 3;
+  the resulting bag is [(1,20),(2,30),(3,40)]. Reapplying the identical
+  MERGE with that same source preserves the target *bag*, though it still
+  records one matched UPDATE on the second run.
+- `82-PARENT-NONIDEMPOTENT-N` starts with target [(1,10)], source [(1,5)]
+  and `SET score = t.score + s.score`. The first result is [(1,15)]
+  and the second [(1,20)], proving this form is *not* idempotent.
+
+Each step includes exact frozen pre/post bags, affected INSERT/UPDATE/DELETE
+counts, typed INTEGER/NULL value frequencies, bounds, inclusivity and
+nullability. `tests/task_82_parent_merge.rs` compares the public canonical
+ordered plan with **independently executed DuckDB statements and full bags**,
+including immutable source populations. The exact fixed-point result is
+specific to its closed-world evidence, never an unconditional global
+`WriteIdempotence::Proven` claim.
+
+## Original parent AC evidence and disposition
+
+1. **#1**: TASK-153/154 cover first-applicable matched and unmatched
+   branches; TASK-155 classifies ON CONFLICT and vendor UPSERT restrictions;
+   TASK-156 covers computed variants. Unsupported engine-specific
+   equivalence remains explicitly Residual.
+2. **#2**: TASK-153..156 prove source/target TRUE and NOT TRUE partitions,
+   NULL nonmatches, repeated matches, keys, conflict and branch ordering.
+   The parent mixed replay additionally checks both native partitions on
+   each statement prestate.
+3. **#3**: Child and parent source/target complete-bag and negative tests,
+   plus the v2 positive fixed point and computed non-idempotence, prevent
+   made-up final states for Impossible/Residual cases.
+4. **#4**: TASK-154 three-way branch effects, TASK-155 constraint
+   classifications, TASK-156 computed SET/INSERT and the parent two-step
+   full-state replay jointly establish bounded MERGE composition.
+5. **#5**: Complete DuckDB pre/action/post and sequential replays;
+   child 13-dialect parser matrices and paired direct SQL/dbt/ODCS evidence.
+   Parser acceptance is not native vendor engine proof.
+6. **#6**: Strict format/lint, tests/docs with and without default
+   features, dbt Core E2E, schema/golden checks, all child tests and
+   parent verification tests execute in the nine-job CI matrix.
+   No new public protocol shape, dependency or producer-specific heuristic
+   has been introduced.
+
+## Explicit conditional release boundaries
+
+- **Duplicate source winners and native match-error laws:** TASK-155,
+  Residual until versioned engine/cardinality evidence.
+- **ON CONFLICT DO UPDATE, vendor UPSERT and MERGE OUTPUT:** TASK-155,
+  do not promote to Exact or claim equivalent effect without pinned
+  executed native oracle.
+- **Nullable UNIQUE and foreign-key enforcement/deferral:** TASK-155,
+  retain precise declared-enforcement and session-law Residual. A single
+  DuckDB observation is not proof of universal vendor timing.
+- **Unproved numeric expression overflow or type law:** TASK-156,
+  fail closed as a typed Residual.
+- **Transactions, implicit commit and isolation:** TASK-84 retains
+  ownership; no such rule is fabricated from parser support.
+- **Release:** TASK-91 independently reviews the remaining native
+  boundaries before v3 publication. Parent closure never authorizes it.
+
+These are conditional/native safety boundaries, **not deferred portable
+mandatory Exact cases**. This distinction is necessary to avoid an
+overclaim while completing the finite TASK-82 parent contract.
+
+## Technical review / final gate
+
+The earlier PR head `b05d4d83e0b31e6f7eec7401298b7cffc743ca4c`
+passed [all nine GitHub CI jobs](https://github.com/phdah/sql-semantic-protocol/actions/runs/41922420700)
+before the active v2 additions. Fresh final-head CI is mandatory.
+
+Matt Standards/Spec author-account review is a technical assessment,
+**not a distinct independent reviewer**. No child-specific review waiver
+is inherited by TASK-82. Require a separate reviewer or an explicit
+owner-directed process exception for parent signoff. Until that
+disposition and final CI are verified, TASK-82 remains In Progress,
+all six original AC stay unchecked and TASK-91 remains blocked.
