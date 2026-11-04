@@ -191,20 +191,47 @@ fn parent_merge_program_preserves_closed_bags_and_sql_null_rejection() {
         .iter()
         .find(|domain| domain.column() == "score")
         .unwrap();
+    let id_frequencies = id
+        .values()
+        .iter()
+        .map(|(value, count)| {
+            (
+                match value {
+                    LiteralValue::Null => "NULL".to_owned(),
+                    LiteralValue::Number(value) => value.clone(),
+                    other => panic!("unexpected id domain value: {other:?}"),
+                },
+                *count,
+            )
+        })
+        .collect::<BTreeMap<_, _>>();
+    let score_frequencies = score
+        .values()
+        .iter()
+        .map(|(value, count)| {
+            (
+                match value {
+                    LiteralValue::Number(value) => value.clone(),
+                    other => panic!("unexpected score domain value: {other:?}"),
+                },
+                *count,
+            )
+        })
+        .collect::<BTreeMap<_, _>>();
     assert_eq!(
-        id.values(),
-        &BTreeMap::from([
-            (LiteralValue::Null, 1),
-            (LiteralValue::Number("1".to_owned()), 1),
-            (LiteralValue::Number("3".to_owned()), 1),
+        id_frequencies,
+        BTreeMap::from([
+            ("NULL".to_owned(), 1),
+            ("1".to_owned(), 1),
+            ("3".to_owned(), 1),
         ])
     );
     assert_eq!(
-        score.values(),
-        &BTreeMap::from([
-            (LiteralValue::Number("200".to_owned()), 1),
-            (LiteralValue::Number("500".to_owned()), 1),
-            (LiteralValue::Number("600".to_owned()), 1),
+        score_frequencies,
+        BTreeMap::from([
+            ("200".to_owned(), 1),
+            ("500".to_owned(), 1),
+            ("600".to_owned(), 1),
         ])
     );
 }
