@@ -197,7 +197,7 @@ fn assert_domains(state: &PhysicalWriteState, schema: &RelationSchema, frozen: &
 #[test]
 fn mixed_parent_merge_steps_preserve_complete_native_bags_and_domains() {
     let frozen = freeze();
-    assert_eq!(frozen["version"], 1);
+    assert_eq!(frozen["version"], 2);
     let case = &frozen["cases"][0];
     assert_eq!(case["id"], "82-PARENT-MIXED-P");
     assert_eq!(case["classification"], "Exact");
@@ -330,4 +330,104 @@ fn duplicate_source_match_cannot_be_accepted_as_a_portable_merge_winner() {
         native_match_count(&db, "target", "source", false),
         case["on"]["target_true"].as_u64().unwrap()
     );
+}
+
+
+#[test]
+fn repeated_merge_proves_bounded_fixed_point_and_non_idempotent_contrast() {
+    let frozen = freeze();
+    assert_eq!(frozen["version"], 2);
+    let cases = frozen["replay_cases"].as_array().unwrap();
+    assert_eq!(cases.len(), 2);
+    for case in cases {
+        assert_eq!(case["classification"], "Exact");
+        let id = case["id"].as_str().unwrap();
+        let steps = case["steps"].as_array().unwrap();
+        let sql = steps
+            .iter()
+            .map(|step| step["sql"].as_str().unwrap())
+            .collect::<Vec<_>>();
+        let bundle = analyze(&sql);
+        let initial = ["target", "source"]
+            .into_iter()
+            .map(|relation| state(relation, &case["initial"][relation]))
+            .collect::<Vec<_>>();
+        let plan = physical_ordered_write_state_plan(&bundle, &initial);
+        let PhysicalWriteStatePlan::Feasible {
+            transitions,
+            final_states,
+        } = plan
+        else {
+            panic!("{id}: expected complete ordered MERGE proof: {plan:?}");
+        };
+        assert_eq!(transitions.len(), 2, "{id}: two independent statements");
+        let schema = bundle
+            .source_schemas()
+            .iter()
+            .find(|schema| schema.relation() == "target")
+            .unwrap();
+        let db = native(case);
+        for (step, transition) in steps.iter().zip(&transitions) {
+            let before = state("target", &step["before"]);
+            let after = state("target", &step["after"]);
+            assert_eq!(sorted_rows(transition.before()), sorted_rows(&before), "{id}");
+            assert_eq!(
+                sorted_rows(&native_state(&db, "target")),
+                sorted_rows(&before),
+                "{id}: native prestate"
+            );
+            assert_domains(transition.before(), schema, &step["before_domains"]);
+            assert_domains(&native_state(&db, "target"), schema, &step["before_domains"]);
+            assert_eq!(
+                sorted_rows(&native_state(&db, "source")),
+                sorted_rows(&state("source", &case["initial"]["source"])),
+                "{id}: source cannot be invented or mutated"
+            );
+            assert_eq!(
+                transition.affected().inserted(),
+                step["affected"]["inserted"].as_u64().unwrap(),
+                "{id}"
+            );
+            assert_eq!(
+                transition.affected().updated(),
+                step["affected"]["updated"].as_u64().unwrap(),
+                "{id}"
+            );
+            assert_eq!(
+                transition.affected().deleted(),
+                step["affected"]["deleted"].as_u64().unwrap(),
+                "{id}"
+            );
+            assert_eq!(sorted_rows(transition.after()), sorted_rows(&after), "{id}");
+            assert_domains(transition.after(), schema, &step["after_domains"]);
+            db.execute_batch(step["sql"].as_str().unwrap()).unwrap();
+            assert_eq!(
+                sorted_rows(&native_state(&db, "target")),
+                sorted_rows(&after),
+                "{id}: native poststate"
+            );
+            assert_domains(&native_state(&db, "target"), schema, &step["after_domains"]);
+        }
+
+        let first = sorted_rows(transitions[0].after());
+        let second = sorted_rows(transitions[1].after());
+        assert_eq!(
+            first == second,
+            case["fixed_point"].as_bool().unwrap(),
+            "{id}: fixed point must be demonstrated, never inferred from syntax"
+        );
+        for relation in ["source", "target"] {
+            let expected = state(relation, &case["final"][relation]);
+            let canonical = final_states
+                .iter()
+                .find(|state| state.relation() == relation)
+                .unwrap();
+            assert_eq!(sorted_rows(canonical), sorted_rows(&expected), "{id}");
+            assert_eq!(
+                sorted_rows(&native_state(&db, relation)),
+                sorted_rows(&expected),
+                "{id}: complete final native bag"
+            );
+        }
+    }
 }
