@@ -332,7 +332,6 @@ fn duplicate_source_match_cannot_be_accepted_as_a_portable_merge_winner() {
     );
 }
 
-
 #[test]
 fn repeated_merge_proves_bounded_fixed_point_and_non_idempotent_contrast() {
     let frozen = freeze();
@@ -370,14 +369,22 @@ fn repeated_merge_proves_bounded_fixed_point_and_non_idempotent_contrast() {
         for (step, transition) in steps.iter().zip(&transitions) {
             let before = state("target", &step["before"]);
             let after = state("target", &step["after"]);
-            assert_eq!(sorted_rows(transition.before()), sorted_rows(&before), "{id}");
+            assert_eq!(
+                sorted_rows(transition.before()),
+                sorted_rows(&before),
+                "{id}"
+            );
             assert_eq!(
                 sorted_rows(&native_state(&db, "target")),
                 sorted_rows(&before),
                 "{id}: native prestate"
             );
             assert_domains(transition.before(), schema, &step["before_domains"]);
-            assert_domains(&native_state(&db, "target"), schema, &step["before_domains"]);
+            assert_domains(
+                &native_state(&db, "target"),
+                schema,
+                &step["before_domains"],
+            );
             assert_eq!(
                 sorted_rows(&native_state(&db, "source")),
                 sorted_rows(&state("source", &case["initial"]["source"])),
