@@ -1,10 +1,10 @@
 ---
 id: TASK-82
 title: Prove complete MERGE and UPSERT branch/state semantics
-status: To Do
+status: In Progress
 assignee: []
 created_date: '2026-10-09'
-updated_date: '2026-10-09'
+updated_date: '2026-11-04'
 labels: []
 milestone: m-3
 dependencies: 
@@ -72,3 +72,17 @@ TASK-82 is a **parent signoff**, not a single implementation PR. Preserve all or
 **Original AC mapping:** #1 -> TASK-153, TASK-154, TASK-155, TASK-156; #2 -> TASK-153, TASK-154, TASK-155, TASK-156; #3 -> TASK-153, TASK-154, TASK-155, TASK-156; #4 -> TASK-154, TASK-156; #5 -> TASK-153, TASK-154, TASK-155, TASK-156; #6 -> TASK-153, TASK-154, TASK-155, TASK-156.
 
 **No premature completion:** Each child freezes and verifies its own exact expected source/target data, output domains, dual-direction witnesses, parser/dialect/adapter cells, and final CI; the parent gets separate whole-AC closure. A conditional vendor limitation must name an owner and approved evidence boundary; it cannot hide a mandatory unimplemented family.
+
+## Independent parent acceptance in progress (2026-11-04)
+
+The four child PRs #174, #175, #176 and #177 are merged and their
+bounded task-specific AC are Done. The original six parent criteria
+remain unchecked pending independent whole-parent signoff.
+
+[The parent acceptance audit](../../docs/task-82-parent-acceptance-audit.md)
+maps every original AC to the frozen child evidence and an independent
+combined native DuckDB/protocol sequential-MERGE regression
+(`tests/task_82_parent_merge_program.rs`). This does not assert separate
+GitHub reviewer identity, native vendor engine support or TASK-91
+release approval. Verify all required final-head CI, review and
+conditional dispositions before changing this parent to Done.
