@@ -3,10 +3,12 @@
     "owner": "TASK-82",
     "status": "parent_original_ac_audit_in_progress",
     "freeze": "docs/task-82-parent-acceptance-freeze.json",
-    "freeze_version": 1,
+    "freeze_version": 2,
     "fixture_ids": [
       "82-PARENT-MIXED-P",
-      "82-PARENT-MULTIMATCH-N"
+      "82-PARENT-MULTIMATCH-N",
+      "82-PARENT-IDEMPOTENT-P",
+      "82-PARENT-NONIDEMPOTENT-N"
     ],
     "parent_ac": [
       1,
@@ -29,10 +31,32 @@
     "parent_signed_off": false,
     "release_approved": false,
     "remaining_gates": [
-      "latest final PR-head CI",
-      "distinct independent TASK-82 parent Standards/Spec review",
-      "original AC and conditional native-law dispositions"
-    ]
+      "Complete CI on final modified head",
+      "Complete Matt Standards/Spec two-axis parent audit on final diff",
+      "Make parent independent review disposition explicit; no child waiver inheritance",
+      "Do not merge or mark Done before final gates"
+    ],
+    "freeze_history": [
+      "docs/task-82-parent-acceptance-freeze-v1.json"
+    ],
+    "merged_children": {
+      "TASK_153": "https://github.com/phdah/sql-semantic-protocol/pull/174",
+      "TASK_154": "https://github.com/phdah/sql-semantic-protocol/pull/175",
+      "TASK_155": "https://github.com/phdah/sql-semantic-protocol/pull/176",
+      "TASK_156": "https://github.com/phdah/sql-semantic-protocol/pull/177"
+    },
+    "child_case_counts": {
+      "Exact": 23,
+      "Impossible": 5,
+      "Residual": 10
+    },
+    "child_cases_verified_by_existing_ci": 38,
+    "parent_replay_cases": 4,
+    "parent_replay_full_bag_oracle": "tests/task_82_parent_merge.rs",
+    "parent_inventory_oracle": "tests/task_82_parent_acceptance.rs",
+    "parent_ac_mapping_complete": true,
+    "reviewed_implementation_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41922420700",
+    "reviewed_implementation_head": "b05d4d83e0b31e6f7eec7401298b7cffc743ca4c"
   },
   "task_167_joint_terminal_bags_acceptance": {
     "owner": "TASK-167",
