@@ -1,7 +1,7 @@
 {
   "task_82_parent_merge_closure_acceptance": {
     "owner": "TASK-82",
-    "status": "parent_original_ac_audit_in_progress",
+    "status": "technical_acceptance_verified_pending_parent_independent_review",
     "freeze": "docs/task-82-parent-acceptance-freeze.json",
     "freeze_version": 3,
     "fixture_ids": [
@@ -31,10 +31,9 @@
     "parent_signed_off": false,
     "release_approved": false,
     "remaining_gates": [
-      "Complete CI on final modified head",
-      "Complete Matt Standards/Spec two-axis parent audit on final diff",
-      "Make parent independent review disposition explicit; no child waiver inheritance",
-      "Do not merge or mark Done before final gates"
+      "Final tracking-only PR-head CI must pass after the audit update",
+      "Independent TASK-82 parent Standards/Spec reviewer or explicit owner exception; user request to finish task does not assert distinct-reviewer approval",
+      "Original TASK-82 AC #1..#6 and Done status only after review disposition"
     ],
     "freeze_history": [
       "docs/task-82-parent-acceptance-freeze-v1.json",
@@ -56,9 +55,15 @@
     "parent_replay_full_bag_oracle": "tests/task_82_parent_merge.rs",
     "parent_inventory_oracle": "tests/task_82_parent_acceptance.rs",
     "parent_ac_mapping_complete": true,
-    "reviewed_implementation_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41922420700",
-    "reviewed_implementation_head": "b05d4d83e0b31e6f7eec7401298b7cffc743ca4c",
-    "reviewed_v3_correction": "Second identical MERGE updates both matched keys 1 and 3; target bag remains fixed. v2 with one UPDATE preserved historically."
+    "reviewed_implementation_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41925632614",
+    "reviewed_implementation_head": "2f5b4c8157f37e2d018a5f99d6d93f53f7cb6ef0",
+    "reviewed_v3_correction": "Second identical MERGE updates both matched keys 1 and 3; target bag remains fixed. v2 with one UPDATE preserved historically.",
+    "technical_parent_ac_verified": true,
+    "full_ci_verified": true,
+    "native_duckdb_verified": true,
+    "child_matrix_reconciliation_verified": true,
+    "child_adapter_dialect_oracles_verified": true,
+    "review_process_exception_approved": false
   },
   "task_167_joint_terminal_bags_acceptance": {
     "owner": "TASK-167",
