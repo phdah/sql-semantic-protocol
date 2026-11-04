@@ -197,7 +197,7 @@ fn assert_domains(state: &PhysicalWriteState, schema: &RelationSchema, frozen: &
 #[test]
 fn mixed_parent_merge_steps_preserve_complete_native_bags_and_domains() {
     let frozen = freeze();
-    assert_eq!(frozen["version"], 2);
+    assert_eq!(frozen["version"], 3);
     let case = &frozen["cases"][0];
     assert_eq!(case["id"], "82-PARENT-MIXED-P");
     assert_eq!(case["classification"], "Exact");
@@ -335,7 +335,7 @@ fn duplicate_source_match_cannot_be_accepted_as_a_portable_merge_winner() {
 #[test]
 fn repeated_merge_proves_bounded_fixed_point_and_non_idempotent_contrast() {
     let frozen = freeze();
-    assert_eq!(frozen["version"], 2);
+    assert_eq!(frozen["version"], 3);
     let cases = frozen["replay_cases"].as_array().unwrap();
     assert_eq!(cases.len(), 2);
     for case in cases {
