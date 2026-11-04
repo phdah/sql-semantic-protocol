@@ -12,7 +12,10 @@ use sql_semantic_protocol::{
 };
 
 fn freeze() -> Value {
-    serde_json::from_str(include_str!("../docs/task-82-parent-acceptance-freeze.json")).unwrap()
+    serde_json::from_str(include_str!(
+        "../docs/task-82-parent-acceptance-freeze.json"
+    ))
+    .unwrap()
 }
 
 fn row(value: &Value) -> PhysicalWriteRow {
@@ -70,7 +73,10 @@ fn catalog() -> RelationCatalog {
 }
 
 fn analyze(sql: &[&str]) -> sql_semantic_protocol::AnalysisBundle {
-    let inputs = sql.iter().map(|sql| SqlInput::inline(*sql)).collect::<Vec<_>>();
+    let inputs = sql
+        .iter()
+        .map(|sql| SqlInput::inline(*sql))
+        .collect::<Vec<_>>();
     let dialect = dialect_from_name("duckdb").unwrap();
     let ids = (0..inputs.len())
         .map(|index| format!("task82-parent-step-{index}"))
@@ -145,11 +151,7 @@ fn native_match_count(db: &Connection, relation: &str, opposite: &str, not_true:
     u64::try_from(count).unwrap()
 }
 
-fn assert_domains(
-    state: &PhysicalWriteState,
-    schema: &RelationSchema,
-    frozen: &Value,
-) {
+fn assert_domains(state: &PhysicalWriteState, schema: &RelationSchema, frozen: &Value) {
     let domains = state.exact_domains(schema).unwrap();
     assert_eq!(domains.len(), 2);
     for domain in domains {
@@ -182,7 +184,10 @@ fn assert_domains(
             .collect::<Vec<_>>();
         assert_eq!(numeric.iter().min().copied(), expected["lower"].as_i64());
         assert_eq!(numeric.iter().max().copied(), expected["upper"].as_i64());
-        assert_eq!(frequencies.contains_key("NULL"), expected["nullable"] == true);
+        assert_eq!(
+            frequencies.contains_key("NULL"),
+            expected["nullable"] == true
+        );
         assert_eq!(!numeric.is_empty(), expected["lower_inclusive"] == true);
         assert_eq!(!numeric.is_empty(), expected["upper_inclusive"] == true);
         assert_eq!(expected["type"], "INTEGER");
@@ -226,9 +231,16 @@ fn mixed_parent_merge_steps_preserve_complete_native_bags_and_domains() {
         let before = state("target", &step["before"]);
         let after = state("target", &step["after"]);
         assert_eq!(sorted_rows(transition.before()), sorted_rows(&before));
-        assert_eq!(sorted_rows(&native_state(&db, "target")), sorted_rows(&before));
+        assert_eq!(
+            sorted_rows(&native_state(&db, "target")),
+            sorted_rows(&before)
+        );
         assert_domains(transition.before(), schema, &step["before_domains"]);
-        assert_domains(&native_state(&db, "target"), schema, &step["before_domains"]);
+        assert_domains(
+            &native_state(&db, "target"),
+            schema,
+            &step["before_domains"],
+        );
         assert_eq!(
             sorted_rows(&native_state(&db, "source")),
             sorted_rows(&state("source", &case["initial"]["source"]))
@@ -260,7 +272,10 @@ fn mixed_parent_merge_steps_preserve_complete_native_bags_and_domains() {
         assert_eq!(sorted_rows(transition.after()), sorted_rows(&after));
         assert_domains(transition.after(), schema, &step["after_domains"]);
         db.execute_batch(step["sql"].as_str().unwrap()).unwrap();
-        assert_eq!(sorted_rows(&native_state(&db, "target")), sorted_rows(&after));
+        assert_eq!(
+            sorted_rows(&native_state(&db, "target")),
+            sorted_rows(&after)
+        );
         assert_domains(&native_state(&db, "target"), schema, &step["after_domains"]);
     }
 
@@ -271,7 +286,10 @@ fn mixed_parent_merge_steps_preserve_complete_native_bags_and_domains() {
             .find(|state| state.relation() == relation)
             .unwrap();
         assert_eq!(sorted_rows(canonical), sorted_rows(&expected));
-        assert_eq!(sorted_rows(&native_state(&db, relation)), sorted_rows(&expected));
+        assert_eq!(
+            sorted_rows(&native_state(&db, relation)),
+            sorted_rows(&expected)
+        );
     }
 }
 
