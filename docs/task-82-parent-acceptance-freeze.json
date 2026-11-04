@@ -1,0 +1,308 @@
+{
+  "version": 1,
+  "owner": "TASK-82",
+  "kind": "parent-independent-closure-verification",
+  "scope": "Fixed parent-level regression for first-applicable matched UPDATE/DELETE, unmatched insertion/deletion, computed sequential MERGE, NULL nonmembership and duplicate-match residual; child freezes remain authoritative for the full 13-dialect/adapter matrix.",
+  "fixture_ids": [
+    "82-PARENT-MIXED-P",
+    "82-PARENT-MULTIMATCH-N"
+  ],
+  "cases": [
+    {
+      "id": "82-PARENT-MIXED-P",
+      "classification": "Exact",
+      "initial": {
+        "target": [
+          {
+            "id": 1,
+            "score": 10
+          },
+          {
+            "id": 2,
+            "score": 20
+          },
+          {
+            "id": null,
+            "score": 8
+          }
+        ],
+        "source": [
+          {
+            "id": 1,
+            "score": 5
+          },
+          {
+            "id": 3,
+            "score": 30
+          }
+        ]
+      },
+      "steps": [
+        {
+          "sql": "MERGE INTO target AS t USING source AS s ON t.id = s.id WHEN MATCHED AND s.score > 0 THEN UPDATE SET score = t.score + s.score WHEN NOT MATCHED BY TARGET THEN INSERT (id, score) VALUES (s.id, s.score) WHEN NOT MATCHED BY SOURCE AND t.id IS NOT NULL THEN DELETE",
+          "before": [
+            {
+              "id": 1,
+              "score": 10
+            },
+            {
+              "id": 2,
+              "score": 20
+            },
+            {
+              "id": null,
+              "score": 8
+            }
+          ],
+          "after": [
+            {
+              "id": 1,
+              "score": 15
+            },
+            {
+              "id": null,
+              "score": 8
+            },
+            {
+              "id": 3,
+              "score": 30
+            }
+          ],
+          "affected": {
+            "inserted": 1,
+            "updated": 1,
+            "deleted": 1
+          },
+          "before_domains": {
+            "id": {
+              "type": "INTEGER",
+              "frequencies": {
+                "1": 1,
+                "2": 1,
+                "NULL": 1
+              },
+              "lower": 1,
+              "upper": 2,
+              "nullable": true,
+              "lower_inclusive": true,
+              "upper_inclusive": true
+            },
+            "score": {
+              "type": "INTEGER",
+              "frequencies": {
+                "8": 1,
+                "10": 1,
+                "20": 1
+              },
+              "lower": 8,
+              "upper": 20,
+              "nullable": false,
+              "lower_inclusive": true,
+              "upper_inclusive": true
+            }
+          },
+          "after_domains": {
+            "id": {
+              "type": "INTEGER",
+              "frequencies": {
+                "1": 1,
+                "3": 1,
+                "NULL": 1
+              },
+              "lower": 1,
+              "upper": 3,
+              "nullable": true,
+              "lower_inclusive": true,
+              "upper_inclusive": true
+            },
+            "score": {
+              "type": "INTEGER",
+              "frequencies": {
+                "8": 1,
+                "15": 1,
+                "30": 1
+              },
+              "lower": 8,
+              "upper": 30,
+              "nullable": false,
+              "lower_inclusive": true,
+              "upper_inclusive": true
+            }
+          }
+        },
+        {
+          "sql": "MERGE INTO target AS t USING source AS s ON t.id = s.id WHEN MATCHED AND s.id = 1 THEN DELETE WHEN MATCHED AND s.id = 3 THEN UPDATE SET score = t.score + 10",
+          "before": [
+            {
+              "id": 1,
+              "score": 15
+            },
+            {
+              "id": null,
+              "score": 8
+            },
+            {
+              "id": 3,
+              "score": 30
+            }
+          ],
+          "after": [
+            {
+              "id": null,
+              "score": 8
+            },
+            {
+              "id": 3,
+              "score": 40
+            }
+          ],
+          "affected": {
+            "inserted": 0,
+            "updated": 1,
+            "deleted": 1
+          },
+          "before_domains": {
+            "id": {
+              "type": "INTEGER",
+              "frequencies": {
+                "1": 1,
+                "3": 1,
+                "NULL": 1
+              },
+              "lower": 1,
+              "upper": 3,
+              "nullable": true,
+              "lower_inclusive": true,
+              "upper_inclusive": true
+            },
+            "score": {
+              "type": "INTEGER",
+              "frequencies": {
+                "8": 1,
+                "15": 1,
+                "30": 1
+              },
+              "lower": 8,
+              "upper": 30,
+              "nullable": false,
+              "lower_inclusive": true,
+              "upper_inclusive": true
+            }
+          },
+          "after_domains": {
+            "id": {
+              "type": "INTEGER",
+              "frequencies": {
+                "3": 1,
+                "NULL": 1
+              },
+              "lower": 3,
+              "upper": 3,
+              "nullable": true,
+              "lower_inclusive": true,
+              "upper_inclusive": true
+            },
+            "score": {
+              "type": "INTEGER",
+              "frequencies": {
+                "8": 1,
+                "40": 1
+              },
+              "lower": 8,
+              "upper": 40,
+              "nullable": false,
+              "lower_inclusive": true,
+              "upper_inclusive": true
+            }
+          }
+        }
+      ],
+      "final": {
+        "target": [
+          {
+            "id": null,
+            "score": 8
+          },
+          {
+            "id": 3,
+            "score": 40
+          }
+        ],
+        "source": [
+          {
+            "id": 1,
+            "score": 5
+          },
+          {
+            "id": 3,
+            "score": 30
+          }
+        ]
+      }
+    },
+    {
+      "id": "82-PARENT-MULTIMATCH-N",
+      "classification": "Residual",
+      "gap": "UnprovedOperation",
+      "sql": "MERGE INTO target AS t USING source AS s ON t.id = s.id WHEN MATCHED THEN UPDATE SET score = t.score + s.score",
+      "initial": {
+        "target": [
+          {
+            "id": 1,
+            "score": 10
+          }
+        ],
+        "source": [
+          {
+            "id": 1,
+            "score": 5
+          },
+          {
+            "id": 1,
+            "score": 6
+          }
+        ]
+      },
+      "reason": "No portable winner or error rule for repeated source matches against the same target row."
+    }
+  ],
+  "parent_ac_mapping": {
+    "1": [
+      "TASK-153",
+      "TASK-154",
+      "TASK-155",
+      "TASK-156"
+    ],
+    "2": [
+      "TASK-153",
+      "TASK-154",
+      "TASK-155",
+      "TASK-156"
+    ],
+    "3": [
+      "TASK-153",
+      "TASK-154",
+      "TASK-155",
+      "TASK-156"
+    ],
+    "4": [
+      "TASK-154",
+      "TASK-156"
+    ],
+    "5": [
+      "TASK-153",
+      "TASK-154",
+      "TASK-155",
+      "TASK-156"
+    ],
+    "6": [
+      "TASK-153",
+      "TASK-154",
+      "TASK-155",
+      "TASK-156"
+    ]
+  },
+  "verification_state": "not_yet_verified_on_PR_head",
+  "independent_parent_signoff": false,
+  "release_gate": "TASK-91 remains independent"
+}
