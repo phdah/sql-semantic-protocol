@@ -1,11 +1,13 @@
 {
-  "version": 1,
+  "version": 2,
   "owner": "TASK-82",
   "kind": "parent-independent-closure-verification",
-  "scope": "Fixed parent-level regression for first-applicable matched UPDATE/DELETE, unmatched insertion/deletion, computed sequential MERGE, NULL nonmembership and duplicate-match residual; child freezes remain authoritative for the full 13-dialect/adapter matrix.",
+  "scope": "Fixed parent-level regression for first-applicable matched UPDATE/DELETE, unmatched insertion/deletion, computed sequential MERGE, NULL nonmembership and duplicate-match residual; child freezes remain authoritative for the full 13-dialect/adapter matrix. Version 2 adds bounded fixed-point and non-idempotent repeated-application oracles plus a complete child-frozen-case reconciliation.",
   "fixture_ids": [
     "82-PARENT-MIXED-P",
-    "82-PARENT-MULTIMATCH-N"
+    "82-PARENT-MULTIMATCH-N",
+    "82-PARENT-IDEMPOTENT-P",
+    "82-PARENT-NONIDEMPOTENT-N"
   ],
   "cases": [
     {
@@ -320,7 +322,715 @@
       "TASK-156"
     ]
   },
-  "verification_state": "not_yet_verified_on_PR_head",
+  "verification_state": "not_yet_verified_on_updated_PR_head",
   "independent_parent_signoff": false,
-  "release_gate": "TASK-91 remains independent"
+  "release_gate": "TASK-91 remains independent",
+  "freeze_history": [
+    "docs/task-82-parent-acceptance-freeze-v1.json"
+  ],
+  "case_index_owner": "Current child freeze files remain authoritative; this index must match them exactly.",
+  "merged_child_inventory": {
+    "TASK-153": {
+      "version": 3,
+      "freeze": "docs/task-153-acceptance-freeze.json",
+      "merged_pr": "https://github.com/phdah/sql-semantic-protocol/pull/174",
+      "fixture_ids": [
+        "82-C153-P",
+        "82-C153-N"
+      ],
+      "original_parent_ac": [
+        1,
+        2,
+        3,
+        5,
+        6
+      ],
+      "cases": [
+        {
+          "id": "82-C153-P-update-first",
+          "classification": "Exact"
+        },
+        {
+          "id": "82-C153-P-delete-first",
+          "classification": "Exact"
+        },
+        {
+          "id": "82-C153-P-fallback-delete",
+          "classification": "Exact"
+        },
+        {
+          "id": "82-C153-N-null-key",
+          "classification": "Exact"
+        },
+        {
+          "id": "82-C153-N-no-match",
+          "classification": "Exact"
+        },
+        {
+          "id": "82-C153-N-multimatch",
+          "classification": "Residual"
+        },
+        {
+          "id": "82-C153-N-key-collision",
+          "classification": "Impossible"
+        },
+        {
+          "id": "82-C153-N-missing-source",
+          "classification": "Residual"
+        }
+      ],
+      "dialects": [
+        "generic",
+        "mysql",
+        "postgresql",
+        "hive",
+        "sqlite",
+        "snowflake",
+        "redshift",
+        "mssql",
+        "clickhouse",
+        "bigquery",
+        "ansi",
+        "duckdb",
+        "databricks"
+      ],
+      "parser_cells": 65,
+      "adapter_cases": 24
+    },
+    "TASK-154": {
+      "version": 4,
+      "freeze": "docs/task-154-acceptance-freeze.json",
+      "merged_pr": "https://github.com/phdah/sql-semantic-protocol/pull/175",
+      "fixture_ids": [
+        "82-C154-P",
+        "82-C154-N"
+      ],
+      "original_parent_ac": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "cases": [
+        {
+          "id": "82-C154-P-insert",
+          "classification": "Exact"
+        },
+        {
+          "id": "82-C154-P-by-target",
+          "classification": "Exact"
+        },
+        {
+          "id": "82-C154-P-source-delete",
+          "classification": "Exact"
+        },
+        {
+          "id": "82-C154-P-source-update",
+          "classification": "Exact"
+        },
+        {
+          "id": "82-C154-P-three-way",
+          "classification": "Exact"
+        },
+        {
+          "id": "82-C154-P-precedence",
+          "classification": "Exact"
+        },
+        {
+          "id": "82-C154-N-null",
+          "classification": "Exact"
+        },
+        {
+          "id": "82-C154-N-empty-source",
+          "classification": "Exact"
+        },
+        {
+          "id": "82-C154-P-empty-target",
+          "classification": "Exact"
+        },
+        {
+          "id": "82-C154-N-duplicate-match",
+          "classification": "Residual"
+        },
+        {
+          "id": "82-C154-N-key-collision",
+          "classification": "Impossible"
+        },
+        {
+          "id": "82-C154-N-missing-source",
+          "classification": "Residual"
+        }
+      ],
+      "dialects": [
+        "generic",
+        "mysql",
+        "postgresql",
+        "hive",
+        "sqlite",
+        "snowflake",
+        "redshift",
+        "mssql",
+        "clickhouse",
+        "bigquery",
+        "ansi",
+        "duckdb",
+        "databricks"
+      ],
+      "parser_cells": 65,
+      "adapter_cases": 3
+    },
+    "TASK-155": {
+      "version": 4,
+      "freeze": "docs/task-155-acceptance-freeze.json",
+      "merged_pr": "https://github.com/phdah/sql-semantic-protocol/pull/176",
+      "fixture_ids": [
+        "82-C155-P",
+        "82-C155-N"
+      ],
+      "original_parent_ac": [
+        1,
+        2,
+        3,
+        5,
+        6
+      ],
+      "cases": [
+        {
+          "id": "82-C155-P-unique-match",
+          "classification": "Exact"
+        },
+        {
+          "id": "82-C155-P-two-null-keys",
+          "classification": "Exact"
+        },
+        {
+          "id": "82-C155-N-ambiguous-winner",
+          "classification": "Residual"
+        },
+        {
+          "id": "82-C155-N-attested-source-key",
+          "classification": "Impossible"
+        },
+        {
+          "id": "82-C155-N-insert-target-key",
+          "classification": "Impossible"
+        },
+        {
+          "id": "82-C155-P-conflict-ignore",
+          "classification": "Exact"
+        },
+        {
+          "id": "82-C155-N-upsert-update",
+          "classification": "Residual"
+        },
+        {
+          "id": "82-C155-P-fk-supported",
+          "classification": "Exact"
+        },
+        {
+          "id": "82-C155-N-fk-violation",
+          "classification": "Residual"
+        },
+        {
+          "id": "82-C155-N-fk-missing-population",
+          "classification": "Residual"
+        },
+        {
+          "id": "82-C155-N-nullable-unique",
+          "classification": "Residual"
+        },
+        {
+          "id": "82-C155-P-unique-key-insert",
+          "classification": "Exact"
+        }
+      ],
+      "dialects": [
+        "generic",
+        "mysql",
+        "postgresql",
+        "hive",
+        "sqlite",
+        "snowflake",
+        "redshift",
+        "mssql",
+        "clickhouse",
+        "bigquery",
+        "ansi",
+        "duckdb",
+        "databricks"
+      ],
+      "parser_cells": 52,
+      "adapter_cases": 12
+    },
+    "TASK-156": {
+      "version": 4,
+      "freeze": "docs/task-156-acceptance-freeze.json",
+      "merged_pr": "https://github.com/phdah/sql-semantic-protocol/pull/177",
+      "fixture_ids": [
+        "82-C156-P",
+        "82-C156-N"
+      ],
+      "original_parent_ac": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "cases": [
+        {
+          "id": "82-C156-P-two-increments",
+          "classification": "Exact"
+        },
+        {
+          "id": "82-C156-P-computed-insert-then-update",
+          "classification": "Exact"
+        },
+        {
+          "id": "82-C156-P-nested-prior-source",
+          "classification": "Exact"
+        },
+        {
+          "id": "82-C156-N-null-not-true",
+          "classification": "Exact"
+        },
+        {
+          "id": "82-C156-N-duplicate-source",
+          "classification": "Residual"
+        },
+        {
+          "id": "82-C156-N-computed-duplicate-primary-key",
+          "classification": "Impossible"
+        }
+      ],
+      "dialects": [
+        "generic",
+        "mysql",
+        "postgresql",
+        "hive",
+        "sqlite",
+        "snowflake",
+        "redshift",
+        "mssql",
+        "clickhouse",
+        "bigquery",
+        "ansi",
+        "duckdb",
+        "databricks"
+      ],
+      "parser_cells": 65,
+      "adapter_cases": 6
+    }
+  },
+  "replay_cases": [
+    {
+      "id": "82-PARENT-IDEMPOTENT-P",
+      "classification": "Exact",
+      "purpose": "Prove bounded final-state fixed point under identical repeated MERGE with one immutable source population; second matched UPDATE is still a physical action.",
+      "fixed_point": true,
+      "initial": {
+        "target": [
+          {
+            "id": 1,
+            "score": 10
+          },
+          {
+            "id": 2,
+            "score": 30
+          }
+        ],
+        "source": [
+          {
+            "id": 1,
+            "score": 20
+          },
+          {
+            "id": 3,
+            "score": 40
+          }
+        ]
+      },
+      "steps": [
+        {
+          "sql": "MERGE INTO target AS t USING source AS s ON t.id = s.id WHEN MATCHED THEN UPDATE SET score = s.score WHEN NOT MATCHED THEN INSERT (id, score) VALUES (s.id, s.score)",
+          "before": [
+            {
+              "id": 1,
+              "score": 10
+            },
+            {
+              "id": 2,
+              "score": 30
+            }
+          ],
+          "after": [
+            {
+              "id": 1,
+              "score": 20
+            },
+            {
+              "id": 2,
+              "score": 30
+            },
+            {
+              "id": 3,
+              "score": 40
+            }
+          ],
+          "affected": {
+            "inserted": 1,
+            "updated": 1,
+            "deleted": 0
+          },
+          "before_domains": {
+            "id": {
+              "type": "INTEGER",
+              "frequencies": {
+                "1": 1,
+                "2": 1
+              },
+              "lower": 1,
+              "upper": 2,
+              "nullable": false,
+              "lower_inclusive": true,
+              "upper_inclusive": true
+            },
+            "score": {
+              "type": "INTEGER",
+              "frequencies": {
+                "10": 1,
+                "30": 1
+              },
+              "lower": 10,
+              "upper": 30,
+              "nullable": false,
+              "lower_inclusive": true,
+              "upper_inclusive": true
+            }
+          },
+          "after_domains": {
+            "id": {
+              "type": "INTEGER",
+              "frequencies": {
+                "1": 1,
+                "2": 1,
+                "3": 1
+              },
+              "lower": 1,
+              "upper": 3,
+              "nullable": false,
+              "lower_inclusive": true,
+              "upper_inclusive": true
+            },
+            "score": {
+              "type": "INTEGER",
+              "frequencies": {
+                "20": 1,
+                "30": 1,
+                "40": 1
+              },
+              "lower": 20,
+              "upper": 40,
+              "nullable": false,
+              "lower_inclusive": true,
+              "upper_inclusive": true
+            }
+          }
+        },
+        {
+          "sql": "MERGE INTO target AS t USING source AS s ON t.id = s.id WHEN MATCHED THEN UPDATE SET score = s.score WHEN NOT MATCHED THEN INSERT (id, score) VALUES (s.id, s.score)",
+          "before": [
+            {
+              "id": 1,
+              "score": 20
+            },
+            {
+              "id": 2,
+              "score": 30
+            },
+            {
+              "id": 3,
+              "score": 40
+            }
+          ],
+          "after": [
+            {
+              "id": 1,
+              "score": 20
+            },
+            {
+              "id": 2,
+              "score": 30
+            },
+            {
+              "id": 3,
+              "score": 40
+            }
+          ],
+          "affected": {
+            "inserted": 0,
+            "updated": 1,
+            "deleted": 0
+          },
+          "before_domains": {
+            "id": {
+              "type": "INTEGER",
+              "frequencies": {
+                "1": 1,
+                "2": 1,
+                "3": 1
+              },
+              "lower": 1,
+              "upper": 3,
+              "nullable": false,
+              "lower_inclusive": true,
+              "upper_inclusive": true
+            },
+            "score": {
+              "type": "INTEGER",
+              "frequencies": {
+                "20": 1,
+                "30": 1,
+                "40": 1
+              },
+              "lower": 20,
+              "upper": 40,
+              "nullable": false,
+              "lower_inclusive": true,
+              "upper_inclusive": true
+            }
+          },
+          "after_domains": {
+            "id": {
+              "type": "INTEGER",
+              "frequencies": {
+                "1": 1,
+                "2": 1,
+                "3": 1
+              },
+              "lower": 1,
+              "upper": 3,
+              "nullable": false,
+              "lower_inclusive": true,
+              "upper_inclusive": true
+            },
+            "score": {
+              "type": "INTEGER",
+              "frequencies": {
+                "20": 1,
+                "30": 1,
+                "40": 1
+              },
+              "lower": 20,
+              "upper": 40,
+              "nullable": false,
+              "lower_inclusive": true,
+              "upper_inclusive": true
+            }
+          }
+        }
+      ],
+      "final": {
+        "target": [
+          {
+            "id": 1,
+            "score": 20
+          },
+          {
+            "id": 2,
+            "score": 30
+          },
+          {
+            "id": 3,
+            "score": 40
+          }
+        ],
+        "source": [
+          {
+            "id": 1,
+            "score": 20
+          },
+          {
+            "id": 3,
+            "score": 40
+          }
+        ]
+      }
+    },
+    {
+      "id": "82-PARENT-NONIDEMPOTENT-N",
+      "classification": "Exact",
+      "purpose": "Prove that computed matched update is not globally idempotent: two identical statements produce distinct typed end states.",
+      "fixed_point": false,
+      "initial": {
+        "target": [
+          {
+            "id": 1,
+            "score": 10
+          }
+        ],
+        "source": [
+          {
+            "id": 1,
+            "score": 5
+          }
+        ]
+      },
+      "steps": [
+        {
+          "sql": "MERGE INTO target AS t USING source AS s ON t.id = s.id WHEN MATCHED THEN UPDATE SET score = t.score + s.score",
+          "before": [
+            {
+              "id": 1,
+              "score": 10
+            }
+          ],
+          "after": [
+            {
+              "id": 1,
+              "score": 15
+            }
+          ],
+          "affected": {
+            "inserted": 0,
+            "updated": 1,
+            "deleted": 0
+          },
+          "before_domains": {
+            "id": {
+              "type": "INTEGER",
+              "frequencies": {
+                "1": 1
+              },
+              "lower": 1,
+              "upper": 1,
+              "nullable": false,
+              "lower_inclusive": true,
+              "upper_inclusive": true
+            },
+            "score": {
+              "type": "INTEGER",
+              "frequencies": {
+                "10": 1
+              },
+              "lower": 10,
+              "upper": 10,
+              "nullable": false,
+              "lower_inclusive": true,
+              "upper_inclusive": true
+            }
+          },
+          "after_domains": {
+            "id": {
+              "type": "INTEGER",
+              "frequencies": {
+                "1": 1
+              },
+              "lower": 1,
+              "upper": 1,
+              "nullable": false,
+              "lower_inclusive": true,
+              "upper_inclusive": true
+            },
+            "score": {
+              "type": "INTEGER",
+              "frequencies": {
+                "15": 1
+              },
+              "lower": 15,
+              "upper": 15,
+              "nullable": false,
+              "lower_inclusive": true,
+              "upper_inclusive": true
+            }
+          }
+        },
+        {
+          "sql": "MERGE INTO target AS t USING source AS s ON t.id = s.id WHEN MATCHED THEN UPDATE SET score = t.score + s.score",
+          "before": [
+            {
+              "id": 1,
+              "score": 15
+            }
+          ],
+          "after": [
+            {
+              "id": 1,
+              "score": 20
+            }
+          ],
+          "affected": {
+            "inserted": 0,
+            "updated": 1,
+            "deleted": 0
+          },
+          "before_domains": {
+            "id": {
+              "type": "INTEGER",
+              "frequencies": {
+                "1": 1
+              },
+              "lower": 1,
+              "upper": 1,
+              "nullable": false,
+              "lower_inclusive": true,
+              "upper_inclusive": true
+            },
+            "score": {
+              "type": "INTEGER",
+              "frequencies": {
+                "15": 1
+              },
+              "lower": 15,
+              "upper": 15,
+              "nullable": false,
+              "lower_inclusive": true,
+              "upper_inclusive": true
+            }
+          },
+          "after_domains": {
+            "id": {
+              "type": "INTEGER",
+              "frequencies": {
+                "1": 1
+              },
+              "lower": 1,
+              "upper": 1,
+              "nullable": false,
+              "lower_inclusive": true,
+              "upper_inclusive": true
+            },
+            "score": {
+              "type": "INTEGER",
+              "frequencies": {
+                "20": 1
+              },
+              "lower": 20,
+              "upper": 20,
+              "nullable": false,
+              "lower_inclusive": true,
+              "upper_inclusive": true
+            }
+          }
+        }
+      ],
+      "final": {
+        "target": [
+          {
+            "id": 1,
+            "score": 20
+          }
+        ],
+        "source": [
+          {
+            "id": 1,
+            "score": 5
+          }
+        ]
+      }
+    }
+  ]
 }
