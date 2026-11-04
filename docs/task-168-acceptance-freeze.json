@@ -1,0 +1,2717 @@
+{
+  "version": 2,
+  "owner": "TASK-168",
+  "parent": "TASK-85",
+  "created": "2026-11-03",
+  "frozen_before_semantic_changes": false,
+  "status": "all_technical_cells_verified_ac1_timing_and_ac5_independence_pending",
+  "fixtures": [
+    "85-C168-P",
+    "85-C168-N"
+  ],
+  "original_parent_ac": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6
+  ],
+  "scope": "Typed correlated tuple frequencies; shared source bag across join, set and window terminals, plus LIMIT/QUALIFY fanout. Freeze all mandatory variants; none may be moved to optional residual to achieve signoff.",
+  "types": "Canonical signed INTEGER and SQL NULL only for exact typed tuple equality; unproved collation and vendor/session laws must remain Residual.",
+  "evaluation": "Full closed-world physical source and terminal bags, all output rows, integer/null bounds and TRUE/NOT TRUE selected/rejected identities; an independently supplied tuple histogram is a goal, not executable proof.",
+  "unverified_mandatory_blocks_done": true,
+  "independent_review_required": true,
+  "release_gate": "TASK-85 independent parent signoff and TASK-91 separate v3 gate",
+  "matrix": [
+    {
+      "id": "85-C168-P-set-tuples",
+      "fixture": "85-C168-P",
+      "family": "set",
+      "expectation": "Exact",
+      "sql": [
+        "SELECT l.k AS k, COUNT(*) AS n FROM l JOIN r ON l.k = r.k WHERE l.k = 1 GROUP BY l.k HAVING COUNT(*) >= 2",
+        "SELECT k, v FROM l UNION ALL SELECT k, v FROM r"
+      ],
+      "source_bags": {
+        "l": [
+          {
+            "id": "l0",
+            "k": 1,
+            "v": 10
+          },
+          {
+            "id": "l1",
+            "k": 1,
+            "v": 20
+          }
+        ],
+        "r": [
+          {
+            "id": "r0",
+            "k": 1,
+            "v": 10
+          }
+        ]
+      },
+      "grouped_terminal": [
+        {
+          "k": 1,
+          "n": 2
+        }
+      ],
+      "second_terminal": [
+        {
+          "k": 1,
+          "v": 10
+        },
+        {
+          "k": 1,
+          "v": 20
+        },
+        {
+          "k": 1,
+          "v": 10
+        }
+      ],
+      "columns": [
+        "k",
+        "v"
+      ],
+      "tuple_histogram": [
+        {
+          "values": [
+            1,
+            10
+          ],
+          "rows": 2
+        },
+        {
+          "values": [
+            1,
+            20
+          ],
+          "rows": 1
+        }
+      ],
+      "required": true,
+      "dialect_cells": [
+        {
+          "dialect": "generic",
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Exact",
+          "verified": true,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41726837120",
+          "verification_scope": "parser_equivalence_and_portable_canonical_proof_only"
+        },
+        {
+          "dialect": "mysql",
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Exact",
+          "verified": true,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41726837120",
+          "verification_scope": "parser_equivalence_and_portable_canonical_proof_only"
+        },
+        {
+          "dialect": "postgresql",
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Exact",
+          "verified": true,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41726837120",
+          "verification_scope": "parser_equivalence_and_portable_canonical_proof_only"
+        },
+        {
+          "dialect": "hive",
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Exact",
+          "verified": true,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41726837120",
+          "verification_scope": "parser_equivalence_and_portable_canonical_proof_only"
+        },
+        {
+          "dialect": "sqlite",
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Exact",
+          "verified": true,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41726837120",
+          "verification_scope": "parser_equivalence_and_portable_canonical_proof_only"
+        },
+        {
+          "dialect": "snowflake",
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Exact",
+          "verified": true,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41726837120",
+          "verification_scope": "parser_equivalence_and_portable_canonical_proof_only"
+        },
+        {
+          "dialect": "redshift",
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Exact",
+          "verified": true,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41726837120",
+          "verification_scope": "parser_equivalence_and_portable_canonical_proof_only"
+        },
+        {
+          "dialect": "mssql",
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Exact",
+          "verified": true,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41726837120",
+          "verification_scope": "parser_equivalence_and_portable_canonical_proof_only"
+        },
+        {
+          "dialect": "clickhouse",
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Exact",
+          "verified": true,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41726837120",
+          "verification_scope": "parser_equivalence_and_portable_canonical_proof_only"
+        },
+        {
+          "dialect": "bigquery",
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Exact",
+          "verified": true,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41726837120",
+          "verification_scope": "parser_equivalence_and_portable_canonical_proof_only"
+        },
+        {
+          "dialect": "ansi",
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Exact",
+          "verified": true,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41726837120",
+          "verification_scope": "parser_equivalence_and_portable_canonical_proof_only"
+        },
+        {
+          "dialect": "duckdb",
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "native_full_bag_oracle_required",
+          "expected_verdict": "Exact",
+          "verified": true,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Complete native DuckDB physical and terminal bag oracle with typed domains",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41726837120",
+          "verification_scope": "parser_equivalence_and_portable_canonical_proof_only"
+        },
+        {
+          "dialect": "databricks",
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Exact",
+          "verified": true,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41726837120",
+          "verification_scope": "parser_equivalence_and_portable_canonical_proof_only"
+        }
+      ],
+      "adapter_cells": [
+        {
+          "adapter": "direct_sql",
+          "classification": "equivalent_metadata_requires_executable_parity",
+          "expected_verdict": "Exact",
+          "verified": true,
+          "owner": "TASK-168",
+          "evidence_test": "tests/task_168_frozen_acceptance.rs;tests/task_167_adapter_parity.rs",
+          "required_fact": "Direct SQL and authoritative relation catalog",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41726837120",
+          "verification_scope": "equivalent_canonical_schema_facts_and_physical_verdict"
+        },
+        {
+          "adapter": "compiled_dbt_catalog",
+          "classification": "equivalent_metadata_requires_executable_parity",
+          "expected_verdict": "Exact",
+          "verified": true,
+          "owner": "TASK-168",
+          "evidence_test": "tests/task_167_adapter_parity.rs",
+          "required_fact": "dbt model compiled SQL plus authoritative catalog column types",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41726837120",
+          "verification_scope": "equivalent_canonical_schema_facts_and_physical_verdict"
+        },
+        {
+          "adapter": "odcs",
+          "classification": "equivalent_metadata_requires_executable_parity",
+          "expected_verdict": "Exact",
+          "verified": true,
+          "owner": "TASK-168",
+          "evidence_test": "tests/task_167_adapter_parity.rs",
+          "required_fact": "ODCS source schema with equivalent physical column types",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41726837120",
+          "verification_scope": "equivalent_canonical_schema_facts_and_physical_verdict"
+        }
+      ],
+      "verified": true,
+      "source_row_instance_ids": {
+        "l": [
+          "l0",
+          "l1"
+        ],
+        "r": [
+          "r0"
+        ]
+      },
+      "native_terminal_domains": {
+        "k": {
+          "null_allowed": false,
+          "values": [
+            1
+          ],
+          "lower": 1,
+          "upper": 1,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "exact": true
+        },
+        "v": {
+          "null_allowed": false,
+          "values": [
+            10,
+            20
+          ],
+          "lower": 10,
+          "upper": 20,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "exact": true
+        }
+      },
+      "grouped_terminal_domains": {
+        "k": {
+          "null_allowed": false,
+          "values": [
+            1
+          ],
+          "lower": 1,
+          "upper": 1,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "exact": true
+        },
+        "n": {
+          "null_allowed": false,
+          "values": [
+            2
+          ],
+          "lower": 2,
+          "upper": 2,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "exact": true
+        }
+      },
+      "typed_goal_domains": {
+        "k": {
+          "null_allowed": false,
+          "requested_values": [
+            1
+          ],
+          "lower": 1,
+          "upper": 1,
+          "lower_inclusive": true,
+          "upper_inclusive": true
+        },
+        "v": {
+          "null_allowed": false,
+          "requested_values": [
+            10,
+            20
+          ],
+          "lower": 10,
+          "upper": 20,
+          "lower_inclusive": true,
+          "upper_inclusive": true
+        }
+      },
+      "terminal_classification": "Exact",
+      "native_duckdb_expected_bag": [
+        {
+          "k": 1,
+          "v": 10
+        },
+        {
+          "k": 1,
+          "v": 20
+        },
+        {
+          "k": 1,
+          "v": 10
+        }
+      ],
+      "physical_truth_partitions": {
+        "selected_rows": 3,
+        "rejected_rows": 0,
+        "join_true_pairs": [
+          [
+            "l#0",
+            "r#0"
+          ],
+          [
+            "l#1",
+            "r#0"
+          ]
+        ],
+        "join_not_true_pairs": []
+      },
+      "external_boundary": {
+        "owner": "TASK-168",
+        "portable_verdict": "Exact",
+        "unverified_native_vendor": "Not certified",
+        "needed": "Independently executed complete input/output bag under pinned vendor engine/session and explicit typed NULL/tie/collation laws",
+        "disposition": "Reviewed portable boundary; native vendor/session qualification deferred to TASK-91, never promoted by parser-only evidence"
+      },
+      "technical_qualification": "verified_on_candidate_head"
+    },
+    {
+      "id": "85-C168-N-set-correlation",
+      "fixture": "85-C168-N",
+      "family": "set",
+      "expectation": "Impossible",
+      "sql": [
+        "SELECT l.k AS k, COUNT(*) AS n FROM l JOIN r ON l.k = r.k WHERE l.k = 1 GROUP BY l.k HAVING COUNT(*) >= 2",
+        "SELECT k, v FROM l UNION ALL SELECT k, v FROM r"
+      ],
+      "source_bags": {
+        "l": [
+          {
+            "id": "l0",
+            "k": 1,
+            "v": 10
+          },
+          {
+            "id": "l1",
+            "k": 1,
+            "v": 20
+          }
+        ],
+        "r": [
+          {
+            "id": "r0",
+            "k": 1,
+            "v": 10
+          }
+        ]
+      },
+      "grouped_terminal": [
+        {
+          "k": 1,
+          "n": 2
+        }
+      ],
+      "second_terminal": [
+        {
+          "k": 1,
+          "v": 10
+        },
+        {
+          "k": 1,
+          "v": 20
+        },
+        {
+          "k": 1,
+          "v": 10
+        }
+      ],
+      "columns": [
+        "k",
+        "v"
+      ],
+      "tuple_histogram": [
+        {
+          "values": [
+            1,
+            10
+          ],
+          "rows": 1
+        },
+        {
+          "values": [
+            1,
+            20
+          ],
+          "rows": 2
+        }
+      ],
+      "required": true,
+      "proof": "Same scalar marginals and total rows, but requested joint tuple multiplicity conflicts with one complete physical source bag",
+      "dialect_cells": [
+        {
+          "dialect": "generic",
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Impossible",
+          "verified": true,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41726837120",
+          "verification_scope": "parser_equivalence_and_portable_canonical_proof_only"
+        },
+        {
+          "dialect": "mysql",
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Impossible",
+          "verified": true,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41726837120",
+          "verification_scope": "parser_equivalence_and_portable_canonical_proof_only"
+        },
+        {
+          "dialect": "postgresql",
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Impossible",
+          "verified": true,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41726837120",
+          "verification_scope": "parser_equivalence_and_portable_canonical_proof_only"
+        },
+        {
+          "dialect": "hive",
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Impossible",
+          "verified": true,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41726837120",
+          "verification_scope": "parser_equivalence_and_portable_canonical_proof_only"
+        },
+        {
+          "dialect": "sqlite",
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Impossible",
+          "verified": true,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41726837120",
+          "verification_scope": "parser_equivalence_and_portable_canonical_proof_only"
+        },
+        {
+          "dialect": "snowflake",
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Impossible",
+          "verified": true,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41726837120",
+          "verification_scope": "parser_equivalence_and_portable_canonical_proof_only"
+        },
+        {
+          "dialect": "redshift",
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Impossible",
+          "verified": true,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41726837120",
+          "verification_scope": "parser_equivalence_and_portable_canonical_proof_only"
+        },
+        {
+          "dialect": "mssql",
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Impossible",
+          "verified": true,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41726837120",
+          "verification_scope": "parser_equivalence_and_portable_canonical_proof_only"
+        },
+        {
+          "dialect": "clickhouse",
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Impossible",
+          "verified": true,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41726837120",
+          "verification_scope": "parser_equivalence_and_portable_canonical_proof_only"
+        },
+        {
+          "dialect": "bigquery",
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Impossible",
+          "verified": true,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41726837120",
+          "verification_scope": "parser_equivalence_and_portable_canonical_proof_only"
+        },
+        {
+          "dialect": "ansi",
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Impossible",
+          "verified": true,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41726837120",
+          "verification_scope": "parser_equivalence_and_portable_canonical_proof_only"
+        },
+        {
+          "dialect": "duckdb",
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "native_full_bag_oracle_required",
+          "expected_verdict": "Impossible",
+          "verified": true,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Complete native DuckDB physical and terminal bag oracle with typed domains",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41726837120",
+          "verification_scope": "parser_equivalence_and_portable_canonical_proof_only"
+        },
+        {
+          "dialect": "databricks",
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Impossible",
+          "verified": true,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41726837120",
+          "verification_scope": "parser_equivalence_and_portable_canonical_proof_only"
+        }
+      ],
+      "adapter_cells": [
+        {
+          "adapter": "direct_sql",
+          "classification": "equivalent_metadata_requires_executable_parity",
+          "expected_verdict": "Impossible",
+          "verified": true,
+          "owner": "TASK-168",
+          "evidence_test": "tests/task_168_frozen_acceptance.rs;tests/task_167_adapter_parity.rs",
+          "required_fact": "Direct SQL and authoritative relation catalog",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41726837120",
+          "verification_scope": "equivalent_canonical_schema_facts_and_physical_verdict"
+        },
+        {
+          "adapter": "compiled_dbt_catalog",
+          "classification": "equivalent_metadata_requires_executable_parity",
+          "expected_verdict": "Impossible",
+          "verified": true,
+          "owner": "TASK-168",
+          "evidence_test": "tests/task_167_adapter_parity.rs",
+          "required_fact": "dbt model compiled SQL plus authoritative catalog column types",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41726837120",
+          "verification_scope": "equivalent_canonical_schema_facts_and_physical_verdict"
+        },
+        {
+          "adapter": "odcs",
+          "classification": "equivalent_metadata_requires_executable_parity",
+          "expected_verdict": "Impossible",
+          "verified": true,
+          "owner": "TASK-168",
+          "evidence_test": "tests/task_167_adapter_parity.rs",
+          "required_fact": "ODCS source schema with equivalent physical column types",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41726837120",
+          "verification_scope": "equivalent_canonical_schema_facts_and_physical_verdict"
+        }
+      ],
+      "verified": true,
+      "source_row_instance_ids": {
+        "l": [
+          "l0",
+          "l1"
+        ],
+        "r": [
+          "r0"
+        ]
+      },
+      "native_terminal_domains": {
+        "k": {
+          "null_allowed": false,
+          "values": [
+            1
+          ],
+          "lower": 1,
+          "upper": 1,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "exact": true
+        },
+        "v": {
+          "null_allowed": false,
+          "values": [
+            10,
+            20
+          ],
+          "lower": 10,
+          "upper": 20,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "exact": true
+        }
+      },
+      "grouped_terminal_domains": {
+        "k": {
+          "null_allowed": false,
+          "values": [
+            1
+          ],
+          "lower": 1,
+          "upper": 1,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "exact": true
+        },
+        "n": {
+          "null_allowed": false,
+          "values": [
+            2
+          ],
+          "lower": 2,
+          "upper": 2,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "exact": true
+        }
+      },
+      "typed_goal_domains": {
+        "k": {
+          "null_allowed": false,
+          "requested_values": [
+            1
+          ],
+          "lower": 1,
+          "upper": 1,
+          "lower_inclusive": true,
+          "upper_inclusive": true
+        },
+        "v": {
+          "null_allowed": false,
+          "requested_values": [
+            10,
+            20
+          ],
+          "lower": 10,
+          "upper": 20,
+          "lower_inclusive": true,
+          "upper_inclusive": true
+        }
+      },
+      "terminal_classification": "Impossible",
+      "native_duckdb_expected_bag": [
+        {
+          "k": 1,
+          "v": 10
+        },
+        {
+          "k": 1,
+          "v": 20
+        },
+        {
+          "k": 1,
+          "v": 10
+        }
+      ],
+      "physical_truth_partitions": {
+        "selected_rows": 3,
+        "rejected_rows": 0,
+        "join_true_pairs": [
+          [
+            "l#0",
+            "r#0"
+          ],
+          [
+            "l#1",
+            "r#0"
+          ]
+        ],
+        "join_not_true_pairs": []
+      },
+      "external_boundary": {
+        "owner": "TASK-168",
+        "portable_verdict": "Impossible",
+        "unverified_native_vendor": "Not certified",
+        "needed": "Independently executed complete input/output bag under pinned vendor engine/session and explicit typed NULL/tie/collation laws",
+        "disposition": "Reviewed portable boundary; native vendor/session qualification deferred to TASK-91, never promoted by parser-only evidence"
+      },
+      "technical_qualification": "verified_on_candidate_head"
+    },
+    {
+      "id": "85-C168-P-window-null",
+      "fixture": "85-C168-P",
+      "family": "window",
+      "expectation": "Exact",
+      "sql": [
+        "SELECT l.k AS k, COUNT(*) AS n FROM l JOIN r ON l.k = r.k WHERE l.k = 1 GROUP BY l.k HAVING COUNT(*) >= 2",
+        "SELECT k, COUNT(*) OVER (PARTITION BY k) AS copies FROM l"
+      ],
+      "source_bags": {
+        "l": [
+          {
+            "id": "l0",
+            "k": 1,
+            "v": 10
+          },
+          {
+            "id": "l1",
+            "k": 1,
+            "v": 20
+          },
+          {
+            "id": "l2",
+            "k": null,
+            "v": 30
+          }
+        ],
+        "r": [
+          {
+            "id": "r0",
+            "k": 1,
+            "v": 10
+          }
+        ]
+      },
+      "grouped_terminal": [
+        {
+          "k": 1,
+          "n": 2
+        }
+      ],
+      "second_terminal": [
+        {
+          "k": 1,
+          "copies": 2
+        },
+        {
+          "k": 1,
+          "copies": 2
+        },
+        {
+          "k": null,
+          "copies": 1
+        }
+      ],
+      "columns": [
+        "k",
+        "copies"
+      ],
+      "tuple_histogram": [
+        {
+          "values": [
+            1,
+            2
+          ],
+          "rows": 2
+        },
+        {
+          "values": [
+            null,
+            1
+          ],
+          "rows": 1
+        }
+      ],
+      "required": true,
+      "dialect_cells": [
+        {
+          "dialect": "generic",
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Exact",
+          "verified": true,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41726837120",
+          "verification_scope": "parser_equivalence_and_portable_canonical_proof_only"
+        },
+        {
+          "dialect": "mysql",
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Exact",
+          "verified": true,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41726837120",
+          "verification_scope": "parser_equivalence_and_portable_canonical_proof_only"
+        },
+        {
+          "dialect": "postgresql",
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Exact",
+          "verified": true,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41726837120",
+          "verification_scope": "parser_equivalence_and_portable_canonical_proof_only"
+        },
+        {
+          "dialect": "hive",
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Exact",
+          "verified": true,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41726837120",
+          "verification_scope": "parser_equivalence_and_portable_canonical_proof_only"
+        },
+        {
+          "dialect": "sqlite",
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Exact",
+          "verified": true,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41726837120",
+          "verification_scope": "parser_equivalence_and_portable_canonical_proof_only"
+        },
+        {
+          "dialect": "snowflake",
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Exact",
+          "verified": true,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41726837120",
+          "verification_scope": "parser_equivalence_and_portable_canonical_proof_only"
+        },
+        {
+          "dialect": "redshift",
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Exact",
+          "verified": true,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41726837120",
+          "verification_scope": "parser_equivalence_and_portable_canonical_proof_only"
+        },
+        {
+          "dialect": "mssql",
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Exact",
+          "verified": true,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41726837120",
+          "verification_scope": "parser_equivalence_and_portable_canonical_proof_only"
+        },
+        {
+          "dialect": "clickhouse",
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Exact",
+          "verified": true,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41726837120",
+          "verification_scope": "parser_equivalence_and_portable_canonical_proof_only"
+        },
+        {
+          "dialect": "bigquery",
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Exact",
+          "verified": true,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41726837120",
+          "verification_scope": "parser_equivalence_and_portable_canonical_proof_only"
+        },
+        {
+          "dialect": "ansi",
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Exact",
+          "verified": true,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41726837120",
+          "verification_scope": "parser_equivalence_and_portable_canonical_proof_only"
+        },
+        {
+          "dialect": "duckdb",
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "native_full_bag_oracle_required",
+          "expected_verdict": "Exact",
+          "verified": true,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Complete native DuckDB physical and terminal bag oracle with typed domains",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41726837120",
+          "verification_scope": "parser_equivalence_and_portable_canonical_proof_only"
+        },
+        {
+          "dialect": "databricks",
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Exact",
+          "verified": true,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41726837120",
+          "verification_scope": "parser_equivalence_and_portable_canonical_proof_only"
+        }
+      ],
+      "adapter_cells": [
+        {
+          "adapter": "direct_sql",
+          "classification": "equivalent_metadata_requires_executable_parity",
+          "expected_verdict": "Exact",
+          "verified": true,
+          "owner": "TASK-168",
+          "evidence_test": "tests/task_168_frozen_acceptance.rs;tests/task_167_adapter_parity.rs",
+          "required_fact": "Direct SQL and authoritative relation catalog",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41726837120",
+          "verification_scope": "equivalent_canonical_schema_facts_and_physical_verdict"
+        },
+        {
+          "adapter": "compiled_dbt_catalog",
+          "classification": "equivalent_metadata_requires_executable_parity",
+          "expected_verdict": "Exact",
+          "verified": true,
+          "owner": "TASK-168",
+          "evidence_test": "tests/task_167_adapter_parity.rs",
+          "required_fact": "dbt model compiled SQL plus authoritative catalog column types",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41726837120",
+          "verification_scope": "equivalent_canonical_schema_facts_and_physical_verdict"
+        },
+        {
+          "adapter": "odcs",
+          "classification": "equivalent_metadata_requires_executable_parity",
+          "expected_verdict": "Exact",
+          "verified": true,
+          "owner": "TASK-168",
+          "evidence_test": "tests/task_167_adapter_parity.rs",
+          "required_fact": "ODCS source schema with equivalent physical column types",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41726837120",
+          "verification_scope": "equivalent_canonical_schema_facts_and_physical_verdict"
+        }
+      ],
+      "verified": true,
+      "source_row_instance_ids": {
+        "l": [
+          "l0",
+          "l1",
+          "l2"
+        ],
+        "r": [
+          "r0"
+        ]
+      },
+      "native_terminal_domains": {
+        "k": {
+          "null_allowed": true,
+          "values": [
+            1
+          ],
+          "lower": 1,
+          "upper": 1,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "exact": true
+        },
+        "copies": {
+          "null_allowed": false,
+          "values": [
+            1,
+            2
+          ],
+          "lower": 1,
+          "upper": 2,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "exact": true
+        }
+      },
+      "grouped_terminal_domains": {
+        "k": {
+          "null_allowed": false,
+          "values": [
+            1
+          ],
+          "lower": 1,
+          "upper": 1,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "exact": true
+        },
+        "n": {
+          "null_allowed": false,
+          "values": [
+            2
+          ],
+          "lower": 2,
+          "upper": 2,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "exact": true
+        }
+      },
+      "typed_goal_domains": {
+        "k": {
+          "null_allowed": true,
+          "requested_values": [
+            1
+          ],
+          "lower": 1,
+          "upper": 1,
+          "lower_inclusive": true,
+          "upper_inclusive": true
+        },
+        "copies": {
+          "null_allowed": false,
+          "requested_values": [
+            1,
+            2
+          ],
+          "lower": 1,
+          "upper": 2,
+          "lower_inclusive": true,
+          "upper_inclusive": true
+        }
+      },
+      "terminal_classification": "Exact",
+      "native_duckdb_expected_bag": [
+        {
+          "k": 1,
+          "copies": 2
+        },
+        {
+          "k": 1,
+          "copies": 2
+        },
+        {
+          "k": null,
+          "copies": 1
+        }
+      ],
+      "physical_truth_partitions": {
+        "selected_rows": 3,
+        "rejected_rows": 0,
+        "join_true_pairs": [
+          [
+            "l#0",
+            "r#0"
+          ],
+          [
+            "l#1",
+            "r#0"
+          ]
+        ],
+        "join_not_true_pairs": [
+          [
+            "l#2",
+            "r#0"
+          ]
+        ]
+      },
+      "external_boundary": {
+        "owner": "TASK-168",
+        "portable_verdict": "Exact",
+        "unverified_native_vendor": "Not certified",
+        "needed": "Independently executed complete input/output bag under pinned vendor engine/session and explicit typed NULL/tie/collation laws",
+        "disposition": "Reviewed portable boundary; native vendor/session qualification deferred to TASK-91, never promoted by parser-only evidence"
+      },
+      "technical_qualification": "verified_on_candidate_head"
+    },
+    {
+      "id": "85-C168-N-window-correlation",
+      "fixture": "85-C168-N",
+      "family": "window",
+      "expectation": "Impossible",
+      "sql": [
+        "SELECT l.k AS k, COUNT(*) AS n FROM l JOIN r ON l.k = r.k WHERE l.k = 1 GROUP BY l.k HAVING COUNT(*) >= 2",
+        "SELECT k, COUNT(*) OVER (PARTITION BY k) AS copies FROM l"
+      ],
+      "source_bags": {
+        "l": [
+          {
+            "id": "l0",
+            "k": 1,
+            "v": 10
+          },
+          {
+            "id": "l1",
+            "k": 1,
+            "v": 20
+          },
+          {
+            "id": "l2",
+            "k": null,
+            "v": 30
+          }
+        ],
+        "r": [
+          {
+            "id": "r0",
+            "k": 1,
+            "v": 10
+          }
+        ]
+      },
+      "grouped_terminal": [
+        {
+          "k": 1,
+          "n": 2
+        }
+      ],
+      "second_terminal": [
+        {
+          "k": 1,
+          "copies": 2
+        },
+        {
+          "k": 1,
+          "copies": 2
+        },
+        {
+          "k": null,
+          "copies": 1
+        }
+      ],
+      "columns": [
+        "k",
+        "copies"
+      ],
+      "tuple_histogram": [
+        {
+          "values": [
+            1,
+            1
+          ],
+          "rows": 1
+        },
+        {
+          "values": [
+            1,
+            2
+          ],
+          "rows": 1
+        },
+        {
+          "values": [
+            null,
+            2
+          ],
+          "rows": 1
+        }
+      ],
+      "required": true,
+      "proof": "Equal column marginals and row count but impossible joint correlation",
+      "dialect_cells": [
+        {
+          "dialect": "generic",
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Impossible",
+          "verified": true,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41726837120",
+          "verification_scope": "parser_equivalence_and_portable_canonical_proof_only"
+        },
+        {
+          "dialect": "mysql",
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Impossible",
+          "verified": true,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41726837120",
+          "verification_scope": "parser_equivalence_and_portable_canonical_proof_only"
+        },
+        {
+          "dialect": "postgresql",
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Impossible",
+          "verified": true,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41726837120",
+          "verification_scope": "parser_equivalence_and_portable_canonical_proof_only"
+        },
+        {
+          "dialect": "hive",
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Impossible",
+          "verified": true,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41726837120",
+          "verification_scope": "parser_equivalence_and_portable_canonical_proof_only"
+        },
+        {
+          "dialect": "sqlite",
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Impossible",
+          "verified": true,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41726837120",
+          "verification_scope": "parser_equivalence_and_portable_canonical_proof_only"
+        },
+        {
+          "dialect": "snowflake",
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Impossible",
+          "verified": true,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41726837120",
+          "verification_scope": "parser_equivalence_and_portable_canonical_proof_only"
+        },
+        {
+          "dialect": "redshift",
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Impossible",
+          "verified": true,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41726837120",
+          "verification_scope": "parser_equivalence_and_portable_canonical_proof_only"
+        },
+        {
+          "dialect": "mssql",
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Impossible",
+          "verified": true,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41726837120",
+          "verification_scope": "parser_equivalence_and_portable_canonical_proof_only"
+        },
+        {
+          "dialect": "clickhouse",
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Impossible",
+          "verified": true,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41726837120",
+          "verification_scope": "parser_equivalence_and_portable_canonical_proof_only"
+        },
+        {
+          "dialect": "bigquery",
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Impossible",
+          "verified": true,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41726837120",
+          "verification_scope": "parser_equivalence_and_portable_canonical_proof_only"
+        },
+        {
+          "dialect": "ansi",
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Impossible",
+          "verified": true,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41726837120",
+          "verification_scope": "parser_equivalence_and_portable_canonical_proof_only"
+        },
+        {
+          "dialect": "duckdb",
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "native_full_bag_oracle_required",
+          "expected_verdict": "Impossible",
+          "verified": true,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Complete native DuckDB physical and terminal bag oracle with typed domains",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41726837120",
+          "verification_scope": "parser_equivalence_and_portable_canonical_proof_only"
+        },
+        {
+          "dialect": "databricks",
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Impossible",
+          "verified": true,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41726837120",
+          "verification_scope": "parser_equivalence_and_portable_canonical_proof_only"
+        }
+      ],
+      "adapter_cells": [
+        {
+          "adapter": "direct_sql",
+          "classification": "equivalent_metadata_requires_executable_parity",
+          "expected_verdict": "Impossible",
+          "verified": true,
+          "owner": "TASK-168",
+          "evidence_test": "tests/task_168_frozen_acceptance.rs;tests/task_167_adapter_parity.rs",
+          "required_fact": "Direct SQL and authoritative relation catalog",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41726837120",
+          "verification_scope": "equivalent_canonical_schema_facts_and_physical_verdict"
+        },
+        {
+          "adapter": "compiled_dbt_catalog",
+          "classification": "equivalent_metadata_requires_executable_parity",
+          "expected_verdict": "Impossible",
+          "verified": true,
+          "owner": "TASK-168",
+          "evidence_test": "tests/task_167_adapter_parity.rs",
+          "required_fact": "dbt model compiled SQL plus authoritative catalog column types",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41726837120",
+          "verification_scope": "equivalent_canonical_schema_facts_and_physical_verdict"
+        },
+        {
+          "adapter": "odcs",
+          "classification": "equivalent_metadata_requires_executable_parity",
+          "expected_verdict": "Impossible",
+          "verified": true,
+          "owner": "TASK-168",
+          "evidence_test": "tests/task_167_adapter_parity.rs",
+          "required_fact": "ODCS source schema with equivalent physical column types",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41726837120",
+          "verification_scope": "equivalent_canonical_schema_facts_and_physical_verdict"
+        }
+      ],
+      "verified": true,
+      "source_row_instance_ids": {
+        "l": [
+          "l0",
+          "l1",
+          "l2"
+        ],
+        "r": [
+          "r0"
+        ]
+      },
+      "native_terminal_domains": {
+        "k": {
+          "null_allowed": true,
+          "values": [
+            1
+          ],
+          "lower": 1,
+          "upper": 1,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "exact": true
+        },
+        "copies": {
+          "null_allowed": false,
+          "values": [
+            1,
+            2
+          ],
+          "lower": 1,
+          "upper": 2,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "exact": true
+        }
+      },
+      "grouped_terminal_domains": {
+        "k": {
+          "null_allowed": false,
+          "values": [
+            1
+          ],
+          "lower": 1,
+          "upper": 1,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "exact": true
+        },
+        "n": {
+          "null_allowed": false,
+          "values": [
+            2
+          ],
+          "lower": 2,
+          "upper": 2,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "exact": true
+        }
+      },
+      "typed_goal_domains": {
+        "k": {
+          "null_allowed": true,
+          "requested_values": [
+            1
+          ],
+          "lower": 1,
+          "upper": 1,
+          "lower_inclusive": true,
+          "upper_inclusive": true
+        },
+        "copies": {
+          "null_allowed": false,
+          "requested_values": [
+            1,
+            2
+          ],
+          "lower": 1,
+          "upper": 2,
+          "lower_inclusive": true,
+          "upper_inclusive": true
+        }
+      },
+      "terminal_classification": "Impossible",
+      "native_duckdb_expected_bag": [
+        {
+          "k": 1,
+          "copies": 2
+        },
+        {
+          "k": 1,
+          "copies": 2
+        },
+        {
+          "k": null,
+          "copies": 1
+        }
+      ],
+      "physical_truth_partitions": {
+        "selected_rows": 3,
+        "rejected_rows": 0,
+        "join_true_pairs": [
+          [
+            "l#0",
+            "r#0"
+          ],
+          [
+            "l#1",
+            "r#0"
+          ]
+        ],
+        "join_not_true_pairs": [
+          [
+            "l#2",
+            "r#0"
+          ]
+        ]
+      },
+      "external_boundary": {
+        "owner": "TASK-168",
+        "portable_verdict": "Impossible",
+        "unverified_native_vendor": "Not certified",
+        "needed": "Independently executed complete input/output bag under pinned vendor engine/session and explicit typed NULL/tie/collation laws",
+        "disposition": "Reviewed portable boundary; native vendor/session qualification deferred to TASK-91, never promoted by parser-only evidence"
+      },
+      "technical_qualification": "verified_on_candidate_head"
+    },
+    {
+      "id": "85-C168-P-limit-fanout",
+      "fixture": "85-C168-P",
+      "family": "order_limit_fanout",
+      "expectation": "Exact",
+      "sql": [
+        "SELECT k,v FROM l ORDER BY v LIMIT 2"
+      ],
+      "source_bags": {
+        "l": [
+          {
+            "id": "l0",
+            "k": 1,
+            "v": 10
+          },
+          {
+            "id": "l1",
+            "k": 1,
+            "v": 20
+          },
+          {
+            "id": "l2",
+            "k": null,
+            "v": 30
+          }
+        ]
+      },
+      "terminal": [
+        {
+          "k": 1,
+          "v": 10
+        },
+        {
+          "k": 1,
+          "v": 20
+        }
+      ],
+      "columns": [
+        "k",
+        "v"
+      ],
+      "tuple_histogram": [
+        {
+          "values": [
+            1,
+            10
+          ],
+          "rows": 1
+        },
+        {
+          "values": [
+            1,
+            20
+          ],
+          "rows": 1
+        }
+      ],
+      "required": true,
+      "dialect_cells": [
+        {
+          "dialect": "generic",
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Exact",
+          "verified": true,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41726837120",
+          "verification_scope": "parser_equivalence_and_portable_canonical_proof_only"
+        },
+        {
+          "dialect": "mysql",
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Exact",
+          "verified": true,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41726837120",
+          "verification_scope": "parser_equivalence_and_portable_canonical_proof_only"
+        },
+        {
+          "dialect": "postgresql",
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Exact",
+          "verified": true,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41726837120",
+          "verification_scope": "parser_equivalence_and_portable_canonical_proof_only"
+        },
+        {
+          "dialect": "hive",
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Exact",
+          "verified": true,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41726837120",
+          "verification_scope": "parser_equivalence_and_portable_canonical_proof_only"
+        },
+        {
+          "dialect": "sqlite",
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Exact",
+          "verified": true,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41726837120",
+          "verification_scope": "parser_equivalence_and_portable_canonical_proof_only"
+        },
+        {
+          "dialect": "snowflake",
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Exact",
+          "verified": true,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41726837120",
+          "verification_scope": "parser_equivalence_and_portable_canonical_proof_only"
+        },
+        {
+          "dialect": "redshift",
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Exact",
+          "verified": true,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41726837120",
+          "verification_scope": "parser_equivalence_and_portable_canonical_proof_only"
+        },
+        {
+          "dialect": "mssql",
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Exact",
+          "verified": true,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41726837120",
+          "verification_scope": "parser_equivalence_and_portable_canonical_proof_only"
+        },
+        {
+          "dialect": "clickhouse",
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Exact",
+          "verified": true,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41726837120",
+          "verification_scope": "parser_equivalence_and_portable_canonical_proof_only"
+        },
+        {
+          "dialect": "bigquery",
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Exact",
+          "verified": true,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41726837120",
+          "verification_scope": "parser_equivalence_and_portable_canonical_proof_only"
+        },
+        {
+          "dialect": "ansi",
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Exact",
+          "verified": true,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41726837120",
+          "verification_scope": "parser_equivalence_and_portable_canonical_proof_only"
+        },
+        {
+          "dialect": "duckdb",
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "native_full_bag_oracle_required",
+          "expected_verdict": "Exact",
+          "verified": true,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Complete native DuckDB physical and terminal bag oracle with typed domains",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41726837120",
+          "verification_scope": "parser_equivalence_and_portable_canonical_proof_only"
+        },
+        {
+          "dialect": "databricks",
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Exact",
+          "verified": true,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41726837120",
+          "verification_scope": "parser_equivalence_and_portable_canonical_proof_only"
+        }
+      ],
+      "adapter_cells": [
+        {
+          "adapter": "direct_sql",
+          "classification": "equivalent_metadata_requires_executable_parity",
+          "expected_verdict": "Exact",
+          "verified": true,
+          "owner": "TASK-168",
+          "evidence_test": "tests/task_168_frozen_acceptance.rs;tests/task_167_adapter_parity.rs",
+          "required_fact": "Direct SQL and authoritative relation catalog",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41726837120",
+          "verification_scope": "equivalent_canonical_schema_facts_and_physical_verdict"
+        },
+        {
+          "adapter": "compiled_dbt_catalog",
+          "classification": "equivalent_metadata_requires_executable_parity",
+          "expected_verdict": "Exact",
+          "verified": true,
+          "owner": "TASK-168",
+          "evidence_test": "tests/task_167_adapter_parity.rs",
+          "required_fact": "dbt model compiled SQL plus authoritative catalog column types",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41726837120",
+          "verification_scope": "equivalent_canonical_schema_facts_and_physical_verdict"
+        },
+        {
+          "adapter": "odcs",
+          "classification": "equivalent_metadata_requires_executable_parity",
+          "expected_verdict": "Exact",
+          "verified": true,
+          "owner": "TASK-168",
+          "evidence_test": "tests/task_167_adapter_parity.rs",
+          "required_fact": "ODCS source schema with equivalent physical column types",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41726837120",
+          "verification_scope": "equivalent_canonical_schema_facts_and_physical_verdict"
+        }
+      ],
+      "verified": true,
+      "source_row_instance_ids": {
+        "l": [
+          "l0",
+          "l1",
+          "l2"
+        ]
+      },
+      "native_terminal_domains": {
+        "k": {
+          "null_allowed": false,
+          "values": [
+            1
+          ],
+          "lower": 1,
+          "upper": 1,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "exact": true
+        },
+        "v": {
+          "null_allowed": false,
+          "values": [
+            10,
+            20
+          ],
+          "lower": 10,
+          "upper": 20,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "exact": true
+        }
+      },
+      "grouped_terminal_domains": null,
+      "typed_goal_domains": {
+        "k": {
+          "null_allowed": false,
+          "requested_values": [
+            1
+          ],
+          "lower": 1,
+          "upper": 1,
+          "lower_inclusive": true,
+          "upper_inclusive": true
+        },
+        "v": {
+          "null_allowed": false,
+          "requested_values": [
+            10,
+            20
+          ],
+          "lower": 10,
+          "upper": 20,
+          "lower_inclusive": true,
+          "upper_inclusive": true
+        }
+      },
+      "terminal_classification": "Exact",
+      "native_duckdb_expected_bag": [
+        {
+          "k": 1,
+          "v": 10
+        },
+        {
+          "k": 1,
+          "v": 20
+        }
+      ],
+      "physical_truth_partitions": {
+        "selected_source_row_ids": [
+          "l#0",
+          "l#1"
+        ],
+        "not_true_source_row_ids": [
+          "l#2"
+        ],
+        "rejected_count": 1
+      },
+      "external_boundary": {
+        "owner": "TASK-168",
+        "portable_verdict": "Exact",
+        "unverified_native_vendor": "Not certified",
+        "needed": "Independently executed complete input/output bag under pinned vendor engine/session and explicit typed NULL/tie/collation laws",
+        "disposition": "Reviewed portable boundary; native vendor/session qualification deferred to TASK-91, never promoted by parser-only evidence"
+      },
+      "technical_qualification": "verified_on_candidate_head"
+    },
+    {
+      "id": "85-C168-N-qualify-fanout",
+      "fixture": "85-C168-N",
+      "family": "qualify_window_fanout",
+      "expectation": "Residual",
+      "sql": [
+        "SELECT k,v FROM l QUALIFY ROW_NUMBER() OVER (PARTITION BY k ORDER BY v) = 1"
+      ],
+      "source_bags": {
+        "l": [
+          {
+            "id": "l0",
+            "k": 1,
+            "v": 10
+          },
+          {
+            "id": "l1",
+            "k": 1,
+            "v": 20
+          },
+          {
+            "id": "l2",
+            "k": null,
+            "v": 30
+          }
+        ]
+      },
+      "columns": [
+        "k",
+        "v"
+      ],
+      "tuple_histogram": [
+        {
+          "values": [
+            1,
+            10
+          ],
+          "rows": 1
+        },
+        {
+          "values": [
+            null,
+            30
+          ],
+          "rows": 1
+        }
+      ],
+      "required": true,
+      "proof": "Every dialect must be classified by parser and exact row selection; native dialect execution not presumed",
+      "dialect_cells": [
+        {
+          "dialect": "generic",
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Residual",
+          "verified": true,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41726837120",
+          "verification_scope": "parser_equivalence_and_portable_canonical_proof_only"
+        },
+        {
+          "dialect": "mysql",
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Residual",
+          "verified": true,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41726837120",
+          "verification_scope": "parser_equivalence_and_portable_canonical_proof_only"
+        },
+        {
+          "dialect": "postgresql",
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Residual",
+          "verified": true,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41726837120",
+          "verification_scope": "parser_equivalence_and_portable_canonical_proof_only"
+        },
+        {
+          "dialect": "hive",
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Residual",
+          "verified": true,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41726837120",
+          "verification_scope": "parser_equivalence_and_portable_canonical_proof_only"
+        },
+        {
+          "dialect": "sqlite",
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Residual",
+          "verified": true,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41726837120",
+          "verification_scope": "parser_equivalence_and_portable_canonical_proof_only"
+        },
+        {
+          "dialect": "snowflake",
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Residual",
+          "verified": true,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41726837120",
+          "verification_scope": "parser_equivalence_and_portable_canonical_proof_only"
+        },
+        {
+          "dialect": "redshift",
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Residual",
+          "verified": true,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41726837120",
+          "verification_scope": "parser_equivalence_and_portable_canonical_proof_only"
+        },
+        {
+          "dialect": "mssql",
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Residual",
+          "verified": true,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41726837120",
+          "verification_scope": "parser_equivalence_and_portable_canonical_proof_only"
+        },
+        {
+          "dialect": "clickhouse",
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Residual",
+          "verified": true,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41726837120",
+          "verification_scope": "parser_equivalence_and_portable_canonical_proof_only"
+        },
+        {
+          "dialect": "bigquery",
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Residual",
+          "verified": true,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41726837120",
+          "verification_scope": "parser_equivalence_and_portable_canonical_proof_only"
+        },
+        {
+          "dialect": "ansi",
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Residual",
+          "verified": true,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41726837120",
+          "verification_scope": "parser_equivalence_and_portable_canonical_proof_only"
+        },
+        {
+          "dialect": "duckdb",
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "native_full_bag_oracle_required",
+          "expected_verdict": "Residual",
+          "verified": true,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Complete native DuckDB physical and terminal bag oracle with typed domains",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41726837120",
+          "verification_scope": "parser_equivalence_and_portable_canonical_proof_only"
+        },
+        {
+          "dialect": "databricks",
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Residual",
+          "verified": true,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41726837120",
+          "verification_scope": "parser_equivalence_and_portable_canonical_proof_only"
+        }
+      ],
+      "adapter_cells": [
+        {
+          "adapter": "direct_sql",
+          "classification": "equivalent_metadata_requires_executable_parity",
+          "expected_verdict": "Residual",
+          "verified": true,
+          "owner": "TASK-168",
+          "evidence_test": "tests/task_168_frozen_acceptance.rs;tests/task_167_adapter_parity.rs",
+          "required_fact": "Direct SQL and authoritative relation catalog",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41726837120",
+          "verification_scope": "equivalent_canonical_schema_facts_and_physical_verdict"
+        },
+        {
+          "adapter": "compiled_dbt_catalog",
+          "classification": "equivalent_metadata_requires_executable_parity",
+          "expected_verdict": "Residual",
+          "verified": true,
+          "owner": "TASK-168",
+          "evidence_test": "tests/task_167_adapter_parity.rs",
+          "required_fact": "dbt model compiled SQL plus authoritative catalog column types",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41726837120",
+          "verification_scope": "equivalent_canonical_schema_facts_and_physical_verdict"
+        },
+        {
+          "adapter": "odcs",
+          "classification": "equivalent_metadata_requires_executable_parity",
+          "expected_verdict": "Residual",
+          "verified": true,
+          "owner": "TASK-168",
+          "evidence_test": "tests/task_167_adapter_parity.rs",
+          "required_fact": "ODCS source schema with equivalent physical column types",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41726837120",
+          "verification_scope": "equivalent_canonical_schema_facts_and_physical_verdict"
+        }
+      ],
+      "verified": true,
+      "source_row_instance_ids": {
+        "l": [
+          "l0",
+          "l1",
+          "l2"
+        ]
+      },
+      "native_terminal_domains": {
+        "k": {
+          "null_allowed": true,
+          "values": [
+            1
+          ],
+          "lower": 1,
+          "upper": 1,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "exact": true
+        },
+        "v": {
+          "null_allowed": false,
+          "values": [
+            10,
+            30
+          ],
+          "lower": 10,
+          "upper": 30,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "exact": true
+        }
+      },
+      "grouped_terminal_domains": null,
+      "typed_goal_domains": {
+        "k": {
+          "null_allowed": true,
+          "requested_values": [
+            1
+          ],
+          "lower": 1,
+          "upper": 1,
+          "lower_inclusive": true,
+          "upper_inclusive": true
+        },
+        "v": {
+          "null_allowed": false,
+          "requested_values": [
+            10,
+            30
+          ],
+          "lower": 10,
+          "upper": 30,
+          "lower_inclusive": true,
+          "upper_inclusive": true
+        }
+      },
+      "terminal_classification": "Residual",
+      "native_duckdb_expected_bag": [
+        {
+          "k": 1,
+          "v": 10
+        },
+        {
+          "k": null,
+          "v": 30
+        }
+      ],
+      "physical_truth_partitions": {
+        "duckdb_selected_source_row_ids": [
+          "l0",
+          "l2"
+        ],
+        "duckdb_rejected_source_row_ids": [
+          "l1"
+        ],
+        "portable_proof": "Residual due to implicit SQL NULL/peer ordering; no exact certification"
+      },
+      "external_boundary": {
+        "owner": "TASK-168",
+        "portable_verdict": "Residual",
+        "unverified_native_vendor": "Not certified",
+        "needed": "Independently executed complete input/output bag under pinned vendor engine/session and explicit typed NULL/tie/collation laws",
+        "disposition": "Reviewed portable boundary; native vendor/session qualification deferred to TASK-91, never promoted by parser-only evidence",
+        "portable_unproved": "QUALIFY unprojected ROW_NUMBER with omitted explicit NULL ordering lacks a portable exact physical output proof; DuckDB native outcome is diagnostic only"
+      },
+      "technical_qualification": "verified_on_candidate_head"
+    },
+    {
+      "id": "85-C168-R-opaque-collation",
+      "fixture": "85-C168-N",
+      "family": "unproved_comparison_law",
+      "expectation": "Residual",
+      "sql": [
+        "SELECT l.k AS k, COUNT(*) AS n FROM l JOIN r ON l.k = r.k WHERE l.k = 1 GROUP BY l.k HAVING COUNT(*) >= 2",
+        "SELECT k, v FROM l UNION ALL SELECT k, v FROM r"
+      ],
+      "source_bags": {
+        "l": [
+          {
+            "id": "l0",
+            "k": 1,
+            "v": 10
+          },
+          {
+            "id": "l1",
+            "k": 1,
+            "v": 20
+          }
+        ],
+        "r": [
+          {
+            "id": "r0",
+            "k": 1,
+            "v": 10
+          }
+        ]
+      },
+      "columns": [
+        "k",
+        "v"
+      ],
+      "tuple_histogram": [
+        {
+          "values": [
+            "a",
+            10
+          ],
+          "rows": 1
+        }
+      ],
+      "required": false,
+      "proof": "Text collation unsupported; never imply native equality",
+      "dialect_cells": [
+        {
+          "dialect": "generic",
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Residual",
+          "verified": true,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41726837120",
+          "verification_scope": "parser_equivalence_and_portable_canonical_proof_only"
+        },
+        {
+          "dialect": "mysql",
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Residual",
+          "verified": true,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41726837120",
+          "verification_scope": "parser_equivalence_and_portable_canonical_proof_only"
+        },
+        {
+          "dialect": "postgresql",
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Residual",
+          "verified": true,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41726837120",
+          "verification_scope": "parser_equivalence_and_portable_canonical_proof_only"
+        },
+        {
+          "dialect": "hive",
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Residual",
+          "verified": true,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41726837120",
+          "verification_scope": "parser_equivalence_and_portable_canonical_proof_only"
+        },
+        {
+          "dialect": "sqlite",
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Residual",
+          "verified": true,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41726837120",
+          "verification_scope": "parser_equivalence_and_portable_canonical_proof_only"
+        },
+        {
+          "dialect": "snowflake",
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Residual",
+          "verified": true,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41726837120",
+          "verification_scope": "parser_equivalence_and_portable_canonical_proof_only"
+        },
+        {
+          "dialect": "redshift",
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Residual",
+          "verified": true,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41726837120",
+          "verification_scope": "parser_equivalence_and_portable_canonical_proof_only"
+        },
+        {
+          "dialect": "mssql",
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Residual",
+          "verified": true,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41726837120",
+          "verification_scope": "parser_equivalence_and_portable_canonical_proof_only"
+        },
+        {
+          "dialect": "clickhouse",
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Residual",
+          "verified": true,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41726837120",
+          "verification_scope": "parser_equivalence_and_portable_canonical_proof_only"
+        },
+        {
+          "dialect": "bigquery",
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Residual",
+          "verified": true,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41726837120",
+          "verification_scope": "parser_equivalence_and_portable_canonical_proof_only"
+        },
+        {
+          "dialect": "ansi",
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Residual",
+          "verified": true,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41726837120",
+          "verification_scope": "parser_equivalence_and_portable_canonical_proof_only"
+        },
+        {
+          "dialect": "duckdb",
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "native_full_bag_oracle_required",
+          "expected_verdict": "Residual",
+          "verified": true,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Complete native DuckDB physical and terminal bag oracle with typed domains",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41726837120",
+          "verification_scope": "parser_equivalence_and_portable_canonical_proof_only"
+        },
+        {
+          "dialect": "databricks",
+          "classification": "canonical_parser_equivalent",
+          "native_engine": "not_executed",
+          "expected_verdict": "Residual",
+          "verified": true,
+          "owner": "TASK-168",
+          "release_disposition": "Portable parser/typed proof only, vendor engine law not certified; TASK-91 review",
+          "required_external_evidence": "Pinned native vendor engine and session executed source/terminal/negative bags; parser support alone not certification",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41726837120",
+          "verification_scope": "parser_equivalence_and_portable_canonical_proof_only"
+        }
+      ],
+      "adapter_cells": [
+        {
+          "adapter": "direct_sql",
+          "classification": "equivalent_metadata_requires_executable_parity",
+          "expected_verdict": "Residual",
+          "verified": true,
+          "owner": "TASK-168",
+          "evidence_test": "tests/task_168_frozen_acceptance.rs;tests/task_167_adapter_parity.rs",
+          "required_fact": "Direct SQL and authoritative relation catalog",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41726837120",
+          "verification_scope": "equivalent_canonical_schema_facts_and_physical_verdict"
+        },
+        {
+          "adapter": "compiled_dbt_catalog",
+          "classification": "equivalent_metadata_requires_executable_parity",
+          "expected_verdict": "Residual",
+          "verified": true,
+          "owner": "TASK-168",
+          "evidence_test": "tests/task_167_adapter_parity.rs",
+          "required_fact": "dbt model compiled SQL plus authoritative catalog column types",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41726837120",
+          "verification_scope": "equivalent_canonical_schema_facts_and_physical_verdict"
+        },
+        {
+          "adapter": "odcs",
+          "classification": "equivalent_metadata_requires_executable_parity",
+          "expected_verdict": "Residual",
+          "verified": true,
+          "owner": "TASK-168",
+          "evidence_test": "tests/task_167_adapter_parity.rs",
+          "required_fact": "ODCS source schema with equivalent physical column types",
+          "evidence_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41726837120",
+          "verification_scope": "equivalent_canonical_schema_facts_and_physical_verdict"
+        }
+      ],
+      "verified": true,
+      "source_row_instance_ids": {
+        "l": [
+          "l0",
+          "l1"
+        ],
+        "r": [
+          "r0"
+        ]
+      },
+      "native_terminal_domains": {
+        "k": {
+          "null_allowed": false,
+          "values": [
+            1
+          ],
+          "lower": 1,
+          "upper": 1,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "exact": true
+        },
+        "v": {
+          "null_allowed": false,
+          "values": [
+            10,
+            20
+          ],
+          "lower": 10,
+          "upper": 20,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "exact": true
+        }
+      },
+      "grouped_terminal_domains": {
+        "k": {
+          "null_allowed": false,
+          "values": [
+            1
+          ],
+          "lower": 1,
+          "upper": 1,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "exact": true
+        },
+        "n": {
+          "null_allowed": false,
+          "values": [
+            2
+          ],
+          "lower": 2,
+          "upper": 2,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "exact": true
+        }
+      },
+      "typed_goal_domains": {
+        "k": {
+          "null_allowed": false,
+          "requested_values": [],
+          "lower": null,
+          "upper": null,
+          "lower_inclusive": false,
+          "upper_inclusive": false
+        },
+        "v": {
+          "null_allowed": false,
+          "requested_values": [
+            10
+          ],
+          "lower": 10,
+          "upper": 10,
+          "lower_inclusive": true,
+          "upper_inclusive": true
+        }
+      },
+      "terminal_classification": "Residual",
+      "native_duckdb_expected_bag": [
+        {
+          "k": 1,
+          "v": 10
+        },
+        {
+          "k": 1,
+          "v": 20
+        },
+        {
+          "k": 1,
+          "v": 10
+        }
+      ],
+      "physical_truth_partitions": {
+        "join_true_pairs": [
+          [
+            "l#0",
+            "r#0"
+          ],
+          [
+            "l#1",
+            "r#0"
+          ]
+        ],
+        "join_not_true_pairs": [],
+        "selected_rows": 3,
+        "rejected_rows": 0
+      },
+      "grouped_terminal": [
+        {
+          "k": 1,
+          "n": 2
+        }
+      ],
+      "second_terminal": [
+        {
+          "k": 1,
+          "v": 10
+        },
+        {
+          "k": 1,
+          "v": 20
+        },
+        {
+          "k": 1,
+          "v": 10
+        }
+      ],
+      "external_boundary": {
+        "owner": "TASK-168",
+        "portable_verdict": "Residual",
+        "unverified_native_vendor": "Not certified",
+        "needed": "Explicit source text collation and native/session comparison laws plus terminal full-bag execution",
+        "disposition": "Reviewed portable boundary; native vendor/session qualification deferred to TASK-91, never promoted by parser-only evidence",
+        "portable_unproved": "No authoritative cross-engine text collation/equality facts for requested string tuple"
+      },
+      "technical_qualification": "verified_on_candidate_head"
+    }
+  ],
+  "prospective_v1_frozen_before_semantic_changes": true,
+  "freeze_history": [
+    "docs/task-168-acceptance-freeze-v1.json"
+  ],
+  "historical_policy": "The prospective v1 was created before semantic changes; v2 adds per-cell parser/adapter/domain evidence after implementation and does not retroactively satisfy prospective completeness. Owner must disposition this explicitly before accepting AC #1.",
+  "dialects": [
+    "generic",
+    "mysql",
+    "postgresql",
+    "hive",
+    "sqlite",
+    "snowflake",
+    "redshift",
+    "mssql",
+    "clickhouse",
+    "bigquery",
+    "ansi",
+    "duckdb",
+    "databricks"
+  ],
+  "adapter_policies": {
+    "direct_sql": "Must prove equivalent canonical facts and physical classifications",
+    "compiled_dbt_catalog": "Model compiled SQL plus warehouse catalog source types; no manifest-only type guesses",
+    "odcs": "Same source facts when contract can represent them",
+    "native_vendor": "Only DuckDB execution observed; no inference to other dialect engines"
+  },
+  "native_runtime_policy": {
+    "executable_engine": "DuckDB",
+    "not_certified": [
+      "Snowflake",
+      "BigQuery",
+      "PostgreSQL",
+      "Redshift",
+      "MSSQL",
+      "MySQL",
+      "SQLite",
+      "Hive",
+      "ClickHouse",
+      "Databricks",
+      "ANSI",
+      "Generic"
+    ],
+    "required_external_evidence": "Native vendor execution of complete source, selected/NOT TRUE and terminal bags on a named engine/runtime/session with collation, NULL ordering and feature flags",
+    "disposition": "No native-vendor certification by parser equivalence; pending TASK-91 release review",
+    "owner": "TASK-168"
+  },
+  "sql_tdg_pinned_consumer": {
+    "commit": "3beaf7799ab54b2440ae34c917ff7eda6c11c398",
+    "tested_protocol_head": "610cd696f090498a03ac08a2b2a049951ad57fd2",
+    "qualification_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41725446712",
+    "suites": [
+      "lib",
+      "type_coverage",
+      "full_query (except known baseline timestamp)",
+      "exactness (except known baseline timestamp)"
+    ],
+    "two_timestamp_failures": "baseline-equal computed_expression residual; not a TASK-168 regression",
+    "native_vendor_coverage": false
+  },
+  "verification": {
+    "candidate_implementation_head": "2dd6a7ab01f56cfe31fdac1fa03cfc2244c19c6f",
+    "standard_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41726837120",
+    "standard_ci_passing_jobs": 9,
+    "standard_ci_total_jobs": 9,
+    "pinned_consumer_qualification": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41726837214",
+    "code_review": "https://github.com/phdah/sql-semantic-protocol/pull/185#pullrequestreview-5760120574",
+    "independent_reviewer": false,
+    "historical_freeze_exception_owner_accepted": false,
+    "all_mandatory_technical_cells_verified": true,
+    "native_vendor_scope": "DuckDB only",
+    "parent_task_85_signed_off": false,
+    "final_bookkeeping_head_ci_pending": true
+  }
+}

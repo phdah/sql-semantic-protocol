@@ -1,10 +1,10 @@
 ---
 id: TASK-168
 title: Classify correlations fanout and certify TASK-85 goals
-status: To Do
+status: Done
 assignee: []
 created_date: '2026-10-17'
-updated_date: '2026-10-17'
+updated_date: '2026-11-04'
 labels: []
 milestone: m-3
 dependencies:
@@ -33,13 +33,25 @@ type: feature
 ## Acceptance Criteria
 
 <!-- AC:BEGIN -->
-- [ ] #1 Before implementing, freeze all named variants and fixture IDs in a task-owned versioned acceptance matrix linked from `docs/coverage-manifest.json`: SQL shape, dialect/parser equivalence, typed output domains (NULL/inclusive-exclusive), exact source and terminal snapshots, TRUE/NOT TRUE/Impossible/Residual proof, source identities, adapter and external-engine evidence. Unverified mandatory cells block Done.
-- [ ] #2 Implement only the finite listed mandatory families and their stated oracle behavior, preserving strongest sound value domains, cross-source correlation, whole-bag multiplicity, complete downstream outputs and deterministic canonical proof. Do not infer independent witness conjunction, silently discard data, or rely on sql-tdg reparsing.
-- [ ] #3 Add executable, public-API DuckDB differential cases for positive and rejected or impossible directions, including fixed NULL/duplicate or counterexample scenarios. Compare complete physical inputs, emitted typed protocol claims and full terminal bags/replay artifacts, not only parsing or generated expectations.
-- [ ] #4 Check the 13 project dialect parser/equivalence cases where meaningful and direct SQL/dbt/ODCS parity for available facts. Record named vendor/session or external consumer limitations, exact evidence required, stable Residual/Impossible classification and explicit review disposition. No unexecuted native-engine claim.
-- [ ] #5 Verify final-head fmt, strict Clippy, full Rust tests/docs/no-default-features, dbt E2E, active schema/golden and relevant pinned sql-tdg tests. Independently sign off each frozen mandatory cell and its mapped parent AC before Done/merge; TASK-85 stays open until all children and original AC pass.
+- [x] #1 Before implementing, freeze all named variants and fixture IDs in a task-owned versioned acceptance matrix linked from `docs/coverage-manifest.json`: SQL shape, dialect/parser equivalence, typed output domains (NULL/inclusive-exclusive), exact source and terminal snapshots, TRUE/NOT TRUE/Impossible/Residual proof, source identities, adapter and external-engine evidence. Unverified mandatory cells block Done.
+- [x] #2 Implement only the finite listed mandatory families and their stated oracle behavior, preserving strongest sound value domains, cross-source correlation, whole-bag multiplicity, complete downstream outputs and deterministic canonical proof. Do not infer independent witness conjunction, silently discard data, or rely on sql-tdg reparsing.
+- [x] #3 Add executable, public-API DuckDB differential cases for positive and rejected or impossible directions, including fixed NULL/duplicate or counterexample scenarios. Compare complete physical inputs, emitted typed protocol claims and full terminal bags/replay artifacts, not only parsing or generated expectations.
+- [x] #4 Check the 13 project dialect parser/equivalence cases where meaningful and direct SQL/dbt/ODCS parity for available facts. Record named vendor/session or external consumer limitations, exact evidence required, stable Residual/Impossible classification and explicit review disposition. No unexecuted native-engine claim.
+- [x] #5 Verify final-head fmt, strict Clippy, full Rust tests/docs/no-default-features, dbt E2E, active schema/golden and relevant pinned sql-tdg tests. Independently sign off each frozen mandatory cell and its mapped parent AC before Done/merge; TASK-85 stays open until all children and original AC pass.
 <!-- AC:END -->
 
 ## Next
 
 After this child, audit and sign off TASK-85 separately; TASK-91 controls release readiness.
+
+## TASK-168 implementation evidence (2026-11-03)
+
+- [Immutable preimplementation v1 freeze](../../docs/task-168-acceptance-freeze-v1.json) and [versioned v2 executed target matrix](../../docs/task-168-acceptance-freeze.json) preserve seven positive, impossible, and residual source/terminal cases across 13 canonical parser dialects (91 classifications); the original v1 lacks some per-cell richness. The v2 correction is **not** prospective completeness. The TASK-168 owner accepted this historical timing exception on 2026-11-04; it remains documented, not retroactively fixed.
+- [Canonical tuple proof](../../src/physical_realization/joint_tuple_goals.rs) checks signed INTEGER/SQL NULL correlated tuple frequencies against one exact physical source assignment, with separate source-complete JOIN/GROUP + WINDOW/SET and LIMIT/QUALIFY/rank interpreters. Cross-row correlation is never inferred by multiplying scalar histograms; contradictions return `Impossible` and unproved text/order/engine behavior returns `Residual`.
+- [Independent frozen oracle inventory](../../tests/task_168_frozen_acceptance.rs) checks complete native DuckDB source and terminal bags, all 91 parser cells, selected/NOT TRUE physical occurrences, exact typed NULL and inclusive numeric value domains, and active typed witness emission. [Shared adapter parity](../../tests/task_167_adapter_parity.rs) covers direct SQL, compiled dbt + authoritative warehouse catalog, and ODCS for equivalent source facts, including negative and residual cases. [Single-terminal oracle](../../tests/task_168_tuple_fanout.rs) exercises LIMIT, QUALIFY, duplicates and empty full-bag proofs. 
+- [Opt-in sidecar](../../src/emission/tuple_goals.rs) emits only source-complete `Exact` bags; negative and residual verdicts contain no fabricated source or result. The active protocol root and `schema/protocol.schema.json` are unchanged.
+- [Pinned downstream sql-tdg qualification](https://github.com/phdah/sql-semantic-protocol/actions/runs/41725446712) passes the selected lib/type/full-query/exactness suites using consumer `3beaf7799ab54b2440ae34c917ff7eda6c11c398`; two known timestamp tests are compared with the fixed baseline and retain the same computed-expression residual. No new vendor-engine execution or consumer release certification is asserted.
+
+**Technical verification (2026-11-03):** All seven frozen cases, 91/91 canonical parser cells and 21/21 equivalent SQL/dbt/ODCS adapter cells are independently checked by [acceptance verification](../../docs/task-168-acceptance-verification.json). All nine [standard CI jobs](https://github.com/phdah/sql-semantic-protocol/actions/runs/41726837120) passed on reviewed implementation head `2dd6a7ab`; pinned [sql-tdg consumer qualification](https://github.com/phdah/sql-semantic-protocol/actions/runs/41726837214) also passed. The [Matt Standards/Spec technical review](https://github.com/phdah/sql-semantic-protocol/pull/185#pullrequestreview-5760120574) reports no code-blocking issue but **does not count as a distinct independent GitHub reviewer**.
+
+**Final TASK-168 owner signoff (2026-11-04):** The task owner explicitly approved merge of PR #185 after the Matt `engineering/code-review` Standards/Spec review. This accepts the TASK-168-only historical AC #1 deviation (preimplementation v1 was incomplete; retrospective v2 does not make it prospective) and explicitly waives the distinct independent-review identity requirement in AC #5 for this task only. The review remains an author-account review and must never be represented as independent. All seven frozen case families, 91/91 parser cells, 21/21 adapter cells and pinned consumer qualification remain technically verified. Final PR-head standard CI must be green before merging. Both approvals are **process exceptions**, not unexecuted technical proof. TASK-168 is signed off as Done; **TASK-85 parent and TASK-91 release are not signed off**.

@@ -492,6 +492,7 @@ mod joins;
 mod joint_counts;
 mod joint_distributions;
 mod joint_terminals;
+mod joint_tuple_goals;
 mod lifecycle_scripts;
 mod membership;
 mod operators;
@@ -558,6 +559,11 @@ pub use joint_distributions::physical_joint_distribution_plan;
 pub use joint_terminals::{
     physical_joint_terminal_bag_plan, PhysicalJointOtherExact, PhysicalJointTerminalExact,
     PhysicalJointTerminalProof,
+};
+pub use joint_tuple_goals::{
+    physical_joint_tuple_histogram_plan, physical_single_tuple_histogram_plan,
+    PhysicalSingleTupleExact, PhysicalSingleTupleProof, PhysicalTupleBucket,
+    PhysicalTupleGoalError, PhysicalTupleHistogramGoal,
 };
 pub use lifecycle_scripts::{
     physical_ordered_lifecycle_plan, PhysicalLifecycleCheckpoint, PhysicalLifecycleRead,

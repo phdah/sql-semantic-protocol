@@ -1300,3 +1300,11 @@ execution certifies the named core examples; other engines and session-specific
 recursive execution are not inferred from parser acceptance. Source-free seeds
 do not have an equivalent ODCS source contract to adapt, while compiled dbt
 SQL uses the same canonical recursive program as direct SQL.
+
+## Correlated terminal histograms and fanout (TASK-168)
+
+Matching separate output-column histograms does not imply matching **joint tuples**. For example, `(k=1, copies=2)` twice and `(k=NULL, copies=1)` once cannot satisfy a requested complete histogram containing `(NULL,2)`, even if the separate per-column value frequencies agree. The typed tuple goal compares entire positional combinations and their SQL NULL multiplicities against the actual full output bag.
+
+The bounded physical proof reuses the existing shared-source JOIN/GROUP + WINDOW/SET interpreter or the direct ORDER/LIMIT and QUALIFY/rank interpreters. An attested source assignment is never multiplied or invented from independently satisfiable marginal constraints; the caller supplies complete source physical rows and authoritative schema. Exact typed domains remain signed INTEGER with NULL, finite value sets and inclusive numeric bounds. Unsupported text collation, ambiguous ordering/ties, implicit NULL-ordering and unrecognized vendor/runtime laws fail closed. 13 parser dialect identities are independently checked; parser acceptance never certifies native vendor execution.
+
+The optional `to_physical_single_tuple_json` sidecar emits exact terminal rows and source occurrence provenance only when the canonical source-complete proof is Exact. This does not modify the active emitted protocol root.

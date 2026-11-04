@@ -4,9 +4,11 @@
 use serde_json::json;
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, analyze_dbt_artifacts, dialect_from_name,
-    parse_dbt_catalog, parse_dbt_manifest, physical_joint_terminal_bag_plan, AnalysisBundle,
+    parse_dbt_catalog, parse_dbt_manifest, physical_joint_terminal_bag_plan,
+    physical_joint_tuple_histogram_plan, physical_single_tuple_histogram_plan, AnalysisBundle,
     ConfiguredSqlInput, ConstraintValue, LiteralValue, OutcomeGoal, OutputDistribution,
-    OutputValueCount, PhysicalJointOtherExact, PhysicalJointTerminalProof, PhysicalWriteRow,
+    OutputValueCount, PhysicalJointOtherExact, PhysicalJointTerminalProof,
+    PhysicalSingleTupleProof, PhysicalTupleBucket, PhysicalTupleHistogramGoal, PhysicalWriteRow,
     PhysicalWriteState, RelationCatalog, RelationSchema, SchemaColumn, SqlInput,
 };
 use std::collections::BTreeMap;
@@ -306,5 +308,221 @@ fn sql_dbt_odcs_have_identical_joint_bags_and_impossibility_boundaries() {
                 PhysicalJointTerminalProof::Impossible { .. }
             ));
         }
+    }
+}
+
+#[test]
+fn task_168_correlated_tuples_preserve_sql_dbt_odcs_full_bag_evidence() {
+    let typed = |values: Vec<ConstraintValue>, count| PhysicalTupleBucket::new(values, count);
+    let int = ConstraintValue::Integer;
+    let null = ConstraintValue::Null;
+    for (sql, set, rows) in [(WINDOW, false, 3), (SET, true, 4)] {
+        let direct_bundle = direct(
+            &RelationCatalog::from_schemas(&source_schemas()).unwrap(),
+            sql,
+        );
+        let dbt_bundle = dbt(sql);
+        #[cfg(feature = "odcs")]
+        let odcs_bundle = direct(&odcs_catalog(), sql);
+        #[cfg(feature = "odcs")]
+        let bundles = vec![&direct_bundle, &dbt_bundle, &odcs_bundle];
+        #[cfg(not(feature = "odcs"))]
+        let bundles = vec![&direct_bundle, &dbt_bundle];
+
+        for bundle in bundles {
+            let second_id = bundle
+                .layers()
+                .iter()
+                .find(|layer| layer.input_id() == "model.demo.second")
+                .unwrap()
+                .id();
+            let grouped_id = bundle
+                .layers()
+                .iter()
+                .find(|layer| layer.input_id() == "model.demo.joined")
+                .unwrap()
+                .id();
+            let grouped = PhysicalTupleHistogramGoal::new(
+                grouped_id,
+                vec!["k".into(), "n".into()],
+                vec![typed(vec![int(1), int(2)], 1)],
+            )
+            .unwrap();
+            let (columns, positive, negative) = if set {
+                (
+                    vec!["k".into(), "v".into()],
+                    vec![
+                        typed(vec![int(1), int(10)], 2),
+                        typed(vec![int(1), int(20)], 1),
+                        typed(vec![null.clone(), int(30)], 1),
+                    ],
+                    vec![
+                        typed(vec![int(1), int(10)], 1),
+                        typed(vec![int(1), int(20)], 1),
+                        typed(vec![int(1), int(30)], 1),
+                        typed(vec![null.clone(), int(10)], 1),
+                    ],
+                )
+            } else {
+                (
+                    vec!["k".into(), "copies".into()],
+                    vec![
+                        typed(vec![int(1), int(2)], 2),
+                        typed(vec![null.clone(), int(1)], 1),
+                    ],
+                    vec![
+                        typed(vec![int(1), int(1)], 1),
+                        typed(vec![int(1), int(2)], 1),
+                        typed(vec![null.clone(), int(2)], 1),
+                    ],
+                )
+            };
+            let matched =
+                PhysicalTupleHistogramGoal::new(second_id, columns.clone(), positive).unwrap();
+            let mismatched = PhysicalTupleHistogramGoal::new(second_id, columns, negative).unwrap();
+            let source = snapshots();
+            let scalar_goals = goals(bundle, rows, set);
+            assert!(
+                matches!(
+                    physical_joint_tuple_histogram_plan(
+                        bundle,
+                        &scalar_goals,
+                        &source,
+                        &[grouped.clone(), matched],
+                    ),
+                    PhysicalJointTerminalProof::Exact(_)
+                ),
+                "same complete physical bags and correlated tuple counts for all adapters"
+            );
+            assert!(
+                matches!(
+                    physical_joint_tuple_histogram_plan(
+                        bundle,
+                        &scalar_goals,
+                        &source,
+                        &[grouped, mismatched],
+                    ),
+                    PhysicalJointTerminalProof::Impossible { .. }
+                ),
+                "equal independent marginals cannot override a conflicting physical tuple"
+            );
+        }
+    }
+}
+
+#[test]
+fn task_168_page_and_qualify_source_facts_are_equal_across_sql_dbt_odcs() {
+    const PAGE: &str = "SELECT k,v FROM warehouse.raw.l ORDER BY v LIMIT 2";
+    const QUALIFY: &str =
+        "SELECT k,v FROM warehouse.raw.l QUALIFY ROW_NUMBER() OVER (PARTITION BY k ORDER BY v) = 1";
+
+    let positive = |layer: &str, rows: &[(Option<i64>, i64)]| {
+        PhysicalTupleHistogramGoal::new(
+            layer,
+            vec!["k".into(), "v".into()],
+            rows.iter()
+                .map(|(k, v)| {
+                    PhysicalTupleBucket::new(
+                        vec![
+                            k.map_or(ConstraintValue::Null, ConstraintValue::Integer),
+                            ConstraintValue::Integer(*v),
+                        ],
+                        1,
+                    )
+                })
+                .collect(),
+        )
+        .unwrap()
+    };
+    let left = snapshots().remove(0);
+    for (sql, expected, values) in [
+        (PAGE, "Exact", vec![(Some(1), 10), (Some(1), 20)]),
+        (QUALIFY, "Residual", vec![(Some(1), 10), (None, 30)]),
+    ] {
+        let direct_bundle = direct(
+            &RelationCatalog::from_schemas(&source_schemas()).unwrap(),
+            sql,
+        );
+        let dbt_bundle = dbt(sql);
+        #[cfg(feature = "odcs")]
+        let odcs_bundle = direct(&odcs_catalog(), sql);
+        #[cfg(feature = "odcs")]
+        let bundles = vec![&direct_bundle, &dbt_bundle, &odcs_bundle];
+        #[cfg(not(feature = "odcs"))]
+        let bundles = vec![&direct_bundle, &dbt_bundle];
+
+        for bundle in bundles {
+            let layer = bundle
+                .layers()
+                .iter()
+                .find(|layer| layer.input_id() == "model.demo.second")
+                .unwrap();
+            let request = positive(layer.id(), &values);
+            let result =
+                physical_single_tuple_histogram_plan(bundle, std::slice::from_ref(&left), &request);
+            let verdict = match &result {
+                PhysicalSingleTupleProof::Exact(_) => "Exact",
+                PhysicalSingleTupleProof::Impossible { .. } => "Impossible",
+                PhysicalSingleTupleProof::Residual { .. } => "Residual",
+            };
+            assert_eq!(
+                verdict, expected,
+                "{sql}: adapter changed physical proof strength"
+            );
+            if sql == PAGE {
+                let wrong = positive(layer.id(), &[(Some(1), 10), (None, 30)]);
+                assert!(matches!(
+                    physical_single_tuple_histogram_plan(
+                        bundle,
+                        std::slice::from_ref(&left),
+                        &wrong
+                    ),
+                    PhysicalSingleTupleProof::Impossible { .. }
+                ));
+            }
+        }
+    }
+}
+
+#[test]
+fn task_168_unproved_text_collation_stays_residual_for_every_evidence_adapter() {
+    let direct_bundle = direct(
+        &RelationCatalog::from_schemas(&source_schemas()).unwrap(),
+        SET,
+    );
+    let dbt_bundle = dbt(SET);
+    #[cfg(feature = "odcs")]
+    let odcs_bundle = direct(&odcs_catalog(), SET);
+    #[cfg(feature = "odcs")]
+    let bundles = vec![&direct_bundle, &dbt_bundle, &odcs_bundle];
+    #[cfg(not(feature = "odcs"))]
+    let bundles = vec![&direct_bundle, &dbt_bundle];
+    for bundle in bundles {
+        let output = bundle
+            .layers()
+            .iter()
+            .find(|layer| layer.input_id() == "model.demo.second")
+            .unwrap();
+        let unproved = PhysicalTupleHistogramGoal::new(
+            output.id(),
+            vec!["k".into(), "v".into()],
+            vec![PhysicalTupleBucket::new(
+                vec![
+                    ConstraintValue::String("unsupported_collation".into()),
+                    ConstraintValue::Integer(10),
+                ],
+                1,
+            )],
+        )
+        .unwrap();
+        assert!(matches!(
+            physical_joint_tuple_histogram_plan(
+                bundle,
+                &goals(bundle, 4, true),
+                &snapshots(),
+                &[unproved]
+            ),
+            PhysicalJointTerminalProof::Residual { .. }
+        ));
     }
 }

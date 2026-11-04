@@ -24,18 +24,18 @@ fn exact_scalar(value: &LiteralValue) -> Value {
     }
 }
 
-fn row_to_value(row: &BTreeMap<String, LiteralValue>) -> Value {
+pub(super) fn row_to_value(row: &BTreeMap<String, LiteralValue>) -> Value {
     json!(row
         .iter()
         .map(|(column, value)| (column.clone(), exact_scalar(value)))
         .collect::<BTreeMap<_, _>>())
 }
 
-fn terminal_to_value(rows: &[BTreeMap<String, LiteralValue>]) -> Value {
+pub(super) fn terminal_to_value(rows: &[BTreeMap<String, LiteralValue>]) -> Value {
     json!(rows.iter().map(row_to_value).collect::<Vec<_>>())
 }
 
-fn source_to_value(state: &PhysicalWriteState) -> Value {
+pub(super) fn source_to_value(state: &PhysicalWriteState) -> Value {
     json!({
         "relation": state.relation(),
         "rows": state
@@ -46,7 +46,7 @@ fn source_to_value(state: &PhysicalWriteState) -> Value {
     })
 }
 
-fn domains_to_value(domains: &BTreeMap<String, ValueDomain>) -> Value {
+pub(super) fn domains_to_value(domains: &BTreeMap<String, ValueDomain>) -> Value {
     json!(domains
         .iter()
         .map(|(name, domain)| (name.clone(), value_domain_to_value(domain)))
