@@ -62,9 +62,9 @@ TASK-83, TASK-85 and TASK-91 require their own independent closure, and
 TASK-161 cannot begin until TASK-82 and TASK-83 are Done and merged.
 
 
-## Full child inventory reconciliation (active v2)
+## Full child inventory reconciliation (active v3)
 
-The parent freeze indexes **38** child-owned cases, preserving their frozen
+The parent v3 freeze indexes **38** child-owned cases, preserving their frozen
 proof strengths: **23 Exact, 5 Impossible, 10 Residual**. The immutable
 child contracts remain authoritative. `tests/task_82_parent_acceptance.rs`
 verifies identity and classification equality against all four active child
@@ -78,7 +78,7 @@ child task files and mutable coverage-manifest records reflect subsequent
 approved completion. No freeze is rewritten to retroactively claim a
 prospective implementation review.
 
-## Parent AC #3 bounded MERGE idempotence
+## Parent AC #3 bounded MERGE idempotence (reviewed v3)
 
 Two independently executable parent cases were added after preserving
 `docs/task-82-parent-acceptance-freeze-v1.json` as historical evidence:
@@ -86,8 +86,8 @@ Two independently executable parent cases were added after preserving
 - `82-PARENT-IDEMPOTENT-P` starts with target [(1,10),(2,30)] and immutable
   source [(1,20),(3,40)]. The first MERGE updates key 1 and inserts key 3;
   the resulting bag is [(1,20),(2,30),(3,40)]. Reapplying the identical
-  MERGE with that same source preserves the target *bag*, though it still
-  records one matched UPDATE on the second run.
+  MERGE with that same source preserves the target *bag*, but it records
+  **two matched UPDATE actions** (keys 1 and 3) on the second run.
 - `82-PARENT-NONIDEMPOTENT-N` starts with target [(1,10)], source [(1,5)]
   and `SET score = t.score + s.score`. The first result is [(1,15)]
   and the second [(1,20)], proving this form is *not* idempotent.
@@ -158,3 +158,15 @@ is inherited by TASK-82. Require a separate reviewer or an explicit
 owner-directed process exception for parent signoff. Until that
 disposition and final CI are verified, TASK-82 remains In Progress,
 all six original AC stay unchecked and TASK-91 remains blocked.
+
+## Reviewed parent v3 correction
+
+The first CI execution of the new repeated-MERGE test rejected the v2
+assumption that only one target row would be updated by the second statement.
+The first MERGE inserted key 3, so **both key 1 and key 3 match** on the
+second invocation. The correct independent DuckDB/canonical action oracle is
+2 UPDATE actions, although the target *bag* remains a fixed point. The
+incorrect v2 is preserved at `docs/task-82-parent-acceptance-freeze-v2.json`,
+and v3 is the corrected active contract. This is a test-oracle correction,
+not a change to the production MERGE interpreter or a silent alteration
+of prior signoff evidence.
