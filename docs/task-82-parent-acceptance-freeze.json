@@ -1,5 +1,5 @@
 {
-  "version": 2,
+  "version": 3,
   "owner": "TASK-82",
   "kind": "parent-independent-closure-verification",
   "scope": "Fixed parent-level regression for first-applicable matched UPDATE/DELETE, unmatched insertion/deletion, computed sequential MERGE, NULL nonmembership and duplicate-match residual; child freezes remain authoritative for the full 13-dialect/adapter matrix. Version 2 adds bounded fixed-point and non-idempotent repeated-application oracles plus a complete child-frozen-case reconciliation.",
@@ -326,7 +326,8 @@
   "independent_parent_signoff": false,
   "release_gate": "TASK-91 remains independent",
   "freeze_history": [
-    "docs/task-82-parent-acceptance-freeze-v1.json"
+    "docs/task-82-parent-acceptance-freeze-v1.json",
+    "docs/task-82-parent-acceptance-freeze-v2.json"
   ],
   "case_index_owner": "Current child freeze files remain authoritative; this index must match them exactly.",
   "merged_child_inventory": {
@@ -772,7 +773,7 @@
           ],
           "affected": {
             "inserted": 0,
-            "updated": 1,
+            "updated": 2,
             "deleted": 0
           },
           "before_domains": {
@@ -1032,5 +1033,10 @@
         ]
       }
     }
-  ]
+  ],
+  "reviewed_revision_3": {
+    "reason": "DuckDB/canonical replay shows both id=1 and newly inserted id=3 matched on second identical MERGE; after bag fixed but UPDATE actions count two, not one. This preserves v2 for history.",
+    "corrected_case": "82-PARENT-IDEMPOTENT-P",
+    "expected_second_update_actions": 2
+  }
 }
