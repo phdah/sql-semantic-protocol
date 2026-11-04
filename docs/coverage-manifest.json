@@ -1,4 +1,39 @@
 {
+  "task_82_parent_merge_closure_acceptance": {
+    "owner": "TASK-82",
+    "status": "parent_original_ac_audit_in_progress",
+    "freeze": "docs/task-82-parent-acceptance-freeze.json",
+    "freeze_version": 1,
+    "fixture_ids": [
+      "82-PARENT-MIXED-P",
+      "82-PARENT-MULTIMATCH-N"
+    ],
+    "parent_ac": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+    ],
+    "children": [
+      "TASK-153",
+      "TASK-154",
+      "TASK-155",
+      "TASK-156"
+    ],
+    "children_done_and_merged": true,
+    "public_api_native_full_bag_oracle": "tests/task_82_parent_merge.rs",
+    "acceptance_audit": "docs/task-82-parent-acceptance-audit.md",
+    "implementation_and_protocol_shape_unchanged": true,
+    "parent_signed_off": false,
+    "release_approved": false,
+    "remaining_gates": [
+      "latest final PR-head CI",
+      "distinct independent TASK-82 parent Standards/Spec review",
+      "original AC and conditional native-law dispositions"
+    ]
+  },
   "task_167_joint_terminal_bags_acceptance": {
     "owner": "TASK-167",
     "parent": "TASK-85",
