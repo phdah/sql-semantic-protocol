@@ -137,9 +137,14 @@ fn parent_replay_inventory_and_active_coverage_manifest_are_consistent() {
         parent["freeze"],
         "docs/task-82-parent-acceptance-freeze.json"
     );
+    // The freeze records immutable pre-signoff evidence. Mutable status belongs
+    // to the coverage manifest and backlog, not to a rewritten freeze.
+    assert_eq!(freeze["independent_parent_signoff"], false);
+    let task = include_str!("../.backlog/tasks/task-82 - support-merge-upsert-branch-programs.md");
     assert_eq!(
-        parent["parent_signed_off"],
-        freeze["independent_parent_signoff"]
+        parent["parent_signed_off"].as_bool().unwrap(),
+        task.lines().any(|line| line == "status: Done"),
+        "parent signoff must be consistent with the backlog state"
     );
     let cases = freeze["cases"].as_array().unwrap();
     let replay = freeze["replay_cases"].as_array().unwrap();
