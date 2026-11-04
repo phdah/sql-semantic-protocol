@@ -23,7 +23,7 @@ fn every_child_case_and_parent_ac_is_accounted_for_without_reclassification() {
     let freeze = parse(include_str!(
         "../docs/task-82-parent-acceptance-freeze.json"
     ));
-    assert_eq!(freeze["version"], 2);
+    assert_eq!(freeze["version"], 3);
     assert_eq!(freeze["owner"], "TASK-82");
     assert_eq!(freeze["independent_parent_signoff"], false);
     let children = child_freezes();
