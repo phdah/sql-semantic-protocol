@@ -20,7 +20,9 @@ fn child_freezes() -> [Value; 4] {
 
 #[test]
 fn every_child_case_and_parent_ac_is_accounted_for_without_reclassification() {
-    let freeze = parse(include_str!("../docs/task-82-parent-acceptance-freeze.json"));
+    let freeze = parse(include_str!(
+        "../docs/task-82-parent-acceptance-freeze.json"
+    ));
     assert_eq!(freeze["version"], 2);
     assert_eq!(freeze["owner"], "TASK-82");
     assert_eq!(freeze["independent_parent_signoff"], false);
@@ -50,7 +52,10 @@ fn every_child_case_and_parent_ac_is_accounted_for_without_reclassification() {
             .as_u64()
             .or_else(|| child["adapter_cells_required"].as_u64())
             .unwrap();
-        assert_eq!(entry["adapter_cases"].as_u64().unwrap(), child_adapter_cases);
+        assert_eq!(
+            entry["adapter_cases"].as_u64().unwrap(),
+            child_adapter_cases
+        );
         assert_eq!(child["dialects"].as_array().unwrap().len(), 13);
         if let Some(dialects) = &all_dialects {
             assert_eq!(dialects, &child["dialects"]);
@@ -127,8 +132,14 @@ fn parent_replay_inventory_and_active_coverage_manifest_are_consistent() {
     let parent = &manifest["task_82_parent_merge_closure_acceptance"];
     assert_eq!(parent["owner"], "TASK-82");
     assert_eq!(parent["freeze_version"], freeze["version"]);
-    assert_eq!(parent["freeze"], "docs/task-82-parent-acceptance-freeze.json");
-    assert_eq!(parent["parent_signed_off"], freeze["independent_parent_signoff"]);
+    assert_eq!(
+        parent["freeze"],
+        "docs/task-82-parent-acceptance-freeze.json"
+    );
+    assert_eq!(
+        parent["parent_signed_off"],
+        freeze["independent_parent_signoff"]
+    );
     let cases = freeze["cases"].as_array().unwrap();
     let replay = freeze["replay_cases"].as_array().unwrap();
     assert_eq!(cases.len(), 2);
@@ -160,7 +171,10 @@ fn parent_replay_inventory_and_active_coverage_manifest_are_consistent() {
     ] {
         assert_eq!(manifest[key]["child_signed_off"], true, "{task}");
         assert_eq!(manifest[key]["parent_signed_off"], false, "{task}");
-        assert_eq!(freeze["merged_child_inventory"][task]["fixture_ids"].is_array(), true);
+        assert_eq!(
+            freeze["merged_child_inventory"][task]["fixture_ids"].is_array(),
+            true
+        );
     }
 
     for case in replay {
