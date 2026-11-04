@@ -14580,7 +14580,7 @@
   "task_168_correlated_tuple_goals_acceptance": {
     "owner": "TASK-168",
     "parent": "TASK-85",
-    "status": "all_technical_cells_verified_ac1_timing_and_ac5_independent_review_pending",
+    "status": "task_168_owner_signed_off_with_explicit_ac1_and_ac5_waivers",
     "freeze": "docs/task-168-acceptance-freeze.json",
     "freeze_version": 2,
     "fixture_ids": [
@@ -14603,12 +14603,10 @@
     "adapter_parity_verified": true,
     "full_rust_ci_verified": true,
     "independent_review": false,
-    "child_signed_off": false,
+    "child_signed_off": true,
     "parent_signed_off": false,
     "remaining_gates": [
-      "Explicit TASK-168 owner acceptance of historical v1 freeze incompleteness",
-      "Distinct independent GitHub reviewer or explicit TASK-168-only owner waiver",
-      "Remove temporary consumer workflow after qualification and require final metadata-head CI 9/9 before merge"
+      "Final post-signoff PR-head nine-job CI must pass before squash merge"
     ],
     "freeze_history": [
       "docs/task-168-acceptance-freeze-v1.json"
@@ -14623,8 +14621,18 @@
     "candidate_standard_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41726837120",
     "pinned_consumer_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41726837214",
     "pinned_consumer_sha": "3beaf7799ab54b2440ae34c917ff7eda6c11c398",
-    "author_account_review": "https://github.com/phdah/sql-semantic-protocol/pull/185#pullrequestreview-5760120574",
-    "historical_v1_freeze_timing_deviation": "Prospective v1 incomplete; v2 filled after semantic changes, not retroactive compliance; owner approval required",
-    "native_vendor_release_disposition": "No native engine certification outside DuckDB; conditional evidence owned by TASK-168 and reviewed under TASK-91"
+    "author_account_review": "https://github.com/phdah/sql-semantic-protocol/pull/185#pullrequestreview-5765078119",
+    "historical_v1_freeze_timing_deviation": "Prospective v1 incomplete; v2 retrospective; TASK-168 owner explicitly accepted the historical process deviation 2026-11-04",
+    "native_vendor_release_disposition": "No native engine certification outside DuckDB; conditional evidence owned by TASK-168 and reviewed under TASK-91",
+    "independent_review_owner_waiver": true,
+    "historical_freeze_exception_owner_accepted": true,
+    "ac_completed": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "owner_signoff_date": "2026-11-04"
   }
 }

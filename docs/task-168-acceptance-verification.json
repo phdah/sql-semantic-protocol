@@ -11,7 +11,7 @@
   "sql_tdg_pinned_consumer": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41726837214",
   "consumer_commit": "3beaf7799ab54b2440ae34c917ff7eda6c11c398",
   "review": "https://github.com/phdah/sql-semantic-protocol/pull/185#pullrequestreview-5760120574",
-  "review_identity": "author_account_matt_standards_and_spec_not_independent",
+  "review_identity": "author_account_review_not_independent_owner_waiver_task_168_only",
   "scope": "Portable canonical INTEGER/NULL and parser equivalence; native DuckDB only",
   "cases": [
     {
@@ -914,11 +914,19 @@
     3,
     4
   ],
-  "not_signed_off": [
-    "AC #1 historical prospective-v1 incompleteness requires explicit owner disposition",
-    "AC #5 requires independent reviewer identity or task-specific owner waiver and final bookkeeping-head CI"
-  ],
-  "child_signed_off": false,
+  "not_signed_off": [],
+  "child_signed_off": true,
   "parent_signed_off": false,
-  "protocol_v3_release_approved": false
+  "protocol_v3_release_approved": false,
+  "owner_signoff_date": "2026-11-04",
+  "owner_accepted_historical_ac1_exception": true,
+  "owner_waived_distinct_ac5_reviewer": true,
+  "accepted_child_ac": [
+    1,
+    2,
+    3,
+    4,
+    5
+  ],
+  "final_pr_head_ci_required_for_merge": true
 }
