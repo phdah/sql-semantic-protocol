@@ -170,3 +170,23 @@ incorrect v2 is preserved at `docs/task-82-parent-acceptance-freeze-v2.json`,
 and v3 is the corrected active contract. This is a test-oracle correction,
 not a change to the production MERGE interpreter or a silent alteration
 of prior signoff evidence.
+
+## Technical acceptance verification (2026-11-04)
+
+The reviewed v3 implementation head `2f5b4c8157f37e2d018a5f99d6d93f53f7cb6ef0`
+passed **all nine required GitHub Actions jobs**:
+https://github.com/phdah/sql-semantic-protocol/actions/runs/41925632614 .
+That includes fmt, default/no-default strict Clippy, both complete Rust test
+configurations, both doc builds, dependency checks, active schema and
+snapshot regressions, and actual dbt Core E2E. The Rust tests executed all
+four parent-owned fixtures and all 38 frozen child cases via their own
+public-API/native DuckDB, dialect and adapter tests. Both parent acceptance
+inventory tests passed; all six original parent AC have a finite evidence
+crosswalk and technically supported, conservative exactness boundaries.
+
+**Remaining gate:** This is a technical implementation audit, not a
+distinct-account independent GitHub review. Original AC #1..#6 are **not yet
+signed off** until an independent parent reviewer or an *explicit* owner
+exception accepts the recorded conditional dispositions. TASK-82 stays
+In Progress and TASK-91 remains separate. Any final tracking-only
+commit must pass all required CI jobs before integration.
