@@ -3,7 +3,7 @@
     "owner": "TASK-82",
     "status": "parent_original_ac_audit_in_progress",
     "freeze": "docs/task-82-parent-acceptance-freeze.json",
-    "freeze_version": 2,
+    "freeze_version": 3,
     "fixture_ids": [
       "82-PARENT-MIXED-P",
       "82-PARENT-MULTIMATCH-N",
@@ -37,7 +37,8 @@
       "Do not merge or mark Done before final gates"
     ],
     "freeze_history": [
-      "docs/task-82-parent-acceptance-freeze-v1.json"
+      "docs/task-82-parent-acceptance-freeze-v1.json",
+      "docs/task-82-parent-acceptance-freeze-v2.json"
     ],
     "merged_children": {
       "TASK_153": "https://github.com/phdah/sql-semantic-protocol/pull/174",
@@ -56,7 +57,8 @@
     "parent_inventory_oracle": "tests/task_82_parent_acceptance.rs",
     "parent_ac_mapping_complete": true,
     "reviewed_implementation_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41922420700",
-    "reviewed_implementation_head": "b05d4d83e0b31e6f7eec7401298b7cffc743ca4c"
+    "reviewed_implementation_head": "b05d4d83e0b31e6f7eec7401298b7cffc743ca4c",
+    "reviewed_v3_correction": "Second identical MERGE updates both matched keys 1 and 3; target bag remains fixed. v2 with one UPDATE preserved historically."
   },
   "task_167_joint_terminal_bags_acceptance": {
     "owner": "TASK-167",
