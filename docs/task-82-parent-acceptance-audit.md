@@ -28,9 +28,9 @@ individual child tasks apply to those children only, never to this parent.
 | #5 Native and dialect evidence | Child-specific full DuckDB before/after oracles; native two-step parent replay against an independent frozen bag. Existing child matrices enumerate 13 parser dialect identities, not 13 native engines. |
 | #6 Tests, docs, schema and adapters | Child acceptance inventories, default/no-default Rust test suites, strict lint, dbt E2E, direct SQL/dbt/ODCS parity and protocol/schema regressions. No new public protocol shape or API is introduced here. |
 
-## Parent-owned finite oracle (v1 preserved; v2 adds fixed-point proof)
+## Parent-owned finite oracle (active v3, immutable v1/v2 history)
 
-`docs/task-82-parent-acceptance-freeze-v1.json` preserves the initial two-case inventory. The active v2 adds complete 38-case child reconciliation and two bounded repeat-application cases. The original v1 fixes two
+`docs/task-82-parent-acceptance-freeze-v1.json` preserves the initial two-case inventory. The active v3 adds complete 38-case child reconciliation and two bounded repeat-application cases. The original v1 fixes two
 fixtures before their test implementation:
 
 - `82-PARENT-MIXED-P`: initial target `[(1,10),(2,20),(NULL,8)]`;
@@ -111,7 +111,7 @@ specific to its closed-world evidence, never an unconditional global
    The parent mixed replay additionally checks both native partitions on
    each statement prestate.
 3. **#3**: Child and parent source/target complete-bag and negative tests,
-   plus the v2 positive fixed point and computed non-idempotence, prevent
+   plus the v3 positive fixed point and computed non-idempotence, prevent
    made-up final states for Impossible/Residual cases.
 4. **#4**: TASK-154 three-way branch effects, TASK-155 constraint
    classifications, TASK-156 computed SET/INSERT and the parent two-step
@@ -150,7 +150,7 @@ overclaim while completing the finite TASK-82 parent contract.
 
 The earlier PR head `b05d4d83e0b31e6f7eec7401298b7cffc743ca4c`
 passed [all nine GitHub CI jobs](https://github.com/phdah/sql-semantic-protocol/actions/runs/41922420700)
-before the active v2 additions. Fresh final-head CI is mandatory.
+before the active v3 additions. Fresh final-head CI is mandatory.
 
 Matt Standards/Spec author-account review is a technical assessment,
 **not a distinct independent reviewer**. No child-specific review waiver
