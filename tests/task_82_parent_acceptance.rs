@@ -112,13 +112,12 @@ fn every_child_case_and_parent_ac_is_accounted_for_without_reclassification() {
         for task in referenced {
             let task = task.as_str().unwrap();
             let child = &indexed[task];
-            assert_eq!(
+            assert!(
                 child["original_parent_ac"]
                     .as_array()
                     .unwrap()
                     .iter()
                     .any(|ac| ac.as_u64() == Some(criterion)),
-                true,
                 "{task} cannot be attributed to parent AC #{criterion} without a freeze mapping"
             );
         }
@@ -173,10 +172,7 @@ fn parent_replay_inventory_and_active_coverage_manifest_are_consistent() {
     ] {
         assert_eq!(manifest[key]["child_signed_off"], true, "{task}");
         assert_eq!(manifest[key]["parent_signed_off"], false, "{task}");
-        assert_eq!(
-            freeze["merged_child_inventory"][task]["fixture_ids"].is_array(),
-            true
-        );
+        assert!(freeze["merged_child_inventory"][task]["fixture_ids"].is_array());
     }
 
     for case in replay {
