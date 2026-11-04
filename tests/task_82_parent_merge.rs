@@ -72,17 +72,13 @@ fn catalog() -> RelationCatalog {
 fn analyze(sql: &[&str]) -> sql_semantic_protocol::AnalysisBundle {
     let inputs = sql.iter().map(|sql| SqlInput::inline(*sql)).collect::<Vec<_>>();
     let dialect = dialect_from_name("duckdb").unwrap();
+    let ids = (0..inputs.len())
+        .map(|index| format!("task82-parent-step-{index}"))
+        .collect::<Vec<_>>();
     let configured = inputs
         .iter()
-        .enumerate()
-        .map(|(index, input)| {
-            ConfiguredSqlInput::new(
-                format!("task82-parent-step-{index}"),
-                input,
-                "duckdb",
-                dialect.as_ref(),
-            )
-        })
+        .zip(&ids)
+        .map(|(input, id)| ConfiguredSqlInput::new(id, input, "duckdb", dialect.as_ref()))
         .collect::<Vec<_>>();
     analyze_configured_inputs_with_catalog(&configured, &catalog()).unwrap()
 }
