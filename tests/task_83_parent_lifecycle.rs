@@ -11,12 +11,18 @@ use sql_semantic_protocol::{
 };
 
 fn frozen() -> Value {
-    serde_json::from_str(include_str!("../docs/task-83-parent-acceptance-freeze.json")).unwrap()
+    serde_json::from_str(include_str!(
+        "../docs/task-83-parent-acceptance-freeze.json"
+    ))
+    .unwrap()
 }
 
 fn analyze(program: &[&str]) -> sql_semantic_protocol::AnalysisBundle {
     let dialect = dialect_from_name("duckdb").unwrap();
-    let inputs = program.iter().map(|sql| SqlInput::inline(*sql)).collect::<Vec<_>>();
+    let inputs = program
+        .iter()
+        .map(|sql| SqlInput::inline(*sql))
+        .collect::<Vec<_>>();
     analyze_inputs(&inputs, "duckdb", dialect.as_ref()).unwrap()
 }
 
@@ -52,7 +58,10 @@ fn independent_parent_lifecycle_proves_both_reads_and_intermediate_catalogs() {
     assert_eq!(proof.checkpoints.len(), program.len());
     assert_eq!(proof.transitions.len(), 5);
     assert_eq!(proof.reads.len(), 2);
-    assert!(proof.final_states.is_empty(), "DROP removes the table identity");
+    assert!(
+        proof.final_states.is_empty(),
+        "DROP removes the table identity"
+    );
     assert_eq!(proof.checkpoints[0].states.len(), 1);
     assert!(proof.checkpoints[0].states[0].rows().is_empty());
     assert_eq!(proof.checkpoints[1].states[0].rows().len(), 4);
@@ -70,8 +79,14 @@ fn independent_parent_lifecycle_proves_both_reads_and_intermediate_catalogs() {
     assert_eq!(selected.rejected_source_ordinals, vec![0, 1, 2]);
     let domains = selected.exact_domains().unwrap();
     assert_eq!(domains.len(), 2);
-    assert_eq!(domains[0].values(), &[(LiteralValue::Number("3".into()), 1)]);
-    assert_eq!(domains[1].values(), &[(LiteralValue::Number("2".into()), 1)]);
+    assert_eq!(
+        domains[0].values(),
+        &[(LiteralValue::Number("3".into()), 1)]
+    );
+    assert_eq!(
+        domains[1].values(),
+        &[(LiteralValue::Number("2".into()), 1)]
+    );
 
     let emptied = &proof.reads[1];
     assert!(emptied.source.rows().is_empty());
@@ -88,8 +103,12 @@ fn independent_parent_lifecycle_proves_both_reads_and_intermediate_catalogs() {
     for statement in &program[..3] {
         db.execute_batch(statement).unwrap();
     }
-    let rows = native_rows(&db, "SELECT a, b FROM stage");
-    assert_eq!(rows, vec![(Some(1), 2), (None, 2), (Some(1), 2), (Some(3), 2)]);
+    let mut rows = native_rows(&db, "SELECT a, b FROM stage");
+    rows.sort();
+    assert_eq!(
+        rows,
+        vec![(None, 2), (Some(1), 2), (Some(1), 2), (Some(3), 2)]
+    );
     assert_eq!(native_rows(&db, program[3]), vec![(Some(3), 2)]);
     db.execute_batch(program[4]).unwrap();
     assert!(native_rows(&db, program[5]).is_empty());
