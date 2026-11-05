@@ -1,7 +1,7 @@
 //! TASK-83: independent parent DDL/DML/read closure at the public physical seam.
 //! The native DuckDB snapshots are external oracles, not generated expectations.
 
-use std::collections::BTreeSet;
+use std::collections::{BTreeMap, BTreeSet};
 
 use duckdb::Connection;
 use serde_json::Value;
@@ -99,10 +99,34 @@ fn independent_parent_lifecycle_proves_both_reads_and_intermediate_catalogs() {
             read.source.rows().len(),
             expected["source_count"].as_u64().unwrap() as usize
         );
-        assert_eq!(
-            read.output.rows().len(),
-            expected["rows"].as_array().unwrap().len()
-        );
+        let frozen_rows = expected["rows"].as_array().unwrap();
+        assert_eq!(read.output.rows().len(), frozen_rows.len());
+        for (actual, expected_row) in read.output.rows().iter().zip(frozen_rows) {
+            let values = expected_row
+                .as_object()
+                .unwrap()
+                .iter()
+                .map(|(column, value)| {
+                    let value = value.as_i64().map_or(LiteralValue::Null, |number| {
+                        LiteralValue::Number(number.to_string())
+                    });
+                    (column.clone(), value)
+                })
+                .collect::<BTreeMap<_, _>>();
+            assert_eq!(actual.values(), &values, "complete frozen SELECT row");
+        }
+        for (actual, field) in [
+            (&read.surviving_source_ordinals, "true_ordinals"),
+            (&read.rejected_source_ordinals, "not_true_ordinals"),
+        ] {
+            let expected = expected[field]
+                .as_array()
+                .unwrap()
+                .iter()
+                .map(|ordinal| ordinal.as_u64().unwrap() as usize)
+                .collect::<Vec<_>>();
+            assert_eq!(actual, &expected, "frozen source membership: {field}");
+        }
         let domains = read.exact_domains().unwrap();
         assert_eq!(domains.len(), 2);
         for domain in &domains {
@@ -157,8 +181,23 @@ fn independent_parent_lifecycle_proves_both_reads_and_intermediate_catalogs() {
     for domain in emptied.exact_domains().unwrap() {
         assert!(domain.values().is_empty());
     }
-    assert_eq!(proof.transitions[1].affected().inserted(), 4);
-    assert_eq!(proof.transitions[3].affected().deleted(), 4);
+    let effects = case["write_effects"].as_array().unwrap();
+    assert_eq!(effects.len(), proof.transitions.len());
+    for (transition, expected) in proof.transitions.iter().zip(effects) {
+        assert_eq!(
+            transition.affected().inserted(),
+            expected["inserted"].as_u64().unwrap()
+        );
+        assert_eq!(
+            transition.affected().deleted(),
+            expected["deleted"].as_u64().unwrap()
+        );
+        assert_eq!(transition.affected().updated(), 0);
+    }
+    assert_eq!(
+        proof.final_states.len(),
+        case["final_live_catalog"].as_array().unwrap().len()
+    );
 
     let db = Connection::open_in_memory().unwrap();
     for statement in &program[..3] {
