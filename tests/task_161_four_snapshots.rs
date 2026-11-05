@@ -73,14 +73,44 @@ fn four_sequential_source_complete_snapshots_match_native_duckdb() {
             assert_eq!(snapshot.before, graph.nodes[index - 1].after);
         }
     }
-    assert_eq!(graph.nodes[1].write.as_ref().unwrap().affected().inserted(), 2);
-    assert_eq!(graph.nodes[2].write.as_ref().unwrap().affected().updated(), 1);
-    assert_eq!(graph.nodes[2].write.as_ref().unwrap().affected_target_ordinals(), &[0]);
-    assert_eq!(graph.nodes[3].write.as_ref().unwrap().affected().deleted(), 1);
-    assert_eq!(graph.nodes[3].write.as_ref().unwrap().affected_target_ordinals(), &[1]);
+    assert_eq!(
+        graph.nodes[1].write.as_ref().unwrap().affected().inserted(),
+        2
+    );
+    assert_eq!(
+        graph.nodes[2].write.as_ref().unwrap().affected().updated(),
+        1
+    );
+    assert_eq!(
+        graph.nodes[2]
+            .write
+            .as_ref()
+            .unwrap()
+            .affected_target_ordinals(),
+        &[0]
+    );
+    assert_eq!(
+        graph.nodes[3].write.as_ref().unwrap().affected().deleted(),
+        1
+    );
+    assert_eq!(
+        graph.nodes[3]
+            .write
+            .as_ref()
+            .unwrap()
+            .affected_target_ordinals(),
+        &[1]
+    );
     assert_eq!(graph.final_states[0].rows(), &[row(1, 15)]);
     let domains = graph.final_states[0]
-        .exact_domains(&graph.nodes[3].after.schemas[0]).unwrap();
-    assert_eq!(domains[0].values(), &[(LiteralValue::Number("1".into()), 1)]);
-    assert_eq!(domains[1].values(), &[(LiteralValue::Number("15".into()), 1)]);
+        .exact_domains(&graph.nodes[3].after.schemas[0])
+        .unwrap();
+    assert_eq!(
+        domains[0].values(),
+        &[(LiteralValue::Number("1".into()), 1)]
+    );
+    assert_eq!(
+        domains[1].values(),
+        &[(LiteralValue::Number("15".into()), 1)]
+    );
 }
