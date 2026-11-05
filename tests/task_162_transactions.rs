@@ -7,7 +7,7 @@ use duckdb::Connection;
 use sql_semantic_protocol::{
     analyze_inputs, dialect_from_name, physical_duckdb_transaction_plan, AnalysisBundle,
     LiteralValue, PhysicalScriptCatalog, PhysicalTransactionAction, PhysicalTransactionScriptProof,
-    PhysicalTransactionStep, PhysicalWriteRow, SqlInput,
+    PhysicalTransactionStep, PhysicalWriteRow, PhysicalWriteState, SqlInput,
 };
 
 fn analyze(sql: &str) -> AnalysisBundle {
