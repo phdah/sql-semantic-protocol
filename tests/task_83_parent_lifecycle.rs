@@ -58,6 +58,19 @@ fn independent_parent_lifecycle_proves_both_reads_and_intermediate_catalogs() {
     assert_eq!(proof.checkpoints.len(), program.len());
     assert_eq!(proof.transitions.len(), 5);
     assert_eq!(proof.reads.len(), 2);
+    for (index, checkpoint) in proof.checkpoints.iter().enumerate() {
+        assert_eq!(
+            checkpoint.layer_id,
+            analysis.layers()[index].id(),
+            "each physical catalog checkpoint must retain its canonical statement identity"
+        );
+    }
+    for read in &proof.reads {
+        assert_eq!(read.source.relation(), "stage");
+        assert_eq!(read.source_schema.relation(), "stage");
+        assert_eq!(read.output.relation(), read.layer_id);
+        assert_eq!(read.output_schema.relation(), read.layer_id);
+    }
     assert!(
         proof.final_states.is_empty(),
         "DROP removes the table identity"
