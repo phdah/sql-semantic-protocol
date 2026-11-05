@@ -272,12 +272,15 @@ pub fn physical_duckdb_transaction_plan(
                 }
                 if let Some(write) = &node.write {
                     let target = write.before().relation();
-                    if matches!(write.kind(), WriteKind::SchemaAlter)
-                        && live_constraints.contains_key(target)
-                    {
+                    if matches!(write.kind(), WriteKind::SchemaAlter) {
+                        // ALTER can create/drop/rename default-producing columns.
+                        // Its canonical poststate is proven in TASK-158, but
+                        // carrying default/constraint metadata across *separate*
+                        // transaction SQL units belongs to TASK-164. Never
+                        // certify a later omitted-column INSERT from stale data.
                         return residual(
                             index,
-                            "ALTER of a constrained relation needs a versioned constraint/default transition",
+                            "TASK-164: ALTER default and constraint evidence is not versioned across transaction SQL units",
                         );
                     }
                     if !write.after_exists() {
