@@ -27,6 +27,9 @@ pub struct PhysicalScriptCatalog {
 impl PhysicalScriptCatalog {
     /// Compute exact schema-backed value frequencies, preserving SQL NULL.
     pub fn exact_domains(&self) -> Option<Vec<(String, Vec<PhysicalWriteColumnDomain>)>> {
+        if self.states.len() != self.schemas.len() {
+            return None;
+        }
         self.states
             .iter()
             .zip(&self.schemas)
@@ -259,18 +262,23 @@ pub fn physical_sequential_state_graph_plan(
                 return residual("a CREATE/definition has a previously live target");
             }
             for source in query.sources() {
-                // A canonical local CTE name is not a new controllable physical
-                // source; only connect complete, live physical relation bags.
-                if before.states.iter().any(|s| s.relation() == source.name()) {
-                    if let Err(reason) = connect(
-                        &mut edges,
-                        &producers,
-                        source.name(),
-                        layer.id(),
-                        PhysicalScriptSourceRole::ReadSource,
-                    ) {
-                        return residual(reason);
-                    }
+                // A CTE or derived relation is not an independently controlled
+                // physical bag. Without a certified path to its producer, this
+                // graph must not silently omit the read dependency.
+                if !before.states.iter().any(|s| s.relation() == source.name()) {
+                    return residual(format!(
+                        "write reads an unresolved physical or local producer: {}",
+                        source.name()
+                    ));
+                }
+                if let Err(reason) = connect(
+                    &mut edges,
+                    &producers,
+                    source.name(),
+                    layer.id(),
+                    PhysicalScriptSourceRole::ReadSource,
+                ) {
+                    return residual(reason);
                 }
             }
             (Some(write), None)
