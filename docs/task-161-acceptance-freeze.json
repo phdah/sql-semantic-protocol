@@ -1,8 +1,8 @@
 {
-  "version": 1,
+  "version": 2,
   "owner": "TASK-161",
   "parent": "TASK-84",
-  "status": "frozen_preimplementation_pending_oracles_and_CI",
+  "status": "v2_matrix_extended_preserving_frozen_v1",
   "frozen_before_semantic_changes": true,
   "fixture_ids": [
     "84-C161-P",
@@ -397,5 +397,232 @@
     "fmt_clippy_test_doc_no_default_dbt_ci_verified": false,
     "independent_review_verified": false,
     "parent_ac_signed_off": false
+  },
+  "parser_statement_cells": 351,
+  "case_dialect_expected": null,
+  "conditional_engine_owner": "TASK-162",
+  "history": [
+    "docs/task-161-acceptance-freeze-v1.json"
+  ],
+  "scope_amendment": {
+    "from_version": 1,
+    "reason": "V1 froze semantic operator families and source/result oracles before implementation; v2 adds per-statement dialect cells and adapter matrix without narrowing mandatory scope",
+    "original_semantics_preserved": true
+  },
+  "adapter_cells": [
+    {
+      "fixture_id": "84-C161-P-dml",
+      "adapter": "sql",
+      "assertion": "Matching authoritative typed metadata yields same canonical physical proof; dbt compiled SQL cannot assert standalone DDL execution",
+      "status": "mandatory_verification",
+      "owner": "TASK-161",
+      "reason": "Direct canonical SQL"
+    },
+    {
+      "fixture_id": "84-C161-P-dml",
+      "adapter": "dbt",
+      "assertion": "Matching authoritative typed metadata yields same canonical physical proof; dbt compiled SQL cannot assert standalone DDL execution",
+      "status": "conditional_parity_verification",
+      "owner": "TASK-161",
+      "reason": "Compiled model SQL and authoritative manifest/catalog schemas"
+    },
+    {
+      "fixture_id": "84-C161-P-dml",
+      "adapter": "odcs",
+      "assertion": "Matching authoritative typed metadata yields same canonical physical proof; dbt compiled SQL cannot assert standalone DDL execution",
+      "status": "conditional_parity_verification",
+      "owner": "TASK-161",
+      "reason": "Schema evidence only"
+    },
+    {
+      "fixture_id": "84-C161-P-merge",
+      "adapter": "sql",
+      "assertion": "Matching authoritative typed metadata yields same canonical physical proof; dbt compiled SQL cannot assert standalone DDL execution",
+      "status": "mandatory_verification",
+      "owner": "TASK-161",
+      "reason": "Direct canonical SQL"
+    },
+    {
+      "fixture_id": "84-C161-P-merge",
+      "adapter": "dbt",
+      "assertion": "Matching authoritative typed metadata yields same canonical physical proof; dbt compiled SQL cannot assert standalone DDL execution",
+      "status": "conditional_parity_verification",
+      "owner": "TASK-161",
+      "reason": "Compiled model SQL and authoritative manifest/catalog schemas"
+    },
+    {
+      "fixture_id": "84-C161-P-merge",
+      "adapter": "odcs",
+      "assertion": "Matching authoritative typed metadata yields same canonical physical proof; dbt compiled SQL cannot assert standalone DDL execution",
+      "status": "conditional_parity_verification",
+      "owner": "TASK-161",
+      "reason": "Schema evidence only"
+    },
+    {
+      "fixture_id": "84-C161-P-ddl",
+      "adapter": "sql",
+      "assertion": "Matching authoritative typed metadata yields same canonical physical proof; dbt compiled SQL cannot assert standalone DDL execution",
+      "status": "mandatory_verification",
+      "owner": "TASK-161",
+      "reason": "Direct canonical SQL"
+    },
+    {
+      "fixture_id": "84-C161-P-ddl",
+      "adapter": "dbt",
+      "assertion": "Matching authoritative typed metadata yields same canonical physical proof; dbt compiled SQL cannot assert standalone DDL execution",
+      "status": "conditional_parity_verification",
+      "owner": "TASK-161",
+      "reason": "Compiled model SQL and authoritative manifest/catalog schemas"
+    },
+    {
+      "fixture_id": "84-C161-P-ddl",
+      "adapter": "odcs",
+      "assertion": "Matching authoritative typed metadata yields same canonical physical proof; dbt compiled SQL cannot assert standalone DDL execution",
+      "status": "conditional_parity_verification",
+      "owner": "TASK-161",
+      "reason": "Schema evidence only"
+    },
+    {
+      "fixture_id": "84-C161-N-duplicate-column",
+      "adapter": "sql",
+      "assertion": "Matching authoritative typed metadata yields same canonical physical proof; dbt compiled SQL cannot assert standalone DDL execution",
+      "status": "mandatory_verification",
+      "owner": "TASK-161",
+      "reason": "Direct canonical SQL"
+    },
+    {
+      "fixture_id": "84-C161-N-duplicate-column",
+      "adapter": "dbt",
+      "assertion": "Matching authoritative typed metadata yields same canonical physical proof; dbt compiled SQL cannot assert standalone DDL execution",
+      "status": "conditional_parity_verification",
+      "owner": "TASK-161",
+      "reason": "Compiled model SQL and authoritative manifest/catalog schemas"
+    },
+    {
+      "fixture_id": "84-C161-N-duplicate-column",
+      "adapter": "odcs",
+      "assertion": "Matching authoritative typed metadata yields same canonical physical proof; dbt compiled SQL cannot assert standalone DDL execution",
+      "status": "conditional_parity_verification",
+      "owner": "TASK-161",
+      "reason": "Schema evidence only"
+    },
+    {
+      "fixture_id": "84-C161-N-dropped-read",
+      "adapter": "sql",
+      "assertion": "Matching authoritative typed metadata yields same canonical physical proof; dbt compiled SQL cannot assert standalone DDL execution",
+      "status": "mandatory_verification",
+      "owner": "TASK-161",
+      "reason": "Direct canonical SQL"
+    },
+    {
+      "fixture_id": "84-C161-N-dropped-read",
+      "adapter": "dbt",
+      "assertion": "Matching authoritative typed metadata yields same canonical physical proof; dbt compiled SQL cannot assert standalone DDL execution",
+      "status": "conditional_parity_verification",
+      "owner": "TASK-161",
+      "reason": "Compiled model SQL and authoritative manifest/catalog schemas"
+    },
+    {
+      "fixture_id": "84-C161-N-dropped-read",
+      "adapter": "odcs",
+      "assertion": "Matching authoritative typed metadata yields same canonical physical proof; dbt compiled SQL cannot assert standalone DDL execution",
+      "status": "conditional_parity_verification",
+      "owner": "TASK-161",
+      "reason": "Schema evidence only"
+    },
+    {
+      "fixture_id": "84-C161-N-unknown-producer",
+      "adapter": "sql",
+      "assertion": "Matching authoritative typed metadata yields same canonical physical proof; dbt compiled SQL cannot assert standalone DDL execution",
+      "status": "mandatory_verification",
+      "owner": "TASK-161",
+      "reason": "Direct canonical SQL"
+    },
+    {
+      "fixture_id": "84-C161-N-unknown-producer",
+      "adapter": "dbt",
+      "assertion": "Matching authoritative typed metadata yields same canonical physical proof; dbt compiled SQL cannot assert standalone DDL execution",
+      "status": "conditional_parity_verification",
+      "owner": "TASK-161",
+      "reason": "Compiled model SQL and authoritative manifest/catalog schemas"
+    },
+    {
+      "fixture_id": "84-C161-N-unknown-producer",
+      "adapter": "odcs",
+      "assertion": "Matching authoritative typed metadata yields same canonical physical proof; dbt compiled SQL cannot assert standalone DDL execution",
+      "status": "conditional_parity_verification",
+      "owner": "TASK-161",
+      "reason": "Schema evidence only"
+    },
+    {
+      "fixture_id": "84-C161-C-transaction",
+      "adapter": "sql",
+      "assertion": "Matching authoritative typed metadata yields same canonical physical proof; dbt compiled SQL cannot assert standalone DDL execution",
+      "status": "mandatory_verification",
+      "owner": "TASK-161",
+      "reason": "Direct canonical SQL"
+    },
+    {
+      "fixture_id": "84-C161-C-transaction",
+      "adapter": "dbt",
+      "assertion": "Matching authoritative typed metadata yields same canonical physical proof; dbt compiled SQL cannot assert standalone DDL execution",
+      "status": "conditional_parity_verification",
+      "owner": "TASK-161",
+      "reason": "Compiled model SQL and authoritative manifest/catalog schemas"
+    },
+    {
+      "fixture_id": "84-C161-C-transaction",
+      "adapter": "odcs",
+      "assertion": "Matching authoritative typed metadata yields same canonical physical proof; dbt compiled SQL cannot assert standalone DDL execution",
+      "status": "conditional_parity_verification",
+      "owner": "TASK-161",
+      "reason": "Schema evidence only"
+    }
+  ],
+  "child_ac_mapping": {
+    "1": [
+      "84-C161-P-dml",
+      "84-C161-P-merge",
+      "84-C161-P-ddl",
+      "84-C161-N-duplicate-column",
+      "84-C161-N-dropped-read",
+      "84-C161-N-unknown-producer",
+      "84-C161-C-transaction"
+    ],
+    "2": [
+      "84-C161-P-dml",
+      "84-C161-P-merge",
+      "84-C161-P-ddl",
+      "84-C161-N-duplicate-column",
+      "84-C161-N-dropped-read",
+      "84-C161-N-unknown-producer",
+      "84-C161-C-transaction"
+    ],
+    "3": [
+      "84-C161-P-dml",
+      "84-C161-P-merge",
+      "84-C161-P-ddl",
+      "84-C161-N-duplicate-column",
+      "84-C161-N-dropped-read",
+      "84-C161-N-unknown-producer"
+    ],
+    "4": [
+      "84-C161-P-dml",
+      "84-C161-P-merge",
+      "84-C161-P-ddl",
+      "84-C161-N-duplicate-column",
+      "84-C161-N-dropped-read",
+      "84-C161-N-unknown-producer",
+      "84-C161-C-transaction"
+    ],
+    "5": [
+      "84-C161-P-dml",
+      "84-C161-P-merge",
+      "84-C161-P-ddl",
+      "84-C161-N-duplicate-column",
+      "84-C161-N-dropped-read",
+      "84-C161-N-unknown-producer",
+      "84-C161-C-transaction"
+    ]
   }
 }
