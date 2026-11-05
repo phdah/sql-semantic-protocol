@@ -6,14 +6,17 @@ use std::collections::BTreeMap;
 
 use duckdb::Connection;
 use sql_semantic_protocol::{
-    analyze_inputs, dialect_from_name, physical_sequential_state_graph_plan,
-    LiteralValue, PhysicalSequentialStateGraphProof, PhysicalWriteRow, SqlInput,
+    analyze_inputs, dialect_from_name, physical_sequential_state_graph_plan, LiteralValue,
+    PhysicalSequentialStateGraphProof, PhysicalWriteRow, SqlInput,
 };
 
 fn row(id: i64, amount: i64) -> PhysicalWriteRow {
     PhysicalWriteRow::new(BTreeMap::from([
         ("id".to_string(), LiteralValue::Number(id.to_string())),
-        ("amount".to_string(), LiteralValue::Number(amount.to_string())),
+        (
+            "amount".to_string(),
+            LiteralValue::Number(amount.to_string()),
+        ),
     ]))
     .unwrap()
 }
@@ -47,16 +50,24 @@ fn four_sequential_source_complete_snapshots_match_native_duckdb() {
     for (index, statement) in sql.iter().enumerate() {
         db.execute_batch(statement).unwrap();
         let snapshot = &graph.nodes[index];
-        assert_eq!(snapshot.after.states[0].rows(), expected[index], "snapshot {index}");
+        assert_eq!(
+            snapshot.after.states[0].rows(),
+            expected[index],
+            "snapshot {index}"
+        );
         assert_eq!(
             snapshot.after.exact_domains().unwrap()[0].1.len(),
             2,
             "schema-backed id and amount domains"
         );
-        let mut native = db.prepare("SELECT id, amount FROM t ORDER BY rowid").unwrap();
-        let observed = native.query_map([], |r| {
-            Ok(row(r.get::<_, i64>(0)?, r.get::<_, i64>(1)?))
-        }).unwrap().collect::<duckdb::Result<Vec<_>>>().unwrap();
+        let mut native = db
+            .prepare("SELECT id, amount FROM t ORDER BY rowid")
+            .unwrap();
+        let observed = native
+            .query_map([], |r| Ok(row(r.get::<_, i64>(0)?, r.get::<_, i64>(1)?)))
+            .unwrap()
+            .collect::<duckdb::Result<Vec<_>>>()
+            .unwrap();
         assert_eq!(snapshot.after.states[0].rows(), observed, "native {index}");
         if index > 0 {
             assert_eq!(snapshot.before, graph.nodes[index - 1].after);
