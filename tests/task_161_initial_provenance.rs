@@ -29,17 +29,24 @@ fn initial_attested_bag_is_read_from_initial_then_prior_write_without_inventing_
         "SELECT a FROM t",
     ];
     let dialect = dialect_from_name("duckdb").unwrap();
-    let input = sql.iter().map(|sql| SqlInput::inline(*sql)).collect::<Vec<_>>();
-    let names = (0..input.len()).map(|n| format!("step-{n}")).collect::<Vec<_>>();
-    let configured = input.iter().zip(&names)
+    let input = sql
+        .iter()
+        .map(|sql| SqlInput::inline(*sql))
+        .collect::<Vec<_>>();
+    let names = (0..input.len())
+        .map(|n| format!("step-{n}"))
+        .collect::<Vec<_>>();
+    let configured = input
+        .iter()
+        .zip(&names)
         .map(|(sql, name)| ConfiguredSqlInput::new(name, sql, "duckdb", dialect.as_ref()))
         .collect::<Vec<_>>();
-    let catalog = RelationCatalog::from_schemas(&[
-        RelationSchema::new(
-            "t",
-            vec![SchemaColumn::from_sql_type("a", "INTEGER", "duckdb").unwrap()],
-        ).unwrap(),
-    ]).unwrap();
+    let catalog = RelationCatalog::from_schemas(&[RelationSchema::new(
+        "t",
+        vec![SchemaColumn::from_sql_type("a", "INTEGER", "duckdb").unwrap()],
+    )
+    .unwrap()])
+    .unwrap();
     let bundle = analyze_configured_inputs_with_catalog(&configured, &catalog).unwrap();
     let initial = PhysicalWriteState::new("t", vec![row(Some(1)), row(None), row(Some(1))]).unwrap();
     let proof = physical_sequential_state_graph_plan(&bundle, std::slice::from_ref(&initial));
@@ -99,14 +106,25 @@ fn initial_attested_bag_is_read_from_initial_then_prior_write_without_inventing_
     let db = Connection::open_in_memory().unwrap();
     db.execute_batch("CREATE TABLE t(a INTEGER); INSERT INTO t VALUES (1), (NULL), (1)")
         .unwrap();
-    let native_before = db.prepare("SELECT a FROM t ORDER BY rowid").unwrap()
-        .query_map([], |r| r.get::<_, Option<i64>>(0)).unwrap()
-        .collect::<duckdb::Result<Vec<_>>>().unwrap();
+    let native_before = db
+        .prepare("SELECT a FROM t ORDER BY rowid")
+        .unwrap()
+        .query_map([], |r| r.get::<_, Option<i64>>(0))
+        .unwrap()
+        .collect::<duckdb::Result<Vec<_>>>()
+        .unwrap();
     assert_eq!(native_before, vec![Some(1), None, Some(1)]);
     db.execute_batch(sql[1]).unwrap();
-    let native_after = db.prepare("SELECT a FROM t ORDER BY rowid").unwrap()
-        .query_map([], |r| r.get::<_, Option<i64>>(0)).unwrap()
-        .collect::<duckdb::Result<Vec<_>>>().unwrap();
+    let native_after = db
+        .prepare("SELECT a FROM t ORDER BY rowid")
+        .unwrap()
+        .query_map([], |r| r.get::<_, Option<i64>>(0))
+        .unwrap()
+        .collect::<duckdb::Result<Vec<_>>>()
+        .unwrap();
     assert_eq!(native_after, vec![Some(9), None, Some(9)]);
-    assert_eq!(exact.final_states[0].rows(), &[row(Some(9)), row(None), row(Some(9))]);
+    assert_eq!(
+        exact.final_states[0].rows(),
+        &[row(Some(9)), row(None), row(Some(9))]
+    );
 }
