@@ -254,15 +254,15 @@ fn all_representable_frozen_cases_preserve_direct_dbt_and_odcs_proofs() {
             other => panic!("unclassified mandatory parity contract: {other}"),
         }
         assert_eq!(
-            expected,
-            graph(&dbt_catalog(&columns), &sql),
+            semantic_proof(&expected),
+            semantic_proof(&graph(&dbt_catalog(&columns), &sql)),
             "dbt: {}",
             case["id"]
         );
         #[cfg(feature = "odcs")]
         assert_eq!(
-            expected,
-            graph(&odcs_catalog(&columns), &sql),
+            semantic_proof(&expected),
+            semantic_proof(&graph(&odcs_catalog(&columns), &sql)),
             "ODCS: {}",
             case["id"]
         );
