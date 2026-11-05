@@ -379,7 +379,7 @@
   "task_158_alter_column_transition_acceptance": {
     "owner": "TASK-158",
     "parent": "TASK-83",
-    "status": "child_signed_off_awaiting_final_metadata_ci_and_merge",
+    "status": "child_Done_v4_merged_parent_TASK83_open",
     "freeze": "docs/task-158-acceptance-freeze.json",
     "freeze_version": 4,
     "freeze_history": [
@@ -411,10 +411,10 @@
       "enforced-key DROP: typed Residual, no portable key rewrite asserted",
       "vendor DDL transaction and conditional/existence syntax: Unsupported or Residual, no engine law asserted"
     ],
-    "remaining_gates": [
-      "Post-signoff metadata-head CI before merge",
-      "Squash merge PR #179; TASK-83 parent remains open"
-    ]
+    "remaining_gates": [],
+    "merged_pr": "https://github.com/phdah/sql-semantic-protocol/pull/179",
+    "merge_commit_sha": "c0d1becb797f27a7cce535a5b92fd4f5540890c9",
+    "merged_at": "2026-11-02T15:27:16Z"
   },
   "task_157_ddl_identity_acceptance": {
     "owner": "TASK-157",
