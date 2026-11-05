@@ -1,10 +1,10 @@
 ---
 id: TASK-162
 title: Prove DuckDB BEGIN COMMIT ROLLBACK SAVEPOINT transitions
-status: To Do
+status: In Progress
 assignee: []
 created_date: '2026-10-17'
-updated_date: '2026-10-17'
+updated_date: '2026-11-05'
 labels: []
 milestone: m-3
 dependencies:
