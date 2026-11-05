@@ -55,7 +55,10 @@ pub fn physical_duckdb_sql_transaction_plan(
             Err(error) => return residual(index, format!("DuckDB parser boundary: {error}")),
         };
         let [statement] = parsed.statements.as_slice() else {
-            return residual(index, "transaction SQL input must contain exactly one statement");
+            return residual(
+                index,
+                "transaction SQL input must contain exactly one statement",
+            );
         };
         let control = match statement {
             Statement::StartTransaction {
@@ -85,17 +88,19 @@ pub fn physical_duckdb_sql_transaction_plan(
             Statement::StartTransaction { .. }
             | Statement::Commit { .. }
             | Statement::Rollback { .. } => {
-                return residual(index, "unsupported DuckDB transaction modifier or compound block");
+                return residual(
+                    index,
+                    "unsupported DuckDB transaction modifier or compound block",
+                );
             }
             _ => {
-                let bundle = match analyze_inputs(
-                    &[SqlInput::inline(*sql)],
-                    "duckdb",
-                    dialect.as_ref(),
-                ) {
-                    Ok(bundle) => bundle,
-                    Err(error) => return residual(index, format!("canonical SQL boundary: {error}")),
-                };
+                let bundle =
+                    match analyze_inputs(&[SqlInput::inline(*sql)], "duckdb", dialect.as_ref()) {
+                        Ok(bundle) => bundle,
+                        Err(error) => {
+                            return residual(index, format!("canonical SQL boundary: {error}"))
+                        }
+                    };
                 TransactionSqlUnit::Sql(Box::new(bundle))
             }
         };
