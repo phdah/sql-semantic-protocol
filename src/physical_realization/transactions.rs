@@ -143,10 +143,7 @@ fn value_matches_integer(value: &LiteralValue, width: u32) -> bool {
     match value {
         LiteralValue::Null => true,
         LiteralValue::Number(number) => match number.parse::<i128>() {
-            Ok(number) if width == 128 => {
-                let _ = number;
-                true
-            }
+            Ok(_) if width == 128 => true,
             Ok(number) => {
                 let bound = 1_i128 << (width - 1);
                 number >= -bound && number < bound
