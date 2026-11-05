@@ -8,8 +8,7 @@ use std::collections::BTreeMap;
 
 use crate::bundle::AnalysisBundle;
 use crate::constraints::RelationConstraintSet;
-use crate::data_type::DataType;
-use crate::protocol::{LiteralValue, WriteKind};
+use crate::protocol::WriteKind;
 use crate::relation::RelationSchema;
 
 use super::{
@@ -129,45 +128,6 @@ fn residual(step_index: usize, reason: impl Into<String>) -> PhysicalTransaction
     }
 }
 
-fn integer_width(data_type: &DataType) -> Option<u32> {
-    match data_type {
-        DataType::SignedInteger { bits: Some(bits) } if *bits > 0 && *bits <= 128 => {
-            Some(u32::from(*bits))
-        }
-        DataType::Nullable(inner) => integer_width(inner),
-        _ => None,
-    }
-}
-
-fn value_matches_integer(value: &LiteralValue, width: u32) -> bool {
-    match value {
-        LiteralValue::Null => true,
-        LiteralValue::Number(number) => match number.parse::<i128>() {
-            Ok(_) if width == 128 => true,
-            Ok(number) => {
-                let bound = 1_i128 << (width - 1);
-                number >= -bound && number < bound
-            }
-            Err(_) => false,
-        },
-        LiteralValue::Boolean(_) | LiteralValue::Text(_) => false,
-    }
-}
-
-fn certified_integer_bag(state: &PhysicalWriteState, schema: &RelationSchema) -> bool {
-    state.rows().iter().all(|row| {
-        schema.columns().iter().all(|column| {
-            match (
-                row.values().get(column.name()),
-                integer_width(column.data_type()),
-            ) {
-                (Some(value), Some(width)) => value_matches_integer(value, width),
-                _ => false,
-            }
-        })
-    })
-}
-
 fn complete_catalog(
     catalog: &PhysicalScriptCatalog,
 ) -> Result<PhysicalScriptCatalog, &'static str> {
@@ -178,7 +138,7 @@ fn complete_catalog(
     for (state, schema) in catalog.states.iter().zip(&catalog.schemas) {
         if state.relation() != schema.relation()
             || state.exact_domains(schema).is_none()
-            || !certified_integer_bag(state, schema)
+            || !super::write_states::certified_source_row_types(state, schema)
         {
             return Err("physical state and authoritative typed schema disagree");
         }
