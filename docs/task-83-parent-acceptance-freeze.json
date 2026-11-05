@@ -1,0 +1,191 @@
+{
+  "version": 1,
+  "owner": "TASK-83",
+  "kind": "parent-independent-closure-verification",
+  "scope": "Independently attest a mixed CREATE/INSERT/ALTER/SELECT/TRUNCATE/SELECT/DROP physical lifecycle, typed row outcomes, SQL TRUE/NOT TRUE partitions, catalog existence and a proven post-DROP read contradiction. Child freezes remain authoritative for dialect, adapter and individual DDL variants.",
+  "fixture_ids": [
+    "83-PARENT-LIFECYCLE-P",
+    "83-PARENT-DROP-READ-N"
+  ],
+  "cases": [
+    {
+      "id": "83-PARENT-LIFECYCLE-P",
+      "classification": "Exact",
+      "requirement": "mandatory",
+      "program": [
+        "CREATE TABLE stage(a INTEGER)",
+        "INSERT INTO stage(a) VALUES (1), (NULL), (1), (3)",
+        "ALTER TABLE stage ADD COLUMN b INTEGER DEFAULT 2",
+        "SELECT a, b FROM stage WHERE a > 1",
+        "TRUNCATE TABLE stage",
+        "SELECT a, b FROM stage",
+        "DROP TABLE stage"
+      ],
+      "first_read": {
+        "source_count": 4,
+        "rows": [
+          {
+            "a": 3,
+            "b": 2
+          }
+        ],
+        "true_ordinals": [
+          3
+        ],
+        "not_true_ordinals": [
+          0,
+          1,
+          2
+        ],
+        "typed_domains": {
+          "a": {
+            "type": "INTEGER",
+            "frequencies": {
+              "3": 1
+            },
+            "nullable": false,
+            "lower": 3,
+            "upper": 3,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          },
+          "b": {
+            "type": "INTEGER",
+            "frequencies": {
+              "2": 1
+            },
+            "nullable": false,
+            "lower": 2,
+            "upper": 2,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          }
+        }
+      },
+      "second_read": {
+        "source_count": 0,
+        "rows": [],
+        "true_ordinals": [],
+        "not_true_ordinals": [],
+        "typed_domains": {
+          "a": {
+            "type": "INTEGER",
+            "frequencies": {},
+            "nullable": false,
+            "lower": null,
+            "upper": null,
+            "lower_inclusive": false,
+            "upper_inclusive": false
+          },
+          "b": {
+            "type": "INTEGER",
+            "frequencies": {},
+            "nullable": false,
+            "lower": null,
+            "upper": null,
+            "lower_inclusive": false,
+            "upper_inclusive": false
+          }
+        }
+      },
+      "write_effects": [
+        {
+          "inserted": 0,
+          "deleted": 0
+        },
+        {
+          "inserted": 4,
+          "deleted": 0
+        },
+        {
+          "inserted": 0,
+          "deleted": 0
+        },
+        {
+          "inserted": 0,
+          "deleted": 4
+        },
+        {
+          "inserted": 0,
+          "deleted": 0
+        }
+      ],
+      "final_live_catalog": []
+    },
+    {
+      "id": "83-PARENT-DROP-READ-N",
+      "classification": "Impossible",
+      "requirement": "mandatory",
+      "program": [
+        "CREATE TABLE stage(a INTEGER)",
+        "INSERT INTO stage(a) VALUES (1), (NULL), (1)",
+        "DROP TABLE stage",
+        "SELECT a FROM stage"
+      ],
+      "expected_reason_contains": "dropped",
+      "native_outcome": "SELECT fails on dropped table; no invented post-drop source bag"
+    }
+  ],
+  "original_parent_ac_mapping": {
+    "1": [
+      "TASK-157",
+      "TASK-159",
+      "TASK-160"
+    ],
+    "2": [
+      "TASK-158",
+      "TASK-159",
+      "TASK-160"
+    ],
+    "3": [
+      "TASK-157",
+      "TASK-159",
+      "TASK-160"
+    ],
+    "4": [
+      "TASK-157",
+      "TASK-158",
+      "TASK-159",
+      "TASK-160"
+    ],
+    "5": [
+      "TASK-157",
+      "TASK-158",
+      "TASK-159",
+      "TASK-160"
+    ],
+    "6": [
+      "TASK-157",
+      "TASK-158",
+      "TASK-159",
+      "TASK-160"
+    ]
+  },
+  "child_freezes": [
+    "docs/task-157-acceptance-freeze.json",
+    "docs/task-158-acceptance-freeze.json",
+    "docs/task-159-acceptance-freeze.json",
+    "docs/task-160-acceptance-freeze.json"
+  ],
+  "conditional_boundaries": [
+    {
+      "family": "LIKE/CLONE",
+      "owner": "TASK-159",
+      "disposition": "conditional: do not assert copied storage or state without source/engine evidence"
+    },
+    {
+      "family": "TEMP/TRANSIENT scope and vendor object kinds",
+      "owner": "TASK-157/TASK-159",
+      "disposition": "conditional: no portable persistence/session visibility law"
+    },
+    {
+      "family": "implicit DDL commit/rollback and vendor transaction semantics",
+      "owner": "TASK-84/TASK-163",
+      "disposition": "conditional: parser support is not a transaction proof"
+    }
+  ],
+  "verification_state": "pending_pr_head_ci_and_parent_review",
+  "original_parent_ac_signed_off": [],
+  "independent_parent_signoff": false,
+  "release_gate": "TASK-91 retains independent release approval"
+}

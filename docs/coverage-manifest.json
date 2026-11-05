@@ -1,4 +1,54 @@
 {
+  "task_83_parent_ddl_closure_acceptance": {
+    "owner": "TASK-83",
+    "status": "done_owner_approved_exception",
+    "freeze": "docs/task-83-parent-acceptance-freeze.json",
+    "freeze_version": 1,
+    "fixture_ids": [
+      "83-PARENT-LIFECYCLE-P",
+      "83-PARENT-DROP-READ-N"
+    ],
+    "parent_ac": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+    ],
+    "children": [
+      "TASK-157",
+      "TASK-158",
+      "TASK-159",
+      "TASK-160"
+    ],
+    "children_done_and_merged": true,
+    "child_cases_preserved": 42,
+    "public_api_native_full_bag_oracle": "tests/task_83_parent_lifecycle.rs",
+    "acceptance_audit": "docs/task-83-parent-acceptance-audit.md",
+    "original_ac_signed_off": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+    ],
+    "parent_signed_off": true,
+    "release_approved": false,
+    "required_gates": [],
+    "technical_parent_ac_verified": true,
+    "child_matrix_reconciliation_verified": true,
+    "native_duckdb_verified": true,
+    "child_adapter_dialect_oracles_verified": true,
+    "full_implementation_ci_verified": true,
+    "review_process_exception_approved": true,
+    "owner_exception_record": "TASK-83-specific owner approval in ChatGPT on 2026-11-05, after PR #187 technical review; not a distinct GitHub reviewer identity",
+    "owner_approved_conditional_release_boundaries": true,
+    "reviewed_implementation_head": "ffdff8e636748353f267a45ddb27795641ccbd90",
+    "reviewed_implementation_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/42018342846",
+    "technical_review": "https://github.com/phdah/sql-semantic-protocol/pull/187#pullrequestreview-5784812616"
+  },
   "task_82_parent_merge_closure_acceptance": {
     "owner": "TASK-82",
     "status": "done_owner_approved_exception",
@@ -342,7 +392,7 @@
   "task_158_alter_column_transition_acceptance": {
     "owner": "TASK-158",
     "parent": "TASK-83",
-    "status": "child_signed_off_awaiting_final_metadata_ci_and_merge",
+    "status": "child_Done_v4_merged_parent_TASK83_open",
     "freeze": "docs/task-158-acceptance-freeze.json",
     "freeze_version": 4,
     "freeze_history": [
@@ -374,10 +424,10 @@
       "enforced-key DROP: typed Residual, no portable key rewrite asserted",
       "vendor DDL transaction and conditional/existence syntax: Unsupported or Residual, no engine law asserted"
     ],
-    "remaining_gates": [
-      "Post-signoff metadata-head CI before merge",
-      "Squash merge PR #179; TASK-83 parent remains open"
-    ]
+    "remaining_gates": [],
+    "merged_pr": "https://github.com/phdah/sql-semantic-protocol/pull/179",
+    "merge_commit_sha": "c0d1becb797f27a7cce535a5b92fd4f5540890c9",
+    "merged_at": "2026-11-02T15:27:16Z"
   },
   "task_157_ddl_identity_acceptance": {
     "owner": "TASK-157",
