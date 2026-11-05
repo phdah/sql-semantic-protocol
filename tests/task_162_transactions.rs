@@ -267,10 +267,8 @@ fn non_duckdb_and_multi_statement_bundles_cannot_claim_exact_session_proofs() {
         postgres.as_ref(),
     )
     .unwrap();
-    let proof = physical_duckdb_transaction_plan(
-        &[PhysicalTransactionStep::Sql(&foreign)],
-        &empty(),
-    );
+    let proof =
+        physical_duckdb_transaction_plan(&[PhysicalTransactionStep::Sql(&foreign)], &empty());
     assert!(matches!(
         proof,
         PhysicalTransactionScriptProof::Residual { step_index: 0, .. }
@@ -286,10 +284,8 @@ fn non_duckdb_and_multi_statement_bundles_cannot_claim_exact_session_proofs() {
         dialect.as_ref(),
     )
     .unwrap();
-    let proof = physical_duckdb_transaction_plan(
-        &[PhysicalTransactionStep::Sql(&multiple)],
-        &empty(),
-    );
+    let proof =
+        physical_duckdb_transaction_plan(&[PhysicalTransactionStep::Sql(&multiple)], &empty());
     assert!(matches!(
         proof,
         PhysicalTransactionScriptProof::Residual { step_index: 0, .. }
