@@ -190,10 +190,12 @@ pub fn physical_duckdb_transaction_plan(
                 // A layer count alone is insufficient: unsupported transaction
                 // SQL can live alongside one valid query in the same bundle.
                 // Never drop that statement or prove a non-DuckDB session law.
+                let [input] = bundle.inputs() else {
+                    return residual(index, "transaction SQL step requires exactly one input");
+                };
                 if bundle.layers().len() != 1
-                    || bundle.inputs().len() != 1
-                    || bundle.inputs()[0].statements().len() != 1
-                    || bundle.inputs()[0].dialect() != "duckdb"
+                    || input.statements().len() != 1
+                    || input.dialect() != "duckdb"
                 {
                     return residual(
                         index,
