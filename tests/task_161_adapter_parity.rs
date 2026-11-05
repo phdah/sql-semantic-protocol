@@ -154,6 +154,51 @@ fn graph(catalog: &RelationCatalog, sql: &[&str]) -> PhysicalSequentialStateGrap
     physical_sequential_state_graph_plan(&bundle, &[])
 }
 
+// Adapter provenance (DbtCatalog, ODCS or direct SQL) is intentionally
+// distinct evidence metadata, not a semantic difference. Compare the typed
+// catalog, physical rows and graph obligations without stripping real facts.
+fn semantic_proof(proof: &PhysicalSequentialStateGraphProof) -> String {
+    match proof {
+        PhysicalSequentialStateGraphProof::Exact(exact) => {
+            let nodes = exact.nodes.iter().map(|node| {
+                let schemas = |catalog: &sql_semantic_protocol::PhysicalScriptCatalog| {
+                    catalog.schemas.iter().map(|schema| {
+                        (schema.relation().to_string(),
+                            schema.columns().iter().map(|column| {
+                                (column.name().to_string(), format!("{:?}", column.data_type()))
+                            }).collect::<Vec<_>>())
+                    }).collect::<Vec<_>>()
+                };
+                let write = node.write.as_ref().map(|write| {
+                    (
+                        write.kind(), write.before(), write.after(), write.affected(),
+                        write.affected_target_ordinals(), write.definition_source_row_ids(),
+                    )
+                });
+                let read = node.read.as_ref().map(|read| {
+                    (
+                        &read.source, &read.output, read.exact_domains(),
+                        &read.surviving_source_ordinals, &read.rejected_source_ordinals,
+                    )
+                });
+                (
+                    &node.layer_id,
+                    &node.before.states,
+                    &node.after.states,
+                    schemas(&node.before),
+                    schemas(&node.after),
+                    node.before.exact_domains(),
+                    node.after.exact_domains(),
+                    write, read,
+                )
+            }).collect::<Vec<_>>();
+            format!("Exact:{:?}", (nodes, &exact.edges, &exact.final_states))
+        }
+        PhysicalSequentialStateGraphProof::Impossible { reason } => format!("Impossible:{reason}"),
+        PhysicalSequentialStateGraphProof::Residual { reason } => format!("Residual:{reason}"),
+    }
+}
+
 #[test]
 fn all_representable_frozen_cases_preserve_direct_dbt_and_odcs_proofs() {
     let freeze = freeze();
@@ -209,13 +254,13 @@ fn missing_physical_evidence_remains_residual_across_equivalent_sources() {
         PhysicalSequentialStateGraphProof::Residual { .. }
     ));
     assert_eq!(
-        expected,
-        graph(&dbt_catalog(&[("t", vec!["a"])]), &["SELECT a FROM t"])
+        semantic_proof(&expected),
+        semantic_proof(&graph(&dbt_catalog(&[("t", vec!["a"])]), &["SELECT a FROM t"]))
     );
     #[cfg(feature = "odcs")]
     assert_eq!(
-        expected,
-        graph(&odcs_catalog(&[("t", vec!["a"])]), &["SELECT a FROM t"])
+        semantic_proof(&expected),
+        semantic_proof(&graph(&odcs_catalog(&[("t", vec!["a"])]), &["SELECT a FROM t"]))
     );
 }
 
