@@ -257,3 +257,41 @@ fn unproved_sql_does_not_turn_into_an_exact_transaction() {
         "{proof:?}"
     );
 }
+
+#[test]
+fn non_duckdb_and_multi_statement_bundles_cannot_claim_exact_session_proofs() {
+    let postgres = dialect_from_name("postgresql").unwrap();
+    let foreign = analyze_inputs(
+        &[SqlInput::inline("CREATE TABLE t (id INTEGER, v INTEGER)")],
+        "postgresql",
+        postgres.as_ref(),
+    )
+    .unwrap();
+    let proof = physical_duckdb_transaction_plan(
+        &[PhysicalTransactionStep::Sql(&foreign)],
+        &empty(),
+    );
+    assert!(matches!(
+        proof,
+        PhysicalTransactionScriptProof::Residual { step_index: 0, .. }
+    ));
+
+    let dialect = dialect_from_name("duckdb").unwrap();
+    let multiple = analyze_inputs(
+        &[
+            SqlInput::inline("CREATE TABLE t (id INTEGER, v INTEGER)"),
+            SqlInput::inline("BEGIN"),
+        ],
+        "duckdb",
+        dialect.as_ref(),
+    )
+    .unwrap();
+    let proof = physical_duckdb_transaction_plan(
+        &[PhysicalTransactionStep::Sql(&multiple)],
+        &empty(),
+    );
+    assert!(matches!(
+        proof,
+        PhysicalTransactionScriptProof::Residual { step_index: 0, .. }
+    ));
+}
