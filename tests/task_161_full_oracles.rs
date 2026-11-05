@@ -381,16 +381,30 @@ fn missing_or_session_bound_sources_are_not_synthetic_exact_graphs() {
         physical_sequential_state_graph_plan(&analyze(&missing_sql), &[]),
         PhysicalSequentialStateGraphProof::Residual { .. }
     ));
-    let conditional = freeze["cases"].as_array().unwrap().iter()
-        .find(|case| case["id"] == "84-C161-C-transaction").unwrap();
-    let sql = conditional["program"].as_array().unwrap().iter()
-        .map(|sql| sql.as_str().unwrap()).collect::<Vec<_>>();
+    let conditional = freeze["cases"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|case| case["id"] == "84-C161-C-transaction")
+        .unwrap();
+    let sql = conditional["program"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|sql| sql.as_str().unwrap())
+        .collect::<Vec<_>>();
     let engine = dialect_from_name("duckdb").unwrap();
-    let inputs = sql.iter().map(|statement| SqlInput::inline(*statement)).collect::<Vec<_>>();
+    let inputs = sql
+        .iter()
+        .map(|statement| SqlInput::inline(*statement))
+        .collect::<Vec<_>>();
     if let Ok(bundle) = analyze_inputs(&inputs, "duckdb", engine.as_ref()) {
-        assert!(!matches!(
-            physical_sequential_state_graph_plan(&bundle, &[]),
-            PhysicalSequentialStateGraphProof::Exact(_)
-        ), "unverified transaction law must never be promoted to Exact");
+        assert!(
+            !matches!(
+                physical_sequential_state_graph_plan(&bundle, &[]),
+                PhysicalSequentialStateGraphProof::Exact(_)
+            ),
+            "unverified transaction law must never be promoted to Exact"
+        );
     }
 }
