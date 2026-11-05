@@ -310,7 +310,10 @@ fn declared_primary_key_remains_enforced_across_separate_transaction_steps() {
     let PhysicalTransactionScriptProof::Exact(exact) = committed else {
         panic!("PRIMARY KEY should be constructively enforced: {committed:?}");
     };
-    assert_eq!(exact.final_catalog.states[0].rows(), &[row(1, Some(10)), row(2, None)]);
+    assert_eq!(
+        exact.final_catalog.states[0].rows(),
+        &[row(1, Some(10)), row(2, None)]
+    );
     assert_eq!(exact.final_constraints.len(), 1);
     assert_eq!(exact.checkpoints[2].after_constraints.len(), 1);
 
@@ -324,31 +327,57 @@ fn declared_primary_key_remains_enforced_across_separate_transaction_steps() {
         ],
         &initial,
     );
-    assert!(matches!(
-        impossible, PhysicalTransactionScriptProof::Impossible { step_index: 3, .. }
-    ), "duplicate PRIMARY KEY must be impossible, got {impossible:?}");
+    assert!(
+        matches!(
+            impossible,
+            PhysicalTransactionScriptProof::Impossible { step_index: 3, .. }
+        ),
+        "duplicate PRIMARY KEY must be impossible, got {impossible:?}"
+    );
 
     let db = Connection::open_in_memory().unwrap();
-    db.execute_batch("CREATE TABLE t (id INTEGER PRIMARY KEY, v INTEGER)").unwrap();
-    db.execute_batch("INSERT INTO t (id, v) VALUES (1, 10), (2, NULL)").unwrap();
+    db.execute_batch("CREATE TABLE t (id INTEGER PRIMARY KEY, v INTEGER)")
+        .unwrap();
+    db.execute_batch("INSERT INTO t (id, v) VALUES (1, 10), (2, NULL)")
+        .unwrap();
     db.execute_batch("BEGIN").unwrap();
-    assert!(db.execute_batch("INSERT INTO t (id, v) VALUES (1, 30)").is_err());
+    assert!(db
+        .execute_batch("INSERT INTO t (id, v) VALUES (1, 30)")
+        .is_err());
     db.execute_batch("ROLLBACK").unwrap();
-    assert_eq!(sorted_rows(&native_rows(&db)), sorted_rows(&[row(1, Some(10)), row(2, None)]));
+    assert_eq!(
+        sorted_rows(&native_rows(&db)),
+        sorted_rows(&[row(1, Some(10)), row(2, None)])
+    );
 }
 
 #[test]
 fn transaction_control_only_cannot_certify_a_mistyped_initial_bag() {
     let schema = analyze("CREATE TABLE t (id INTEGER, v INTEGER)").source_schemas()[0].clone();
     let state = PhysicalWriteState::new(
-        "t", vec![PhysicalWriteRow::new(BTreeMap::from([
-            ("id".to_string(), LiteralValue::Text("not_an_integer".into())),
-            ("v".to_string(), LiteralValue::Null)
-        ])).unwrap()]
-    ).unwrap();
+        "t",
+        vec![PhysicalWriteRow::new(BTreeMap::from([
+            (
+                "id".to_string(),
+                LiteralValue::Text("not_an_integer".into()),
+            ),
+            ("v".to_string(), LiteralValue::Null),
+        ]))
+        .unwrap()],
+    )
+    .unwrap();
     let proof = physical_duckdb_transaction_plan(
-        &[PhysicalTransactionStep::Begin, PhysicalTransactionStep::Commit],
-        &sql_semantic_protocol::PhysicalScriptCatalog { states: vec![state], schemas: vec![schema] },
+        &[
+            PhysicalTransactionStep::Begin,
+            PhysicalTransactionStep::Commit,
+        ],
+        &sql_semantic_protocol::PhysicalScriptCatalog {
+            states: vec![state],
+            schemas: vec![schema],
+        },
     );
-    assert!(matches!(proof, PhysicalTransactionScriptProof::Residual { step_index: 0, .. }));
+    assert!(matches!(
+        proof,
+        PhysicalTransactionScriptProof::Residual { step_index: 0, .. }
+    ));
 }
