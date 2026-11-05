@@ -2,7 +2,7 @@
   "version": 3,
   "owner": "TASK-162",
   "parent": "TASK-84",
-  "status": "v3_frozen_native_dialect_adapter_and_enforcement_matrix_pending_final_signoff",
+  "status": "v3_child_technical_signoff_owner_directed_author_account_review_exception",
   "fixture_ids": [
     "84-C162-P",
     "84-C162-N"
@@ -287,12 +287,32 @@
     "dbt E2E and active protocol/schema snapshot checks"
   ],
   "signoff": {
-    "mandatory_cells_verified": false,
-    "native_oracle_verified": false,
-    "all_13_parser_dialects_verified": false,
-    "adapter_parity_verified": false,
+    "mandatory_cells_verified": true,
+    "native_oracle_verified": true,
+    "all_13_parser_dialects_verified": true,
+    "adapter_parity_verified": true,
+    "full_ci_verified": true,
+    "two_axis_author_account_review_verified": true,
     "independent_review_verified": false,
-    "full_ci_verified": false
+    "owner_directed_review_process_exception_recorded": true,
+    "released": false,
+    "verified_implementation_head": "3d85a7806981118473cb92fb0935a3e56cec6c2d",
+    "verified_implementation_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/42109605476",
+    "technical_review": "https://github.com/phdah/sql-semantic-protocol/pull/189#pullrequestreview-5792140694",
+    "acceptance_audit": "docs/task-162-acceptance-audit.md",
+    "review_provenance": "Connected GitHub PR author account, not independent second-person review; owner-requested closure process exception disclosed",
+    "conditional_boundaries_reviewed": [
+      {
+        "id": "84-C162-N-savepoint",
+        "owner": "TASK-162",
+        "disposition": "Native DuckDB 1.10506.0 rejects savepoint SQL; Residual, no exact engine claim"
+      },
+      {
+        "id": "84-C162-N-alter-default",
+        "owner": "TASK-164",
+        "disposition": "Cross-statement ALTER default/constraint propagation Residual pending TASK-164"
+      }
+    ]
   },
   "v1_immutable_preimplementation_freeze": "docs/task-162-acceptance-freeze-v1.json",
   "v2_change_justification": "Explicit parser-dialect classifications and native SQL/dbt/ODCS matrix added after the initial finite v1 family freeze; v1 retained unchanged for audit. Parser acceptance is never DuckDB execution proof.",
@@ -469,7 +489,7 @@
     "owner": "TASK-162",
     "classification": "Residual",
     "scope": "DuckDB 1.10506.0 native savepoint feature unavailable (SQL statements rejected in test); SQL parser may still parse variant in all 13 dialects",
-    "review_status": "requires owner/independent review signoff",
+    "review_status": "bounded_task_162_owner_directed_signoff_with_disclosed_author_account_exception",
     "future_followup": "Reassess only if native DuckDB and executable oracle add SAVEPOINT support"
   },
   "v2_immutable_parser_matrix": "docs/task-162-acceptance-freeze-v2.json",
@@ -480,7 +500,7 @@
       "owner": "TASK-162",
       "classification": "Residual",
       "scope": "DuckDB 1.10506.0 native savepoint feature unavailable (SQL statements rejected in test); SQL parser may still parse variant in all 13 dialects",
-      "review_status": "requires owner/independent review signoff",
+      "review_status": "bounded_task_162_owner_directed_signoff_with_disclosed_author_account_exception",
       "future_followup": "Reassess only if native DuckDB and executable oracle add SAVEPOINT support"
     },
     {
@@ -488,7 +508,7 @@
       "owner": "TASK-164",
       "classification": "Residual",
       "scope": "separate ALTER default propagation",
-      "review_status": "pending",
+      "review_status": "bounded_task_162_owner_directed_signoff_with_disclosed_author_account_exception",
       "future_followup": "TASK-164"
     }
   ]

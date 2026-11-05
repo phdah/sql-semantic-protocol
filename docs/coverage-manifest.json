@@ -2,7 +2,7 @@
   "task_162_transaction_acceptance": {
     "owner": "TASK-162",
     "parent": "TASK-84",
-    "status": "v2_frozen_pending_ci_review",
+    "status": "done_owner_directed_author_account_review_exception",
     "freeze": "docs/task-162-acceptance-freeze.json",
     "freeze_version": 3,
     "archive": "docs/task-162-acceptance-freeze-v1.json",
@@ -32,7 +32,7 @@
       "tests/task_162_adapter_parity.rs"
     ],
     "native_engine": "duckdb ~1.10506.0",
-    "savepoint_boundary": "conditional_native_savepoint_unsupported_pending_independent_review",
+    "savepoint_boundary": "pinned_native_duckdb_unsupported_explicit_residual_signed_off",
     "original_ac": [
       1,
       2,
@@ -47,13 +47,25 @@
       5,
       6
     ],
-    "mandatory_verified": false,
-    "native_duckdb_verified": false,
-    "all_13_parser_dialects_verified": false,
-    "adapter_parity_verified": false,
-    "full_ci_verified": false,
+    "mandatory_verified": true,
+    "native_duckdb_verified": true,
+    "all_13_parser_dialects_verified": true,
+    "adapter_parity_verified": true,
+    "full_ci_verified": true,
     "independent_review_verified": false,
-    "parent_closed": false
+    "parent_closed": false,
+    "two_axis_author_account_review_verified": true,
+    "review_process_exception_approved": true,
+    "reviewed_implementation_head": "3d85a7806981118473cb92fb0935a3e56cec6c2d",
+    "verified_implementation_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/42109605476",
+    "two_axis_review": "https://github.com/phdah/sql-semantic-protocol/pull/189#pullrequestreview-5792140694",
+    "acceptance_audit": "docs/task-162-acceptance-audit.md",
+    "owner_exception_record": "User requested full TASK-162 implementation and acceptance signoff in this conversation on 2026-11-05. Connected author-account review is not an independent second-person reviewer.",
+    "conditional_boundaries_signed_off": [
+      "84-C162-N-savepoint",
+      "84-C162-N-alter-default"
+    ],
+    "release_approved": false
   },
   "task_83_parent_ddl_closure_acceptance": {
     "owner": "TASK-83",
