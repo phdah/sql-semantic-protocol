@@ -7,7 +7,8 @@ use serde_json::Value;
 
 #[test]
 fn parent_registry_preserves_child_inventories_and_original_ac_ownership() {
-    let freeze = frozen();
+    let freeze: Value =
+        serde_json::from_str(include_str!("../docs/task-83-parent-acceptance-freeze.json")).unwrap();
     assert_eq!(freeze["owner"], "TASK-83");
     assert_eq!(freeze["version"], 1);
     assert_eq!(freeze["independent_parent_signoff"], false);
