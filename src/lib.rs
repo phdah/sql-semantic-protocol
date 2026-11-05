@@ -64,6 +64,7 @@
 //! - physical_finite_producer_exists_plan composes exact finite leaf bags through canonical filter, projection, join, and correlated EXISTS producer layers.
 //! - physical_finite_cte_bag_plan evaluates complete ordinary and bounded monotone recursive CTE producer bags with explicit self-edges, closed-world absence and typed outcome domains.
 //! - physical_ordered_cte_read_plan composes ordered materialized write states with a final source-complete CTE read, without independent insertion of a produced relation.
+//! - physical_duckdb_transaction_plan certifies explicit BEGIN, COMMIT and ROLLBACK boundaries using complete canonical statement-state snapshots, with unverified SAVEPOINT laws reported as Residual.
 //! - physical_finite_view_read_plan proves bounded logical view reads without inventing an independent physical view population.
 //! - physical_finite_in_bag_plan proves scalar IN/NOT IN three-valued membership over complete finite physical bags.
 //! - physical_finite_table_plan proves exact source-free VALUES and typed array fanout, finite two-input equality joins, COUNT(*) grouping, fixed star/PIVOT/UNPIVOT complete bags, SQL NOT TRUE identities and typed domains.
@@ -198,6 +199,7 @@ pub use physical_realization::{
     physical_ordered_lifecycle_plan, physical_ordered_write_state_plan,
     physical_ordered_write_state_plan_with_identities, physical_rejected_row_count_plan,
     physical_row_count_plan, physical_sequential_state_graph_plan,
+    physical_duckdb_transaction_plan,
     physical_single_tuple_histogram_plan, physical_source_plan, physical_typed_append_schema_plan,
     physical_typed_closed_world_schema_plan, physical_typed_ordered_insert_plan,
     physical_typed_ordered_write_plan, physical_typed_value_plan,
@@ -225,6 +227,8 @@ pub use physical_realization::{
     PhysicalRowTarget, PhysicalScalarSubqueryExact, PhysicalScalarSubqueryProof,
     PhysicalScriptCatalog, PhysicalScriptProducer, PhysicalScriptSourceRole,
     PhysicalScriptStateEdge, PhysicalScriptStateNode, PhysicalSequentialStateGraphExact,
+    PhysicalTransactionAction, PhysicalTransactionCheckpoint, PhysicalTransactionScriptExact,
+    PhysicalTransactionScriptProof, PhysicalTransactionStep,
     PhysicalSequentialStateGraphProof, PhysicalSetColumnDomain, PhysicalSetTreeBranch,
     PhysicalSetTreeTuple, PhysicalSetTuple, PhysicalSingleTupleExact, PhysicalSingleTupleProof,
     PhysicalSourcePlan, PhysicalTupleBucket, PhysicalTupleGoalError, PhysicalTupleHistogramGoal,
