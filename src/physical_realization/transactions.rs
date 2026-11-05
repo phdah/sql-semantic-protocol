@@ -1,0 +1,244 @@
+//! TASK-162: opt-in, source-complete DuckDB transaction replay.
+//!
+//! SQL mutations are certified by the canonical typed sequential state graph.
+//! Transaction boundaries only snapshot, commit or restore that proven catalog;
+//! they never synthesize rows or guess an unsupported engine/session law.
+
+use std::collections::BTreeMap;
+
+use crate::bundle::AnalysisBundle;
+use crate::relation::RelationSchema;
+
+use super::{
+    physical_sequential_state_graph_plan, PhysicalScriptCatalog, PhysicalScriptStateNode,
+    PhysicalSequentialStateGraphProof, PhysicalWriteState,
+};
+
+/// One logical statement of a single-connection DuckDB transaction script.
+///
+/// A SQL step is one already analyzed canonical SQL statement. Its bundle must
+/// contain exactly one layer. Transaction commands are explicit typed controls,
+/// not guessed from a parser-dependent unsupported SQL statement.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum PhysicalTransactionStep<'a> {
+    /// Analyzed DDL, DML or SELECT, executed on the preceding complete catalog.
+    Sql(&'a AnalysisBundle),
+    /// Start a new explicit transaction, snapshotting the full typed catalog.
+    Begin,
+    /// Commit all exact changes since the matching BEGIN.
+    Commit,
+    /// Restore the entire catalog from the matching BEGIN.
+    Rollback,
+    /// Engine-dependent named savepoint, not yet certified for native DuckDB.
+    Savepoint(&'a str),
+    /// Engine-dependent partial rollback, not yet certified for native DuckDB.
+    RollbackTo(&'a str),
+    /// Engine-dependent savepoint release, not yet certified for native DuckDB.
+    Release(&'a str),
+}
+
+/// Which exact operation produced a transaction checkpoint.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum PhysicalTransactionAction {
+    /// Canonical SQL statement.
+    Sql,
+    /// BEGIN.
+    Begin,
+    /// COMMIT.
+    Commit,
+    /// ROLLBACK.
+    Rollback,
+}
+
+/// Full before/after catalogs and the canonical SQL proof at one step.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct PhysicalTransactionCheckpoint {
+    /// Zero-based position in the caller-supplied script.
+    pub step_index: usize,
+    /// Certified transaction action.
+    pub action: PhysicalTransactionAction,
+    /// Complete typed physical state immediately before this action.
+    pub before: PhysicalScriptCatalog,
+    /// Complete typed physical state immediately after this action.
+    pub after: PhysicalScriptCatalog,
+    /// Source-complete canonical DDL, DML or SELECT proof for SQL steps.
+    pub statement: Option<PhysicalScriptStateNode>,
+}
+
+/// Exact single-session transaction execution, including rolled-back states.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct PhysicalTransactionScriptExact {
+    /// All source-complete checkpoints, in script order.
+    pub checkpoints: Vec<PhysicalTransactionCheckpoint>,
+    /// Final committed physical catalog, including schemas and duplicate rows.
+    pub final_catalog: PhysicalScriptCatalog,
+}
+
+/// Classification of the complete transaction script.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum PhysicalTransactionScriptProof {
+    /// Every SQL statement and transaction boundary is certified by evidence.
+    Exact(Box<PhysicalTransactionScriptExact>),
+    /// A proven invalid transaction state or concrete SQL contradiction.
+    Impossible {
+        /// First contradictory step.
+        step_index: usize,
+        /// Sound reason the script cannot execute as requested.
+        reason: String,
+    },
+    /// Missing SQL evidence or an unsupported DuckDB/session-specific law.
+    Residual {
+        /// First unproved step.
+        step_index: usize,
+        /// Why exactness cannot be certified.
+        reason: String,
+    },
+}
+
+fn impossible(step_index: usize, reason: impl Into<String>) -> PhysicalTransactionScriptProof {
+    PhysicalTransactionScriptProof::Impossible {
+        step_index,
+        reason: reason.into(),
+    }
+}
+
+fn residual(step_index: usize, reason: impl Into<String>) -> PhysicalTransactionScriptProof {
+    PhysicalTransactionScriptProof::Residual {
+        step_index,
+        reason: reason.into(),
+    }
+}
+
+fn complete_catalog(
+    catalog: &PhysicalScriptCatalog,
+) -> Result<PhysicalScriptCatalog, &'static str> {
+    if catalog.states.len() != catalog.schemas.len() {
+        return Err("physical state and schema catalog lengths disagree");
+    }
+    let mut sorted = BTreeMap::<String, (PhysicalWriteState, RelationSchema)>::new();
+    for (state, schema) in catalog.states.iter().zip(&catalog.schemas) {
+        if state.relation() != schema.relation() || state.exact_domains(schema).is_none() {
+            return Err("physical state and authoritative typed schema disagree");
+        }
+        if sorted
+            .insert(
+                state.relation().to_string(),
+                (state.clone(), schema.clone()),
+            )
+            .is_some()
+        {
+            return Err("duplicate physical relation identity in one catalog");
+        }
+    }
+    let (states, schemas) = sorted.into_values().unzip();
+    Ok(PhysicalScriptCatalog { states, schemas })
+}
+
+/// Certify a finite DuckDB single-session transaction script.
+///
+/// Every SQL step delegates to the canonical TASK-161 sequential state graph,
+/// seeded with the preceding complete typed catalog. BEGIN snapshots *all* live
+/// physical states and schemas. ROLLBACK restores that exact population, not a
+/// reconstructed or independently generated approximation. COMMIT retains it.
+///
+/// Savepoints are deliberately Residual: only native DuckDB support plus an
+/// independent executable oracle can justify an exact rollback-to/release law.
+/// Concurrent sessions, external side effects and implicit vendor transaction
+/// rules are outside this single-session proof.
+pub fn physical_duckdb_transaction_plan(
+    steps: &[PhysicalTransactionStep<'_>],
+    initial: &PhysicalScriptCatalog,
+) -> PhysicalTransactionScriptProof {
+    let mut current = match complete_catalog(initial) {
+        Ok(catalog) => catalog,
+        Err(reason) => return residual(0, reason),
+    };
+    let mut active_transaction: Option<PhysicalScriptCatalog> = None;
+    let mut checkpoints = Vec::with_capacity(steps.len());
+    for (index, step) in steps.iter().enumerate() {
+        let before = current.clone();
+        let (action, statement) = match step {
+            PhysicalTransactionStep::Sql(bundle) => {
+                if bundle.layers().len() != 1 {
+                    return residual(index, "transaction SQL step requires exactly one canonical statement layer");
+                }
+                let mut execution = (**bundle).clone();
+                for schema in &current.schemas {
+                    if !execution.attest_physical_source_schema(schema.clone()) {
+                        return residual(index, "SQL metadata contradicts the preceding live typed schema");
+                    }
+                }
+                let graph = match physical_sequential_state_graph_plan(&execution, &current.states) {
+                    PhysicalSequentialStateGraphProof::Exact(graph) => graph,
+                    PhysicalSequentialStateGraphProof::Impossible { reason } => {
+                        return impossible(index, reason);
+                    }
+                    PhysicalSequentialStateGraphProof::Residual { reason } => {
+                        return residual(index, reason);
+                    }
+                };
+                let mut nodes = graph.nodes.into_iter();
+                let Some(node) = nodes.next() else {
+                    return residual(index, "canonical SQL graph has no statement proof");
+                };
+                if nodes.next().is_some()
+                    || node.before != current
+                    || node.after.states != graph.final_states
+                    || complete_catalog(&node.after).is_err()
+                {
+                    return residual(index, "SQL step does not reconcile with the complete transaction catalog");
+                }
+                current = node.after.clone();
+                (PhysicalTransactionAction::Sql, Some(node))
+            }
+            PhysicalTransactionStep::Begin => {
+                if active_transaction.is_some() {
+                    return impossible(index, "DuckDB does not support nested BEGIN transactions");
+                }
+                active_transaction = Some(current.clone());
+                (PhysicalTransactionAction::Begin, None)
+            }
+            PhysicalTransactionStep::Commit => {
+                if active_transaction.take().is_none() {
+                    return impossible(index, "COMMIT has no active DuckDB transaction");
+                }
+                (PhysicalTransactionAction::Commit, None)
+            }
+            PhysicalTransactionStep::Rollback => {
+                let Some(original) = active_transaction.take() else {
+                    return impossible(index, "ROLLBACK has no active DuckDB transaction");
+                };
+                current = original;
+                (PhysicalTransactionAction::Rollback, None)
+            }
+            PhysicalTransactionStep::Savepoint(name)
+            | PhysicalTransactionStep::RollbackTo(name)
+            | PhysicalTransactionStep::Release(name) => {
+                if name.trim().is_empty() {
+                    return impossible(index, "transaction savepoint identity is empty");
+                }
+                if active_transaction.is_none() {
+                    return impossible(index, "savepoint operation requires an active transaction");
+                }
+                return residual(
+                    index,
+                    "TASK-162: native DuckDB SAVEPOINT/ROLLBACK TO/RELEASE execution law is unverified",
+                );
+            }
+        };
+        checkpoints.push(PhysicalTransactionCheckpoint {
+            step_index: index,
+            action,
+            before,
+            after: current.clone(),
+            statement,
+        });
+    }
+    if active_transaction.is_some() {
+        return residual(steps.len(), "uncommitted explicit transaction at end of script");
+    }
+    PhysicalTransactionScriptProof::Exact(Box::new(PhysicalTransactionScriptExact {
+        checkpoints,
+        final_catalog: current,
+    }))
+}
