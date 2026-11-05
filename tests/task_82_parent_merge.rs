@@ -27,9 +27,13 @@ fn row(value: &Value) -> PhysicalWriteRow {
             .map(|(name, value)| {
                 (
                     name.clone(),
-                    value.as_i64().map_or(LiteralValue::Null, |number| {
-                        LiteralValue::Number(number.to_string())
-                    }),
+                    match value {
+                        Value::Null => LiteralValue::Null,
+                        Value::Number(number) if number.as_i64().is_some() => {
+                            LiteralValue::Number(number.to_string())
+                        }
+                        other => panic!("unexpected non-INTEGER value in frozen state: {other}"),
+                    },
                 )
             })
             .collect(),
@@ -137,6 +141,39 @@ fn native_state(db: &Connection, relation: &str) -> PhysicalWriteState {
         })
         .collect();
     PhysicalWriteState::new(relation, rows).unwrap()
+}
+
+// Execute a native MERGE and assert actual affected actions, including
+// matched UPDATE actions that leave the final row bag unchanged.
+fn assert_native_merge_actions(db: &Connection, step: &Value) {
+    let sql = step["sql"].as_str().unwrap();
+    let mut statement = db
+        .prepare(&format!("{sql} RETURNING merge_action"))
+        .unwrap();
+    let actions = statement
+        .query_map([], |record| record.get::<_, String>(0))
+        .unwrap();
+    let mut counts = BTreeMap::<String, u64>::new();
+    for action in actions {
+        *counts.entry(action.unwrap()).or_default() += 1;
+    }
+    assert!(
+        counts
+            .keys()
+            .all(|action| ["INSERT", "UPDATE", "DELETE"].contains(&action.as_str())),
+        "unexpected native MERGE action: {counts:?}"
+    );
+    for (key, action) in [
+        ("inserted", "INSERT"),
+        ("updated", "UPDATE"),
+        ("deleted", "DELETE"),
+    ] {
+        assert_eq!(
+            counts.get(action).copied().unwrap_or(0),
+            step["affected"][key].as_u64().unwrap(),
+            "{key}: native MERGE action count"
+        );
+    }
 }
 
 fn native_match_count(db: &Connection, relation: &str, opposite: &str, not_true: bool) -> u64 {
@@ -271,7 +308,7 @@ fn mixed_parent_merge_steps_preserve_complete_native_bags_and_domains() {
         assert!(transition.intermediate_states().is_empty());
         assert_eq!(sorted_rows(transition.after()), sorted_rows(&after));
         assert_domains(transition.after(), schema, &step["after_domains"]);
-        db.execute_batch(step["sql"].as_str().unwrap()).unwrap();
+        assert_native_merge_actions(&db, step);
         assert_eq!(
             sorted_rows(&native_state(&db, "target")),
             sorted_rows(&after)
@@ -330,6 +367,16 @@ fn duplicate_source_match_cannot_be_accepted_as_a_portable_merge_winner() {
         native_match_count(&db, "target", "source", false),
         case["on"]["target_true"].as_u64().unwrap()
     );
+    // DuckDB rejects duplicate source matches. The portable protocol remains
+    // Residual because this native error rule must not be assumed elsewhere.
+    assert!(db.execute_batch(case["sql"].as_str().unwrap()).is_err());
+    for relation in ["target", "source"] {
+        assert_eq!(
+            sorted_rows(&native_state(&db, relation)),
+            sorted_rows(&state(relation, &case["initial"][relation])),
+            "native rejected MERGE must not mutate {relation}"
+        );
+    }
 }
 
 #[test]
@@ -407,7 +454,7 @@ fn repeated_merge_proves_bounded_fixed_point_and_non_idempotent_contrast() {
             );
             assert_eq!(sorted_rows(transition.after()), sorted_rows(&after), "{id}");
             assert_domains(transition.after(), schema, &step["after_domains"]);
-            db.execute_batch(step["sql"].as_str().unwrap()).unwrap();
+            assert_native_merge_actions(&db, step);
             assert_eq!(
                 sorted_rows(&native_state(&db, "target")),
                 sorted_rows(&after),
