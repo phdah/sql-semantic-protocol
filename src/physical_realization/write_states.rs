@@ -123,6 +123,24 @@ impl PhysicalWriteState {
     }
 }
 
+/// Check complete physical row representations against the canonical datatype
+/// validator. Transaction control never reimplements integer, decimal, text,
+/// floating-point or temporal datatype bounds in a second proof engine.
+pub(super) fn certified_source_row_types(
+    state: &PhysicalWriteState,
+    schema: &RelationSchema,
+) -> bool {
+    state.relation() == schema.relation()
+        && state.exact_domains(schema).is_some()
+        && state.rows().iter().all(|row| {
+            schema.columns().iter().all(|column| {
+                row.values()
+                    .get(column.name())
+                    .is_some_and(|value| validate_column_value(value, column).is_ok())
+            })
+        })
+}
+
 /// Caller-attested exact next allocation state for one database identity column.
 ///
 /// Identity allocation is not inferred from maximum existing row values.
