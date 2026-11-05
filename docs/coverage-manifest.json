@@ -2,17 +2,49 @@
   "task_162_transaction_acceptance": {
     "owner": "TASK-162",
     "parent": "TASK-84",
-    "status": "frozen_implementation_in_progress",
+    "status": "v2_frozen_pending_ci_review",
     "freeze": "docs/task-162-acceptance-freeze.json",
-    "freeze_version": 1,
-    "fixture_ids": ["84-C162-P", "84-C162-N"],
-    "named_families": ["BEGIN_COMMIT", "BEGIN_ROLLBACK", "INVALID_BEGIN", "INVALID_COMMIT", "INVALID_ROLLBACK", "SAVEPOINT_RELEASE_ROLLBACK_TO", "CANONICAL_SQL_BOUNDARY"],
+    "freeze_version": 2,
+    "archive": "docs/task-162-acceptance-freeze-v1.json",
+    "fixture_ids": [
+      "84-C162-P",
+      "84-C162-N"
+    ],
+    "named_families": [
+      "BEGIN_COMMIT",
+      "BEGIN_ROLLBACK",
+      "INVALID_BEGIN",
+      "INVALID_COMMIT",
+      "INVALID_ROLLBACK",
+      "SAVEPOINT_RELEASE_ROLLBACK_TO",
+      "CANONICAL_SQL_BOUNDARY"
+    ],
     "exact_core_cases": 5,
     "conditional_cases": 1,
     "unproved_sql_case": 1,
-    "public_api_oracles": "tests/task_162_transactions.rs",
-    "original_ac": [1, 2, 3, 4, 5],
-    "parent_original_ac": [2, 3, 4, 5, 6],
+    "dialect_parser_cells": 91,
+    "public_api_oracles": [
+      "tests/task_162_transactions.rs",
+      "tests/task_162_sql_frontend.rs",
+      "tests/task_162_dialect_matrix.rs",
+      "tests/task_162_adapter_parity.rs"
+    ],
+    "native_engine": "duckdb ~1.10506.0",
+    "savepoint_boundary": "conditional_native_savepoint_unsupported_pending_independent_review",
+    "original_ac": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "parent_original_ac": [
+      2,
+      3,
+      4,
+      5,
+      6
+    ],
     "mandatory_verified": false,
     "native_duckdb_verified": false,
     "all_13_parser_dialects_verified": false,
