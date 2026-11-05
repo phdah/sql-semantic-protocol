@@ -33,6 +33,31 @@ docs/task-83-parent-acceptance-freeze.json v1 was committed before the tests.
 
 tests/task_83_parent_lifecycle.rs verifies both cases through the public analyzer/physical lifecycle interface and independent DuckDB execution.
 
+## Parent verification strengthened after review
+
+The child-frozen cases reconcile as **20 Exact, 7 Impossible and 15 Residual**
+outcomes, without retroactively rewriting any child acceptance freeze.
+The parent registry asserts these classification totals per child, the
+recorded child signoff/CI gates in the mutable coverage manifest, and
+each parent AC's declared child ownership. This is executable
+traceability, not a substitute for each child's public-API differential
+tests (which also run in the full Rust CI jobs).
+
+The seven-statement parent oracle now checks **all** frozen output row
+values, TRUE/NOT TRUE source occurrence identities, typed frequency/NULL/
+inclusive-bound expectations and all five DDL/DML write effect counts.
+A separate independent DuckDB replay compares the **complete canonical
+physical bag and typed live catalog at every checkpoint**, including
+the pre-ALTER single-column state, the post-ALTER defaulted rows, and
+the schema-preserving TRUNCATE. Neither a passed parser nor just the
+number of rows is accepted as an exact physical source proof.
+
+The negative fixture preserves the proven post-DROP impossibility
+in canonical output and native execution. Conditional vendor/session
+cases remain typed Residual or parser boundaries with named owners.
+No production analyzer, interpreter, adapter or protocol wire shape is
+changed by this parent verification PR.
+
 ## Conditional boundaries and gates
 
 LIKE/CLONE copying, TEMP/TRANSIENT visibility, vendor materialized-view refresh and implicit DDL transaction laws require independent versioned native evidence. TASK-157/159 own the object-specific boundaries; TASK-84/163 own transactions. These conditions must never hide a missing mandatory portable Exact case.
