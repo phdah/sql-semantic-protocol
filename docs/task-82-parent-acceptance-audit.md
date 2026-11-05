@@ -54,12 +54,12 @@ uniqueness or FK deferral, or transaction/session behavior. TASK-155 owns
 the named conditional cases; TASK-84/87 own further enabling evidence.
 A parser-accepted statement is never native-engine proof.
 
-This audit is **pending** the latest PR-head CI, a distinct independent
-parent-level Standards/Spec review, and explicit acceptance of any remaining
-conditional vendor dispositions. No child review waiver is inherited.
-Original TASK-82 AC #1..#6 stay unchecked until those gates are satisfied.
-TASK-83, TASK-85 and TASK-91 require their own independent closure, and
-TASK-161 cannot begin until TASK-82 and TASK-83 are Done and merged.
+The parent review was initially pending PR-head CI and a distinct reviewer
+identity. On 2026-11-05, owner approval recorded a TASK-82-specific exception
+to that identity gate after successful review and CI; no child waiver was
+inherited. Original AC #1..#6 are now signed off under that explicit exception.
+TASK-83, TASK-85 and TASK-91 retain their own independent closure, and
+TASK-161 still requires TASK-83 to be Done and merged.
 
 
 ## Full child inventory reconciliation (active v3)
@@ -184,9 +184,30 @@ public-API/native DuckDB, dialect and adapter tests. Both parent acceptance
 inventory tests passed; all six original parent AC have a finite evidence
 crosswalk and technically supported, conservative exactness boundaries.
 
-**Remaining gate:** This is a technical implementation audit, not a
-distinct-account independent GitHub review. Original AC #1..#6 are **not yet
-signed off** until an independent parent reviewer or an *explicit* owner
-exception accepts the recorded conditional dispositions. TASK-82 stays
-In Progress and TASK-91 remains separate. Any final tracking-only
-commit must pass all required CI jobs before integration.
+**Final disposition (2026-11-05):** The owner explicitly approved this
+parent technical audit and granted a TASK-82-specific exception to the
+separate reviewer-identity gate in PR #186. This must not be described as an
+independent-account GitHub review. All six original parent AC are now signed
+off and TASK-82 is Done, with conditional boundaries retained. TASK-91 stays
+separate. Final signoff-only tracking commits require green CI before merge.
+
+## Owner approval and final merge gate (2026-11-05)
+
+The author-account Matt `engineering/code-review` final technical review
+found **0 remaining blocking Standards or Spec defects**. It strengthened
+independent native DuckDB MERGE action-count verification via
+`RETURNING merge_action`, preserved native-version-dependent duplicate-match
+behavior as `Residual(UnprovedOperation)`, and rejected malformed frozen
+INTEGER values. Final reviewed implementation head
+`8cf1692c2adf51bfff13517c4c17281840ab14dc` passed
+[all nine CI jobs](https://github.com/phdah/sql-semantic-protocol/actions/runs/41985740438)
+including default/no-default Rust tests and dbt Core E2E.
+
+The repository owner [approved PR #186 and expressly authorized a parent-specific
+independent-review exception](https://github.com/phdah/sql-semantic-protocol/pull/186#issuecomment-6652370938).
+This is **not** an independent GitHub reviewer identity and does not waive
+any release gate outside TASK-82. The owner also accepted all documented
+conditional vendor/constraint/session laws as typed Residual or Conditional;
+no unsupported case was promoted to Exact. Original TASK-82 AC #1..#6 are
+accepted and marked Done in the backlog and coverage manifest. Squash merge
+of this PR is authorized after CI on the final tracking-only commit.
