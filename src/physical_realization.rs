@@ -502,10 +502,10 @@ mod rank_bags;
 mod ranking;
 mod scalar_quantified;
 mod sequential_graph;
-mod transactions;
 mod set_bags;
 mod set_trees;
 mod sets;
+mod transactions;
 mod view_bags;
 mod window_bags;
 mod window_composition;
@@ -595,10 +595,6 @@ pub use scalar_quantified::{
     PhysicalQuantifiedTruth, PhysicalQuantifier, PhysicalScalarSubqueryExact,
     PhysicalScalarSubqueryProof,
 };
-pub use transactions::{
-    physical_duckdb_transaction_plan, PhysicalTransactionAction, PhysicalTransactionCheckpoint,
-    PhysicalTransactionScriptExact, PhysicalTransactionScriptProof, PhysicalTransactionStep,
-};
 pub use sequential_graph::{
     physical_sequential_state_graph_plan, PhysicalScriptCatalog, PhysicalScriptProducer,
     PhysicalScriptSourceRole, PhysicalScriptStateEdge, PhysicalScriptStateNode,
@@ -612,6 +608,10 @@ pub use set_trees::{
     physical_finite_set_tree_membership_plan, physical_finite_set_tree_plan,
     PhysicalFiniteSetTreeExact, PhysicalFiniteSetTreeProof, PhysicalSetTreeBranch,
     PhysicalSetTreeTuple,
+};
+pub use transactions::{
+    physical_duckdb_transaction_plan, PhysicalTransactionAction, PhysicalTransactionCheckpoint,
+    PhysicalTransactionScriptExact, PhysicalTransactionScriptProof, PhysicalTransactionStep,
 };
 pub use view_bags::{physical_finite_view_read_plan, PhysicalViewExact, PhysicalViewProof};
 pub use window_bags::{
