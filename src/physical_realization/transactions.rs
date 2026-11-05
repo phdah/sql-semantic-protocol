@@ -160,15 +160,22 @@ pub fn physical_duckdb_transaction_plan(
         let (action, statement) = match step {
             PhysicalTransactionStep::Sql(bundle) => {
                 if bundle.layers().len() != 1 {
-                    return residual(index, "transaction SQL step requires exactly one canonical statement layer");
+                    return residual(
+                        index,
+                        "transaction SQL step requires exactly one canonical statement layer",
+                    );
                 }
                 let mut execution = (**bundle).clone();
                 for schema in &current.schemas {
                     if !execution.attest_physical_source_schema(schema.clone()) {
-                        return residual(index, "SQL metadata contradicts the preceding live typed schema");
+                        return residual(
+                            index,
+                            "SQL metadata contradicts the preceding live typed schema",
+                        );
                     }
                 }
-                let graph = match physical_sequential_state_graph_plan(&execution, &current.states) {
+                let graph = match physical_sequential_state_graph_plan(&execution, &current.states)
+                {
                     PhysicalSequentialStateGraphProof::Exact(graph) => graph,
                     PhysicalSequentialStateGraphProof::Impossible { reason } => {
                         return impossible(index, reason);
@@ -186,7 +193,10 @@ pub fn physical_duckdb_transaction_plan(
                     || node.after.states != graph.final_states
                     || complete_catalog(&node.after).is_err()
                 {
-                    return residual(index, "SQL step does not reconcile with the complete transaction catalog");
+                    return residual(
+                        index,
+                        "SQL step does not reconcile with the complete transaction catalog",
+                    );
                 }
                 current = node.after.clone();
                 (PhysicalTransactionAction::Sql, Some(node))
@@ -235,7 +245,10 @@ pub fn physical_duckdb_transaction_plan(
         });
     }
     if active_transaction.is_some() {
-        return residual(steps.len(), "uncommitted explicit transaction at end of script");
+        return residual(
+            steps.len(),
+            "uncommitted explicit transaction at end of script",
+        );
     }
     PhysicalTransactionScriptProof::Exact(Box::new(PhysicalTransactionScriptExact {
         checkpoints,
