@@ -26,6 +26,17 @@ use super::{
 pub enum PhysicalTransactionStep<'a> {
     /// Analyzed DDL, DML or SELECT, executed on the preceding complete catalog.
     Sql(&'a AnalysisBundle),
+    /// Canonical SQL plus independently attested constraint enforcement facts.
+    ///
+    /// A declared PRIMARY KEY without ENFORCED evidence remains uncertain.
+    /// Attestation is checked by the canonical constraint validator and
+    /// persists with the physical catalog, including across ROLLBACK.
+    SqlWithEvidence {
+        /// One canonical analyzed SQL statement.
+        bundle: &'a AnalysisBundle,
+        /// Caller-attested canonical enforced constraints and provenance.
+        constraints: &'a [RelationConstraintSet],
+    },
     /// Start a new explicit transaction, snapshotting the full typed catalog.
     Begin,
     /// Commit all exact changes since the matching BEGIN.
@@ -217,7 +228,8 @@ pub fn physical_duckdb_transaction_plan(
         let before = current.clone();
         let before_constraints = live_constraints.values().cloned().collect();
         let (action, statement) = match step {
-            PhysicalTransactionStep::Sql(bundle) => {
+            PhysicalTransactionStep::Sql(bundle)
+            | PhysicalTransactionStep::SqlWithEvidence { bundle, .. } => {
                 // A layer count alone is insufficient: unsupported transaction
                 // SQL can live alongside one valid query in the same bundle.
                 // Never drop that statement or prove a non-DuckDB session law.
@@ -246,6 +258,9 @@ pub fn physical_duckdb_transaction_plan(
                 execution.enrich_relation_constraints(
                     &live_constraints.values().cloned().collect::<Vec<_>>(),
                 );
+                if let PhysicalTransactionStep::SqlWithEvidence { constraints, .. } = step {
+                    execution.enrich_relation_constraints(constraints);
+                }
                 let graph = match physical_sequential_state_graph_plan(&execution, &current.states)
                 {
                     PhysicalSequentialStateGraphProof::Exact(graph) => graph,
@@ -292,7 +307,7 @@ pub fn physical_duckdb_transaction_plan(
                         }
                     }
                 }
-                for set in bundle.relation_constraints() {
+                for set in execution.relation_constraints() {
                     if !node
                         .after
                         .states
