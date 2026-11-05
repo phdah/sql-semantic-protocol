@@ -40,7 +40,7 @@ fn initial_attested_bag_is_read_from_initial_then_prior_write_without_inventing_
     ]).unwrap();
     let bundle = analyze_configured_inputs_with_catalog(&configured, &catalog).unwrap();
     let initial = PhysicalWriteState::new("t", vec![row(Some(1)), row(None), row(Some(1))]).unwrap();
-    let proof = physical_sequential_state_graph_plan(&bundle, &[initial.clone()]);
+    let proof = physical_sequential_state_graph_plan(&bundle, std::slice::from_ref(&initial));
     let PhysicalSequentialStateGraphProof::Exact(exact) = proof else {
         panic!("expected exact attested initial rows and versioned edges: {proof:?}");
     };
