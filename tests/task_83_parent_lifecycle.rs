@@ -118,10 +118,7 @@ fn independent_parent_lifecycle_proves_both_reads_and_intermediate_catalogs() {
                     LiteralValue::Number(number) => number.clone(),
                     other => panic!("unexpected parent INTEGER: {other:?}"),
                 };
-                assert_eq!(
-                    *frequency,
-                    target["frequencies"][&key].as_u64().unwrap()
-                );
+                assert_eq!(*frequency, target["frequencies"][&key].as_u64().unwrap());
             }
             let numbers = domain
                 .values()
@@ -136,7 +133,10 @@ fn independent_parent_lifecycle_proves_both_reads_and_intermediate_catalogs() {
             assert_eq!(numbers.iter().max().copied(), target["upper"].as_i64());
             assert_eq!(
                 target["nullable"].as_bool().unwrap(),
-                domain.values().iter().any(|(value, _)| *value == LiteralValue::Null)
+                domain
+                    .values()
+                    .iter()
+                    .any(|(value, _)| *value == LiteralValue::Null)
             );
             assert_eq!(
                 target["lower_inclusive"].as_bool().unwrap(),
