@@ -501,6 +501,7 @@ mod page_composition;
 mod rank_bags;
 mod ranking;
 mod scalar_quantified;
+mod sequential_graph;
 mod set_bags;
 mod set_trees;
 mod sets;
@@ -592,6 +593,11 @@ pub use scalar_quantified::{
     PhysicalQuantifiedOperands, PhysicalQuantifiedScalarExact, PhysicalQuantifiedScalarProof,
     PhysicalQuantifiedTruth, PhysicalQuantifier, PhysicalScalarSubqueryExact,
     PhysicalScalarSubqueryProof,
+};
+pub use sequential_graph::{
+    physical_sequential_state_graph_plan, PhysicalScriptCatalog, PhysicalScriptProducer,
+    PhysicalScriptSourceRole, PhysicalScriptStateEdge, PhysicalScriptStateNode,
+    PhysicalSequentialStateGraphExact, PhysicalSequentialStateGraphProof,
 };
 pub use set_bags::{
     physical_finite_set_bag_plan, PhysicalFiniteSetExact, PhysicalFiniteSetProof,
