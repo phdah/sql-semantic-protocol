@@ -20,7 +20,7 @@ enum TransactionSqlUnit {
     Savepoint(String),
     RollbackTo(String),
     Release(String),
-    Sql(AnalysisBundle),
+    Sql(Box<AnalysisBundle>),
 }
 
 fn residual(index: usize, reason: impl Into<String>) -> PhysicalTransactionScriptProof {
@@ -96,7 +96,7 @@ pub fn physical_duckdb_sql_transaction_plan(
                     Ok(bundle) => bundle,
                     Err(error) => return residual(index, format!("canonical SQL boundary: {error}")),
                 };
-                TransactionSqlUnit::Sql(bundle)
+                TransactionSqlUnit::Sql(Box::new(bundle))
             }
         };
         units.push(control);
