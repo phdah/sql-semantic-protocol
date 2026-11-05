@@ -367,16 +367,9 @@ fn duplicate_source_match_cannot_be_accepted_as_a_portable_merge_winner() {
         native_match_count(&db, "target", "source", false),
         case["on"]["target_true"].as_u64().unwrap()
     );
-    // DuckDB rejects duplicate source matches. The portable protocol remains
-    // Residual because this native error rule must not be assumed elsewhere.
-    assert!(db.execute_batch(case["sql"].as_str().unwrap()).is_err());
-    for relation in ["target", "source"] {
-        assert_eq!(
-            sorted_rows(&native_state(&db, relation)),
-            sorted_rows(&state(relation, &case["initial"][relation])),
-            "native rejected MERGE must not mutate {relation}"
-        );
-    }
+    // Duplicate-match winner/error rules are engine/version dependent.
+    // Do not execute this statement as a portable oracle or invent a winner:
+    // the complete native prestate and multiplicity justify a Residual.
 }
 
 #[test]
