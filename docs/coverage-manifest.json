@@ -1,4 +1,26 @@
 {
+  "task_162_transaction_acceptance": {
+    "owner": "TASK-162",
+    "parent": "TASK-84",
+    "status": "frozen_implementation_in_progress",
+    "freeze": "docs/task-162-acceptance-freeze.json",
+    "freeze_version": 1,
+    "fixture_ids": ["84-C162-P", "84-C162-N"],
+    "named_families": ["BEGIN_COMMIT", "BEGIN_ROLLBACK", "INVALID_BEGIN", "INVALID_COMMIT", "INVALID_ROLLBACK", "SAVEPOINT_RELEASE_ROLLBACK_TO", "CANONICAL_SQL_BOUNDARY"],
+    "exact_core_cases": 5,
+    "conditional_cases": 1,
+    "unproved_sql_case": 1,
+    "public_api_oracles": "tests/task_162_transactions.rs",
+    "original_ac": [1, 2, 3, 4, 5],
+    "parent_original_ac": [2, 3, 4, 5, 6],
+    "mandatory_verified": false,
+    "native_duckdb_verified": false,
+    "all_13_parser_dialects_verified": false,
+    "adapter_parity_verified": false,
+    "full_ci_verified": false,
+    "independent_review_verified": false,
+    "parent_closed": false
+  },
   "task_83_parent_ddl_closure_acceptance": {
     "owner": "TASK-83",
     "status": "done_owner_approved_exception",
