@@ -67,7 +67,10 @@ fn frozen_case_by_dialect_parser_matrix_is_exact_and_does_not_infer_engine_laws(
     assert_eq!(dialects.len(), 13);
     assert_eq!(cases.len(), 7);
     assert_eq!(freeze["parser_dialect_cells"], 91);
-    assert_eq!(statement_cells, freeze["parser_statement_cells"].as_u64().unwrap() as usize);
+    assert_eq!(
+        statement_cells,
+        freeze["parser_statement_cells"].as_u64().unwrap() as usize
+    );
     let observed = serde_json::to_value(observed).unwrap();
     if freeze["case_dialect_expected"].is_null() {
         // Initial observation must be manually frozen, never silently treated
