@@ -184,18 +184,35 @@ fn rollback_restores_updated_deleted_and_untouched_rows_on_same_physical_bag() {
     };
     let original = &exact.checkpoints[1].after;
     assert_eq!(exact.checkpoints[5].after, *original);
-    assert_eq!(exact.final_catalog.states[0].rows(), &[row(1, Some(10)), row(2, None), row(2, None)]);
-    let read = exact.checkpoints[6].statement.as_ref().unwrap().read.as_ref().unwrap();
+    assert_eq!(
+        exact.final_catalog.states[0].rows(),
+        &[row(1, Some(10)), row(2, None), row(2, None)]
+    );
+    let read = exact.checkpoints[6]
+        .statement
+        .as_ref()
+        .unwrap()
+        .read
+        .as_ref()
+        .unwrap();
     assert_eq!(read.surviving_source_ordinals, vec![0, 1, 2]);
     assert!(read.rejected_source_ordinals.is_empty());
     assert_eq!(read.output.rows().len(), 3);
 
     let db = Connection::open_in_memory().unwrap();
     for (step, statement) in sql.iter().enumerate() {
-        if step != 6 { db.execute_batch(statement).unwrap(); }
-        let observed = db.prepare("SELECT id, v FROM t ORDER BY rowid").unwrap()
-            .query_map([], |r| Ok(row(r.get::<_, i64>(0)?, r.get::<_, Option<i64>>(1)?)))
-            .unwrap().collect::<duckdb::Result<Vec<_>>>().unwrap();
+        if step != 6 {
+            db.execute_batch(statement).unwrap();
+        }
+        let observed = db
+            .prepare("SELECT id, v FROM t ORDER BY rowid")
+            .unwrap()
+            .query_map([], |r| {
+                Ok(row(r.get::<_, i64>(0)?, r.get::<_, Option<i64>>(1)?))
+            })
+            .unwrap()
+            .collect::<duckdb::Result<Vec<_>>>()
+            .unwrap();
         assert_eq!(
             sorted_rows(&observed),
             sorted_rows(exact.checkpoints[step].after.states[0].rows()),
