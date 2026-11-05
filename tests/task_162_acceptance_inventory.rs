@@ -54,12 +54,12 @@ fn all_frozen_transaction_cases_and_parser_cells_have_signed_off_ownership() {
 
     for ac in 1..=5 {
         assert!(
-            freeze["task_ac_mapping"][ac.to_string()].as_array().is_some_and(|rows| !rows.is_empty()),
+            freeze["task_ac_mapping"][ac.to_string().as_str()].as_array().is_some_and(|rows| !rows.is_empty()),
             "TASK-162 acceptance #{ac} missing"
         );
     }
     for ac in 2..=6 {
-        let rows = freeze["parent_ac_mapping"][ac.to_string()].as_array().unwrap();
+        let rows = freeze["parent_ac_mapping"][ac.to_string().as_str()].as_array().unwrap();
         assert!(!rows.is_empty(), "TASK-84 parent AC #{ac} missing");
         for id in rows {
             assert!(names.contains(id.as_str().unwrap()), "unknown frozen case {id}");
