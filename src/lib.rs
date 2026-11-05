@@ -65,6 +65,7 @@
 //! - physical_finite_cte_bag_plan evaluates complete ordinary and bounded monotone recursive CTE producer bags with explicit self-edges, closed-world absence and typed outcome domains.
 //! - physical_ordered_cte_read_plan composes ordered materialized write states with a final source-complete CTE read, without independent insertion of a produced relation.
 //! - physical_duckdb_transaction_plan certifies explicit BEGIN, COMMIT and ROLLBACK boundaries using complete canonical statement-state snapshots, with unverified SAVEPOINT laws reported as Residual.
+//! - physical_duckdb_sql_transaction_plan lowers real DuckDB SQL transaction commands at the sqlparser boundary and reuses canonical physical statement proofs.
 //! - physical_finite_view_read_plan proves bounded logical view reads without inventing an independent physical view population.
 //! - physical_finite_in_bag_plan proves scalar IN/NOT IN three-valued membership over complete finite physical bags.
 //! - physical_finite_table_plan proves exact source-free VALUES and typed array fanout, finite two-input equality joins, COUNT(*) grouping, fixed star/PIVOT/UNPIVOT complete bags, SQL NOT TRUE identities and typed domains.
@@ -109,7 +110,7 @@ use std::fmt;
 
 use sqlparser::dialect::{dialect_from_str, Dialect};
 
-pub use analysis::AnalysisError;
+pub use analysis::{physical_duckdb_sql_transaction_plan, AnalysisError};
 pub use bag_histogram::{
     equijoin_key_histogram, BagHistogramProof, BagKeyExpressionIdentity, BagKeyHistogram,
 };
