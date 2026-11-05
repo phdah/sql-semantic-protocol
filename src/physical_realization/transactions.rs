@@ -146,13 +146,13 @@ fn value_matches_integer(value: &LiteralValue, width: u32) -> bool {
     }
 }
 
-fn certified_integer_bag(
-    state: &PhysicalWriteState,
-    schema: &RelationSchema,
-) -> bool {
+fn certified_integer_bag(state: &PhysicalWriteState, schema: &RelationSchema) -> bool {
     state.rows().iter().all(|row| {
         schema.columns().iter().all(|column| {
-            match (row.values().get(column.name()), integer_width(column.data_type())) {
+            match (
+                row.values().get(column.name()),
+                integer_width(column.data_type()),
+            ) {
                 (Some(value), Some(width)) => value_matches_integer(value, width),
                 _ => false,
             }
@@ -207,7 +207,10 @@ pub fn physical_duckdb_transaction_plan(
         Ok(catalog) => catalog,
         Err(reason) => return residual(0, reason),
     };
-    let mut active_transaction: Option<(PhysicalScriptCatalog, BTreeMap<String, RelationConstraintSet>)> = None;
+    let mut active_transaction: Option<(
+        PhysicalScriptCatalog,
+        BTreeMap<String, RelationConstraintSet>,
+    )> = None;
     let mut live_constraints = BTreeMap::<String, RelationConstraintSet>::new();
     let mut checkpoints = Vec::with_capacity(steps.len());
     for (index, step) in steps.iter().enumerate() {
@@ -287,7 +290,12 @@ pub fn physical_duckdb_transaction_plan(
                     }
                 }
                 for set in bundle.relation_constraints() {
-                    if !node.after.states.iter().any(|s| s.relation() == set.relation()) {
+                    if !node
+                        .after
+                        .states
+                        .iter()
+                        .any(|s| s.relation() == set.relation())
+                    {
                         continue;
                     }
                     match live_constraints.get(set.relation()) {
