@@ -1,7 +1,7 @@
 {
   "task_82_parent_merge_closure_acceptance": {
     "owner": "TASK-82",
-    "status": "technical_acceptance_verified_pending_parent_independent_review",
+    "status": "done_owner_approved_exception",
     "freeze": "docs/task-82-parent-acceptance-freeze.json",
     "freeze_version": 3,
     "fixture_ids": [
@@ -28,13 +28,9 @@
     "public_api_native_full_bag_oracle": "tests/task_82_parent_merge.rs",
     "acceptance_audit": "docs/task-82-parent-acceptance-audit.md",
     "implementation_and_protocol_shape_unchanged": true,
-    "parent_signed_off": false,
+    "parent_signed_off": true,
     "release_approved": false,
-    "remaining_gates": [
-      "Final tracking-only PR-head CI must pass after the audit update",
-      "Independent TASK-82 parent Standards/Spec reviewer or explicit owner exception; user request to finish task does not assert distinct-reviewer approval",
-      "Original TASK-82 AC #1..#6 and Done status only after review disposition"
-    ],
+    "remaining_gates": [],
     "freeze_history": [
       "docs/task-82-parent-acceptance-freeze-v1.json",
       "docs/task-82-parent-acceptance-freeze-v2.json"
@@ -55,15 +51,18 @@
     "parent_replay_full_bag_oracle": "tests/task_82_parent_merge.rs",
     "parent_inventory_oracle": "tests/task_82_parent_acceptance.rs",
     "parent_ac_mapping_complete": true,
-    "reviewed_implementation_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41925632614",
-    "reviewed_implementation_head": "2f5b4c8157f37e2d018a5f99d6d93f53f7cb6ef0",
+    "reviewed_implementation_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/41985740438",
+    "reviewed_implementation_head": "8cf1692c2adf51bfff13517c4c17281840ab14dc",
     "reviewed_v3_correction": "Second identical MERGE updates both matched keys 1 and 3; target bag remains fixed. v2 with one UPDATE preserved historically.",
     "technical_parent_ac_verified": true,
     "full_ci_verified": true,
     "native_duckdb_verified": true,
     "child_matrix_reconciliation_verified": true,
     "child_adapter_dialect_oracles_verified": true,
-    "review_process_exception_approved": false
+    "review_process_exception_approved": true,
+    "owner_exception_record": "PR #186 owner approval 2026-11-05 (issuecomment-6652370938); not an independent reviewer identity",
+    "parent_ac_signed_off": [1, 2, 3, 4, 5, 6],
+    "conditional_release_boundaries_accepted": true
   },
   "task_167_joint_terminal_bags_acceptance": {
     "owner": "TASK-167",
