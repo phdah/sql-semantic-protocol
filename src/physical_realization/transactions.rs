@@ -7,6 +7,9 @@
 use std::collections::BTreeMap;
 
 use crate::bundle::AnalysisBundle;
+use crate::constraints::RelationConstraintSet;
+use crate::data_type::DataType;
+use crate::protocol::{LiteralValue, WriteKind};
 use crate::relation::RelationSchema;
 
 use super::{
@@ -59,8 +62,12 @@ pub struct PhysicalTransactionCheckpoint {
     pub action: PhysicalTransactionAction,
     /// Complete typed physical state immediately before this action.
     pub before: PhysicalScriptCatalog,
+    /// Exact before-state canonical enforced constraints and defaults.
+    pub before_constraints: Vec<RelationConstraintSet>,
     /// Complete typed physical state immediately after this action.
     pub after: PhysicalScriptCatalog,
+    /// Canonical enforced constraints and defaults after this action.
+    pub after_constraints: Vec<RelationConstraintSet>,
     /// Source-complete canonical DDL, DML or SELECT proof for SQL steps.
     pub statement: Option<PhysicalScriptStateNode>,
 }
@@ -72,6 +79,8 @@ pub struct PhysicalTransactionScriptExact {
     pub checkpoints: Vec<PhysicalTransactionCheckpoint>,
     /// Final committed physical catalog, including schemas and duplicate rows.
     pub final_catalog: PhysicalScriptCatalog,
+    /// Final authoritative constraint/default evidence of live relations.
+    pub final_constraints: Vec<RelationConstraintSet>,
 }
 
 /// Classification of the complete transaction script.
@@ -109,6 +118,48 @@ fn residual(step_index: usize, reason: impl Into<String>) -> PhysicalTransaction
     }
 }
 
+fn integer_width(data_type: &DataType) -> Option<u32> {
+    match data_type {
+        DataType::SignedInteger { bits: Some(bits) } if *bits > 0 && *bits <= 128 => {
+            Some(u32::from(*bits))
+        }
+        DataType::Nullable(inner) => integer_width(inner),
+        _ => None,
+    }
+}
+
+fn value_matches_integer(value: &LiteralValue, width: u32) -> bool {
+    match value {
+        LiteralValue::Null => true,
+        LiteralValue::Number(number) => match number.parse::<i128>() {
+            Ok(number) if width == 128 => {
+                let _ = number;
+                true
+            }
+            Ok(number) => {
+                let bound = 1_i128 << (width - 1);
+                number >= -bound && number < bound
+            }
+            Err(_) => false,
+        },
+        LiteralValue::Boolean(_) | LiteralValue::Text(_) => false,
+    }
+}
+
+fn certified_integer_bag(
+    state: &PhysicalWriteState,
+    schema: &RelationSchema,
+) -> bool {
+    state.rows().iter().all(|row| {
+        schema.columns().iter().all(|column| {
+            match (row.values().get(column.name()), integer_width(column.data_type())) {
+                (Some(value), Some(width)) => value_matches_integer(value, width),
+                _ => false,
+            }
+        })
+    })
+}
+
 fn complete_catalog(
     catalog: &PhysicalScriptCatalog,
 ) -> Result<PhysicalScriptCatalog, &'static str> {
@@ -117,7 +168,10 @@ fn complete_catalog(
     }
     let mut sorted = BTreeMap::<String, (PhysicalWriteState, RelationSchema)>::new();
     for (state, schema) in catalog.states.iter().zip(&catalog.schemas) {
-        if state.relation() != schema.relation() || state.exact_domains(schema).is_none() {
+        if state.relation() != schema.relation()
+            || state.exact_domains(schema).is_none()
+            || !certified_integer_bag(state, schema)
+        {
             return Err("physical state and authoritative typed schema disagree");
         }
         if sorted
@@ -153,10 +207,12 @@ pub fn physical_duckdb_transaction_plan(
         Ok(catalog) => catalog,
         Err(reason) => return residual(0, reason),
     };
-    let mut active_transaction: Option<PhysicalScriptCatalog> = None;
+    let mut active_transaction: Option<(PhysicalScriptCatalog, BTreeMap<String, RelationConstraintSet>)> = None;
+    let mut live_constraints = BTreeMap::<String, RelationConstraintSet>::new();
     let mut checkpoints = Vec::with_capacity(steps.len());
     for (index, step) in steps.iter().enumerate() {
         let before = current.clone();
+        let before_constraints = live_constraints.values().cloned().collect();
         let (action, statement) = match step {
             PhysicalTransactionStep::Sql(bundle) => {
                 // A layer count alone is insufficient: unsupported transaction
@@ -172,16 +228,9 @@ pub fn physical_duckdb_transaction_plan(
                         "transaction SQL step requires one DuckDB canonical statement",
                     );
                 }
-                // Constraint/default evidence declared by one statement is
-                // not yet versioned across independent transaction steps.
-                // Failing closed here prevents a later INSERT from being
-                // certified despite an earlier PRIMARY KEY or CHECK.
-                if !bundle.relation_constraints().is_empty() {
-                    return residual(
-                        index,
-                        "transaction constraint/default state requires versioned evidence",
-                    );
-                }
+                // Previously certified DDL constraints are carried to each
+                // subsequent statement. A fresh SQL bundle alone does not
+                // attest that an earlier PRIMARY KEY or CHECK disappeared.
                 let mut execution = (**bundle).clone();
                 for schema in &current.schemas {
                     if !execution.attest_physical_source_schema(schema.clone()) {
@@ -191,6 +240,9 @@ pub fn physical_duckdb_transaction_plan(
                         );
                     }
                 }
+                execution.enrich_relation_constraints(
+                    &live_constraints.values().cloned().collect::<Vec<_>>(),
+                );
                 let graph = match physical_sequential_state_graph_plan(&execution, &current.states)
                 {
                     PhysicalSequentialStateGraphProof::Exact(graph) => graph,
@@ -215,6 +267,38 @@ pub fn physical_duckdb_transaction_plan(
                         "SQL step does not reconcile with the complete transaction catalog",
                     );
                 }
+                if let Some(write) = &node.write {
+                    let target = write.before().relation();
+                    if matches!(write.kind(), WriteKind::SchemaAlter)
+                        && live_constraints.contains_key(target)
+                    {
+                        return residual(
+                            index,
+                            "ALTER of a constrained relation needs a versioned constraint/default transition",
+                        );
+                    }
+                    if !write.after_exists() {
+                        live_constraints.remove(target);
+                    } else if write.after().relation() != target {
+                        if let Some(mut set) = live_constraints.remove(target) {
+                            set.rename_physical_relation(write.after().relation());
+                            live_constraints.insert(write.after().relation().to_string(), set);
+                        }
+                    }
+                }
+                for set in bundle.relation_constraints() {
+                    if !node.after.states.iter().any(|s| s.relation() == set.relation()) {
+                        continue;
+                    }
+                    match live_constraints.get(set.relation()) {
+                        None => { live_constraints.insert(set.relation().to_string(), set.clone()); }
+                        Some(existing) if existing == set => {}
+                        Some(_) => return residual(
+                            index,
+                            "conflicting canonical constraint declarations across transaction steps",
+                        ),
+                    }
+                }
                 current = node.after.clone();
                 (PhysicalTransactionAction::Sql, Some(node))
             }
@@ -222,7 +306,7 @@ pub fn physical_duckdb_transaction_plan(
                 if active_transaction.is_some() {
                     return impossible(index, "DuckDB does not support nested BEGIN transactions");
                 }
-                active_transaction = Some(current.clone());
+                active_transaction = Some((current.clone(), live_constraints.clone()));
                 (PhysicalTransactionAction::Begin, None)
             }
             PhysicalTransactionStep::Commit => {
@@ -232,10 +316,11 @@ pub fn physical_duckdb_transaction_plan(
                 (PhysicalTransactionAction::Commit, None)
             }
             PhysicalTransactionStep::Rollback => {
-                let Some(original) = active_transaction.take() else {
+                let Some((original, original_constraints)) = active_transaction.take() else {
                     return impossible(index, "ROLLBACK has no active DuckDB transaction");
                 };
                 current = original;
+                live_constraints = original_constraints;
                 (PhysicalTransactionAction::Rollback, None)
             }
             PhysicalTransactionStep::Savepoint(name)
@@ -257,7 +342,9 @@ pub fn physical_duckdb_transaction_plan(
             step_index: index,
             action,
             before,
+            before_constraints,
             after: current.clone(),
+            after_constraints: live_constraints.values().cloned().collect(),
             statement,
         });
     }
@@ -270,5 +357,6 @@ pub fn physical_duckdb_transaction_plan(
     PhysicalTransactionScriptProof::Exact(Box::new(PhysicalTransactionScriptExact {
         checkpoints,
         final_catalog: current,
+        final_constraints: live_constraints.into_values().collect(),
     }))
 }
