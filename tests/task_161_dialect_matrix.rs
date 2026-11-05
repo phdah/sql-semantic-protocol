@@ -35,6 +35,8 @@ fn classification(dialect: &str, sql: &str) -> String {
             None => "read",
         }
         .to_string(),
+        // ProtocolStatement is non-exhaustive to external consumers.
+        Some(_) => "canonical_unsupported".to_string(),
     }
 }
 
