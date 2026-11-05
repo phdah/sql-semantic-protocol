@@ -315,7 +315,15 @@ fn acceptance_scope_is_frozen_before_implementation_and_parent_signoff_remains_o
     let freeze: serde_json::Value =
         serde_json::from_str(include_str!("../docs/task-161-acceptance-freeze.json")).unwrap();
     assert_eq!(freeze["owner"], "TASK-161");
-    assert_eq!(freeze["version"], 1);
+    assert_eq!(freeze["version"], 2);
+    let original: serde_json::Value =
+        serde_json::from_str(include_str!("../docs/task-161-acceptance-freeze-v1.json")).unwrap();
+    assert_eq!(original["version"], 1);
+    assert_eq!(original["frozen_before_semantic_changes"], true);
+    assert_eq!(
+        freeze["history"][0],
+        "docs/task-161-acceptance-freeze-v1.json"
+    );
     assert_eq!(freeze["frozen_before_semantic_changes"], true);
     assert_eq!(freeze["parser_dialect_cells"], 91);
     let ids = freeze["cases"]
