@@ -4,8 +4,9 @@
     "parent": "TASK-84",
     "status": "v2_frozen_pending_ci_review",
     "freeze": "docs/task-162-acceptance-freeze.json",
-    "freeze_version": 2,
+    "freeze_version": 3,
     "archive": "docs/task-162-acceptance-freeze-v1.json",
+    "previous_matrix": "docs/task-162-acceptance-freeze-v2.json",
     "fixture_ids": [
       "84-C162-P",
       "84-C162-N"
@@ -19,11 +20,12 @@
       "SAVEPOINT_RELEASE_ROLLBACK_TO",
       "CANONICAL_SQL_BOUNDARY"
     ],
-    "exact_core_cases": 5,
-    "conditional_cases": 1,
+    "exact_core_cases": 7,
+    "conditional_cases": 2,
     "unproved_sql_case": 1,
     "dialect_parser_cells": 91,
     "public_api_oracles": [
+      "tests/task_162_acceptance_inventory.rs",
       "tests/task_162_transactions.rs",
       "tests/task_162_sql_frontend.rs",
       "tests/task_162_dialect_matrix.rs",
