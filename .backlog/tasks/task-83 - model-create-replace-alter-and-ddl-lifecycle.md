@@ -1,10 +1,10 @@
 ---
 id: TASK-83
 title: Model complete relation-producing and destructive DDL effects
-status: To Do
+status: In Progress
 assignee: []
 created_date: '2026-10-09'
-updated_date: '2026-10-09'
+updated_date: '2026-11-05'
 labels: []
 milestone: m-3
 dependencies: 
@@ -71,3 +71,18 @@ TASK-83 is a **parent signoff**, not a single implementation PR. Preserve all or
 **Original AC mapping:** #1 -> TASK-157, TASK-159, TASK-160; #2 -> TASK-158, TASK-159, TASK-160; #3 -> TASK-157, TASK-159, TASK-160; #4 -> TASK-157, TASK-158, TASK-159, TASK-160; #5 -> TASK-157, TASK-158, TASK-159, TASK-160; #6 -> TASK-157, TASK-158, TASK-159, TASK-160.
 
 **No premature completion:** Each child freezes and verifies its own exact expected source/target data, output domains, dual-direction witnesses, parser/dialect/adapter cells, and final CI; the parent gets separate whole-AC closure. A conditional vendor limitation must name an owner and approved evidence boundary; it cannot hide a mandatory unimplemented family.
+
+## Independent parent acceptance verification (2026-11-05)
+
+All four child tasks TASK-157..160 are Done and their PRs #178..181 are merged.
+The [parent acceptance audit](../../docs/task-83-parent-acceptance-audit.md)
+reconciles original AC #1..#6 against all 42 child-frozen cases, and
+[the parent-owned v1 inventory](../../docs/task-83-parent-acceptance-freeze.json)
+freezes two new public-API/native-DuckDB lifecycle cases. See
+[tests/task_83_parent_lifecycle.rs](../../tests/task_83_parent_lifecycle.rs).
+
+**Do not sign off early:** original AC #1..#6 remain unchecked until final PR-head
+CI, technical Standards/Spec review, a distinct independent reviewer or explicit
+TASK-83-specific owner exception, and parent owner approval. Vendor/session
+laws remain typed conditional boundaries. TASK-161 stays blocked until this
+parent is Done and the PR is merged; TASK-91 remains a separate release gate.
