@@ -237,16 +237,28 @@ fn rollback_restores_constraint_catalog_and_does_not_leak_dropped_primary_key() 
     assert_eq!(exact.checkpoints[1].after_constraints.len(), 1);
     assert!(exact.checkpoints[2].after_constraints.is_empty());
     assert!(exact.final_constraints.is_empty());
-    assert_eq!(exact.final_catalog.states[0].rows(), &[row(1, Some(10)), row(1, Some(20))]);
+    assert_eq!(
+        exact.final_catalog.states[0].rows(),
+        &[row(1, Some(10)), row(1, Some(20))]
+    );
 
     let db = Connection::open_in_memory().unwrap();
     for statement in sql {
         db.execute_batch(statement).unwrap();
     }
-    let native = db.prepare("SELECT id,v FROM t ORDER BY rowid").unwrap()
-        .query_map([], |r| Ok(row(r.get::<_, i64>(0)?, r.get::<_, Option<i64>>(1)?)))
-        .unwrap().collect::<duckdb::Result<Vec<_>>>().unwrap();
-    assert_eq!(sorted_rows(&native), sorted_rows(exact.final_catalog.states[0].rows()));
+    let native = db
+        .prepare("SELECT id,v FROM t ORDER BY rowid")
+        .unwrap()
+        .query_map([], |r| {
+            Ok(row(r.get::<_, i64>(0)?, r.get::<_, Option<i64>>(1)?))
+        })
+        .unwrap()
+        .collect::<duckdb::Result<Vec<_>>>()
+        .unwrap();
+    assert_eq!(
+        sorted_rows(&native),
+        sorted_rows(exact.final_catalog.states[0].rows())
+    );
 }
 
 #[test]
@@ -259,7 +271,11 @@ fn separate_step_alter_defaults_are_not_silently_lost() {
         "INSERT INTO t (id) VALUES (2)",
     ];
     let proof = physical_duckdb_sql_transaction_plan(&sql, &empty());
-    assert!(matches!(
-        proof, PhysicalTransactionScriptProof::Residual { step_index: 2, .. }
-    ), "ALTER defaults must remain a typed residual until TASK-164: {proof:?}");
+    assert!(
+        matches!(
+            proof,
+            PhysicalTransactionScriptProof::Residual { step_index: 2, .. }
+        ),
+        "ALTER defaults must remain a typed residual until TASK-164: {proof:?}"
+    );
 }
