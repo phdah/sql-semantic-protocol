@@ -1,5 +1,25 @@
 # SQL Semantic Protocol contract
 
+## TASK-161 ordered typed statement-state graph
+
+`physical_sequential_state_graph_plan(bundle, initial_states)` constructs a Rust-library
+proof view over the **same canonical** ordered lifecycle interpretation. Its `Exact`
+graph contains an ordered node for every SQL statement, complete before/after live
+relation bags with matching typed schemas, per-statement mutation counts or
+SELECT TRUE/NOT TRUE occurrence witnesses, and explicit physical dependency
+edges. An edge refers either to a complete caller-attested initial population
+or the last earlier statement that produced the physical relation version.
+Read statements do not invent producers; DROP removes the version and RENAME
+moves the physical identity. Nodes expose full SQL NULL/duplicate frequencies
+and schema-backed exact value domains, not merely row counts.
+
+Any unsupported SQL, missing prestate/schema/source producer, implicit transaction
+or dialect/session law remains `Residual`; proven contradictions are
+`Impossible`. This is an additive Rust API, **not** a new JSON root or a
+claim of native transaction semantics. TASK-162 owns transaction semantics,
+TASK-164 the full independent TASK-84 script certification.
+
+
 ## Ordered lifecycle SELECT checkpoints (TASK-160)
 
 `physical_ordered_lifecycle_plan(bundle, initial_states)` adds a Rust-library physical proof surface without changing the serialized JSON protocol. It consumes canonical analyzed statements and the complete caller-attested source bags. An `Exact` result includes all write transitions, one live catalog and typed schema snapshot after each SQL layer, and intermediate single-source `SELECT` bags with preserved row occurrence ordinals, SQL NULL, typed output column frequencies and the complement of rejected (NOT TRUE) source occurrences. Typed schema evidence comes from the live relation catalog and preceding ALTER mutations; the read evaluator is shared with row-local INSERT SELECT.
