@@ -172,6 +172,16 @@ pub fn physical_duckdb_transaction_plan(
                         "transaction SQL step requires one DuckDB canonical statement",
                     );
                 }
+                // Constraint/default evidence declared by one statement is
+                // not yet versioned across independent transaction steps.
+                // Failing closed here prevents a later INSERT from being
+                // certified despite an earlier PRIMARY KEY or CHECK.
+                if !bundle.relation_constraints().is_empty() {
+                    return residual(
+                        index,
+                        "transaction constraint/default state requires versioned evidence",
+                    );
+                }
                 let mut execution = (**bundle).clone();
                 for schema in &current.schemas {
                     if !execution.attest_physical_source_schema(schema.clone()) {
