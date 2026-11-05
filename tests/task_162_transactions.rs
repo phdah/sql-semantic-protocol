@@ -317,13 +317,15 @@ fn declared_primary_key_remains_enforced_across_separate_transaction_steps() {
         ConstraintProvenance::new(
             ConstraintSourceKind::SqlDdl,
             "task162:native_duckdb_enforced_pk",
-        ).unwrap(),
+        )
+        .unwrap(),
         ConstraintEnforcement::Enforced,
     );
     let attested = [RelationConstraintSet::new(
         "t",
         vec![RelationConstraint::primary_key(vec!["id".to_string()], vec![evidence]).unwrap()],
-    ).unwrap()];
+    )
+    .unwrap()];
     let committed = physical_duckdb_transaction_plan(
         &[
             PhysicalTransactionStep::SqlWithEvidence {
