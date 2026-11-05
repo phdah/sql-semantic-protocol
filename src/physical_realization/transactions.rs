@@ -159,10 +159,17 @@ pub fn physical_duckdb_transaction_plan(
         let before = current.clone();
         let (action, statement) = match step {
             PhysicalTransactionStep::Sql(bundle) => {
-                if bundle.layers().len() != 1 {
+                // A layer count alone is insufficient: unsupported transaction
+                // SQL can live alongside one valid query in the same bundle.
+                // Never drop that statement or prove a non-DuckDB session law.
+                if bundle.layers().len() != 1
+                    || bundle.inputs().len() != 1
+                    || bundle.inputs()[0].statements().len() != 1
+                    || bundle.inputs()[0].dialect() != "duckdb"
+                {
                     return residual(
                         index,
-                        "transaction SQL step requires exactly one canonical statement layer",
+                        "transaction SQL step requires one DuckDB canonical statement",
                     );
                 }
                 let mut execution = (**bundle).clone();
