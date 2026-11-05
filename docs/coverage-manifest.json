@@ -294,6 +294,19 @@
       "Recheck final CI on bookkeeping-only PR head, then squash merge PR #182; TASK-85 remains open"
     ]
   },
+  "task_161_sequential_state_graph_acceptance": {
+    "owner": "TASK-161",
+    "parent": "TASK-84",
+    "status": "frozen_preimplementation_pending_verification",
+    "freeze": "docs/task-161-acceptance-freeze.json",
+    "freeze_version": 1,
+    "fixture_ids": ["84-C161-P", "84-C161-N"],
+    "parser_dialect_cells_pinned": 91,
+    "mandatory_cells_verified": false,
+    "child_signed_off": false,
+    "parent_signed_off": false,
+    "implementation_oracles": "tests/task_161_sequential_graph.rs"
+  },
   "task_160_ordered_lifecycle_acceptance": {
     "owner": "TASK-160",
     "parent": "TASK-83",
