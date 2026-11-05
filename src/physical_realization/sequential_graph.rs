@@ -31,10 +31,7 @@ impl PhysicalScriptCatalog {
             .iter()
             .zip(&self.schemas)
             .map(|(state, schema)| {
-                Some((
-                    state.relation().to_string(),
-                    state.exact_domains(schema)?,
-                ))
+                Some((state.relation().to_string(), state.exact_domains(schema)?))
             })
             .collect()
     }
@@ -120,8 +117,7 @@ fn catalog(
 ) -> Option<PhysicalScriptCatalog> {
     if states.len() != schemas.len()
         || states.iter().zip(&schemas).any(|(state, schema)| {
-            state.relation() != schema.relation()
-                || state.exact_domains(schema).is_none()
+            state.relation() != schema.relation() || state.exact_domains(schema).is_none()
         })
     {
         return None;
@@ -208,7 +204,12 @@ pub fn physical_sequential_state_graph_plan(
     let mut producers = before
         .states
         .iter()
-        .map(|state| (state.relation().to_string(), PhysicalScriptProducer::Initial))
+        .map(|state| {
+            (
+                state.relation().to_string(),
+                PhysicalScriptProducer::Initial,
+            )
+        })
         .collect::<BTreeMap<_, _>>();
     let mut writes = transitions.into_iter();
     let mut reads = reads.into_iter();
@@ -241,7 +242,9 @@ pub fn physical_sequential_state_graph_plan(
             let target = write.before().relation();
             if write.before_exists() {
                 if before.states.iter().find(|s| s.relation() == target) != Some(write.before()) {
-                    return residual("target prestate is not the preceding complete catalog version");
+                    return residual(
+                        "target prestate is not the preceding complete catalog version",
+                    );
                 }
                 if let Err(reason) = connect(
                     &mut edges,
@@ -276,7 +279,10 @@ pub fn physical_sequential_state_graph_plan(
                 return residual("missing canonical SELECT checkpoint in graph");
             };
             if read.layer_id != layer.id()
-                || before.states.iter().find(|s| s.relation() == read.source.relation())
+                || before
+                    .states
+                    .iter()
+                    .find(|s| s.relation() == read.source.relation())
                     != Some(&read.source)
             {
                 return residual("SELECT reads a different complete physical catalog version");
