@@ -88,6 +88,67 @@ fn independent_parent_lifecycle_proves_both_reads_and_intermediate_catalogs() {
         &[(LiteralValue::Number("2".into()), 1)]
     );
 
+    // Compare the protocol's typed frequencies, NULLs and inclusive
+    // interval endpoints against the independent frozen parent oracle.
+    for (read, expected) in proof
+        .reads
+        .iter()
+        .zip([&case["first_read"], &case["second_read"]])
+    {
+        assert_eq!(
+            read.source.rows().len(),
+            expected["source_count"].as_u64().unwrap() as usize
+        );
+        assert_eq!(
+            read.output.rows().len(),
+            expected["rows"].as_array().unwrap().len()
+        );
+        let domains = read.exact_domains().unwrap();
+        assert_eq!(domains.len(), 2);
+        for domain in &domains {
+            let target = &expected["typed_domains"][domain.column()];
+            assert_eq!(target["type"], "INTEGER");
+            assert_eq!(
+                domain.values().len(),
+                target["frequencies"].as_object().unwrap().len()
+            );
+            for (value, frequency) in domain.values() {
+                let key = match value {
+                    LiteralValue::Null => "NULL".to_string(),
+                    LiteralValue::Number(number) => number.clone(),
+                    other => panic!("unexpected parent INTEGER: {other:?}"),
+                };
+                assert_eq!(
+                    *frequency,
+                    target["frequencies"][&key].as_u64().unwrap()
+                );
+            }
+            let numbers = domain
+                .values()
+                .iter()
+                .filter_map(|(value, _)| match value {
+                    LiteralValue::Number(number) => Some(number.parse::<i64>().unwrap()),
+                    LiteralValue::Null => None,
+                    other => panic!("unexpected parent INTEGER: {other:?}"),
+                })
+                .collect::<Vec<_>>();
+            assert_eq!(numbers.iter().min().copied(), target["lower"].as_i64());
+            assert_eq!(numbers.iter().max().copied(), target["upper"].as_i64());
+            assert_eq!(
+                target["nullable"].as_bool().unwrap(),
+                domain.values().iter().any(|(value, _)| *value == LiteralValue::Null)
+            );
+            assert_eq!(
+                target["lower_inclusive"].as_bool().unwrap(),
+                !numbers.is_empty()
+            );
+            assert_eq!(
+                target["upper_inclusive"].as_bool().unwrap(),
+                !numbers.is_empty()
+            );
+        }
+    }
+
     let emptied = &proof.reads[1];
     assert!(emptied.source.rows().is_empty());
     assert!(emptied.output.rows().is_empty());
