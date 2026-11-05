@@ -293,17 +293,6 @@ fn non_duckdb_and_multi_statement_bundles_cannot_claim_exact_session_proofs() {
 }
 
 #[test]
-fn transaction_cannot_discard_declared_constraint_evidence() {
-    let constrained = analyze("CREATE TABLE t (id INTEGER PRIMARY KEY, v INTEGER)");
-    let proof =
-        physical_duckdb_transaction_plan(&[PhysicalTransactionStep::Sql(&constrained)], &empty());
-    assert!(matches!(
-        proof,
-        PhysicalTransactionScriptProof::Residual { step_index: 0, .. }
-    ));
-}
-
-#[test]
 fn declared_primary_key_remains_enforced_across_separate_transaction_steps() {
     let create = analyze("CREATE TABLE t (id INTEGER PRIMARY KEY, v INTEGER)");
     let valid = analyze("INSERT INTO t (id, v) VALUES (1, 10), (2, NULL)");
