@@ -233,6 +233,112 @@ fn independent_parent_lifecycle_proves_both_reads_and_intermediate_catalogs() {
     );
 }
 
+fn integer_or_null(value: &LiteralValue) -> Option<i64> {
+    match value {
+        LiteralValue::Null => None,
+        LiteralValue::Number(number) => Some(number.parse().unwrap()),
+        other => panic!("unproved physical INTEGER: {other:?}"),
+    }
+}
+
+#[test]
+fn every_parent_checkpoint_matches_native_catalog_schema_and_complete_bag() {
+    let freeze = frozen();
+    let program = freeze["cases"][0]["program"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|statement| statement.as_str().unwrap())
+        .collect::<Vec<_>>();
+    let proof = physical_ordered_lifecycle_plan(&analyze(&program), &[]);
+    let PhysicalOrderedLifecycleProof::Exact(proof) = proof else {
+        panic!("parent exact lifecycle required: {proof:?}");
+    };
+    let db = Connection::open_in_memory().unwrap();
+
+    for (index, sql) in program.iter().enumerate() {
+        // A SELECT reads the current state, but never mutates the catalog.
+        if index != 3 && index != 5 {
+            db.execute_batch(sql).unwrap();
+        }
+        let checkpoint = &proof.checkpoints[index];
+        let mut statement = db
+            .prepare(
+                "SELECT column_name, data_type FROM information_schema.columns \
+                 WHERE table_name = 'stage' ORDER BY ordinal_position",
+            )
+            .unwrap();
+        let native_columns = statement
+            .query_map([], |row| {
+                Ok((row.get::<_, String>(0)?, row.get::<_, String>(1)?))
+            })
+            .unwrap()
+            .collect::<duckdb::Result<Vec<_>>>()
+            .unwrap();
+
+        if index == 6 {
+            assert!(checkpoint.states.is_empty());
+            assert!(checkpoint.schemas.is_empty());
+            assert!(native_columns.is_empty(), "DROP removes the catalog");
+            assert!(db.prepare("SELECT * FROM stage").is_err());
+            continue;
+        }
+        assert_eq!(checkpoint.states.len(), 1);
+        assert_eq!(checkpoint.schemas.len(), 1);
+        let schema = &checkpoint.schemas[0];
+        let expected_columns = schema
+            .columns()
+            .iter()
+            .map(|column| column.name().to_string())
+            .collect::<Vec<_>>();
+        assert_eq!(
+            native_columns
+                .iter()
+                .map(|(name, _)| name.clone())
+                .collect::<Vec<_>>(),
+            expected_columns,
+            "step {index}: authoritative schema and native catalog"
+        );
+        assert!(
+            native_columns.iter().all(|(_, kind)| kind == "INTEGER"),
+            "step {index}: independent typed native schema"
+        );
+
+        let state = &checkpoint.states[0];
+        if native_columns.len() == 1 {
+            let mut stmt = db.prepare("SELECT a FROM stage").unwrap();
+            let mut actual = stmt
+                .query_map([], |row| row.get::<_, Option<i64>>(0))
+                .unwrap()
+                .collect::<duckdb::Result<Vec<_>>>()
+                .unwrap();
+            let mut expected = state
+                .rows()
+                .iter()
+                .map(|row| integer_or_null(&row.values()["a"]))
+                .collect::<Vec<_>>();
+            actual.sort();
+            expected.sort();
+            assert_eq!(actual, expected, "step {index}: physical a bag");
+        } else {
+            let mut actual = native_rows(&db, "SELECT a, b FROM stage");
+            let mut expected = state
+                .rows()
+                .iter()
+                .map(|row| {
+                    (
+                        integer_or_null(&row.values()["a"]),
+                        integer_or_null(&row.values()["b"]).unwrap(),
+                    )
+                })
+                .collect::<Vec<_>>();
+            actual.sort();
+            expected.sort();
+            assert_eq!(actual, expected, "step {index}: complete (a,b) bag");
+        }
+    }
+}
+
 #[test]
 fn independent_parent_drop_before_read_is_impossible_in_both_engines() {
     let freeze = frozen();
