@@ -295,3 +295,16 @@ fn non_duckdb_and_multi_statement_bundles_cannot_claim_exact_session_proofs() {
         PhysicalTransactionScriptProof::Residual { step_index: 0, .. }
     ));
 }
+
+#[test]
+fn transaction_cannot_discard_declared_constraint_evidence() {
+    let constrained = analyze("CREATE TABLE t (id INTEGER PRIMARY KEY, v INTEGER)");
+    let proof = physical_duckdb_transaction_plan(
+        &[PhysicalTransactionStep::Sql(&constrained)],
+        &empty(),
+    );
+    assert!(matches!(
+        proof,
+        PhysicalTransactionScriptProof::Residual { step_index: 0, .. }
+    ));
+}
