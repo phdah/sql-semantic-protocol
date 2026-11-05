@@ -6,15 +6,17 @@ use std::collections::BTreeMap;
 use duckdb::Connection;
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, dialect_from_name,
-    physical_sequential_state_graph_plan, ConfiguredSqlInput, LiteralValue,
-    PhysicalScriptProducer, PhysicalScriptSourceRole, PhysicalSequentialStateGraphProof,
-    PhysicalWriteRow, PhysicalWriteState, RelationCatalog, RelationSchema, SchemaColumn, SqlInput,
+    physical_sequential_state_graph_plan, ConfiguredSqlInput, LiteralValue, PhysicalScriptProducer,
+    PhysicalScriptSourceRole, PhysicalSequentialStateGraphProof, PhysicalWriteRow,
+    PhysicalWriteState, RelationCatalog, RelationSchema, SchemaColumn, SqlInput,
 };
 
 fn row(a: Option<i64>) -> PhysicalWriteRow {
     PhysicalWriteRow::new(BTreeMap::from([(
         "a".to_string(),
-        a.map_or(LiteralValue::Null, |value| LiteralValue::Number(value.to_string())),
+        a.map_or(LiteralValue::Null, |value| {
+            LiteralValue::Number(value.to_string())
+        }),
     )]))
     .unwrap()
 }
@@ -47,10 +49,34 @@ fn initial_attested_bag_is_read_from_initial_then_prior_write_without_inventing_
     assert_eq!(exact.nodes.len(), 3);
     assert_eq!(exact.nodes[0].before.states, vec![initial.clone()]);
     assert_eq!(exact.nodes[0].after.states, vec![initial.clone()]);
-    assert_eq!(exact.nodes[0].read.as_ref().unwrap().surviving_source_ordinals, vec![0, 2]);
-    assert_eq!(exact.nodes[0].read.as_ref().unwrap().rejected_source_ordinals, vec![1]);
-    assert_eq!(exact.nodes[1].write.as_ref().unwrap().affected_target_ordinals(), &[0, 2]);
-    assert_eq!(exact.nodes[2].after.states[0].rows(), &[row(Some(9)), row(None), row(Some(9))]);
+    assert_eq!(
+        exact.nodes[0]
+            .read
+            .as_ref()
+            .unwrap()
+            .surviving_source_ordinals,
+        vec![0, 2]
+    );
+    assert_eq!(
+        exact.nodes[0]
+            .read
+            .as_ref()
+            .unwrap()
+            .rejected_source_ordinals,
+        vec![1]
+    );
+    assert_eq!(
+        exact.nodes[1]
+            .write
+            .as_ref()
+            .unwrap()
+            .affected_target_ordinals(),
+        &[0, 2]
+    );
+    assert_eq!(
+        exact.nodes[2].after.states[0].rows(),
+        &[row(Some(9)), row(None), row(Some(9))]
+    );
     assert!(exact.edges.iter().any(|edge| {
         edge.relation == "t"
             && edge.consumer_layer_id == exact.nodes[0].layer_id
