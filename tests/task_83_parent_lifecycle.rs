@@ -402,8 +402,7 @@ fn parent_registry_preserves_child_inventories_and_original_ac_ownership() {
         assert_eq!(record["child_signed_off"], true);
         assert_eq!(record["mandatory_cells_verified"], true);
         assert!(
-            record["ci_verified"] == true
-                || record["implementation_ci_verified"] == true,
+            record["ci_verified"] == true || record["implementation_ci_verified"] == true,
             "child {index} lacks a recorded verified implementation head"
         );
         let mut strengths = [0usize; 3];
@@ -447,7 +446,9 @@ fn parent_registry_preserves_child_inventories_and_original_ac_ownership() {
                 .or_else(|| child["original_parent_ac_mapping"].as_array())
                 .unwrap();
             assert!(
-                original_ac.iter().any(|covered| covered.as_u64() == Some(ac)),
+                original_ac
+                    .iter()
+                    .any(|covered| covered.as_u64() == Some(ac)),
                 "{owner} has no original parent AC {ac} evidence"
             );
         }
