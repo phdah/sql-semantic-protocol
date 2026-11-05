@@ -6,10 +6,9 @@ use std::collections::BTreeMap;
 use serde_json::json;
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, analyze_dbt_artifacts, dialect_from_name,
-    parse_dbt_catalog, parse_dbt_manifest, physical_duckdb_transaction_plan,
-    ConfiguredSqlInput, LiteralValue, PhysicalScriptCatalog, PhysicalTransactionScriptProof,
-    PhysicalTransactionStep, PhysicalWriteRow, PhysicalWriteState, RelationCatalog,
-    RelationSchema, SchemaColumn, SqlInput,
+    parse_dbt_catalog, parse_dbt_manifest, physical_duckdb_transaction_plan, ConfiguredSqlInput,
+    LiteralValue, PhysicalScriptCatalog, PhysicalTransactionScriptProof, PhysicalTransactionStep,
+    PhysicalWriteRow, PhysicalWriteState, RelationCatalog, RelationSchema, SchemaColumn, SqlInput,
 };
 
 fn direct() -> RelationCatalog {
@@ -19,7 +18,9 @@ fn direct() -> RelationCatalog {
             SchemaColumn::from_sql_type("id", "INTEGER", "duckdb").unwrap(),
             SchemaColumn::from_sql_type("v", "INTEGER", "duckdb").unwrap(),
         ],
-    ).unwrap()]).unwrap()
+    )
+    .unwrap()])
+    .unwrap()
 }
 
 fn dbt() -> RelationCatalog {
@@ -93,15 +94,20 @@ schema:
       - name: v
         physicalType: INTEGER
 "#;
-    let parsed = parse_odcs_yaml(document, "duckdb", &RelationCatalog::new(&["t"]).unwrap()).unwrap();
+    let parsed =
+        parse_odcs_yaml(document, "duckdb", &RelationCatalog::new(&["t"]).unwrap()).unwrap();
     RelationCatalog::from_schemas(parsed.source_schemas()).unwrap()
 }
 
 fn row(id: i64, v: Option<i64>) -> PhysicalWriteRow {
     PhysicalWriteRow::new(BTreeMap::from([
         ("id".to_string(), LiteralValue::Number(id.to_string())),
-        ("v".to_string(), v.map_or(LiteralValue::Null, |x| LiteralValue::Number(x.to_string()))),
-    ])).unwrap()
+        (
+            "v".to_string(),
+            v.map_or(LiteralValue::Null, |x| LiteralValue::Number(x.to_string())),
+        ),
+    ]))
+    .unwrap()
 }
 
 fn outcome(catalog: &RelationCatalog) -> (Vec<PhysicalWriteRow>, Vec<Vec<(LiteralValue, u64)>>) {
@@ -110,7 +116,11 @@ fn outcome(catalog: &RelationCatalog) -> (Vec<PhysicalWriteRow>, Vec<Vec<(Litera
     let configured = ConfiguredSqlInput::new("task162-step", &input, "duckdb", dialect.as_ref());
     let bundle = analyze_configured_inputs_with_catalog(&[configured], catalog).unwrap();
     let initial = PhysicalScriptCatalog {
-        states: vec![PhysicalWriteState::new("t", vec![row(1, Some(10)), row(2, None), row(2, None)]).unwrap()],
+        states: vec![PhysicalWriteState::new(
+            "t",
+            vec![row(1, Some(10)), row(2, None), row(2, None)],
+        )
+        .unwrap()],
         schemas: catalog.schemas().to_vec(),
     };
     let proof = physical_duckdb_transaction_plan(
@@ -125,16 +135,37 @@ fn outcome(catalog: &RelationCatalog) -> (Vec<PhysicalWriteRow>, Vec<Vec<(Litera
         panic!("equivalent schema evidence must prove the same transaction: {proof:?}");
     };
     assert_eq!(exact.checkpoints[1].before.states[0].rows().len(), 3);
-    assert_eq!(exact.checkpoints[1].statement.as_ref().unwrap().write.as_ref().unwrap().affected().updated(), 1);
+    assert_eq!(
+        exact.checkpoints[1]
+            .statement
+            .as_ref()
+            .unwrap()
+            .write
+            .as_ref()
+            .unwrap()
+            .affected()
+            .updated(),
+        1
+    );
     let state = &exact.final_catalog.states[0];
     let domains = exact.final_catalog.exact_domains().unwrap();
-    (state.rows().to_vec(), domains[0].1.iter().map(|domain| domain.values().to_vec()).collect())
+    (
+        state.rows().to_vec(),
+        domains[0]
+            .1
+            .iter()
+            .map(|domain| domain.values().to_vec())
+            .collect(),
+    )
 }
 
 #[test]
 fn direct_and_dbt_metadata_prove_same_transaction_rows_and_domains() {
     assert_eq!(outcome(&direct()), outcome(&dbt()));
-    assert_eq!(outcome(&direct()).0, vec![row(1, Some(20)), row(2, None), row(2, None)]);
+    assert_eq!(
+        outcome(&direct()).0,
+        vec![row(1, Some(20)), row(2, None), row(2, None)]
+    );
 }
 
 #[cfg(feature = "odcs")]
