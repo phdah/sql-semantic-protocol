@@ -1,0 +1,405 @@
+{
+  "version": 2,
+  "owner": "TASK-162",
+  "parent": "TASK-84",
+  "status": "v2_frozen_parser_and_native_oracle_matrix_pending_final_signoff",
+  "fixture_ids": [
+    "84-C162-P",
+    "84-C162-N"
+  ],
+  "invariants": {
+    "source": "All SQL statements use the canonical single-layer AnalysisBundle, physical source schemas and closed-world PhysicalScriptCatalog",
+    "transaction": "One active DuckDB transaction; BEGIN snapshots the typed catalog, COMMIT retains writes, ROLLBACK restores the entire catalog including schema and duplicates",
+    "domains": "Signed integer and SQL NULL physical value frequencies provide exact inclusive point bounds; an empty bag has an exact empty domain",
+    "proof": "Exact requires source-complete canonical graph and matching full typed checkpoints; contradictory controls are Impossible; unsupported/session or engine dependent semantics are Residual",
+    "assumptions": "Single DuckDB connection with no external concurrency, identity sequences, triggers, vendor pragmas or side effects"
+  },
+  "dialects": [
+    "generic",
+    "mysql",
+    "postgresql",
+    "hive",
+    "sqlite",
+    "snowflake",
+    "redshift",
+    "mssql",
+    "clickhouse",
+    "bigquery",
+    "ansi",
+    "duckdb",
+    "databricks"
+  ],
+  "adapters": {
+    "sql": "Canonical AnalysisBundle for all SQL steps",
+    "dbt": "Same canonical semantic output when the dbt manifest carries equivalent compiled SQL and schemas; transaction commands are not inferred from model declarations",
+    "odcs": "Schema and constraint evidence only, no inferred transaction execution"
+  },
+  "cases": [
+    {
+      "id": "84-C162-P-rollback",
+      "family": "BEGIN_ROLLBACK",
+      "classification": "exact_required",
+      "sql": [
+        "CREATE TABLE t (id INTEGER, v INTEGER)",
+        "BEGIN",
+        "INSERT INTO t (id, v) VALUES (1, 10), (2, NULL), (2, NULL)",
+        "ROLLBACK"
+      ],
+      "expected": {
+        "final": [],
+        "affected_inserted": 3,
+        "rollback_restores_original_bag": true,
+        "typed_domains": {
+          "id": {
+            "empty": true
+          },
+          "v": {
+            "empty": true
+          }
+        },
+        "negative_direction": "Both positive and SQL NULL inserted occurrences absent after ROLLBACK"
+      },
+      "dialect": "duckdb",
+      "native_oracle": "Full source/checkpoint/final snapshots per statement"
+    },
+    {
+      "id": "84-C162-P-commit",
+      "family": "BEGIN_COMMIT",
+      "classification": "exact_required",
+      "sql": [
+        "CREATE TABLE t (id INTEGER, v INTEGER)",
+        "BEGIN",
+        "INSERT INTO t (id, v) VALUES (2, 20), (3, NULL)",
+        "COMMIT",
+        "SELECT id, v FROM t WHERE v >= 20"
+      ],
+      "expected": {
+        "final": [
+          {
+            "id": 2,
+            "v": 20
+          },
+          {
+            "id": 3,
+            "v": null
+          }
+        ],
+        "affected_inserted": 2,
+        "selected": [
+          {
+            "id": 2,
+            "v": 20
+          }
+        ],
+        "not_true_source_ordinals": [
+          1
+        ],
+        "typed_domains": {
+          "id": {
+            "lower": 2,
+            "upper": 3,
+            "inclusive": true
+          },
+          "v": {
+            "values": [
+              20,
+              null
+            ]
+          }
+        }
+      },
+      "dialect": "duckdb",
+      "native_oracle": "Full source/checkpoint/read/final snapshots"
+    },
+    {
+      "id": "84-C162-N-commit-without-begin",
+      "family": "INVALID_COMMIT",
+      "classification": "exact_required",
+      "sql": [
+        "COMMIT"
+      ],
+      "expected": {
+        "proof": "Impossible",
+        "runtime": "DuckDB errors on COMMIT without an active transaction"
+      },
+      "dialect": "duckdb"
+    },
+    {
+      "id": "84-C162-N-rollback-without-begin",
+      "family": "INVALID_ROLLBACK",
+      "classification": "exact_required",
+      "sql": [
+        "ROLLBACK"
+      ],
+      "expected": {
+        "proof": "Impossible",
+        "runtime": "DuckDB errors on ROLLBACK without an active transaction"
+      },
+      "dialect": "duckdb"
+    },
+    {
+      "id": "84-C162-N-nested-begin",
+      "family": "INVALID_BEGIN",
+      "classification": "exact_required",
+      "sql": [
+        "BEGIN",
+        "BEGIN"
+      ],
+      "expected": {
+        "proof": "Impossible",
+        "runtime": "DuckDB disallows nested transactions"
+      },
+      "dialect": "duckdb"
+    },
+    {
+      "id": "84-C162-N-savepoint",
+      "family": "SAVEPOINT_RELEASE_ROLLBACK_TO",
+      "classification": "conditional",
+      "sql": [
+        "BEGIN",
+        "SAVEPOINT checkpoint",
+        "ROLLBACK TO SAVEPOINT checkpoint",
+        "RELEASE SAVEPOINT checkpoint"
+      ],
+      "expected": {
+        "proof": "Residual",
+        "reason": "SAVEPOINT requires native DuckDB support and an executable oracle; no parser-only exactness"
+      },
+      "owner": "TASK-162",
+      "disposition": "blocked_pending_native_duckdb_evidence_and_owner_review",
+      "dialect": "duckdb"
+    },
+    {
+      "id": "84-C162-N-unproved-sql",
+      "family": "CANONICAL_SQL_BOUNDARY",
+      "classification": "exact_required",
+      "sql": [
+        "BEGIN",
+        "SELECT 1 / 0",
+        "ROLLBACK"
+      ],
+      "expected": {
+        "proof": "Residual",
+        "reason": "Unknown physical SQL proof cannot be promoted to Exact"
+      },
+      "dialect": "duckdb"
+    }
+  ],
+  "parent_ac_mapping": {
+    "2": [
+      "84-C162-P-rollback",
+      "84-C162-P-commit",
+      "84-C162-N-savepoint"
+    ],
+    "3": [
+      "84-C162-P-rollback",
+      "84-C162-P-commit"
+    ],
+    "4": [
+      "84-C162-N-commit-without-begin",
+      "84-C162-N-rollback-without-begin",
+      "84-C162-N-nested-begin"
+    ],
+    "5": [
+      "84-C162-P-commit",
+      "84-C162-N-unproved-sql"
+    ],
+    "6": [
+      "84-C162-P-rollback",
+      "84-C162-P-commit"
+    ]
+  },
+  "required_ci": [
+    "cargo fmt --check",
+    "cargo clippy --all-targets --all-features -- -D warnings",
+    "cargo test",
+    "cargo test --no-default-features",
+    "cargo doc --no-deps",
+    "dbt E2E and active protocol/schema snapshot checks"
+  ],
+  "signoff": {
+    "mandatory_cells_verified": false,
+    "native_oracle_verified": false,
+    "all_13_parser_dialects_verified": false,
+    "adapter_parity_verified": false,
+    "independent_review_verified": false,
+    "full_ci_verified": false
+  },
+  "v1_immutable_preimplementation_freeze": "docs/task-162-acceptance-freeze-v1.json",
+  "v2_change_justification": "Explicit parser-dialect classifications and native SQL/dbt/ODCS matrix added after the initial finite v1 family freeze; v1 retained unchanged for audit. Parser acceptance is never DuckDB execution proof.",
+  "native_engine_only": "duckdb",
+  "dialect_parser_matrix_expected": {
+    "ansi": {
+      "begin": "start_transaction",
+      "commit": "commit",
+      "commit_chain": "commit",
+      "release": "release",
+      "rollback": "rollback",
+      "rollback_to": "rollback_to",
+      "savepoint": "savepoint"
+    },
+    "bigquery": {
+      "begin": "parser_boundary",
+      "commit": "commit",
+      "commit_chain": "commit",
+      "release": "release",
+      "rollback": "rollback",
+      "rollback_to": "rollback_to",
+      "savepoint": "savepoint"
+    },
+    "clickhouse": {
+      "begin": "start_transaction",
+      "commit": "commit",
+      "commit_chain": "commit",
+      "release": "release",
+      "rollback": "rollback",
+      "rollback_to": "rollback_to",
+      "savepoint": "savepoint"
+    },
+    "databricks": {
+      "begin": "start_transaction",
+      "commit": "commit",
+      "commit_chain": "commit",
+      "release": "release",
+      "rollback": "rollback",
+      "rollback_to": "rollback_to",
+      "savepoint": "savepoint"
+    },
+    "duckdb": {
+      "begin": "start_transaction",
+      "commit": "commit",
+      "commit_chain": "commit",
+      "release": "release",
+      "rollback": "rollback",
+      "rollback_to": "rollback_to",
+      "savepoint": "savepoint"
+    },
+    "generic": {
+      "begin": "start_transaction",
+      "commit": "commit",
+      "commit_chain": "commit",
+      "release": "release",
+      "rollback": "rollback",
+      "rollback_to": "rollback_to",
+      "savepoint": "savepoint"
+    },
+    "hive": {
+      "begin": "start_transaction",
+      "commit": "commit",
+      "commit_chain": "commit",
+      "release": "release",
+      "rollback": "rollback",
+      "rollback_to": "rollback_to",
+      "savepoint": "savepoint"
+    },
+    "mssql": {
+      "begin": "start_transaction",
+      "commit": "commit",
+      "commit_chain": "commit",
+      "release": "release",
+      "rollback": "rollback",
+      "rollback_to": "rollback_to",
+      "savepoint": "savepoint"
+    },
+    "mysql": {
+      "begin": "start_transaction",
+      "commit": "commit",
+      "commit_chain": "commit",
+      "release": "release",
+      "rollback": "rollback",
+      "rollback_to": "rollback_to",
+      "savepoint": "savepoint"
+    },
+    "postgresql": {
+      "begin": "start_transaction",
+      "commit": "commit",
+      "commit_chain": "commit",
+      "release": "release",
+      "rollback": "rollback",
+      "rollback_to": "rollback_to",
+      "savepoint": "savepoint"
+    },
+    "redshift": {
+      "begin": "start_transaction",
+      "commit": "commit",
+      "commit_chain": "commit",
+      "release": "release",
+      "rollback": "rollback",
+      "rollback_to": "rollback_to",
+      "savepoint": "savepoint"
+    },
+    "snowflake": {
+      "begin": "parser_boundary",
+      "commit": "commit",
+      "commit_chain": "commit",
+      "release": "release",
+      "rollback": "rollback",
+      "rollback_to": "rollback_to",
+      "savepoint": "savepoint"
+    },
+    "sqlite": {
+      "begin": "start_transaction",
+      "commit": "commit",
+      "commit_chain": "commit",
+      "release": "release",
+      "rollback": "rollback",
+      "rollback_to": "rollback_to",
+      "savepoint": "savepoint"
+    }
+  },
+  "dialect_parser_cells": 91,
+  "dialect_parser_sql": {
+    "begin": "BEGIN TRANSACTION",
+    "commit": "COMMIT",
+    "rollback": "ROLLBACK",
+    "savepoint": "SAVEPOINT checkpoint",
+    "rollback_to": "ROLLBACK TO SAVEPOINT checkpoint",
+    "release": "RELEASE SAVEPOINT checkpoint",
+    "commit_chain": "COMMIT AND CHAIN"
+  },
+  "task_ac_mapping": {
+    "1": [
+      "docs/task-162-acceptance-freeze-v1.json",
+      "docs/task-162-acceptance-freeze.json",
+      "tests/task_162_dialect_matrix.rs"
+    ],
+    "2": [
+      "tests/task_162_transactions.rs",
+      "tests/task_162_sql_frontend.rs"
+    ],
+    "3": [
+      "tests/task_162_transactions.rs",
+      "tests/task_162_sql_frontend.rs"
+    ],
+    "4": [
+      "tests/task_162_dialect_matrix.rs",
+      "tests/task_162_adapter_parity.rs",
+      "tests/task_162_sql_frontend.rs"
+    ],
+    "5": [
+      "docs/coverage-manifest.json",
+      "docs/task-162-acceptance-audit.md"
+    ]
+  },
+  "native_oracles": {
+    "duckdb_dev_dependency": "duckdb ~1.10506.0",
+    "positive_full_bag": [
+      "tests/task_162_transactions.rs",
+      "tests/task_162_sql_frontend.rs"
+    ],
+    "negative_impossible": [
+      "tests/task_162_transactions.rs",
+      "tests/task_162_sql_frontend.rs"
+    ],
+    "savepoint_executable_boundary": "tests/task_162_sql_frontend.rs verifies the pinned DuckDB engine rejects SAVEPOINT, ROLLBACK TO SAVEPOINT and RELEASE SAVEPOINT rather than inferring execution from parser AST",
+    "adapter_parity": "tests/task_162_adapter_parity.rs proves identical typed outcomes from direct SQL/dbt/ODCS authoritative schemas where representable; adapters do not execute transactions"
+  },
+  "conditional_release_disposition": {
+    "case_id": "84-C162-N-savepoint",
+    "owner": "TASK-162",
+    "classification": "Residual",
+    "scope": "DuckDB 1.10506.0 native savepoint feature unavailable (SQL statements rejected in test); SQL parser may still parse variant in all 13 dialects",
+    "review_status": "requires owner/independent review signoff",
+    "future_followup": "Reassess only if native DuckDB and executable oracle add SAVEPOINT support"
+  }
+}
