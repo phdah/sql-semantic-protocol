@@ -2,7 +2,7 @@
   "version": 2,
   "owner": "TASK-161",
   "parent": "TASK-84",
-  "status": "v2_matrix_extended_preserving_frozen_v1",
+  "status": "v2_observed_dialect_matrix_pending_final_ci_and_review",
   "frozen_before_semantic_changes": true,
   "fixture_ids": [
     "84-C161-P",
@@ -399,7 +399,567 @@
     "parent_ac_signed_off": false
   },
   "parser_statement_cells": 351,
-  "case_dialect_expected": null,
+  "case_dialect_expected": {
+    "ansi": {
+      "84-C161-C-transaction": [
+        "canonical_unsupported",
+        "insert",
+        "canonical_unsupported"
+      ],
+      "84-C161-N-dropped-read": [
+        "definition",
+        "lifecycle",
+        "read"
+      ],
+      "84-C161-N-duplicate-column": [
+        "definition",
+        "insert",
+        "alter"
+      ],
+      "84-C161-N-unknown-producer": [
+        "read"
+      ],
+      "84-C161-P-ddl": [
+        "definition",
+        "insert",
+        "alter",
+        "read",
+        "lifecycle"
+      ],
+      "84-C161-P-dml": [
+        "definition",
+        "insert",
+        "update",
+        "read",
+        "delete",
+        "read"
+      ],
+      "84-C161-P-merge": [
+        "definition",
+        "insert",
+        "definition",
+        "insert",
+        "merge",
+        "read"
+      ]
+    },
+    "bigquery": {
+      "84-C161-C-transaction": [
+        "parser_boundary",
+        "insert",
+        "canonical_unsupported"
+      ],
+      "84-C161-N-dropped-read": [
+        "definition",
+        "lifecycle",
+        "read"
+      ],
+      "84-C161-N-duplicate-column": [
+        "definition",
+        "insert",
+        "alter"
+      ],
+      "84-C161-N-unknown-producer": [
+        "read"
+      ],
+      "84-C161-P-ddl": [
+        "definition",
+        "insert",
+        "alter",
+        "read",
+        "lifecycle"
+      ],
+      "84-C161-P-dml": [
+        "definition",
+        "insert",
+        "update",
+        "read",
+        "delete",
+        "read"
+      ],
+      "84-C161-P-merge": [
+        "definition",
+        "insert",
+        "definition",
+        "insert",
+        "merge",
+        "read"
+      ]
+    },
+    "clickhouse": {
+      "84-C161-C-transaction": [
+        "canonical_unsupported",
+        "insert",
+        "canonical_unsupported"
+      ],
+      "84-C161-N-dropped-read": [
+        "definition",
+        "lifecycle",
+        "read"
+      ],
+      "84-C161-N-duplicate-column": [
+        "definition",
+        "insert",
+        "alter"
+      ],
+      "84-C161-N-unknown-producer": [
+        "read"
+      ],
+      "84-C161-P-ddl": [
+        "definition",
+        "insert",
+        "alter",
+        "read",
+        "lifecycle"
+      ],
+      "84-C161-P-dml": [
+        "definition",
+        "insert",
+        "update",
+        "read",
+        "delete",
+        "read"
+      ],
+      "84-C161-P-merge": [
+        "definition",
+        "insert",
+        "definition",
+        "insert",
+        "merge",
+        "read"
+      ]
+    },
+    "databricks": {
+      "84-C161-C-transaction": [
+        "canonical_unsupported",
+        "insert",
+        "canonical_unsupported"
+      ],
+      "84-C161-N-dropped-read": [
+        "definition",
+        "lifecycle",
+        "read"
+      ],
+      "84-C161-N-duplicate-column": [
+        "definition",
+        "insert",
+        "alter"
+      ],
+      "84-C161-N-unknown-producer": [
+        "read"
+      ],
+      "84-C161-P-ddl": [
+        "definition",
+        "insert",
+        "alter",
+        "read",
+        "lifecycle"
+      ],
+      "84-C161-P-dml": [
+        "definition",
+        "insert",
+        "update",
+        "read",
+        "delete",
+        "read"
+      ],
+      "84-C161-P-merge": [
+        "definition",
+        "insert",
+        "definition",
+        "insert",
+        "merge",
+        "read"
+      ]
+    },
+    "duckdb": {
+      "84-C161-C-transaction": [
+        "canonical_unsupported",
+        "insert",
+        "canonical_unsupported"
+      ],
+      "84-C161-N-dropped-read": [
+        "definition",
+        "lifecycle",
+        "read"
+      ],
+      "84-C161-N-duplicate-column": [
+        "definition",
+        "insert",
+        "alter"
+      ],
+      "84-C161-N-unknown-producer": [
+        "read"
+      ],
+      "84-C161-P-ddl": [
+        "definition",
+        "insert",
+        "alter",
+        "read",
+        "lifecycle"
+      ],
+      "84-C161-P-dml": [
+        "definition",
+        "insert",
+        "update",
+        "read",
+        "delete",
+        "read"
+      ],
+      "84-C161-P-merge": [
+        "definition",
+        "insert",
+        "definition",
+        "insert",
+        "merge",
+        "read"
+      ]
+    },
+    "generic": {
+      "84-C161-C-transaction": [
+        "canonical_unsupported",
+        "insert",
+        "canonical_unsupported"
+      ],
+      "84-C161-N-dropped-read": [
+        "definition",
+        "lifecycle",
+        "read"
+      ],
+      "84-C161-N-duplicate-column": [
+        "definition",
+        "insert",
+        "alter"
+      ],
+      "84-C161-N-unknown-producer": [
+        "read"
+      ],
+      "84-C161-P-ddl": [
+        "definition",
+        "insert",
+        "alter",
+        "read",
+        "lifecycle"
+      ],
+      "84-C161-P-dml": [
+        "definition",
+        "insert",
+        "update",
+        "read",
+        "delete",
+        "read"
+      ],
+      "84-C161-P-merge": [
+        "definition",
+        "insert",
+        "definition",
+        "insert",
+        "merge",
+        "read"
+      ]
+    },
+    "hive": {
+      "84-C161-C-transaction": [
+        "canonical_unsupported",
+        "insert",
+        "canonical_unsupported"
+      ],
+      "84-C161-N-dropped-read": [
+        "definition",
+        "lifecycle",
+        "read"
+      ],
+      "84-C161-N-duplicate-column": [
+        "definition",
+        "insert",
+        "alter"
+      ],
+      "84-C161-N-unknown-producer": [
+        "read"
+      ],
+      "84-C161-P-ddl": [
+        "definition",
+        "insert",
+        "alter",
+        "read",
+        "lifecycle"
+      ],
+      "84-C161-P-dml": [
+        "definition",
+        "insert",
+        "update",
+        "read",
+        "delete",
+        "read"
+      ],
+      "84-C161-P-merge": [
+        "definition",
+        "insert",
+        "definition",
+        "insert",
+        "merge",
+        "read"
+      ]
+    },
+    "mssql": {
+      "84-C161-C-transaction": [
+        "canonical_unsupported",
+        "insert",
+        "canonical_unsupported"
+      ],
+      "84-C161-N-dropped-read": [
+        "definition",
+        "lifecycle",
+        "read"
+      ],
+      "84-C161-N-duplicate-column": [
+        "definition",
+        "insert",
+        "alter"
+      ],
+      "84-C161-N-unknown-producer": [
+        "read"
+      ],
+      "84-C161-P-ddl": [
+        "definition",
+        "insert",
+        "alter",
+        "read",
+        "lifecycle"
+      ],
+      "84-C161-P-dml": [
+        "definition",
+        "insert",
+        "update",
+        "read",
+        "delete",
+        "read"
+      ],
+      "84-C161-P-merge": [
+        "definition",
+        "insert",
+        "definition",
+        "insert",
+        "merge",
+        "read"
+      ]
+    },
+    "mysql": {
+      "84-C161-C-transaction": [
+        "canonical_unsupported",
+        "insert",
+        "canonical_unsupported"
+      ],
+      "84-C161-N-dropped-read": [
+        "definition",
+        "lifecycle",
+        "read"
+      ],
+      "84-C161-N-duplicate-column": [
+        "definition",
+        "insert",
+        "alter"
+      ],
+      "84-C161-N-unknown-producer": [
+        "read"
+      ],
+      "84-C161-P-ddl": [
+        "definition",
+        "insert",
+        "alter",
+        "read",
+        "lifecycle"
+      ],
+      "84-C161-P-dml": [
+        "definition",
+        "insert",
+        "update",
+        "read",
+        "delete",
+        "read"
+      ],
+      "84-C161-P-merge": [
+        "definition",
+        "insert",
+        "definition",
+        "insert",
+        "merge",
+        "read"
+      ]
+    },
+    "postgresql": {
+      "84-C161-C-transaction": [
+        "canonical_unsupported",
+        "insert",
+        "canonical_unsupported"
+      ],
+      "84-C161-N-dropped-read": [
+        "definition",
+        "lifecycle",
+        "read"
+      ],
+      "84-C161-N-duplicate-column": [
+        "definition",
+        "insert",
+        "alter"
+      ],
+      "84-C161-N-unknown-producer": [
+        "read"
+      ],
+      "84-C161-P-ddl": [
+        "definition",
+        "insert",
+        "alter",
+        "read",
+        "lifecycle"
+      ],
+      "84-C161-P-dml": [
+        "definition",
+        "insert",
+        "update",
+        "read",
+        "delete",
+        "read"
+      ],
+      "84-C161-P-merge": [
+        "definition",
+        "insert",
+        "definition",
+        "insert",
+        "merge",
+        "read"
+      ]
+    },
+    "redshift": {
+      "84-C161-C-transaction": [
+        "canonical_unsupported",
+        "insert",
+        "canonical_unsupported"
+      ],
+      "84-C161-N-dropped-read": [
+        "definition",
+        "lifecycle",
+        "read"
+      ],
+      "84-C161-N-duplicate-column": [
+        "definition",
+        "insert",
+        "alter"
+      ],
+      "84-C161-N-unknown-producer": [
+        "read"
+      ],
+      "84-C161-P-ddl": [
+        "definition",
+        "insert",
+        "alter",
+        "read",
+        "lifecycle"
+      ],
+      "84-C161-P-dml": [
+        "definition",
+        "insert",
+        "update",
+        "read",
+        "delete",
+        "read"
+      ],
+      "84-C161-P-merge": [
+        "definition",
+        "insert",
+        "definition",
+        "insert",
+        "merge",
+        "read"
+      ]
+    },
+    "snowflake": {
+      "84-C161-C-transaction": [
+        "parser_boundary",
+        "insert",
+        "canonical_unsupported"
+      ],
+      "84-C161-N-dropped-read": [
+        "definition",
+        "lifecycle",
+        "read"
+      ],
+      "84-C161-N-duplicate-column": [
+        "definition",
+        "insert",
+        "alter"
+      ],
+      "84-C161-N-unknown-producer": [
+        "read"
+      ],
+      "84-C161-P-ddl": [
+        "definition",
+        "insert",
+        "alter",
+        "read",
+        "lifecycle"
+      ],
+      "84-C161-P-dml": [
+        "definition",
+        "insert",
+        "update",
+        "read",
+        "delete",
+        "read"
+      ],
+      "84-C161-P-merge": [
+        "definition",
+        "insert",
+        "definition",
+        "insert",
+        "merge",
+        "read"
+      ]
+    },
+    "sqlite": {
+      "84-C161-C-transaction": [
+        "canonical_unsupported",
+        "insert",
+        "canonical_unsupported"
+      ],
+      "84-C161-N-dropped-read": [
+        "definition",
+        "lifecycle",
+        "read"
+      ],
+      "84-C161-N-duplicate-column": [
+        "definition",
+        "insert",
+        "alter"
+      ],
+      "84-C161-N-unknown-producer": [
+        "read"
+      ],
+      "84-C161-P-ddl": [
+        "definition",
+        "insert",
+        "alter",
+        "read",
+        "lifecycle"
+      ],
+      "84-C161-P-dml": [
+        "definition",
+        "insert",
+        "update",
+        "read",
+        "delete",
+        "read"
+      ],
+      "84-C161-P-merge": [
+        "definition",
+        "insert",
+        "definition",
+        "insert",
+        "merge",
+        "read"
+      ]
+    }
+  },
   "conditional_engine_owner": "TASK-162",
   "history": [
     "docs/task-161-acceptance-freeze-v1.json"
@@ -624,5 +1184,13 @@
       "84-C161-N-unknown-producer",
       "84-C161-C-transaction"
     ]
+  },
+  "dialect_observation": {
+    "source": "https://github.com/phdah/sql-semantic-protocol/actions/runs/42093617908",
+    "job_id": 127477813006,
+    "case_dialect_cells": 91,
+    "parser_statement_cells": 351,
+    "oracle": "tests/task_161_dialect_matrix.rs",
+    "boundary": "Parser/canonical statuses are not native engine execution certifications"
   }
 }
