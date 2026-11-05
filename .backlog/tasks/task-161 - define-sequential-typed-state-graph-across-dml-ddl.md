@@ -1,10 +1,10 @@
 ---
 id: TASK-161
 title: Define sequential typed state graph across DML DDL
-status: To Do
+status: In Progress
 assignee: []
 created_date: '2026-10-17'
-updated_date: '2026-10-17'
+updated_date: '2026-11-05'
 labels: []
 milestone: m-3
 dependencies:
@@ -50,3 +50,11 @@ type: feature
 ## Sequencing
 
 Next: [TASK-162](task-162%20-%20prove-duckdb-begin-commit-rollback-savepoint-transitions.md) after this child is merged.
+
+## Implementation PR (2026-11-05)
+
+- Draft PR: https://github.com/phdah/sql-semantic-protocol/pull/188
+- Frozen task-owned inventory: `docs/task-161-acceptance-freeze.json`.
+- Canonical typed before/after graph and physical producer edges: `src/physical_realization/sequential_graph.rs`.
+- Full-bag native DuckDB and negative tests: `tests/task_161_sequential_graph.rs`.
+- Keep this child In Progress until the mandatory full dialect/adapter matrix, complete CI, independent review and final task-specific AC signoff are verified. TASK-84 remains To Do; TASK-162 cannot start before this child is Done and merged.
