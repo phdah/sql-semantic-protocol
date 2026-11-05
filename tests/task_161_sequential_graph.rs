@@ -5,14 +5,17 @@ use std::collections::BTreeMap;
 
 use duckdb::Connection;
 use sql_semantic_protocol::{
-    analyze_inputs, dialect_from_name, physical_sequential_state_graph_plan,
-    LiteralValue, PhysicalScriptProducer, PhysicalScriptSourceRole,
-    PhysicalSequentialStateGraphProof, PhysicalWriteRow, PhysicalWriteState, SqlInput,
+    analyze_inputs, dialect_from_name, physical_sequential_state_graph_plan, LiteralValue,
+    PhysicalScriptProducer, PhysicalScriptSourceRole, PhysicalSequentialStateGraphProof,
+    PhysicalWriteRow, PhysicalWriteState, SqlInput,
 };
 
 fn analyze(sql: &[&str]) -> sql_semantic_protocol::AnalysisBundle {
     let parser = dialect_from_name("duckdb").unwrap();
-    let inputs = sql.iter().map(|sql| SqlInput::inline(*sql)).collect::<Vec<_>>();
+    let inputs = sql
+        .iter()
+        .map(|sql| SqlInput::inline(*sql))
+        .collect::<Vec<_>>();
     analyze_inputs(&inputs, "duckdb", parser.as_ref()).unwrap()
 }
 
@@ -44,10 +47,7 @@ fn native_rows(db: &Connection, relation: &str) -> Vec<String> {
         .unwrap();
     let result = statement
         .query_map([], |row| {
-            Ok((
-                row.get::<_, Option<i64>>(0)?,
-                row.get::<_, Option<i64>>(1)?,
-            ))
+            Ok((row.get::<_, Option<i64>>(0)?, row.get::<_, Option<i64>>(1)?))
         })
         .unwrap()
         .collect::<duckdb::Result<Vec<_>>>()
@@ -92,9 +92,18 @@ fn dml_script_links_each_closed_source_version_to_its_statement_and_rejected_row
     assert_eq!(exact.nodes[1].after.states[0].rows().len(), 3);
     assert_eq!(exact.nodes[2].before, exact.nodes[1].after);
     assert_eq!(exact.nodes[4].before, exact.nodes[3].after);
-    assert_eq!(exact.nodes[1].write.as_ref().unwrap().affected().inserted(), 3);
-    assert_eq!(exact.nodes[2].write.as_ref().unwrap().affected().updated(), 1);
-    assert_eq!(exact.nodes[4].write.as_ref().unwrap().affected().deleted(), 2);
+    assert_eq!(
+        exact.nodes[1].write.as_ref().unwrap().affected().inserted(),
+        3
+    );
+    assert_eq!(
+        exact.nodes[2].write.as_ref().unwrap().affected().updated(),
+        1
+    );
+    assert_eq!(
+        exact.nodes[4].write.as_ref().unwrap().affected().deleted(),
+        2
+    );
 
     let first_read = exact.nodes[3].read.as_ref().unwrap();
     assert_eq!(first_read.surviving_source_ordinals, vec![0]);
@@ -106,34 +115,52 @@ fn dml_script_links_each_closed_source_version_to_its_statement_and_rejected_row
     assert_eq!(exact.final_states[0].rows(), &[row(1, Some(20))]);
     let domains = exact.nodes[5].after.exact_domains().unwrap();
     assert_eq!(domains[0].0, "t");
-    assert_eq!(domains[0].1[0].values(), &[(LiteralValue::Number("1".into()), 1)]);
-    assert_eq!(domains[0].1[1].values(), &[(LiteralValue::Number("20".into()), 1)]);
+    assert_eq!(
+        domains[0].1[0].values(),
+        &[(LiteralValue::Number("1".into()), 1)]
+    );
+    assert_eq!(
+        domains[0].1[1].values(),
+        &[(LiteralValue::Number("20".into()), 1)]
+    );
 
     let find = |consumer: &str, role| {
         exact.edges.iter().find(|edge| {
             edge.consumer_layer_id == consumer && edge.relation == "t" && edge.role == role
         })
     };
-    let updated = find(&exact.nodes[2].layer_id, PhysicalScriptSourceRole::TargetPrestate)
-        .unwrap();
+    let updated = find(
+        &exact.nodes[2].layer_id,
+        PhysicalScriptSourceRole::TargetPrestate,
+    )
+    .unwrap();
     assert_eq!(
         updated.producer,
         PhysicalScriptProducer::Statement(exact.nodes[1].layer_id.clone())
     );
-    let selected = find(&exact.nodes[3].layer_id, PhysicalScriptSourceRole::ReadSource)
-        .unwrap();
+    let selected = find(
+        &exact.nodes[3].layer_id,
+        PhysicalScriptSourceRole::ReadSource,
+    )
+    .unwrap();
     assert_eq!(
         selected.producer,
         PhysicalScriptProducer::Statement(exact.nodes[2].layer_id.clone())
     );
-    let deleted = find(&exact.nodes[4].layer_id, PhysicalScriptSourceRole::TargetPrestate)
-        .unwrap();
+    let deleted = find(
+        &exact.nodes[4].layer_id,
+        PhysicalScriptSourceRole::TargetPrestate,
+    )
+    .unwrap();
     assert_eq!(
         deleted.producer,
         PhysicalScriptProducer::Statement(exact.nodes[2].layer_id.clone())
     );
-    let final_read = find(&exact.nodes[5].layer_id, PhysicalScriptSourceRole::ReadSource)
-        .unwrap();
+    let final_read = find(
+        &exact.nodes[5].layer_id,
+        PhysicalScriptSourceRole::ReadSource,
+    )
+    .unwrap();
     assert_eq!(
         final_read.producer,
         PhysicalScriptProducer::Statement(exact.nodes[4].layer_id.clone())
@@ -145,7 +172,11 @@ fn dml_script_links_each_closed_source_version_to_its_statement_and_rejected_row
             db.execute_batch(statement).unwrap();
         }
         let actual = native_rows(&db, "t");
-        assert_eq!(rows(&exact.nodes[index].after.states[0]), actual, "step {index}");
+        assert_eq!(
+            rows(&exact.nodes[index].after.states[0]),
+            actual,
+            "step {index}"
+        );
         if let Some(read) = &exact.nodes[index].read {
             let mut native = db.prepare(statement).unwrap();
             let actual = native
@@ -182,10 +213,18 @@ fn merge_uses_the_same_source_and_target_states_and_preserves_both_live_relation
     assert_eq!(exact.nodes[4].before.states.len(), 2);
     assert_eq!(exact.nodes[4].after.states.len(), 2);
     assert_eq!(exact.final_states.len(), 2);
-    let target = exact.final_states.iter().find(|state| state.relation() == "t").unwrap();
-    assert_eq!(rows(target), rows(&PhysicalWriteState::new("t", vec![row(1, Some(20)), row(2, Some(30))]).unwrap()));
+    let target = exact
+        .final_states
+        .iter()
+        .find(|state| state.relation() == "t")
+        .unwrap();
+    assert_eq!(
+        rows(target),
+        rows(&PhysicalWriteState::new("t", vec![row(1, Some(20)), row(2, Some(30))]).unwrap())
+    );
     assert!(exact.edges.iter().any(|edge| {
-        edge.consumer_layer_id == exact.nodes[4].layer_id && edge.relation == "s"
+        edge.consumer_layer_id == exact.nodes[4].layer_id
+            && edge.relation == "s"
             && edge.producer == PhysicalScriptProducer::Statement(exact.nodes[3].layer_id.clone())
     }));
     let db = Connection::open_in_memory().unwrap();
@@ -194,7 +233,13 @@ fn merge_uses_the_same_source_and_target_states_and_preserves_both_live_relation
     }
     assert_eq!(rows(target), native_rows(&db, "t"));
     assert_eq!(
-        rows(exact.final_states.iter().find(|state| state.relation() == "s").unwrap()),
+        rows(
+            exact
+                .final_states
+                .iter()
+                .find(|state| state.relation() == "s")
+                .unwrap()
+        ),
         native_rows(&db, "s")
     );
 }
@@ -213,16 +258,29 @@ fn create_alter_select_drop_has_typed_intermediate_schema_but_no_final_table() {
         panic!("expected exact DDL graph, got {proof:?}");
     };
     assert_eq!(exact.nodes[2].after.schemas[0].columns().len(), 2);
-    assert_eq!(exact.nodes[3].read.as_ref().unwrap().surviving_source_ordinals, vec![0, 1, 2]);
+    assert_eq!(
+        exact.nodes[3]
+            .read
+            .as_ref()
+            .unwrap()
+            .surviving_source_ordinals,
+        vec![0, 1, 2]
+    );
     assert!(exact.nodes[4].after.states.is_empty());
     assert!(exact.nodes[4].after.schemas.is_empty());
     assert!(exact.final_states.is_empty());
     let domains = exact.nodes[3].before.exact_domains().unwrap();
     assert_eq!(
         domains[0].1[0].values(),
-        &[(LiteralValue::Number("1".into()), 2), (LiteralValue::Null, 1)]
+        &[
+            (LiteralValue::Number("1".into()), 2),
+            (LiteralValue::Null, 1)
+        ]
     );
-    assert_eq!(domains[0].1[1].values(), &[(LiteralValue::Number("2".into()), 3)]);
+    assert_eq!(
+        domains[0].1[1].values(),
+        &[(LiteralValue::Number("2".into()), 3)]
+    );
 }
 
 #[test]
@@ -261,7 +319,9 @@ fn acceptance_scope_is_frozen_before_implementation_and_parent_signoff_remains_o
     assert_eq!(freeze["frozen_before_semantic_changes"], true);
     assert_eq!(freeze["parser_dialect_cells"], 91);
     let ids = freeze["cases"]
-        .as_array().unwrap().iter()
+        .as_array()
+        .unwrap()
+        .iter()
         .map(|case| case["id"].as_str().unwrap())
         .collect::<std::collections::BTreeSet<_>>();
     assert!(ids.contains("84-C161-P-dml"));
