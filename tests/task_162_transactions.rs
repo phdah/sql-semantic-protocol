@@ -6,8 +6,10 @@ use std::collections::BTreeMap;
 use duckdb::Connection;
 use sql_semantic_protocol::{
     analyze_inputs, dialect_from_name, physical_duckdb_transaction_plan, AnalysisBundle,
+    ConstraintEnforcement, ConstraintEvidence, ConstraintProvenance, ConstraintSourceKind,
     LiteralValue, PhysicalScriptCatalog, PhysicalTransactionAction, PhysicalTransactionScriptProof,
-    PhysicalTransactionStep, PhysicalWriteRow, PhysicalWriteState, SqlInput,
+    PhysicalTransactionStep, PhysicalWriteRow, PhysicalWriteState, RelationConstraint,
+    RelationConstraintSet, SqlInput,
 };
 
 fn analyze(sql: &str) -> AnalysisBundle {
@@ -298,9 +300,36 @@ fn declared_primary_key_remains_enforced_across_separate_transaction_steps() {
     let valid = analyze("INSERT INTO t (id, v) VALUES (1, 10), (2, NULL)");
     let conflicting = analyze("INSERT INTO t (id, v) VALUES (1, 30)");
     let initial = empty();
-    let committed = physical_duckdb_transaction_plan(
+    let unattested = physical_duckdb_transaction_plan(
         &[
             PhysicalTransactionStep::Sql(&create),
+            PhysicalTransactionStep::Begin,
+            PhysicalTransactionStep::Sql(&valid),
+            PhysicalTransactionStep::Commit,
+        ],
+        &initial,
+    );
+    assert!(matches!(
+        unattested,
+        PhysicalTransactionScriptProof::Residual { step_index: 2, .. }
+    ));
+    let evidence = ConstraintEvidence::new(
+        ConstraintProvenance::new(
+            ConstraintSourceKind::SqlDdl,
+            "task162:native_duckdb_enforced_pk",
+        ).unwrap(),
+        ConstraintEnforcement::Enforced,
+    );
+    let attested = [RelationConstraintSet::new(
+        "t",
+        vec![RelationConstraint::primary_key(vec!["id".to_string()], vec![evidence]).unwrap()],
+    ).unwrap()];
+    let committed = physical_duckdb_transaction_plan(
+        &[
+            PhysicalTransactionStep::SqlWithEvidence {
+                bundle: &create,
+                constraints: &attested,
+            },
             PhysicalTransactionStep::Begin,
             PhysicalTransactionStep::Sql(&valid),
             PhysicalTransactionStep::Commit,
@@ -319,7 +348,10 @@ fn declared_primary_key_remains_enforced_across_separate_transaction_steps() {
 
     let impossible = physical_duckdb_transaction_plan(
         &[
-            PhysicalTransactionStep::Sql(&create),
+            PhysicalTransactionStep::SqlWithEvidence {
+                bundle: &create,
+                constraints: &attested,
+            },
             PhysicalTransactionStep::Sql(&valid),
             PhysicalTransactionStep::Begin,
             PhysicalTransactionStep::Sql(&conflicting),
