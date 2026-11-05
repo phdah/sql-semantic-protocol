@@ -62,4 +62,16 @@ changed by this parent verification PR.
 
 LIKE/CLONE copying, TEMP/TRANSIENT visibility, vendor materialized-view refresh and implicit DDL transaction laws require independent versioned native evidence. TASK-157/159 own the object-specific boundaries; TASK-84/163 own transactions. These conditions must never hide a missing mandatory portable Exact case.
 
-**Outstanding gates:** all nine final PR-head CI jobs, the independent Standards/Spec parent review, an independent reviewer identity or explicit TASK-83-specific owner exception, and parent-owner approval of all six original AC. Child and TASK-82 exceptions do not transfer. Until these gates pass, TASK-83 remains In Progress with six unchecked original AC; TASK-161 stays blocked and TASK-91 is unchanged.
+**TASK-83 owner signoff (2026-11-05):** The owner approved original AC #1..#6
+and explicitly accepted a TASK-83-specific exception to the distinct GitHub
+reviewer requirement after Matt `engineering/code-review` Standards/Spec
+technical review found no blocking issues
+([PR review #5784812616](https://github.com/phdah/sql-semantic-protocol/pull/187#pullrequestreview-5784812616)).
+All nine CI jobs passed on the implementation head
+`ffdff8e636748353f267a45ddb27795641ccbd90`
+([CI run 42018342846](https://github.com/phdah/sql-semantic-protocol/actions/runs/42018342846)).
+This exception is **not** a distinct independent GitHub reviewer identity.
+The historical acceptance freeze remains unchanged; task and mutable manifest
+record signoff. Final signoff-head CI and PR merge are separate integration
+checks. Conditional vendor/session laws remain explicit; TASK-91 release
+approval remains independent.

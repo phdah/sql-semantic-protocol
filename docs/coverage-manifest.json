@@ -1,7 +1,7 @@
 {
   "task_83_parent_ddl_closure_acceptance": {
     "owner": "TASK-83",
-    "status": "in_progress",
+    "status": "done_owner_approved_exception",
     "freeze": "docs/task-83-parent-acceptance-freeze.json",
     "freeze_version": 1,
     "fixture_ids": [
@@ -26,15 +26,28 @@
     "child_cases_preserved": 42,
     "public_api_native_full_bag_oracle": "tests/task_83_parent_lifecycle.rs",
     "acceptance_audit": "docs/task-83-parent-acceptance-audit.md",
-    "original_ac_signed_off": [],
-    "parent_signed_off": false,
+    "original_ac_signed_off": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+    ],
+    "parent_signed_off": true,
     "release_approved": false,
-    "required_gates": [
-      "fresh_pr_head_ci",
-      "standards_spec_review",
-      "independent_review_or_owner_exception",
-      "parent_owner_approval"
-    ]
+    "required_gates": [],
+    "technical_parent_ac_verified": true,
+    "child_matrix_reconciliation_verified": true,
+    "native_duckdb_verified": true,
+    "child_adapter_dialect_oracles_verified": true,
+    "full_implementation_ci_verified": true,
+    "review_process_exception_approved": true,
+    "owner_exception_record": "TASK-83-specific owner approval in ChatGPT on 2026-11-05, after PR #187 technical review; not a distinct GitHub reviewer identity",
+    "owner_approved_conditional_release_boundaries": true,
+    "reviewed_implementation_head": "ffdff8e636748353f267a45ddb27795641ccbd90",
+    "reviewed_implementation_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/42018342846",
+    "technical_review": "https://github.com/phdah/sql-semantic-protocol/pull/187#pullrequestreview-5784812616"
   },
   "task_82_parent_merge_closure_acceptance": {
     "owner": "TASK-82",

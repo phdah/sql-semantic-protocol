@@ -1,7 +1,7 @@
 ---
 id: TASK-83
 title: Model complete relation-producing and destructive DDL effects
-status: In Progress
+status: Done
 assignee: []
 created_date: '2026-10-09'
 updated_date: '2026-11-05'
@@ -36,12 +36,12 @@ CREATE/REPLACE alters identities and state differently from CTAS and VIEW; dropp
 ## Acceptance Criteria
 
 <!-- AC:BEGIN -->
-- [ ] #1 Normalize CREATE [OR REPLACE] TABLE AS, VIEW, MATERIALIZED VIEW, TEMP/TEMPORARY/TRANSIENT TABLE, LIKE/CLONE where supported, and schema-qualified definitions.
-- [ ] #2 Represent DROP, TRUNCATE, ALTER TABLE ADD/DROP/RENAME/TYPE columns, RENAME TABLE/VIEW and replacement/overwrite effects on named datasets and constraints.
-- [ ] #3 Distinguish logical view definitions, materialized snapshots and physical stored tables, scoping of temporary objects, IF [NOT] EXISTS and dialect-specific DDL transaction rules.
-- [ ] #4 Expose exact before/after schema and relation existence, source lineage, data preservation/loss and read dependencies; fail explicitly on unmodeled structural changes.
-- [ ] #5 Execute statement sequences and verify relation catalogs plus data snapshots for portable DuckDB cases and dialect-specific variants.
-- [ ] #6 Add unit, cross-dialect and differential tests proportional to the feature, including feasible/impossible/NULL/duplicate/residual cases, and update API, protocol JSON schema, docs and relevant adapter paths.
+- [x] #1 Normalize CREATE [OR REPLACE] TABLE AS, VIEW, MATERIALIZED VIEW, TEMP/TEMPORARY/TRANSIENT TABLE, LIKE/CLONE where supported, and schema-qualified definitions.
+- [x] #2 Represent DROP, TRUNCATE, ALTER TABLE ADD/DROP/RENAME/TYPE columns, RENAME TABLE/VIEW and replacement/overwrite effects on named datasets and constraints.
+- [x] #3 Distinguish logical view definitions, materialized snapshots and physical stored tables, scoping of temporary objects, IF [NOT] EXISTS and dialect-specific DDL transaction rules.
+- [x] #4 Expose exact before/after schema and relation existence, source lineage, data preservation/loss and read dependencies; fail explicitly on unmodeled structural changes.
+- [x] #5 Execute statement sequences and verify relation catalogs plus data snapshots for portable DuckDB cases and dialect-specific variants.
+- [x] #6 Add unit, cross-dialect and differential tests proportional to the feature, including feasible/impossible/NULL/duplicate/residual cases, and update API, protocol JSON schema, docs and relevant adapter paths.
 <!-- AC:END -->
 
 
@@ -81,8 +81,15 @@ reconciles original AC #1..#6 against all 42 child-frozen cases, and
 freezes two new public-API/native-DuckDB lifecycle cases. See
 [tests/task_83_parent_lifecycle.rs](../../tests/task_83_parent_lifecycle.rs).
 
-**Do not sign off early:** original AC #1..#6 remain unchecked until final PR-head
-CI, technical Standards/Spec review, a distinct independent reviewer or explicit
-TASK-83-specific owner exception, and parent owner approval. Vendor/session
-laws remain typed conditional boundaries. TASK-161 stays blocked until this
-parent is Done and the PR is merged; TASK-91 remains a separate release gate.
+**Owner signoff (2026-11-05):** TASK-83 original AC #1..#6 were approved
+by the owner, who explicitly accepted a TASK-83-specific exception to the
+distinct GitHub reviewer identity requirement. Matt `engineering/code-review`
+Standards/Spec technical review found 0 blocking issues
+([PR #187 review](https://github.com/phdah/sql-semantic-protocol/pull/187#pullrequestreview-5784812616)).
+All nine implementation-head CI jobs passed at
+`ffdff8e636748353f267a45ddb27795641ccbd90`
+([run 42018342846](https://github.com/phdah/sql-semantic-protocol/actions/runs/42018342846)).
+The historical frozen parent v1 evidence stays immutable; the mutable
+coverage manifest tracks approval. Vendor/session laws stay Conditional or
+Residual. TASK-161 is unblocked only after this PR is merged to main;
+TASK-91 release approval is separate.
