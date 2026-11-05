@@ -93,6 +93,13 @@ fn dbt_catalog(relations: &[(&str, Vec<&str>)]) -> RelationCatalog {
             }),
         );
     }
+    // dbt dependencies must be represented in compiled model SQL; adding
+    // an unused source to the manifest is invalid schema evidence.
+    let compiled_sql = if relations.len() == 2 {
+        "SELECT t.id FROM t JOIN s ON t.id = s.id".to_string()
+    } else {
+        format!("SELECT {} FROM t", relations[0].1[0])
+    };
     let manifest = json!({
         "metadata":{"dbt_schema_version":"https://schemas.getdbt.com/dbt/manifest/v12.json",
                     "dbt_version":"1.11.8","adapter_type":"duckdb"},
@@ -100,7 +107,7 @@ fn dbt_catalog(relations: &[(&str, Vec<&str>)]) -> RelationCatalog {
             "unique_id":"model.task161.probe", "resource_type":"model",
             "name":"probe","relation_name":"task161_probe",
             "original_file_path":"models/probe.sql","language":"sql",
-            "raw_code":"SELECT * FROM t", "compiled_code":"SELECT * FROM t",
+            "raw_code":compiled_sql, "compiled_code":compiled_sql,
             "depends_on":{"nodes":deps}
         }},
         "sources":sources
