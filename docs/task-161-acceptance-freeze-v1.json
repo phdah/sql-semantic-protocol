@@ -1,0 +1,401 @@
+{
+  "version": 1,
+  "owner": "TASK-161",
+  "parent": "TASK-84",
+  "status": "frozen_preimplementation_pending_oracles_and_CI",
+  "frozen_before_semantic_changes": true,
+  "fixture_ids": [
+    "84-C161-P",
+    "84-C161-N"
+  ],
+  "scope": "Typed ordered state graph across canonical INSERT, UPDATE, DELETE, MERGE, CREATE/ALTER/DROP and statement-local SELECTs. No independently generated intermediate states, unsupported engine/transaction law, or inferred implicit producer.",
+  "seams": [
+    "AnalysisBundle canonical statement order and relation dependencies",
+    "physical_ordered_lifecycle_plan source-complete state and read proof",
+    "public physical_sequential_state_graph_plan typed edges, state nodes and domains"
+  ],
+  "dialects": [
+    "generic",
+    "mysql",
+    "postgresql",
+    "hive",
+    "sqlite",
+    "snowflake",
+    "redshift",
+    "mssql",
+    "clickhouse",
+    "bigquery",
+    "ansi",
+    "duckdb",
+    "databricks"
+  ],
+  "parser_dialect_cells": 91,
+  "dialect_rule": "Each of the 7 cases is checked against all 13 parser dialect identities; parser rejection is a boundary, never a supported exact claim.",
+  "adapters": {
+    "sql": "Direct canonical analyzed SQL; exact when finite typed evidence available",
+    "dbt": "Compiled SQL and manifest schema/dependencies when equivalent; do not infer execution",
+    "odcs": "Authoritative schema/constraints input only; no execution claimed"
+  },
+  "assumptions": {
+    "types": "signed INTEGER and SQL NULL; inclusive point bounds from exact complete-bag frequencies",
+    "closed_world": "Every target/source prestate is complete; zero-based source occurrences distinguish duplicates",
+    "truth": "Surviving and NOT TRUE source ordinals partition each proven read source, including SQL UNKNOWN in NOT TRUE",
+    "execution": "Statement order is source order; no implicit transactions, trigger side effects or vendor session law"
+  },
+  "cases": [
+    {
+      "id": "84-C161-P-dml",
+      "requirement": "mandatory",
+      "family": "INSERT_UPDATE_DELETE",
+      "classification": "Exact",
+      "program": [
+        "CREATE TABLE t (id INTEGER, v INTEGER)",
+        "INSERT INTO t (id, v) VALUES (1, 10), (2, NULL), (2, NULL)",
+        "UPDATE t SET v = 20 WHERE id = 1",
+        "SELECT id, v FROM t WHERE v >= 20",
+        "DELETE FROM t WHERE id = 2",
+        "SELECT id, v FROM t"
+      ],
+      "expected": {
+        "states": [
+          [],
+          [
+            {
+              "id": 1,
+              "v": 10
+            },
+            {
+              "id": 2,
+              "v": null
+            },
+            {
+              "id": 2,
+              "v": null
+            }
+          ],
+          [
+            {
+              "id": 1,
+              "v": 20
+            },
+            {
+              "id": 2,
+              "v": null
+            },
+            {
+              "id": 2,
+              "v": null
+            }
+          ],
+          [
+            {
+              "id": 1,
+              "v": 20
+            },
+            {
+              "id": 2,
+              "v": null
+            },
+            {
+              "id": 2,
+              "v": null
+            }
+          ],
+          [
+            {
+              "id": 1,
+              "v": 20
+            }
+          ],
+          [
+            {
+              "id": 1,
+              "v": 20
+            }
+          ]
+        ],
+        "reads": [
+          {
+            "surviving": [
+              0
+            ],
+            "not_true": [
+              1,
+              2
+            ],
+            "rows": [
+              {
+                "id": 1,
+                "v": 20
+              }
+            ]
+          },
+          {
+            "surviving": [
+              0
+            ],
+            "not_true": [],
+            "rows": [
+              {
+                "id": 1,
+                "v": 20
+              }
+            ]
+          }
+        ],
+        "counts": [
+          {
+            "inserted": 3
+          },
+          {
+            "updated": 1
+          },
+          {
+            "deleted": 2
+          }
+        ],
+        "terminal_domains": {
+          "id": {
+            "lower": 1,
+            "upper": 1,
+            "lower_inclusive": true,
+            "upper_inclusive": true,
+            "nulls": 0
+          },
+          "v": {
+            "lower": 20,
+            "upper": 20,
+            "lower_inclusive": true,
+            "upper_inclusive": true,
+            "nulls": 0
+          }
+        }
+      },
+      "parent_ac": [
+        1,
+        3,
+        4,
+        5,
+        6
+      ]
+    },
+    {
+      "id": "84-C161-P-merge",
+      "requirement": "mandatory",
+      "family": "MERGE",
+      "classification": "Exact",
+      "program": [
+        "CREATE TABLE t (id INTEGER, v INTEGER)",
+        "INSERT INTO t VALUES (1, 10)",
+        "CREATE TABLE s (id INTEGER, v INTEGER)",
+        "INSERT INTO s VALUES (1, 20), (2, 30)",
+        "MERGE INTO t USING s ON t.id = s.id WHEN MATCHED THEN UPDATE SET v = s.v WHEN NOT MATCHED THEN INSERT (id, v) VALUES (s.id, s.v)",
+        "SELECT id, v FROM t"
+      ],
+      "expected": {
+        "target_rows": [
+          {
+            "id": 1,
+            "v": 20
+          },
+          {
+            "id": 2,
+            "v": 30
+          }
+        ],
+        "target_before_merge": [
+          {
+            "id": 1,
+            "v": 10
+          }
+        ],
+        "source_rows": [
+          {
+            "id": 1,
+            "v": 20
+          },
+          {
+            "id": 2,
+            "v": 30
+          }
+        ],
+        "positive_source_ordinals": [
+          0,
+          1
+        ],
+        "not_true_source_ordinals": [],
+        "terminal_domains": {
+          "id": {
+            "lower": 1,
+            "upper": 2,
+            "lower_inclusive": true,
+            "upper_inclusive": true,
+            "nulls": 0
+          },
+          "v": {
+            "lower": 20,
+            "upper": 30,
+            "lower_inclusive": true,
+            "upper_inclusive": true,
+            "nulls": 0
+          }
+        }
+      },
+      "parent_ac": [
+        1,
+        3,
+        4,
+        5,
+        6
+      ]
+    },
+    {
+      "id": "84-C161-P-ddl",
+      "requirement": "mandatory",
+      "family": "DDL_read_lifecycle",
+      "classification": "Exact",
+      "program": [
+        "CREATE TABLE t (a INTEGER)",
+        "INSERT INTO t(a) VALUES (1), (NULL), (1)",
+        "ALTER TABLE t ADD COLUMN b INTEGER DEFAULT 2",
+        "SELECT a, b FROM t",
+        "DROP TABLE t"
+      ],
+      "expected": {
+        "catalog_existence": [
+          true,
+          true,
+          true,
+          true,
+          false
+        ],
+        "read_rows": [
+          {
+            "a": 1,
+            "b": 2
+          },
+          {
+            "a": null,
+            "b": 2
+          },
+          {
+            "a": 1,
+            "b": 2
+          }
+        ],
+        "final_states": [],
+        "read_surviving": [
+          0,
+          1,
+          2
+        ],
+        "read_not_true": [],
+        "typed_b": {
+          "lower": 2,
+          "upper": 2,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "nulls": 0
+        }
+      },
+      "parent_ac": [
+        1,
+        3,
+        4,
+        5,
+        6
+      ]
+    },
+    {
+      "id": "84-C161-N-duplicate-column",
+      "requirement": "mandatory",
+      "family": "DDL_impossibility",
+      "classification": "Impossible",
+      "program": [
+        "CREATE TABLE t (a INTEGER)",
+        "INSERT INTO t(a) VALUES (1)",
+        "ALTER TABLE t ADD COLUMN a INTEGER"
+      ],
+      "expected": {
+        "failure_step": 2,
+        "reason": "duplicate existing column; no fabricated poststate"
+      },
+      "parent_ac": [
+        1,
+        3,
+        5,
+        6
+      ]
+    },
+    {
+      "id": "84-C161-N-dropped-read",
+      "requirement": "mandatory",
+      "family": "source_absence",
+      "classification": "Impossible",
+      "program": [
+        "CREATE TABLE t (a INTEGER)",
+        "DROP TABLE t",
+        "SELECT a FROM t"
+      ],
+      "expected": {
+        "failure_step": 2,
+        "reason": "proven DROP invalidates read; missing source not synthetic empty relation"
+      },
+      "parent_ac": [
+        1,
+        3,
+        5,
+        6
+      ]
+    },
+    {
+      "id": "84-C161-N-unknown-producer",
+      "requirement": "mandatory",
+      "family": "unattested_source",
+      "classification": "Residual",
+      "program": [
+        "SELECT a FROM unprovided_t"
+      ],
+      "expected": {
+        "reason": "caller has not attested complete typed source; cannot conclude Impossible or Exact"
+      },
+      "parent_ac": [
+        1,
+        3,
+        4,
+        6
+      ]
+    },
+    {
+      "id": "84-C161-C-transaction",
+      "requirement": "conditional",
+      "family": "transaction_and_vendor_laws",
+      "classification": "Residual",
+      "program": [
+        "BEGIN",
+        "INSERT INTO t VALUES (1)",
+        "COMMIT"
+      ],
+      "expected": {
+        "reason": "transaction/session semantics require independently certified engine evidence",
+        "owner": "TASK-162",
+        "release_disposition": "BLOCK exact transaction certification until TASK-162; no downgrade of mandatory transactional TASK-84 parent AC"
+      },
+      "parent_ac": [
+        1,
+        3,
+        4,
+        6
+      ]
+    }
+  ],
+  "gates": {
+    "exact_state_and_edges_verified": false,
+    "per_step_native_duckdb_oracles_verified": false,
+    "all_13_dialect_classifications_verified": false,
+    "sql_dbt_odcs_parity_verified": false,
+    "fmt_clippy_test_doc_no_default_dbt_ci_verified": false,
+    "independent_review_verified": false,
+    "parent_ac_signed_off": false
+  }
+}
