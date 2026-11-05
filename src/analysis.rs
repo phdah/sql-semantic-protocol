@@ -587,6 +587,7 @@ mod star_projection;
 mod subqueries;
 mod temporal_literals;
 mod typing;
+mod transactions;
 mod writes;
 
 use aggregation::*;
