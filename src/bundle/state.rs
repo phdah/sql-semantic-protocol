@@ -55,6 +55,25 @@ impl AnalysisBundle {
         }
     }
 
+    /// Attach a previously attested live schema to an execution-only bundle.
+    ///
+    /// Transaction replay may execute a new SQL statement against a complete
+    /// state created before that statement. Conflicting metadata cannot
+    /// silently replace the authoritative physical schema.
+    pub(crate) fn attest_physical_source_schema(&mut self, schema: RelationSchema) -> bool {
+        if let Some(existing) = self
+            .source_schemas
+            .iter()
+            .find(|entry| entry.relation() == schema.relation())
+        {
+            return existing == &schema;
+        }
+        self.source_schemas.push(schema);
+        self.source_schemas
+            .sort_by(|left, right| left.relation().cmp(right.relation()));
+        true
+    }
+
     /// Rename a proved, constraint-free physical relation in the execution copy.
     /// Original SQL and external catalog evidence remain immutable.
     pub(crate) fn rename_physical_source_schema(
