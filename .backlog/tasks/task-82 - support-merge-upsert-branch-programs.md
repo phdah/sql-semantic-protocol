@@ -1,10 +1,10 @@
 ---
 id: TASK-82
 title: Prove complete MERGE and UPSERT branch/state semantics
-status: In Progress
+status: Done
 assignee: []
 created_date: '2026-10-09'
-updated_date: '2026-11-04'
+updated_date: '2026-11-05'
 labels: []
 milestone: m-3
 dependencies: 
@@ -37,12 +37,12 @@ Current MERGE only carries conditional effects and leaves match multiplicity, br
 ## Acceptance Criteria
 
 <!-- AC:BEGIN -->
-- [ ] #1 Normalize ordered WHEN MATCHED/NOT MATCHED BY TARGET/BY SOURCE clauses, UPDATE/DELETE/INSERT actions, additional predicates, ON expressions and dialect UPSERT equivalents.
-- [ ] #2 Prove complete source-target match partitions and branch precedence, repeated source matches, target uniqueness, NULL match semantics and ambiguous engine behaviors.
-- [ ] #3 Expose source and initial target construction plus exact final rows and independent rejected/nonmatching cases with conflict and idempotence outcomes.
-- [ ] #4 Cover computed assignments, UPDATE/DELETE/INSERT branch combinations, partial target constraints and multiple sequential MERGEs.
-- [ ] #5 DuckDB execute complete before/action/after snapshots, then versioned per-dialect syntax and available-engine checks; no promise of portability where semantics differ.
-- [ ] #6 Add unit, cross-dialect and differential tests proportional to the feature, including feasible/impossible/NULL/duplicate/residual cases, and update API, protocol JSON schema, docs and relevant adapter paths.
+- [x] #1 Normalize ordered WHEN MATCHED/NOT MATCHED BY TARGET/BY SOURCE clauses, UPDATE/DELETE/INSERT actions, additional predicates, ON expressions and dialect UPSERT equivalents.
+- [x] #2 Prove complete source-target match partitions and branch precedence, repeated source matches, target uniqueness, NULL match semantics and ambiguous engine behaviors.
+- [x] #3 Expose source and initial target construction plus exact final rows and independent rejected/nonmatching cases with conflict and idempotence outcomes.
+- [x] #4 Cover computed assignments, UPDATE/DELETE/INSERT branch combinations, partial target constraints and multiple sequential MERGEs.
+- [x] #5 DuckDB execute complete before/action/after snapshots, then versioned per-dialect syntax and available-engine checks; no promise of portability where semantics differ.
+- [x] #6 Add unit, cross-dialect and differential tests proportional to the feature, including feasible/impossible/NULL/duplicate/residual cases, and update API, protocol JSON schema, docs and relevant adapter paths.
 <!-- AC:END -->
 
 
@@ -108,3 +108,20 @@ remain blocked and unsigned.
   a distinct independent reviewer or explicit owner exception before Done.
 - TASK-91 is a separate release decision; vendor-native, FK/UNIQUE and
   transaction laws remain typed conditional boundaries, never Exact by default.
+
+## Parent signoff completed (2026-11-05)
+
+- Original TASK-82 AC #1..#6 signed off as **Done** against the finite parent
+  acceptance crosswalk, frozen child evidence (TASK-153..156), and four
+  independently executed parent DuckDB fixtures.
+- Final code review used Matt `engineering/code-review` Standards/Spec axes;
+  the final verified implementation head `8cf1692c2adf51bfff13517c4c17281840ab14dc`
+  passed [9/9 CI jobs](https://github.com/phdah/sql-semantic-protocol/actions/runs/41985740438).
+- Owner approval in [PR #186](https://github.com/phdah/sql-semantic-protocol/pull/186#issuecomment-6652370938)
+  grants an **explicit TASK-82-specific exception** to the separate independent
+  reviewer identity requirement. This is an owner exception, not an independent
+  review and not inherited from any child task.
+- Accepted limits remain typed Conditional/Residual, including vendor UPSERT,
+  duplicate-match winner/error laws, nullable constraints, transaction/session
+  semantics and unresolved native dialect equivalence. No v3 release approval
+  or TASK-91 signoff is implied.
