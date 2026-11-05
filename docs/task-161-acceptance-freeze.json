@@ -2,7 +2,7 @@
   "version": 2,
   "owner": "TASK-161",
   "parent": "TASK-84",
-  "status": "v2_observed_dialect_matrix_pending_final_ci_and_review",
+  "status": "v2_child_signed_off_with_disclosed_author_account_review_exception",
   "frozen_before_semantic_changes": true,
   "fixture_ids": [
     "84-C161-P",
@@ -390,13 +390,15 @@
     }
   ],
   "gates": {
-    "exact_state_and_edges_verified": false,
-    "per_step_native_duckdb_oracles_verified": false,
-    "all_13_dialect_classifications_verified": false,
-    "sql_dbt_odcs_parity_verified": false,
-    "fmt_clippy_test_doc_no_default_dbt_ci_verified": false,
+    "exact_state_and_edges_verified": true,
+    "per_step_native_duckdb_oracles_verified": true,
+    "all_13_dialect_classifications_verified": true,
+    "sql_dbt_odcs_parity_verified": true,
+    "fmt_clippy_test_doc_no_default_dbt_ci_verified": true,
     "independent_review_verified": false,
-    "parent_ac_signed_off": false
+    "parent_ac_signed_off": false,
+    "author_account_two_axis_review_verified": true,
+    "owner_directed_review_exception": true
   },
   "parser_statement_cells": 351,
   "case_dialect_expected": {
@@ -1192,5 +1194,25 @@
     "parser_statement_cells": 351,
     "oracle": "tests/task_161_dialect_matrix.rs",
     "boundary": "Parser/canonical statuses are not native engine execution certifications"
+  },
+  "closure_evidence": {
+    "implementation_head": "d14171dd247ebc3a2532dc1eed05942aa3176c61",
+    "implementation_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/42094557209",
+    "ci_jobs_successful": 9,
+    "standards_spec_review": "https://github.com/phdah/sql-semantic-protocol/pull/188#pullrequestreview-5790920674",
+    "review_provenance": "Connected PR author's two-axis review; not a separate human or independent account",
+    "review_disposition": "Owner-directed author-account review exception is explicitly documented, not claimed as a second-person independent review",
+    "mandatory_frozen_cases_verified": 6,
+    "conditional_cases_disposed": 1,
+    "dialect_case_cells_verified": 91,
+    "parser_statement_cells_verified": 351,
+    "adapter_cells_classified": 21,
+    "native_oracles": [
+      "tests/task_161_four_snapshots.rs",
+      "tests/task_161_full_oracles.rs",
+      "tests/task_161_initial_provenance.rs",
+      "tests/task_161_sequential_graph.rs"
+    ],
+    "parent_ac_signoff": false
   }
 }
