@@ -122,11 +122,7 @@ fn rollback_discards_all_duplicate_and_null_occurrences_then_commit_retains_exac
         let expected = sorted_rows(&native_rows(&db));
         let actual = sorted_rows(exact.checkpoints[index].after.states[0].rows());
         assert_eq!(actual, expected, "complete DuckDB catalog mismatch at step {index}");
-        assert_eq!(
-            exact.checkpoints[index].after.exact_domains(),
-            exact.checkpoints[index].after.exact_domains(),
-            "typed checkpoint domains remain defined"
-        );
+        assert!(exact.checkpoints[index].after.exact_domains().is_some());
     }
     assert_eq!(sorted_rows(&native_rows(&db)), sorted_rows(exact.final_catalog.states[0].rows()));
 }
