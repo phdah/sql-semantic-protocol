@@ -375,4 +375,3 @@ fn independent_parent_drop_before_read_is_impossible_in_both_engines() {
     }
     assert!(db.prepare(program[3]).is_err());
 }
-
