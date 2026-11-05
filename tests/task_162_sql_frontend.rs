@@ -220,3 +220,46 @@ fn rollback_restores_updated_deleted_and_untouched_rows_on_same_physical_bag() {
         );
     }
 }
+
+#[test]
+fn rollback_restores_constraint_catalog_and_does_not_leak_dropped_primary_key() {
+    let sql = [
+        "BEGIN",
+        "CREATE TABLE t (id INTEGER PRIMARY KEY, v INTEGER)",
+        "ROLLBACK",
+        "CREATE TABLE t (id INTEGER, v INTEGER)",
+        "INSERT INTO t (id, v) VALUES (1, 10), (1, 20)",
+    ];
+    let proof = physical_duckdb_sql_transaction_plan(&sql, &empty());
+    let PhysicalTransactionScriptProof::Exact(exact) = proof else {
+        panic!("rolled-back PK must not be inherited by new t: {proof:?}");
+    };
+    assert_eq!(exact.checkpoints[1].after_constraints.len(), 1);
+    assert!(exact.checkpoints[2].after_constraints.is_empty());
+    assert!(exact.final_constraints.is_empty());
+    assert_eq!(exact.final_catalog.states[0].rows(), &[row(1, Some(10)), row(1, Some(20))]);
+
+    let db = Connection::open_in_memory().unwrap();
+    for statement in sql {
+        db.execute_batch(statement).unwrap();
+    }
+    let native = db.prepare("SELECT id,v FROM t ORDER BY rowid").unwrap()
+        .query_map([], |r| Ok(row(r.get::<_, i64>(0)?, r.get::<_, Option<i64>>(1)?)))
+        .unwrap().collect::<duckdb::Result<Vec<_>>>().unwrap();
+    assert_eq!(sorted_rows(&native), sorted_rows(exact.final_catalog.states[0].rows()));
+}
+
+#[test]
+fn separate_step_alter_defaults_are_not_silently_lost() {
+    let sql = [
+        "CREATE TABLE t (id INTEGER)",
+        "BEGIN",
+        "ALTER TABLE t ADD COLUMN v INTEGER DEFAULT 5",
+        "COMMIT",
+        "INSERT INTO t (id) VALUES (2)",
+    ];
+    let proof = physical_duckdb_sql_transaction_plan(&sql, &empty());
+    assert!(matches!(
+        proof, PhysicalTransactionScriptProof::Residual { step_index: 2, .. }
+    ), "ALTER defaults must remain a typed residual until TASK-164: {proof:?}");
+}
