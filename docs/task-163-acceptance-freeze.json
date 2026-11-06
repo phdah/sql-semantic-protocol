@@ -1,8 +1,8 @@
 {
-  "version": 1,
+  "version": 2,
   "owner": "TASK-163",
   "parent": "TASK-84",
-  "status": "frozen_before_implementation_unverified",
+  "status": "v2_parser_evidence_registered_pending_full_signoff",
   "fixture_ids": [
     "84-C163-P",
     "84-C163-N"
@@ -292,5 +292,141 @@
       "independent review"
     ]
   },
-  "implementation_boundary": "A frozen fixture/variant is not a claim of implementation, verification or review. New cases require a new version. No native cross-vendor or cross-session exactness from parser success."
+  "implementation_boundary": "A frozen fixture/variant is not a claim of implementation, verification or review. New cases require a new version. No native cross-vendor or cross-session exactness from parser success.",
+  "dialect_parser_matrix_expected": {
+    "ansi": {
+      "begin": "start_transaction",
+      "commit_chain": "commit",
+      "create_table": "create_table",
+      "defer_constraints": "parser_boundary",
+      "drop_table": "drop",
+      "isolation_level": "start_transaction",
+      "rollback": "rollback",
+      "temporary_table": "create_table"
+    },
+    "bigquery": {
+      "begin": "parser_boundary",
+      "commit_chain": "commit",
+      "create_table": "create_table",
+      "defer_constraints": "parser_boundary",
+      "drop_table": "drop",
+      "isolation_level": "parser_boundary",
+      "rollback": "rollback",
+      "temporary_table": "create_table"
+    },
+    "clickhouse": {
+      "begin": "start_transaction",
+      "commit_chain": "commit",
+      "create_table": "create_table",
+      "defer_constraints": "parser_boundary",
+      "drop_table": "drop",
+      "isolation_level": "start_transaction",
+      "rollback": "rollback",
+      "temporary_table": "create_table"
+    },
+    "databricks": {
+      "begin": "start_transaction",
+      "commit_chain": "commit",
+      "create_table": "create_table",
+      "defer_constraints": "parser_boundary",
+      "drop_table": "drop",
+      "isolation_level": "start_transaction",
+      "rollback": "rollback",
+      "temporary_table": "create_table"
+    },
+    "duckdb": {
+      "begin": "start_transaction",
+      "commit_chain": "commit",
+      "create_table": "create_table",
+      "defer_constraints": "parser_boundary",
+      "drop_table": "drop",
+      "isolation_level": "start_transaction",
+      "rollback": "rollback",
+      "temporary_table": "create_table"
+    },
+    "generic": {
+      "begin": "start_transaction",
+      "commit_chain": "commit",
+      "create_table": "create_table",
+      "defer_constraints": "parser_boundary",
+      "drop_table": "drop",
+      "isolation_level": "start_transaction",
+      "rollback": "rollback",
+      "temporary_table": "create_table"
+    },
+    "hive": {
+      "begin": "start_transaction",
+      "commit_chain": "commit",
+      "create_table": "create_table",
+      "defer_constraints": "parser_boundary",
+      "drop_table": "drop",
+      "isolation_level": "start_transaction",
+      "rollback": "rollback",
+      "temporary_table": "create_table"
+    },
+    "mssql": {
+      "begin": "start_transaction",
+      "commit_chain": "commit",
+      "create_table": "create_table",
+      "defer_constraints": "parser_boundary",
+      "drop_table": "drop",
+      "isolation_level": "start_transaction",
+      "rollback": "rollback",
+      "temporary_table": "create_table"
+    },
+    "mysql": {
+      "begin": "start_transaction",
+      "commit_chain": "commit",
+      "create_table": "create_table",
+      "defer_constraints": "parser_boundary",
+      "drop_table": "drop",
+      "isolation_level": "start_transaction",
+      "rollback": "rollback",
+      "temporary_table": "create_table"
+    },
+    "postgresql": {
+      "begin": "start_transaction",
+      "commit_chain": "commit",
+      "create_table": "create_table",
+      "defer_constraints": "parser_boundary",
+      "drop_table": "drop",
+      "isolation_level": "start_transaction",
+      "rollback": "rollback",
+      "temporary_table": "create_table"
+    },
+    "redshift": {
+      "begin": "start_transaction",
+      "commit_chain": "commit",
+      "create_table": "create_table",
+      "defer_constraints": "parser_boundary",
+      "drop_table": "drop",
+      "isolation_level": "start_transaction",
+      "rollback": "rollback",
+      "temporary_table": "create_table"
+    },
+    "snowflake": {
+      "begin": "parser_boundary",
+      "commit_chain": "commit",
+      "create_table": "create_table",
+      "defer_constraints": "parser_boundary",
+      "drop_table": "drop",
+      "isolation_level": "parser_boundary",
+      "rollback": "rollback",
+      "temporary_table": "create_table"
+    },
+    "sqlite": {
+      "begin": "start_transaction",
+      "commit_chain": "commit",
+      "create_table": "create_table",
+      "defer_constraints": "parser_boundary",
+      "drop_table": "drop",
+      "isolation_level": "start_transaction",
+      "rollback": "rollback",
+      "temporary_table": "create_table"
+    }
+  },
+  "dialect_parser_cells": 104,
+  "parser_evidence": "CI first observed full 13x8 matrix in workflow run 42183888762 (Rust tests deliberately red until explicit snapshot frozen); sqlparser 0.58; parser success never certifies runtime transaction law",
+  "previous_freeze": "docs/task-163-acceptance-freeze-v1.json",
+  "conditional_native_scope": "Unverified temporary-table lifetime, deferred constraints, concurrent isolation and vendor implicit commit/chain are typed Residual with TASK-163 ownership; only pinned native DuckDB DDL rollback cases are exact."
 }
