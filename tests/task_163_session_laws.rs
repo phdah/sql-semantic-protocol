@@ -219,10 +219,19 @@ fn unproved_sql_and_invalid_controls_are_not_upgraded_by_context() {
         &[PhysicalTransactionSessionLaw::DuckDbTransactionalDdlRollback],
     );
     match residual {
-        PhysicalTransactionScriptProof::Residual { step_index: 1, reason } => {
+        PhysicalTransactionScriptProof::Residual {
+            step_index: 1,
+            reason,
+        } => {
             assert!(reason.contains("TASK-163"), "{reason}");
-            assert!(reason.contains("duckdb_transactional_ddl_rollback"), "{reason}");
-            assert!(reason.split(';').next().is_some_and(|part| !part.is_empty()));
+            assert!(
+                reason.contains("duckdb_transactional_ddl_rollback"),
+                "{reason}"
+            );
+            assert!(reason
+                .split(';')
+                .next()
+                .is_some_and(|part| !part.is_empty()));
         }
         other => panic!("earlier SQL uncertainty cannot be upgraded: {other:?}"),
     }
@@ -314,7 +323,10 @@ fn conditional_sql_dialect_and_engine_laws_are_never_promoted_by_parser_only() {
         &[PhysicalTransactionSessionLaw::TemporaryTableLifetime],
     );
     match temp {
-        PhysicalTransactionScriptProof::Residual { step_index: 0, reason } => {
+        PhysicalTransactionScriptProof::Residual {
+            step_index: 0,
+            reason,
+        } => {
             assert!(reason.contains("TASK-163"), "{reason}");
             assert!(reason.contains("temporary_table_lifetime"), "{reason}");
         }
