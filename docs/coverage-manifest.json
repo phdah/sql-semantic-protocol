@@ -1,4 +1,55 @@
 {
+  "task_163_transaction_session_acceptance": {
+    "owner": "TASK-163",
+    "parent": "TASK-84",
+    "status": "in_progress_unverified",
+    "freeze": "docs/task-163-acceptance-freeze.json",
+    "freeze_version": 1,
+    "fixture_ids": [
+      "84-C163-P",
+      "84-C163-N"
+    ],
+    "named_families": [
+      "DUCKDB_DDL_ROLLBACK",
+      "DUCKDB_DROP_ROLLBACK",
+      "DUCKDB_AUTOCOMMIT_CONTRAST",
+      "TEMPORARY_TABLE_LIFETIME",
+      "DEFERRED_FOREIGN_KEY",
+      "CONCURRENT_ISOLATION",
+      "VENDOR_IMPLICIT_DDL_COMMIT",
+      "VENDOR_TRANSACTION_OPTION"
+    ],
+    "exact_core_cases": 3,
+    "conditional_cases": 5,
+    "original_child_ac": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "parent_original_ac": [
+      1,
+      2,
+      3,
+      5,
+      6
+    ],
+    "native_engine": "duckdb ~1.10506.0",
+    "dialects_expected": 13,
+    "public_api_oracles": [
+      "tests/task_163_session_laws.rs"
+    ],
+    "mandatory_verified": false,
+    "all_13_parser_dialects_verified": false,
+    "adapter_parity_verified": false,
+    "native_duckdb_verified": false,
+    "full_ci_verified": false,
+    "independent_review_verified": false,
+    "parent_closed": false,
+    "release_approved": false,
+    "conditional_owner": "TASK-163"
+  },
   "task_162_transaction_acceptance": {
     "owner": "TASK-162",
     "parent": "TASK-84",
