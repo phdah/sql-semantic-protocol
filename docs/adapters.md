@@ -43,6 +43,28 @@ and accepted-values constraints. Evidence uses `external_metadata` provenance wi
 enforcement. Same-contract and explicitly supplied cross-contract foreign-key references resolve
 deterministically; missing, ambiguous, or unsupported references fail rather than being guessed.
 
+### Authoritative type evidence and absence
+
+For TASK-173, ODCS `physicalType` is the authoritative type when it can be
+normalized. A different recognized `logicalType` produces
+`odcs_data_type_disagreement`, without changing the physical type. An
+unrecognized `logicalType` alongside a valid `physicalType` produces
+`odcs_unsupported_logical_type` and retains the physical type. If the
+physical type cannot be normalized, a recognized logical type is only
+lower-authority fallback evidence (`odcs_physical_type_fallback`).
+If neither type is usable, `odcs_unresolved_data_type` and
+`odcs_incomplete_source_schema` expose the absence instead of inventing
+a warehouse type. Unsupported standalone logical types still fail explicitly.
+ODCS metadata alone does not attest runtime constraint enforcement.
+
+The frozen source/fact authority matrix, named NULL/duplicate/NOT TRUE fixture
+bags, and conditional parser/engine boundaries live in
+[the TASK-173 acceptance freeze](task-173-acceptance-freeze.json).
+Compiled model SQL and declared dependencies/tests remain manifest-owned;
+warehouse-introspected column types remain catalog-owned, with a separately
+identified manifest declaration fallback. SQL DDL is another typed evidence
+source, not proof that a schema was actually executed.
+
 ## dbt artifact adapter
 
 dbt is a first-class protocol input. The complete adapter consumes `manifest.json` and
