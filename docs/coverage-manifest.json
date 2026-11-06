@@ -15022,5 +15022,27 @@
       5
     ],
     "owner_signoff_date": "2026-11-04"
+  },
+  "task_173_metadata_authority_acceptance": {
+    "owner": "TASK-173",
+    "parent": "TASK-87",
+    "status": "in_progress",
+    "freeze": "docs/task-173-acceptance-freeze.json",
+    "freeze_version": 1,
+    "fixture_ids": [
+      "87-C173-P",
+      "87-C173-N"
+    ],
+    "mandatory_cases": 8,
+    "conditional_cases": 2,
+    "dialects_expected": 13,
+    "public_api_oracles": [
+      "tests/task_173_metadata_authority.rs"
+    ],
+    "mandatory_verified": false,
+    "full_ci_verified": false,
+    "independent_review_verified": false,
+    "parent_closed": false,
+    "release_approved": false
   }
 }
