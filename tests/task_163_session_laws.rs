@@ -230,7 +230,10 @@ fn external_catalog_without_in_script_create_does_not_certify_drop() {
         &[],
     );
     assert!(
-        matches!(proof, PhysicalTransactionScriptProof::Residual { step_index: 0, .. }),
+        matches!(
+            proof,
+            PhysicalTransactionScriptProof::Residual { step_index: 0, .. }
+        ),
         "a caller-supplied bag is not trusted CREATE provenance: {proof:?}"
     );
 }
