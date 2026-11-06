@@ -6,11 +6,11 @@ use std::collections::BTreeMap;
 use serde_json::{json, Value};
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, analyze_dbt_artifacts, analyze_inputs,
-    dialect_from_name, parse_dbt_catalog, parse_dbt_manifest, physical_ordered_lifecycle_plan,
-    to_bundle_json, analyze_dbt_manifest_with_schemas, ComposedSemantics, ConfiguredSqlInput, ConstraintEnforcement,
-    ConstraintSourceKind, DataType, DbtArtifactsError, LiteralValue, PhysicalOrderedLifecycleProof,
-    PhysicalWriteRow, PhysicalWriteState, RelationCatalog, RelationConstraint, SchemaSourceKind,
-    SqlInput, ValueDomain,
+    analyze_dbt_manifest_with_schemas, dialect_from_name, parse_dbt_catalog, parse_dbt_manifest,
+    physical_ordered_lifecycle_plan, to_bundle_json, ComposedSemantics, ConfiguredSqlInput,
+    ConstraintEnforcement, ConstraintSourceKind, DataType, DbtArtifactsError, LiteralValue,
+    PhysicalOrderedLifecycleProof, PhysicalWriteRow, PhysicalWriteState, RelationCatalog,
+    RelationConstraint, SchemaSourceKind, SqlInput, ValueDomain,
 };
 
 const FILTER: &str = "SELECT k FROM raw.orders WHERE k >= 1";
@@ -275,6 +275,68 @@ fn assert_inclusive_lower_one(domain: &ValueDomain) {
     let lower = range.lower().expect(">= 1 must retain a lower bound");
     assert!(lower.inclusive());
     assert_eq!(lower.value().value(), &LiteralValue::Number("1".into()));
+}
+
+
+#[test]
+fn task_173_freeze_exercises_every_named_case_and_dialect_cell() {
+    let freeze: Value = serde_json::from_str(include_str!("../docs/task-173-acceptance-freeze.json"))
+        .expect("frozen task acceptance contract must be valid JSON");
+    assert_eq!(freeze["version"], 2);
+    let cases = freeze["cases"].as_array().expect("frozen eight cases");
+    let dialects = freeze["dialects"].as_array().expect("thirteen dialects");
+    assert_eq!(cases.len(), 8);
+    assert_eq!(dialects.len(), 13);
+
+    let direct_sql = SqlInput::inline("CREATE TABLE raw.orders (k INTEGER)");
+    let dialect = dialect_from_name("duckdb").unwrap();
+    let ddl = analyze_inputs(&[direct_sql], "duckdb", dialect.as_ref()).unwrap();
+    let catalog = RelationCatalog::from_schemas(ddl.source_schemas()).unwrap();
+
+    let mut expected_cells = std::collections::BTreeSet::new();
+    for case in cases {
+        let id = case["id"].as_str().expect("stable case id");
+        assert!(id.starts_with("87-C173-P-") || id.starts_with("87-C173-N-"));
+        assert_eq!(case["sql"].as_str(), Some(FILTER));
+        assert_eq!(case["source_bag"], json!([1, 1, null, 0]));
+        assert_eq!(case["terminal_bag"], json!([1, 1]));
+        assert_eq!(case["positive_source_rows"], json!([0, 1]));
+        assert_eq!(case["not_true_rows"]["false"], json!([3]));
+        assert_eq!(case["not_true_rows"]["unknown"], json!([2]));
+        assert_eq!(case["typed_domain"]["selection_lower"], 1);
+        assert_eq!(case["typed_domain"]["selection_lower_inclusive"], true);
+        for dialect in dialects {
+            let dialect = dialect.as_str().expect("named dialect");
+            expected_cells.insert(format!("{id}::{dialect}"));
+        }
+    }
+    let cells = freeze["dialect_cells"].as_array().expect("explicit dialect cases");
+    assert_eq!(cells.len(), 104);
+    let mut observed = std::collections::BTreeSet::new();
+    for cell in cells {
+        let id = cell["id"].as_str().expect("stable dialect cell");
+        assert!(expected_cells.contains(id), "unexpected dialect case {id}");
+        assert!(observed.insert(id));
+        assert_eq!(cell["expected_parser"], "canonical_portable_filter");
+        assert!(cell["release_disposition"].as_str().is_some());
+        let dialect = cell["dialect"].as_str().expect("dialect name");
+        assert_inclusive_lower_one(&filtered_output_domain(&catalog, dialect));
+    }
+    assert_eq!(expected_cells, observed);
+
+    let adapter_cells = freeze["adapter_cells"].as_array().expect("adapter cells");
+    assert_eq!(adapter_cells.len(), 24);
+    let mut seen = std::collections::BTreeSet::new();
+    for cell in adapter_cells {
+        let id = cell["id"].as_str().expect("adapter id");
+        assert!(seen.insert(id));
+        let case_id = cell["case_id"].as_str().expect("case id");
+        assert!(cases.iter().any(|case| case["id"] == case_id));
+        let adapter = cell["adapter"].as_str().expect("adapter name");
+        assert!(matches!(adapter, "sql" | "dbt" | "odcs"));
+        assert!(cell["authority_evidence"].as_str().is_some());
+        assert_eq!(cell["native_execution_claim"], false);
+    }
 }
 
 #[test]
