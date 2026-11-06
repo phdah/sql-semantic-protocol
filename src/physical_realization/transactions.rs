@@ -297,10 +297,10 @@ pub fn physical_duckdb_transaction_plan(
                         certified_created.insert(write.after().relation().to_string());
                     } else if !write.after_exists() {
                         certified_created.remove(target);
-                    } else if write.after().relation() != target {
-                        if certified_created.remove(target) {
-                            certified_created.insert(write.after().relation().to_string());
-                        }
+                    } else if write.after().relation() != target
+                        && certified_created.remove(target)
+                    {
+                        certified_created.insert(write.after().relation().to_string());
                     }
                     if matches!(write.kind(), WriteKind::SchemaAlter) {
                         // ALTER can create/drop/rename default-producing columns.
