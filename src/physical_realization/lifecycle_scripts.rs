@@ -11,7 +11,7 @@ use crate::relation::{RelationSchema, SchemaColumn};
 
 use super::write_states::evaluate_ordered_read;
 use super::{
-    physical_ordered_write_state_plan, PhysicalWriteColumnDomain, PhysicalWriteRow,
+    PhysicalWriteColumnDomain, PhysicalWriteRow,
     PhysicalWriteState, PhysicalWriteStatePlan, PhysicalWriteTransition,
 };
 
@@ -204,8 +204,27 @@ pub fn physical_ordered_lifecycle_plan(
     bundle: &AnalysisBundle,
     initial_states: &[PhysicalWriteState],
 ) -> PhysicalOrderedLifecycleProof {
+    physical_ordered_lifecycle_plan_with_create_evidence(
+        bundle,
+        initial_states,
+        &BTreeSet::new(),
+    )
+}
+
+/// Interpret a source-complete script with a CREATE already proved by an
+/// earlier canonical step in the same transaction and present in the catalog.
+pub(crate) fn physical_ordered_lifecycle_plan_with_create_evidence(
+    bundle: &AnalysisBundle,
+    initial_states: &[PhysicalWriteState],
+    prior_created: &BTreeSet<String>,
+) -> PhysicalOrderedLifecycleProof {
     let (transitions, final_states) =
-        match physical_ordered_write_state_plan(bundle, initial_states) {
+        match super::write_states::physical_ordered_write_state_plan_with_creation_evidence(
+            bundle,
+            initial_states,
+            &[],
+            prior_created,
+        ) {
             PhysicalWriteStatePlan::Feasible {
                 transitions,
                 final_states,
