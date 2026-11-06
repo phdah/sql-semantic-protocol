@@ -20,16 +20,16 @@ fn classify(dialect_name: &str, sql: &str) -> &'static str {
     }
     if matches!(
         sql,
-        "BEGIN" | "COMMIT" | "ROLLBACK" | "SAVEPOINT x"
-            | "ROLLBACK TO SAVEPOINT x" | "RELEASE SAVEPOINT x"
+        "BEGIN"
+            | "COMMIT"
+            | "ROLLBACK"
+            | "SAVEPOINT x"
+            | "ROLLBACK TO SAVEPOINT x"
+            | "RELEASE SAVEPOINT x"
     ) {
         return "transaction_control_requires_native_session_evidence";
     }
-    let analyzed = match analyze_inputs(
-        &[SqlInput::inline(sql)],
-        dialect_name,
-        dialect.as_ref(),
-    ) {
+    let analyzed = match analyze_inputs(&[SqlInput::inline(sql)], dialect_name, dialect.as_ref()) {
         Ok(bundle) => bundle,
         Err(_) => return "canonical_analysis_boundary",
     };
@@ -102,8 +102,14 @@ fn task_164_all_thirteen_dialects_receive_explicit_parser_or_canonical_classific
     assert_eq!(core[5], "delete");
     assert_eq!(core[6], "read");
     let rollback = &duckdb["84-C164-P-rollback"];
-    assert_eq!(rollback[4], "transaction_control_requires_native_session_evidence");
-    assert_eq!(rollback[7], "transaction_control_requires_native_session_evidence");
+    assert_eq!(
+        rollback[4],
+        "transaction_control_requires_native_session_evidence"
+    );
+    assert_eq!(
+        rollback[7],
+        "transaction_control_requires_native_session_evidence"
+    );
     assert_eq!(freeze["native_engine"], "duckdb ~1.10506.0");
 }
 
@@ -115,5 +121,11 @@ fn parsed_vendor_transaction_syntax_does_not_change_frozen_residual_ownership() 
     assert_eq!(freeze["cases"][5]["classification"], "Residual");
     assert_eq!(freeze["cases"][6]["owner"], "TASK-163");
     assert_eq!(freeze["cases"][6]["classification"], "Residual");
-    assert_eq!(classify("duckdb", "MERGE INTO t USING s ON t.id = s.id WHEN MATCHED THEN UPDATE SET v = s.v"), "merge");
+    assert_eq!(
+        classify(
+            "duckdb",
+            "MERGE INTO t USING s ON t.id = s.id WHEN MATCHED THEN UPDATE SET v = s.v"
+        ),
+        "merge"
+    );
 }
