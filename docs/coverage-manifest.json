@@ -1,4 +1,38 @@
 {
+  "task_174_dbt_materialization_acceptance": {
+    "owner": "TASK-174",
+    "parent": "TASK-87",
+    "status": "in_progress_preimplementation_freeze",
+    "freeze": "docs/task-174-acceptance-freeze.json",
+    "freeze_version": 1,
+    "fixture_ids": [
+      "87-C174-P",
+      "87-C174-N"
+    ],
+    "mandatory_cases": 5,
+    "conditional_cases": 2,
+    "dialects_expected": 13,
+    "parser_cells": 65,
+    "adapter_cells": 20,
+    "mandatory_verified": false,
+    "independent_review_verified": false,
+    "parent_closed": false,
+    "release_approved": false,
+    "original_child_ac": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "original_parent_ac": [
+      1,
+      2,
+      3,
+      5,
+      6
+    ]
+  },
   "task_164_mixed_script_acceptance": {
     "owner": "TASK-164",
     "parent": "TASK-84",

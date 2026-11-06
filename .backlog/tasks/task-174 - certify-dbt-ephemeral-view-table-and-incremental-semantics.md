@@ -1,10 +1,10 @@
 ---
 id: TASK-174
 title: Certify dbt ephemeral view table and incremental semantics
-status: To Do
+status: In Progress
 assignee: []
 created_date: '2026-10-17'
-updated_date: '2026-10-17'
+updated_date: '2026-11-06'
 labels: []
 milestone: m-3
 dependencies:
