@@ -454,8 +454,7 @@ fn all_frozen_materialization_families_share_catalog_backed_typed_source_facts()
         assert_positive_domain(&canonical_filter_domain(&bundle));
         let json: Value = serde_json::from_str(&to_bundle_json(&bundle)).unwrap();
         assert_eq!(
-            json["producer_evidence"][0]["execution"],
-            "unattested",
+            json["producer_evidence"][0]["execution"], "unattested",
             "{fixture}: no run_results or native target attestation"
         );
         assert_eq!(json["source_schemas"][0]["source_kind"], "dbt_catalog");
@@ -471,9 +470,15 @@ fn frozen_cases_have_stable_source_and_producer_identity_without_executed_claims
     for case in cases {
         let id = case["id"].as_str().unwrap();
         assert!(seen.insert(id));
-        assert_eq!(case["oracle"]["source_ordinals"], json!([
-            "raw.orders#0", "raw.orders#1", "raw.orders#2", "raw.orders#3"
-        ]));
+        assert_eq!(
+            case["oracle"]["source_ordinals"],
+            json!([
+                "raw.orders#0",
+                "raw.orders#1",
+                "raw.orders#2",
+                "raw.orders#3"
+            ])
+        );
         assert_eq!(case["oracle"]["true"], json!([0, 1]));
         assert_eq!(case["oracle"]["false"], json!([3]));
         assert_eq!(case["oracle"]["unknown"], json!([2]));
@@ -490,9 +495,15 @@ fn frozen_cases_have_stable_source_and_producer_identity_without_executed_claims
         &[SqlInput::inline("CREATE TABLE raw.orders (k INTEGER)")],
         "duckdb",
         dialect.as_ref(),
-    ).unwrap();
+    )
+    .unwrap();
     let catalog = RelationCatalog::from_schemas(ddl.source_schemas()).unwrap();
-    let configured = [ConfiguredSqlInput::new("87-C174-P", &sql, "duckdb", dialect.as_ref())];
+    let configured = [ConfiguredSqlInput::new(
+        "87-C174-P",
+        &sql,
+        "duckdb",
+        dialect.as_ref(),
+    )];
     let bundle = analyze_configured_inputs_with_catalog(&configured, &catalog).unwrap();
     let PhysicalOrderedLifecycleProof::Exact(exact) =
         physical_ordered_lifecycle_plan(&bundle, std::slice::from_ref(&source))
@@ -525,9 +536,13 @@ fn all_twenty_adapter_cells_are_classified_and_canonical_filter_proofs_match() {
     ).unwrap();
     let physical_catalog = RelationCatalog::from_schemas(odcs.source_schemas()).unwrap();
     let raw_sql = SqlInput::inline(FILTER);
-    let direct = [ConfiguredSqlInput::new("task174-parity", &raw_sql, "duckdb", dialect.as_ref())];
-    let source_bundle =
-        analyze_configured_inputs_with_catalog(&direct, &physical_catalog).unwrap();
+    let direct = [ConfiguredSqlInput::new(
+        "task174-parity",
+        &raw_sql,
+        "duckdb",
+        dialect.as_ref(),
+    )];
+    let source_bundle = analyze_configured_inputs_with_catalog(&direct, &physical_catalog).unwrap();
     let direct_domain = canonical_filter_domain(&source_bundle);
     let mut reviewed = BTreeSet::new();
 
@@ -539,8 +554,7 @@ fn all_twenty_adapter_cells_are_classified_and_canonical_filter_proofs_match() {
         let (materialization, name) = match case {
             "87-C174-P-view" => ("view", Some("filtered")),
             "87-C174-P-table" => ("table", Some("filtered")),
-            "87-C174-P-ephemeral" | "87-C174-P-inline" =>
-                ("ephemeral", None),
+            "87-C174-P-ephemeral" | "87-C174-P-inline" => ("ephemeral", None),
             "87-C174-N-incremental" => ("incremental", Some("filtered")),
             other => panic!("unrecognized mandatory case: {other}"),
         };
@@ -548,18 +562,30 @@ fn all_twenty_adapter_cells_are_classified_and_canonical_filter_proofs_match() {
             "dbt_manifest" => {
                 let bundle = analyze(&manifest(materialization, name));
                 assert_eq!(canonical_filter_domain(&bundle), direct_domain, "{id}");
-                assert_eq!(bundle.producer_evidence()[0].execution(), ProducerExecution::Unattested);
+                assert_eq!(
+                    bundle.producer_evidence()[0].execution(),
+                    ProducerExecution::Unattested
+                );
             }
             "dbt_catalog" => {
-                let manifest = parse_dbt_manifest(&manifest(materialization, name).to_string()).unwrap();
-                let bundle = analyze_dbt_artifacts(&manifest, &catalog, "duckdb", dialect.as_ref()).unwrap();
+                let manifest =
+                    parse_dbt_manifest(&manifest(materialization, name).to_string()).unwrap();
+                let bundle =
+                    analyze_dbt_artifacts(&manifest, &catalog, "duckdb", dialect.as_ref()).unwrap();
                 assert_eq!(canonical_filter_domain(&bundle), direct_domain, "{id}");
-                assert_eq!(bundle.producer_evidence()[0].execution(), ProducerExecution::Unattested);
+                assert_eq!(
+                    bundle.producer_evidence()[0].execution(),
+                    ProducerExecution::Unattested
+                );
             }
             "direct_sql" | "odcs" => {
                 // Neither source owns dbt materialization tags; each does own the
                 // same typed filter semantics and physical source identity.
-                assert_eq!(canonical_filter_domain(&source_bundle), direct_domain, "{id}");
+                assert_eq!(
+                    canonical_filter_domain(&source_bundle),
+                    direct_domain,
+                    "{id}"
+                );
                 assert!(source_bundle.producer_evidence().is_empty(), "{id}");
             }
             other => panic!("unsupported adapter cell: {other}"),
