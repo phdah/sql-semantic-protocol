@@ -1,5 +1,34 @@
 # SQL Semantic Protocol contract
 
+## TASK-174 dbt materialization declarations and execution evidence
+
+A dbt manifest owns a model's `config.materialized` and `unique_id`. Its compiled
+SQL owns transformation semantics, but no manifest-only input proves that a
+model was executed or that an incremental target was changed. When the dbt
+adapter is used, an optional root `producer_evidence` array records one entry
+per analyzed model with stable `input_id`, optional `relation`, declared
+`materialization` (`inline`, `logical_view`, `physical_table`,
+`incremental`, or `unspecified`), `execution: unattested`,
+`inline_dependencies` (`not_applicable` or `unattested`) and
+`source_kind: dbt_manifest`.
+
+The adapter analyzes ephemeral models as anonymous SQL SELECTs, view models as
+logical definitions and table models as CTAS-shaped definitions of **intended**
+output. Incremental models use a named query-outcome surrogate, not an executed
+MERGE/INSERT claim. Synthetic CREATE definitions describe potential source-backed
+results and cannot be interpreted as observed table creation or warehouse target
+population. Do not replay a dbt model's synthetic CREATE statement as an
+executed state transition solely because it appears under `inputs`.
+Independent native-engine execution and complete source/target snapshots are
+required for such a claim. An inlined ephemeral dependency in compiled SQL
+remains `inline_dependencies: unattested`: the compiled graph is analyzed on
+its own, but manifest dependency IDs do not prove the expansion equivalence.
+
+Non-dbt inputs omit `producer_evidence`; their absence does not certify
+execution. This additive root evidence is part of the planned 3.0.0 protocol
+contract, not retroactively part of published protocol version 2.0.3.
+
+
 ## TASK-161 ordered typed statement-state graph
 
 `physical_sequential_state_graph_plan(bundle, initial_states)` constructs a Rust-library

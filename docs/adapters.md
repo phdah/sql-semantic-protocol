@@ -324,3 +324,10 @@ portable primitive literals can be certified; missing source populations,
 generated expressions, vendor coercions and string collation laws remain
 typed residuals. No consumer should infer physical feasibility from the
 presence of a parsed type or column default alone.
+
+The active root schema for this new optional field is documented in
+[the protocol contract](protocol.md). It is an additive representation for the
+planned 3.0.0 release; the published 2.0.3 consumer contract has not yet
+been updated. A sql-tdg consumer pinned to 2.0.3 cannot validate new 3.x
+JSON against its historical strict root schema; release integration belongs
+to TASK-90/91 and sql-tdg TASK-43.
