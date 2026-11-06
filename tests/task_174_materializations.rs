@@ -213,10 +213,7 @@ fn relationless_ephemeral_dependency_is_accepted_only_when_downstream_is_compile
     value["nodes"]["model.task174.consumer"]["compiled_code"] = Value::Null;
     let error = parse_dbt_manifest(&value.to_string()).unwrap_err();
     // Jinja is rejected before relation-less dependency matching can run.
-    assert!(matches!(
-        error,
-        DbtManifestError::UnsupportedModel { .. }
-    ));
+    assert!(matches!(error, DbtManifestError::UnsupportedModel { .. }));
 }
 
 #[test]
