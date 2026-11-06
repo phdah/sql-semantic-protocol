@@ -22,11 +22,23 @@ fn mandatory_and_conditional_frozen_cells_have_complete_reviewable_scope() {
     let v1: Value =
         serde_json::from_str(include_str!("../docs/task-163-acceptance-freeze-v1.json")).unwrap();
     assert_eq!(v1["version"], 1);
-    assert_eq!(freeze["version"], 2);
+    let v2: Value =
+        serde_json::from_str(include_str!("../docs/task-163-acceptance-freeze-v2.json")).unwrap();
+    assert_eq!(v2["version"], 2);
+    assert_eq!(freeze["version"], 3);
     assert_eq!(
         freeze["previous_freeze"],
-        "docs/task-163-acceptance-freeze-v1.json"
+        "docs/task-163-acceptance-freeze-v2.json"
     );
+    assert_eq!(freeze["cases"], v2["cases"]);
+    assert_eq!(
+        freeze["dialect_parser_matrix_expected"],
+        v2["dialect_parser_matrix_expected"]
+    );
+    assert_eq!(freeze["mandatory_verified"], true);
+    assert_eq!(freeze["native_duckdb_verified"], true);
+    assert_eq!(freeze["parser_matrix_verified"], true);
+    assert_eq!(freeze["adapter_parity_verified"], true);
     assert_eq!(freeze["fixture_ids"], v1["fixture_ids"]);
     assert_eq!(
         freeze["cases"], v1["cases"],
