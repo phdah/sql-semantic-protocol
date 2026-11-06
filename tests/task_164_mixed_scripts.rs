@@ -152,11 +152,16 @@ fn assert_frozen_catalog(checkpoint: &PhysicalScriptCatalog, expected: &Value, i
             sorted(&frozen_rows),
             "{name} complete frozen bag at step {index}"
         );
-        let domains = state.exact_domains(schema).expect("frozen typed checkpoint");
+        let domains = state
+            .exact_domains(schema)
+            .expect("frozen typed checkpoint");
         for domain in domains {
             let mut frequencies = BTreeMap::<String, u64>::new();
             for row in &frozen_rows {
-                let value = row.values().get(domain.column()).expect("frozen column present");
+                let value = row
+                    .values()
+                    .get(domain.column())
+                    .expect("frozen column present");
                 *frequencies.entry(format!("{value:?}")).or_default() += 1;
             }
             let actual = domain
@@ -165,7 +170,8 @@ fn assert_frozen_catalog(checkpoint: &PhysicalScriptCatalog, expected: &Value, i
                 .map(|(value, count)| (format!("{value:?}"), *count))
                 .collect::<BTreeMap<_, _>>();
             assert_eq!(
-                actual, frequencies,
+                actual,
+                frequencies,
                 "{name}.{} frequency domain at step {index}",
                 domain.column()
             );
@@ -304,7 +310,12 @@ fn assert_terminal_domains(exact: &PhysicalTransactionScriptExact, expected: &Va
             })
             .collect::<Vec<_>>();
         expected_frequencies.sort_by_key(|(value, _)| format!("{value:?}"));
-        assert_eq!(actual, expected_frequencies, "complete column {}", column.column());
+        assert_eq!(
+            actual,
+            expected_frequencies,
+            "complete column {}",
+            column.column()
+        );
     }
 }
 
@@ -733,9 +744,23 @@ fn frozen_inventory_retains_original_scope_and_explicit_unverified_signoff() {
     let v4: Value =
         serde_json::from_str(include_str!("../docs/task-164-acceptance-freeze-v4.json")).unwrap();
     assert_eq!(v4["version"], 4);
-    assert_eq!(v4["dialect_parser_matrix_expected"], freeze["dialect_parser_matrix_expected"]);
-    for (old, current) in v4["cases"].as_array().unwrap().iter().zip(freeze["cases"].as_array().unwrap()) {
-        for stable in ["id", "classification", "program", "checkpoint_catalogs", "counts"] {
+    assert_eq!(
+        v4["dialect_parser_matrix_expected"],
+        freeze["dialect_parser_matrix_expected"]
+    );
+    for (old, current) in v4["cases"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .zip(freeze["cases"].as_array().unwrap())
+    {
+        for stable in [
+            "id",
+            "classification",
+            "program",
+            "checkpoint_catalogs",
+            "counts",
+        ] {
             assert_eq!(old[stable], current[stable], "v4 frozen {stable} preserved");
         }
     }
@@ -767,8 +792,14 @@ fn frozen_inventory_retains_original_scope_and_explicit_unverified_signoff() {
         assert!(case["expected_terminal_read"]["surviving_source_ordinals"].is_array());
         assert_eq!(
             case["typed_domains"].as_object().unwrap().len(),
-            case["checkpoint_catalogs"].as_array().unwrap().last().unwrap()["t"]["columns"]
-                .as_array().unwrap().len(),
+            case["checkpoint_catalogs"]
+                .as_array()
+                .unwrap()
+                .last()
+                .unwrap()["t"]["columns"]
+                .as_array()
+                .unwrap()
+                .len(),
             "all final typed columns must carry explicit bounds and frequencies"
         );
         for (_, domain) in case["typed_domains"].as_object().unwrap() {
