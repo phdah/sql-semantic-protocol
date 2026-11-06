@@ -5,12 +5,12 @@ use std::collections::BTreeMap;
 
 use serde_json::{json, Value};
 use sql_semantic_protocol::{
-    analyze_configured_inputs_with_catalog, analyze_dbt_artifacts, analyze_inputs,
-    analyze_dbt_manifest_with_schemas, dialect_from_name, parse_dbt_catalog, parse_dbt_manifest,
-    physical_ordered_lifecycle_plan, to_bundle_json, ComposedSemantics, ConfiguredSqlInput,
-    ConstraintEnforcement, ConstraintSourceKind, DataType, DbtArtifactsError, LiteralValue,
-    PhysicalOrderedLifecycleProof, PhysicalWriteRow, PhysicalWriteState, RelationCatalog,
-    RelationConstraint, SchemaSourceKind, SqlInput, ValueDomain,
+    analyze_configured_inputs_with_catalog, analyze_dbt_artifacts,
+    analyze_dbt_manifest_with_schemas, analyze_inputs, dialect_from_name, parse_dbt_catalog,
+    parse_dbt_manifest, physical_ordered_lifecycle_plan, to_bundle_json, ComposedSemantics,
+    ConfiguredSqlInput, ConstraintEnforcement, ConstraintSourceKind, DataType, DbtArtifactsError,
+    LiteralValue, PhysicalOrderedLifecycleProof, PhysicalWriteRow, PhysicalWriteState,
+    RelationCatalog, RelationConstraint, SchemaSourceKind, SqlInput, ValueDomain,
 };
 
 const FILTER: &str = "SELECT k FROM raw.orders WHERE k >= 1";
@@ -277,11 +277,11 @@ fn assert_inclusive_lower_one(domain: &ValueDomain) {
     assert_eq!(lower.value().value(), &LiteralValue::Number("1".into()));
 }
 
-
 #[test]
 fn task_173_freeze_exercises_every_named_case_and_dialect_cell() {
-    let freeze: Value = serde_json::from_str(include_str!("../docs/task-173-acceptance-freeze.json"))
-        .expect("frozen task acceptance contract must be valid JSON");
+    let freeze: Value =
+        serde_json::from_str(include_str!("../docs/task-173-acceptance-freeze.json"))
+            .expect("frozen task acceptance contract must be valid JSON");
     assert_eq!(freeze["version"], 2);
     let cases = freeze["cases"].as_array().expect("frozen eight cases");
     let dialects = freeze["dialects"].as_array().expect("thirteen dialects");
@@ -310,13 +310,15 @@ fn task_173_freeze_exercises_every_named_case_and_dialect_cell() {
             expected_cells.insert(format!("{id}::{dialect}"));
         }
     }
-    let cells = freeze["dialect_cells"].as_array().expect("explicit dialect cases");
+    let cells = freeze["dialect_cells"]
+        .as_array()
+        .expect("explicit dialect cases");
     assert_eq!(cells.len(), 104);
     let mut observed = std::collections::BTreeSet::new();
     for cell in cells {
         let id = cell["id"].as_str().expect("stable dialect cell");
         assert!(expected_cells.contains(id), "unexpected dialect case {id}");
-        assert!(observed.insert(id));
+        assert!(observed.insert(id.to_string()));
         assert_eq!(cell["expected_parser"], "canonical_portable_filter");
         assert!(cell["release_disposition"].as_str().is_some());
         let dialect = cell["dialect"].as_str().expect("dialect name");
