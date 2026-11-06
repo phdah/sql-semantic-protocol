@@ -4,7 +4,7 @@
 
 ## Frozen scope
 
-- The original pre-semantic v1 acceptance freeze is immutable in \`docs/task-164-acceptance-freeze-v1.json\`. The archived v2 corrects only the first CREATE checkpoint's existence representation, retaining eight named cases; v3 pins all 598 parser classifications. The active `docs/task-164-acceptance-freeze.json` v4 additionally pins every Exact case's complete per-step schema and bag, mutation counts, original affected row ordinals and TRUE/NOT TRUE source ordinals; immutable v1, v2 and v3 are archived; deliberately red observation evidence is https://github.com/phdah/sql-semantic-protocol/actions/runs/42202839057.
+- The original pre-semantic v1 acceptance freeze is immutable in \`docs/task-164-acceptance-freeze-v1.json\`. The archived v2 corrects only the first CREATE checkpoint's existence representation, retaining eight named cases; v3 pins all 598 parser classifications. Archived v4 pins every Exact case's complete per-step schema and bag, mutation counts, original affected row ordinals and TRUE/NOT TRUE source ordinals. Active `docs/task-164-acceptance-freeze.json` v5 adds full typed INTEGER/NULL frequencies, inclusive value bounds for every final column and explicit per-case adapter evidence boundaries. Immutable v1 through v4 are archived; deliberately red observation evidence is https://github.com/phdah/sql-semantic-protocol/actions/runs/42202839057.
 - The six mandatory Exact/Impossible cases cover native DuckDB CREATE, two INSERTs, matched MERGE, DELETE, SELECT, repeated/idempotent MERGE, NULL/duplicate rejection, whole-script ROLLBACK and cross-SQL-unit ALTER scalar defaults, plus impossible repeated CREATE. Both conditional Residual cases are separately owned: unsupported native SAVEPOINT by TASK-162 and vendor/session DDL laws by TASK-163.
 - SQL TRUE/NOT TRUE source occurrence identities, typed INTEGER/NULL frequencies and inclusive numeric bounds, all before/after full catalogs, deterministic mutation counts and expected terminal row bags are fixed in the task-owned inventory. There is no consumer SQL reparsing or independent synthetic intermediate state.
 
@@ -19,7 +19,7 @@
 
 | Child AC | Technical evidence | Status |
 | --- | --- | --- |
-| #1 Freeze | v1, v2, v3 immutable; active v4 linked to coverage manifest with 598 parser cells and every mandatory exact checkpoint/ordinal/count | Prepared, needs review |
+| #1 Freeze | v1-v4 immutable; active v5 linked to coverage manifest with 598 parser cells, complete checkpoints, occurrence ordinals, mutation counts and full terminal value domains | Prepared, needs review |
 | #2 Canonical semantics | Complete typed transactions, ALTER default propagation, Exact/Impossible/Residual | Implemented, unverified |
 | #3 DuckDB source/checkpoint/terminal oracles | Eight-case source-complete matrix and native tests | Committed, unverified |
 | #4 Dialects and adapters | 13 parser classifications plus SQL/dbt/ODCS parity | Committed, unverified |
