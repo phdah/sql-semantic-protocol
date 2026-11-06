@@ -4,7 +4,8 @@
     "parent": "TASK-84",
     "status": "in_progress_frozen_v1_pending_native_dialect_adapter_ci_and_review",
     "freeze": "docs/task-164-acceptance-freeze.json",
-    "freeze_version": 1,
+    "freeze_version": 2,
+    "archive": "docs/task-164-acceptance-freeze-v1.json",
     "fixture_ids": [
       "84-C164-P",
       "84-C164-N"
