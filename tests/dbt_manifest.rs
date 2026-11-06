@@ -286,7 +286,25 @@ fn dbt_adapter_matches_equivalent_generic_analysis() {
     let generic = analyze_configured_inputs_with_catalog(&configured, &catalog)
         .expect("equivalent generic inputs should analyze");
 
-    assert_eq!(to_bundle_json(&adapted), to_bundle_json(&generic));
+    // dbt attaches materialization intent, which cannot exist in plain SQL.
+    // Compare the common canonical semantic contract without this adapter-only
+    // evidence, then assert its independent provenance and execution boundary.
+    let mut adapted_json: serde_json::Value =
+        serde_json::from_str(&to_bundle_json(&adapted)).unwrap();
+    let generic_json: serde_json::Value =
+        serde_json::from_str(&to_bundle_json(&generic)).unwrap();
+    let producer_evidence = adapted_json
+        .as_object_mut()
+        .unwrap()
+        .remove("producer_evidence")
+        .expect("dbt models preserve their declared producer identity");
+    assert_eq!(producer_evidence.as_array().unwrap().len(), 2);
+    assert!(producer_evidence
+        .as_array()
+        .unwrap()
+        .iter()
+        .all(|evidence| evidence["execution"] == "unattested"));
+    assert_eq!(adapted_json, generic_json);
 }
 
 #[test]
