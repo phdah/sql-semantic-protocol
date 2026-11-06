@@ -59,14 +59,18 @@ pub(super) fn bundle_to_value(bundle: &AnalysisBundle) -> Value {
     });
 
     if !bundle.producer_evidence().is_empty() {
-        value["producer_evidence"] = json!(bundle.producer_evidence().iter().map(|producer| json!({
-            "input_id": producer.input_id(),
-            "relation": producer.relation(),
-            "materialization": producer.materialization().as_str(),
-            "execution": producer.execution().as_str(),
-            "inline_dependencies": producer.inline_dependencies().as_str(),
-            "source_kind": "dbt_manifest"
-        })).collect::<Vec<_>>());
+        value["producer_evidence"] = json!(bundle
+            .producer_evidence()
+            .iter()
+            .map(|producer| json!({
+                "input_id": producer.input_id(),
+                "relation": producer.relation(),
+                "materialization": producer.materialization().as_str(),
+                "execution": producer.execution().as_str(),
+                "inline_dependencies": producer.inline_dependencies().as_str(),
+                "source_kind": "dbt_manifest"
+            }))
+            .collect::<Vec<_>>());
     }
 
     // Canonical nodes are stored only once; per-layer plans reference their identities.

@@ -17,9 +17,8 @@ use crate::constraints::{
 };
 use crate::{
     analyze_configured_inputs_with_catalog, AnalysisBundle, ConfiguredInputAnalysisError,
-    InlineDependencyEvidence, ProducerEvidence, ProducerMaterialization,
-    ConfiguredSqlInput, RelationCatalog, RelationContext, RelationSchema, SchemaColumn,
-    SchemaSourceKind, SqlInput,
+    ConfiguredSqlInput, InlineDependencyEvidence, ProducerEvidence, ProducerMaterialization,
+    RelationCatalog, RelationContext, RelationSchema, SchemaColumn, SchemaSourceKind, SqlInput,
 };
 
 /// dbt manifest schema versions accepted by the adapter.
@@ -764,8 +763,11 @@ fn model_materialization(
     let Some(config) = optional_object(object, "config", &format!("{path}.config"))? else {
         return Ok(ProducerMaterialization::Unspecified);
     };
-    let Some(value) =
-        optional_string(config, "materialized", &format!("{path}.config.materialized"))?
+    let Some(value) = optional_string(
+        config,
+        "materialized",
+        &format!("{path}.config.materialized"),
+    )?
     else {
         return Ok(ProducerMaterialization::Unspecified);
     };
@@ -776,7 +778,9 @@ fn model_materialization(
         "incremental" => Ok(ProducerMaterialization::Incremental),
         other => Err(DbtManifestError::UnsupportedModel {
             unique_id: unique_id.to_string(),
-            reason: format!("unknown dbt materialization '{other}'; no execution semantics can be inferred"),
+            reason: format!(
+                "unknown dbt materialization '{other}'; no execution semantics can be inferred"
+            ),
         }),
     }
 }
@@ -876,7 +880,9 @@ pub fn parse_dbt_manifest(json: &str) -> Result<DbtManifest, DbtManifestError> {
                 reason: "relation_name is unavailable for a non-ephemeral model".to_string(),
             });
         }
-        let compiled_sql = object.get("compiled_code").and_then(Value::as_str)
+        let compiled_sql = object
+            .get("compiled_code")
+            .and_then(Value::as_str)
             .is_some_and(|code| !code.trim().is_empty());
         let sql = model_sql(resource_id, object, &path)?;
         let dependencies = dependency_ids(object, &path)?;
@@ -888,11 +894,19 @@ pub fn parse_dbt_manifest(json: &str) -> Result<DbtManifest, DbtManifestError> {
                 });
             };
             if resource.relation_name.is_none() {
-                let inline_model = nodes.get(dependency_id).and_then(Value::as_object)
-                    .is_some_and(|node| matches!(
-                        model_materialization(dependency_id, node, &format!("$.nodes.{dependency_id}")),
-                        Ok(ProducerMaterialization::Inline)
-                    ));
+                let inline_model = nodes
+                    .get(dependency_id)
+                    .and_then(Value::as_object)
+                    .is_some_and(|node| {
+                        matches!(
+                            model_materialization(
+                                dependency_id,
+                                node,
+                                &format!("$.nodes.{dependency_id}")
+                            ),
+                            Ok(ProducerMaterialization::Inline)
+                        )
+                    });
                 if !inline_model || !compiled_sql {
                     return Err(DbtManifestError::UnsupportedDependency {
                         model_id: resource_id.clone(),
@@ -1054,14 +1068,20 @@ fn analyze_dbt_with_catalog(
             ProducerMaterialization::Inline => model.sql.trim().to_string(),
             ProducerMaterialization::PhysicalTable => format!(
                 "CREATE TABLE {} AS\n{}",
-                model.relation_name.as_deref().expect("non-ephemeral identity validated"),
+                model
+                    .relation_name
+                    .as_deref()
+                    .expect("non-ephemeral identity validated"),
                 model.sql.trim()
             ),
             ProducerMaterialization::LogicalView
             | ProducerMaterialization::Incremental
             | ProducerMaterialization::Unspecified => format!(
                 "CREATE VIEW {} AS\n{}",
-                model.relation_name.as_deref().expect("non-ephemeral identity validated"),
+                model
+                    .relation_name
+                    .as_deref()
+                    .expect("non-ephemeral identity validated"),
                 model.sql.trim()
             ),
         };
@@ -1103,21 +1123,30 @@ fn analyze_dbt_with_catalog(
         .map_err(DbtManifestError::Analysis)?;
 
     validate_declared_dependencies(manifest, &bundle)?;
-    bundle.set_producer_evidence(manifest.models.iter().map(|model| {
-        let has_inline_dependencies = model.dependencies.iter().any(|id| {
-            manifest.resources.get(id).is_some_and(|resource| resource.relation_name.is_none())
-        });
-        ProducerEvidence::declared(
-            model.unique_id.clone(),
-            model.relation_name.clone(),
-            model.materialization,
-            if has_inline_dependencies {
-                InlineDependencyEvidence::Unattested
-            } else {
-                InlineDependencyEvidence::NotApplicable
-            },
-        )
-    }).collect());
+    bundle.set_producer_evidence(
+        manifest
+            .models
+            .iter()
+            .map(|model| {
+                let has_inline_dependencies = model.dependencies.iter().any(|id| {
+                    manifest
+                        .resources
+                        .get(id)
+                        .is_some_and(|resource| resource.relation_name.is_none())
+                });
+                ProducerEvidence::declared(
+                    model.unique_id.clone(),
+                    model.relation_name.clone(),
+                    model.materialization,
+                    if has_inline_dependencies {
+                        InlineDependencyEvidence::Unattested
+                    } else {
+                        InlineDependencyEvidence::NotApplicable
+                    },
+                )
+            })
+            .collect(),
+    );
 
     let mut resolved_constraints = Vec::with_capacity(manifest.relation_constraints.len());
     for constraints in &manifest.relation_constraints {

@@ -34,7 +34,10 @@ impl AnalysisBundle {
     }
 
     /// Attach source-specific declarations at the adapter boundary, preserving stable input order.
-    pub(crate) fn set_producer_evidence(&mut self, mut evidence: Vec<crate::materialization::ProducerEvidence>) {
+    pub(crate) fn set_producer_evidence(
+        &mut self,
+        mut evidence: Vec<crate::materialization::ProducerEvidence>,
+    ) {
         evidence.sort_by(|a, b| a.input_id().cmp(b.input_id()));
         self.producer_evidence = evidence;
     }

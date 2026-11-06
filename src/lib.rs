@@ -140,7 +140,6 @@ pub use bundle::{
     UnresolvedComposedSemantics,
 };
 pub use column_sources::{ColumnValueKind, ColumnValueSource, GeneratedValueExpression};
-pub use materialization::{InlineDependencyEvidence, ProducerEvidence, ProducerExecution, ProducerMaterialization};
 pub use computed_boolean_checks::{ComputedBooleanCheckConstraint, ComputedBooleanCheckPredicate};
 pub use computed_checks::ComputedCheckConstraint;
 pub use computed_keys::ComputedKeyConstraint;
@@ -176,6 +175,9 @@ pub use join_witness::{
 pub use manifest::{
     parse_analysis_manifest, AnalysisManifest, ManifestError, ManifestInput, ManifestInputSource,
     ManifestOutputScope, ManifestRelationContext, ANALYSIS_MANIFEST_VERSION,
+};
+pub use materialization::{
+    InlineDependencyEvidence, ProducerEvidence, ProducerExecution, ProducerMaterialization,
 };
 #[cfg(feature = "odcs")]
 pub use odcs::{

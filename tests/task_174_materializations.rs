@@ -5,9 +5,9 @@ use std::collections::{BTreeMap, BTreeSet};
 
 use serde_json::{json, Value};
 use sql_semantic_protocol::{
-    analyze_configured_inputs_with_catalog, analyze_dbt_manifest_with_schemas,
-    analyze_inputs, dialect_from_name, parse_dbt_manifest, physical_ordered_lifecycle_plan,
-    select_targets, to_bundle_json, ComposedSemantics, ConfiguredSqlInput, DbtManifestError,
+    analyze_configured_inputs_with_catalog, analyze_dbt_manifest_with_schemas, analyze_inputs,
+    dialect_from_name, parse_dbt_manifest, physical_ordered_lifecycle_plan, select_targets,
+    to_bundle_json, ComposedSemantics, ConfiguredSqlInput, DbtManifestError,
     InlineDependencyEvidence, LiteralValue, PhysicalOrderedLifecycleProof, PhysicalWriteRow,
     PhysicalWriteState, ProducerExecution, ProducerMaterialization, RelationCatalog, SqlInput,
     ValueDomain,
@@ -15,8 +15,18 @@ use sql_semantic_protocol::{
 
 const FILTER: &str = "SELECT k FROM raw.orders WHERE k >= 1";
 const DIALECTS: &[&str] = &[
-    "generic", "mysql", "postgresql", "hive", "sqlite", "snowflake",
-    "redshift", "mssql", "clickhouse", "bigquery", "ansi", "duckdb",
+    "generic",
+    "mysql",
+    "postgresql",
+    "hive",
+    "sqlite",
+    "snowflake",
+    "redshift",
+    "mssql",
+    "clickhouse",
+    "bigquery",
+    "ansi",
+    "duckdb",
     "databricks",
 ];
 
@@ -97,10 +107,25 @@ fn canonical_filter_domain(bundle: &sql_semantic_protocol::AnalysisBundle) -> Va
 #[test]
 fn dbt_materialization_declares_storage_without_attesting_an_executed_write() {
     let cases = [
-        ("view", Some("filtered"), ProducerMaterialization::LogicalView, "create_view"),
-        ("table", Some("filtered"), ProducerMaterialization::PhysicalTable, "create_table"),
+        (
+            "view",
+            Some("filtered"),
+            ProducerMaterialization::LogicalView,
+            "create_view",
+        ),
+        (
+            "table",
+            Some("filtered"),
+            ProducerMaterialization::PhysicalTable,
+            "create_table",
+        ),
         ("ephemeral", None, ProducerMaterialization::Inline, ""),
-        ("incremental", Some("filtered"), ProducerMaterialization::Incremental, "create_view"),
+        (
+            "incremental",
+            Some("filtered"),
+            ProducerMaterialization::Incremental,
+            "create_view",
+        ),
     ];
     let mut canonical = None;
     for (tag, relation, kind, expected_definition) in cases {
@@ -111,7 +136,10 @@ fn dbt_materialization_declares_storage_without_attesting_an_executed_write() {
         assert_eq!(evidence.relation(), relation);
         assert_eq!(evidence.materialization(), kind);
         assert_eq!(evidence.execution(), ProducerExecution::Unattested);
-        assert_eq!(evidence.inline_dependencies(), InlineDependencyEvidence::NotApplicable);
+        assert_eq!(
+            evidence.inline_dependencies(),
+            InlineDependencyEvidence::NotApplicable
+        );
 
         let domain = canonical_filter_domain(&bundle);
         assert_positive_domain(&domain);
@@ -123,14 +151,23 @@ fn dbt_materialization_declares_storage_without_attesting_an_executed_write() {
 
         let emission: Value = serde_json::from_str(&to_bundle_json(&bundle)).unwrap();
         assert_eq!(emission["producer_evidence"][0]["execution"], "unattested");
-        assert_eq!(emission["producer_evidence"][0]["input_id"], "model.task174.filtered");
-        assert_eq!(emission["producer_evidence"][0]["relation"], json!(relation));
+        assert_eq!(
+            emission["producer_evidence"][0]["input_id"],
+            "model.task174.filtered"
+        );
+        assert_eq!(
+            emission["producer_evidence"][0]["relation"],
+            json!(relation)
+        );
         assert!(emission["producer_evidence"][0]["source_kind"] == "dbt_manifest");
         assert!(emission["graph"]["edges"].is_array());
         if !expected_definition.is_empty() {
             let definition = &emission["inputs"][0]["statements"][0];
             let serialized = definition.to_string();
-            assert!(serialized.contains(expected_definition), "{tag} should use {expected_definition}: {serialized}");
+            assert!(
+                serialized.contains(expected_definition),
+                "{tag} should use {expected_definition}: {serialized}"
+            );
         }
         if tag == "incremental" {
             assert!(!emission.to_string().contains("\"append\""));
@@ -159,10 +196,15 @@ fn relationless_ephemeral_dependency_is_accepted_only_when_downstream_is_compile
     });
     let bundle = analyze(&value);
     assert_eq!(bundle.producer_evidence().len(), 2);
-    let consumer = bundle.producer_evidence().iter()
+    let consumer = bundle
+        .producer_evidence()
+        .iter()
         .find(|e| e.input_id() == "model.task174.consumer")
         .unwrap();
-    assert_eq!(consumer.inline_dependencies(), InlineDependencyEvidence::Unattested);
+    assert_eq!(
+        consumer.inline_dependencies(),
+        InlineDependencyEvidence::Unattested
+    );
     assert_eq!(consumer.execution(), ProducerExecution::Unattested);
     let json = to_bundle_json(&bundle);
     assert!(!json.contains("create_view__dbt__cte__filtered"));
@@ -170,7 +212,10 @@ fn relationless_ephemeral_dependency_is_accepted_only_when_downstream_is_compile
 
     value["nodes"]["model.task174.consumer"]["compiled_code"] = Value::Null;
     let error = parse_dbt_manifest(&value.to_string()).unwrap_err();
-    assert!(matches!(error, DbtManifestError::UnsupportedDependency { .. }));
+    assert!(matches!(
+        error,
+        DbtManifestError::UnsupportedDependency { .. }
+    ));
 }
 
 #[test]
@@ -196,11 +241,15 @@ fn unsupported_materializations_and_missing_relations_fail_closed() {
 
 #[test]
 fn task_174_frozen_dialect_and_adapter_matrix_is_complete_and_parser_safe() {
-    let freeze: Value = serde_json::from_str(include_str!("../docs/task-174-acceptance-freeze.json")).unwrap();
+    let freeze: Value =
+        serde_json::from_str(include_str!("../docs/task-174-acceptance-freeze.json")).unwrap();
     assert_eq!(freeze["version"], 1);
     assert_eq!(freeze["dialects"].as_array().unwrap().len(), 13);
     assert_eq!(freeze["variants"].as_array().unwrap().len(), 7);
-    assert_eq!(freeze["parser_equivalence_cells"].as_array().unwrap().len(), 65);
+    assert_eq!(
+        freeze["parser_equivalence_cells"].as_array().unwrap().len(),
+        65
+    );
     assert_eq!(freeze["adapter_cells"].as_array().unwrap().len(), 20);
 
     let declared = analyze(&manifest("view", Some("filtered")));
@@ -209,7 +258,12 @@ fn task_174_frozen_dialect_and_adapter_matrix_is_complete_and_parser_safe() {
     for dialect_name in DIALECTS {
         let dialect = dialect_from_name(dialect_name).expect("public dialect");
         let input = SqlInput::inline(FILTER);
-        let configured = [ConfiguredSqlInput::new("task174-sql", &input, dialect_name, dialect.as_ref())];
+        let configured = [ConfiguredSqlInput::new(
+            "task174-sql",
+            &input,
+            dialect_name,
+            dialect.as_ref(),
+        )];
         let bundle = analyze_configured_inputs_with_catalog(&configured, &catalog).unwrap();
         assert_positive_domain(&canonical_filter_domain(&bundle));
         checked.insert((*dialect_name).to_string());
@@ -227,10 +281,20 @@ fn task_174_frozen_dialect_and_adapter_matrix_is_complete_and_parser_safe() {
 #[test]
 fn complete_source_oracle_proves_positive_false_unknown_and_duplicate_rows() {
     let dialect = dialect_from_name("duckdb").unwrap();
-    let ddl = analyze_inputs(&[SqlInput::inline("CREATE TABLE raw.orders(k INTEGER)")], "duckdb", dialect.as_ref()).unwrap();
+    let ddl = analyze_inputs(
+        &[SqlInput::inline("CREATE TABLE raw.orders(k INTEGER)")],
+        "duckdb",
+        dialect.as_ref(),
+    )
+    .unwrap();
     let catalog = RelationCatalog::from_schemas(ddl.source_schemas()).unwrap();
     let input = SqlInput::inline(FILTER);
-    let configured = [ConfiguredSqlInput::new("filter", &input, "duckdb", dialect.as_ref())];
+    let configured = [ConfiguredSqlInput::new(
+        "filter",
+        &input,
+        "duckdb",
+        dialect.as_ref(),
+    )];
     let direct = analyze_configured_inputs_with_catalog(&configured, &catalog).unwrap();
     assert_positive_domain(&canonical_filter_domain(&direct));
     let source = source_bag();
@@ -239,25 +303,35 @@ fn complete_source_oracle_proves_positive_false_unknown_and_duplicate_rows() {
         other => panic!("complete bag must prove exact filtering, got {other:?}"),
     };
     assert_eq!(proof.final_states, vec![source]);
-    let [read] = proof.reads.as_slice() else { panic!("one terminal read expected"); };
+    let [read] = proof.reads.as_slice() else {
+        panic!("one terminal read expected");
+    };
     assert_eq!(read.output.rows(), &[row(Some(1)), row(Some(1))]);
     assert_eq!(read.surviving_source_ordinals, vec![0, 1]);
     assert_eq!(read.rejected_source_ordinals, vec![2, 3]);
 
     let connection = duckdb::Connection::open_in_memory().unwrap();
-    connection.execute_batch(
-        "CREATE SCHEMA raw;
+    connection
+        .execute_batch(
+            "CREATE SCHEMA raw;
          CREATE TABLE raw.orders(k INTEGER);
          INSERT INTO raw.orders VALUES (1), (1), (NULL), (0);
          CREATE VIEW filtered_view AS SELECT k FROM raw.orders WHERE k >= 1;
-         CREATE TABLE filtered_table AS SELECT k FROM raw.orders WHERE k >= 1;"
-    ).unwrap();
+         CREATE TABLE filtered_table AS SELECT k FROM raw.orders WHERE k >= 1;",
+        )
+        .unwrap();
     let values = |sql: &str| {
         let mut statement = connection.prepare(sql).unwrap();
-        statement.query_map([], |row| row.get::<_, Option<i32>>(0))
-            .unwrap().collect::<Result<Vec<_>, _>>().unwrap()
+        statement
+            .query_map([], |row| row.get::<_, Option<i32>>(0))
+            .unwrap()
+            .collect::<Result<Vec<_>, _>>()
+            .unwrap()
     };
-    assert_eq!(values("SELECT k FROM raw.orders ORDER BY k NULLS LAST"), vec![Some(0), Some(1), Some(1), None]);
+    assert_eq!(
+        values("SELECT k FROM raw.orders ORDER BY k NULLS LAST"),
+        vec![Some(0), Some(1), Some(1), None]
+    );
     for sql in [
         "SELECT k FROM filtered_view ORDER BY k",
         "SELECT k FROM filtered_table ORDER BY k",
@@ -266,6 +340,12 @@ fn complete_source_oracle_proves_positive_false_unknown_and_duplicate_rows() {
     ] {
         assert_eq!(values(sql), vec![Some(1), Some(1)], "{sql}");
     }
-    assert_eq!(values("SELECT k FROM raw.orders WHERE NOT (k >= 1)"), vec![Some(0)]);
-    assert_eq!(values("SELECT k FROM raw.orders WHERE (k >= 1) IS NULL"), vec![None]);
+    assert_eq!(
+        values("SELECT k FROM raw.orders WHERE NOT (k >= 1)"),
+        vec![Some(0)]
+    );
+    assert_eq!(
+        values("SELECT k FROM raw.orders WHERE (k >= 1) IS NULL"),
+        vec![None]
+    );
 }
