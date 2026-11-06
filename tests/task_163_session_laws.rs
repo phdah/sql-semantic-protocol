@@ -87,7 +87,13 @@ fn rollback_restores_dropped_relation_duplicate_nulls_and_rejected_read() {
     assert!(exact.checkpoints[3].after.states.is_empty());
     assert_eq!(exact.checkpoints[4].after, exact.checkpoints[2].after);
     assert_eq!(exact.final_catalog.states[0].rows().len(), 2);
-    let read = exact.checkpoints[5].statement.as_ref().unwrap().read.as_ref().unwrap();
+    let read = exact.checkpoints[5]
+        .statement
+        .as_ref()
+        .unwrap()
+        .read
+        .as_ref()
+        .unwrap();
     assert_eq!(read.surviving_source_ordinals, vec![0]);
     assert_eq!(read.rejected_source_ordinals, vec![1]);
     assert_eq!(read.output.rows().len(), 1);
@@ -132,7 +138,10 @@ fn vendor_and_cross_session_assumptions_never_inherit_native_duckdb_exactness() 
             &[law],
         );
         match proof {
-            PhysicalTransactionScriptProof::Residual { step_index: 0, reason } => {
+            PhysicalTransactionScriptProof::Residual {
+                step_index: 0,
+                reason,
+            } => {
                 assert!(reason.contains("TASK-163"), "{reason}");
                 assert!(reason.contains(law.as_str()), "{reason}");
             }
@@ -171,5 +180,8 @@ fn frozen_task_163_inventory_remains_explicitly_unverified_until_ci() {
     assert_eq!(freeze["owner"], "TASK-163");
     assert_eq!(freeze["dialects"].as_array().unwrap().len(), 13);
     assert_eq!(freeze["cases"].as_array().unwrap().len(), 8);
-    assert_eq!(freeze["cases"][0]["id"], "84-C163-P-transactional-ddl-rollback");
+    assert_eq!(
+        freeze["cases"][0]["id"],
+        "84-C163-P-transactional-ddl-rollback"
+    );
 }
