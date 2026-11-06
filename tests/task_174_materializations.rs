@@ -354,8 +354,7 @@ fn complete_source_oracle_proves_positive_false_unknown_and_duplicate_rows() {
 #[test]
 fn dbt_and_odcs_metadata_agree_with_direct_sql_on_filter_outcomes() {
     let manifest_bundle = analyze(&manifest("view", Some("filtered")));
-    let direct_catalog =
-        RelationCatalog::from_schemas(manifest_bundle.source_schemas()).unwrap();
+    let direct_catalog = RelationCatalog::from_schemas(manifest_bundle.source_schemas()).unwrap();
     let direct_dialect = dialect_from_name("duckdb").unwrap();
     let sql = SqlInput::inline(FILTER);
     let inputs = [ConfiguredSqlInput::new(
@@ -375,8 +374,14 @@ fn dbt_and_odcs_metadata_agree_with_direct_sql_on_filter_outcomes() {
     let odcs_catalog = RelationCatalog::from_schemas(odcs.source_schemas()).unwrap();
     let from_odcs = analyze_configured_inputs_with_catalog(&inputs, &odcs_catalog).unwrap();
 
-    assert_eq!(canonical_filter_domain(&manifest_bundle), canonical_filter_domain(&direct));
-    assert_eq!(canonical_filter_domain(&from_odcs), canonical_filter_domain(&direct));
+    assert_eq!(
+        canonical_filter_domain(&manifest_bundle),
+        canonical_filter_domain(&direct)
+    );
+    assert_eq!(
+        canonical_filter_domain(&from_odcs),
+        canonical_filter_domain(&direct)
+    );
     assert_positive_domain(&canonical_filter_domain(&from_odcs));
 
     for bundle in [&direct, &from_odcs] {
