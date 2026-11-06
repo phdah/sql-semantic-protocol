@@ -1,8 +1,8 @@
 {
-  "version": 5,
+  "version": 6,
   "owner": "TASK-164",
   "parent": "TASK-84",
-  "status": "frozen_complete_typed_domains_and_checkpoint_oracles_pending_ci_review",
+  "status": "v6_bounded_technical_signoff_owner_directed_author_account_review_exception",
   "fixture_ids": [
     "84-C164-P",
     "84-C164-N"
@@ -1731,19 +1731,24 @@
     "dbt E2E and active protocol/schema/golden snapshots"
   ],
   "signoff": {
-    "mandatory_verified": false,
-    "native_oracle_verified": false,
-    "all_13_dialects_verified": false,
-    "adapter_parity_verified": false,
-    "full_ci_verified": false,
-    "independent_review_verified": false
+    "mandatory_verified": true,
+    "native_oracle_verified": true,
+    "all_13_dialects_verified": true,
+    "adapter_parity_verified": true,
+    "full_ci_verified": true,
+    "independent_review_verified": false,
+    "two_axis_author_account_review_verified": true,
+    "review_process_exception_approved": true,
+    "parent_signed_off": false,
+    "release_approved": false
   },
   "change_policy": "Freeze v1 precedes semantic changes; revised variants require immutable v1 plus explicitly reviewed v2; mandatory exact cases may not be reclassified Residual to pass CI.",
   "history": [
     "docs/task-164-acceptance-freeze-v1.json",
     "docs/task-164-acceptance-freeze-v2.json",
     "docs/task-164-acceptance-freeze-v3.json",
-    "docs/task-164-acceptance-freeze-v4.json"
+    "docs/task-164-acceptance-freeze-v4.json",
+    "docs/task-164-acceptance-freeze-v5.json"
   ],
   "scope_amendment": {
     "from_version": 1,
@@ -2593,5 +2598,45 @@
     "from_version": 4,
     "kind": "strict_type_and_adapter_assertions",
     "reason": "Require exact full INTEGER/NULL frequency domains for every live terminal column and explicit per-case SQL/dbt/ODCS evidence limitations, without changing eight original case identities, classifications, programs, or frozen 598 parser cells."
+  },
+  "verification": {
+    "implementation_head": "eaf6ef2aa4607c58bf41b61e9f0288a37c643404",
+    "implementation_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/42205848985",
+    "ci_jobs_passed": "9/9",
+    "review": "https://github.com/phdah/sql-semantic-protocol/pull/191#pullrequestreview-5799127718",
+    "reviewer_provenance": "Connected PR author-account COMMENT review: two-axis standards/spec PASS, not an independent second-person reviewer; user directed full child signoff on 2026-11-06; independent human reviewer remains optional/merge-policy controlled",
+    "historical_freeze_deviation": "Original v1 recorded fixture IDs and finite core but full checkpoints/domains/adapter fields were strengthened retrospectively in immutable v2-v5; owner-directed child signoff records this process exception without claiming pre-semantics v1 was complete",
+    "conditional_boundary_owners": {
+      "84-C164-N-savepoint": "TASK-162",
+      "84-C164-N-vendor-session": "TASK-163"
+    },
+    "original_parent_ac": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+    ],
+    "child_ac_completed": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ]
+  },
+  "signoff_scope": {
+    "mandatory_cases": 6,
+    "exact_cases": 5,
+    "impossible_cases": 1,
+    "conditional_residual_cases": 2,
+    "parser_statement_cells": 598,
+    "dialects": 13,
+    "fixture_ids": [
+      "84-C164-P",
+      "84-C164-N"
+    ],
+    "no_protocol_root_change": true
   }
 }
