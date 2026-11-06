@@ -297,8 +297,7 @@ pub fn physical_duckdb_transaction_plan(
                         certified_created.insert(write.after().relation().to_string());
                     } else if !write.after_exists() {
                         certified_created.remove(target);
-                    } else if write.after().relation() != target
-                        && certified_created.remove(target)
+                    } else if write.after().relation() != target && certified_created.remove(target)
                     {
                         certified_created.insert(write.after().relation().to_string());
                     }
