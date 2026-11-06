@@ -4,7 +4,7 @@
 
 ## Frozen scope
 
-- The original pre-semantic v1 acceptance freeze is immutable in \`docs/task-164-acceptance-freeze-v1.json\`. The active \`docs/task-164-acceptance-freeze.json\` v2 corrects only the first CREATE checkpoint's existence representation, retaining eight named cases.
+- The original pre-semantic v1 acceptance freeze is immutable in \`docs/task-164-acceptance-freeze-v1.json\`. The archived v2 corrects only the first CREATE checkpoint's existence representation, retaining eight named cases. The active `docs/task-164-acceptance-freeze.json` v3 pins all 598 observed parser boundaries for thirteen dialects, with the immutable v1 and v2 archived; deliberately red observation evidence is https://github.com/phdah/sql-semantic-protocol/actions/runs/42202839057.
 - The six mandatory Exact/Impossible cases cover native DuckDB CREATE, two INSERTs, matched MERGE, DELETE, SELECT, repeated/idempotent MERGE, NULL/duplicate rejection, whole-script ROLLBACK and cross-SQL-unit ALTER scalar defaults, plus impossible repeated CREATE. Both conditional Residual cases are separately owned: unsupported native SAVEPOINT by TASK-162 and vendor/session DDL laws by TASK-163.
 - SQL TRUE/NOT TRUE source occurrence identities, typed INTEGER/NULL frequencies and inclusive numeric bounds, all before/after full catalogs, deterministic mutation counts and expected terminal row bags are fixed in the task-owned inventory. There is no consumer SQL reparsing or independent synthetic intermediate state.
 
@@ -19,7 +19,7 @@
 
 | Child AC | Technical evidence | Status |
 | --- | --- | --- |
-| #1 Freeze | v1 immutable; active v2 linked to coverage manifest | Prepared, needs review |
+| #1 Freeze | v1 and v2 immutable; active v3 linked to coverage manifest with 598 pinned parser cells | Prepared, needs review |
 | #2 Canonical semantics | Complete typed transactions, ALTER default propagation, Exact/Impossible/Residual | Implemented, unverified |
 | #3 DuckDB source/checkpoint/terminal oracles | Eight-case source-complete matrix and native tests | Committed, unverified |
 | #4 Dialects and adapters | 13 parser classifications plus SQL/dbt/ODCS parity | Committed, unverified |
