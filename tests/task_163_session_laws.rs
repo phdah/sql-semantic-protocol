@@ -80,6 +80,9 @@ fn create_inside_transaction_is_rolled_back_without_implicit_commit() {
             )
             .unwrap();
         assert_eq!(exists, if index == 1 || index == 2 { 1 } else { 0 });
+        if index == 1 {
+            assert_rows(&db, &[]);
+        }
         if index == 2 {
             assert_rows(&db, &[(1, Some(10)), (1, None)]);
         }
@@ -139,9 +142,15 @@ fn rollback_restores_dropped_relation_duplicate_nulls_and_rejected_read() {
         db.execute_batch(statement).unwrap();
         if index == 3 {
             assert!(db.prepare("SELECT * FROM t").is_err());
-        }
-        if index == 4 || index == 5 {
-            assert_rows(&db, &[(1, Some(10)), (1, None)]);
+            assert!(exact.checkpoints[index].after.states.is_empty());
+        } else {
+            let expected: &[(i64, Option<i64>)] = if index == 0 {
+                &[]
+            } else {
+                &[(1, Some(10)), (1, None)]
+            };
+            assert_rows(&db, expected);
+            assert_eq!(exact.checkpoints[index].after.states[0].rows().len(), expected.len());
         }
     }
 }
@@ -197,6 +206,10 @@ fn unproved_sql_and_invalid_controls_are_not_upgraded_by_context() {
         impossible,
         PhysicalTransactionScriptProof::Impossible { step_index: 0, .. }
     ));
+    assert!(Connection::open_in_memory()
+        .unwrap()
+        .execute_batch("COMMIT")
+        .is_err());
     let residual = physical_duckdb_sql_transaction_plan_with_laws(
         &["BEGIN", "SELECT 1 / 0", "ROLLBACK"],
         &empty_catalog(),
@@ -283,4 +296,33 @@ fn external_catalog_without_in_script_create_does_not_certify_drop() {
         ),
         "a caller-supplied bag is not trusted CREATE provenance: {proof:?}"
     );
+}
+
+#[test]
+fn conditional_sql_dialect_and_engine_laws_are_never_promoted_by_parser_only() {
+    let sql = ["CREATE TEMP TABLE temp_t (id INTEGER)"];
+    let temp = physical_duckdb_sql_transaction_plan_with_laws(
+        &sql,
+        &empty_catalog(),
+        &[PhysicalTransactionSessionLaw::TemporaryTableLifetime],
+    );
+    assert!(
+        matches!(temp, PhysicalTransactionScriptProof::Residual { .. }),
+        "temporary table session lifetime requires engine evidence: {temp:?}"
+    );
+    for sql in [
+        "SET CONSTRAINTS ALL DEFERRED",
+        "BEGIN TRANSACTION ISOLATION LEVEL SERIALIZABLE",
+        "COMMIT AND CHAIN",
+    ] {
+        let proof = physical_duckdb_sql_transaction_plan_with_laws(
+            &[sql],
+            &empty_catalog(),
+            &[PhysicalTransactionSessionLaw::VendorTransactionOptions],
+        );
+        assert!(
+            matches!(proof, PhysicalTransactionScriptProof::Residual { .. }),
+            "{sql} cannot establish native execution from parser support: {proof:?}"
+        );
+    }
 }
