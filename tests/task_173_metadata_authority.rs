@@ -82,6 +82,19 @@ fn verify_complete_physical_filter(catalog: &RelationCatalog) -> (Vec<usize>, Ve
         .exact_domains()
         .expect("complete typed output histogram");
     assert_eq!(domains.len(), 1);
+    assert_eq!(domains[0].column(), "k");
+    assert_eq!(
+        domains[0].values(),
+        &[(LiteralValue::Number("1".to_string()), 2)]
+    );
+    assert_eq!(
+        original.exact_domains(&read.source_schema).unwrap()[0].values(),
+        &[
+            (LiteralValue::Number("1".to_string()), 2),
+            (LiteralValue::Null, 1),
+            (LiteralValue::Number("0".to_string()), 1)
+        ]
+    );
     assert!(to_bundle_json(&bundle).contains(r#""protocol_version":"#));
     assert_inclusive_lower_one(&filtered_output_domain(catalog, "duckdb"));
     (
