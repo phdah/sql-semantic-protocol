@@ -162,7 +162,7 @@ impl AnalysisBundle {
                             } else {
                                 ConstraintValue::Number(value.clone())
                             }
-                        },
+                        }
                         Some(LiteralValue::Text(value)) => ConstraintValue::String(value.clone()),
                     };
                     let provenance = ConstraintProvenance::new(
