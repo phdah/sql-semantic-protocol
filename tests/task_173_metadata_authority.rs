@@ -7,9 +7,11 @@ use serde_json::{json, Value};
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, analyze_dbt_artifacts,
     analyze_dbt_manifest_with_schemas, analyze_inputs, dialect_from_name, parse_dbt_catalog,
-    parse_dbt_manifest, physical_ordered_lifecycle_plan, to_bundle_json, ComposedSemantics,
+    parse_dbt_manifest, physical_closed_world_schema_plan, physical_ordered_lifecycle_plan,
+    to_bundle_json, ComposedSemantics,
     ConfiguredSqlInput, ConstraintEnforcement, ConstraintSourceKind, DataType, DbtArtifactsError,
     LiteralValue, PhysicalOrderedLifecycleProof, PhysicalWriteRow, PhysicalWriteState,
+    PhysicalWriteStatePlan,
     RelationCatalog, RelationConstraint, SchemaSourceKind, SqlInput, ValueDomain,
 };
 
@@ -171,6 +173,20 @@ fn dbt_declared_constraints_and_generic_tests_keep_separate_unknown_enforcement(
     assert!(doc.contains(r#""source_kind":"dbt_test""#));
     assert!(doc.contains(r#""source_kind":"dbt_constraint""#));
     assert!(doc.contains(r#""enforcement":"unknown""#));
+    let duplicate_source = PhysicalWriteState::new(
+        "raw.orders",
+        vec![
+            physical_row(Some(1)),
+            physical_row(Some(1)),
+            physical_row(None),
+            physical_row(Some(0)),
+        ],
+    )
+    .unwrap();
+    assert!(matches!(
+        physical_closed_world_schema_plan(&bundle, &[duplicate_source]),
+        PhysicalWriteStatePlan::Residual { .. }
+    ));
 
     // A declared test is evidence of an asserted property, not a witnessed
     // warehouse constraint. Our physical fixture intentionally includes 1,1.
