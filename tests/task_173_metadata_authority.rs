@@ -1,12 +1,16 @@
 //! TASK-173: authoritative metadata facts retain their source provenance and
 //! absent or unsupported lower-authority metadata never fabricates warehouse evidence.
 
+use std::collections::BTreeMap;
+
 use serde_json::{json, Value};
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, analyze_dbt_artifacts, analyze_inputs,
     dialect_from_name, parse_dbt_catalog, parse_dbt_manifest, ComposedSemantics,
-    ConfiguredSqlInput, DataType, DbtArtifactsError, LiteralValue, RelationCatalog,
-    SchemaSourceKind, SqlInput, ValueDomain,
+    ConfiguredSqlInput, ConstraintEnforcement, ConstraintSourceKind, DataType,
+    DbtArtifactsError, LiteralValue, PhysicalOrderedLifecycleProof, PhysicalWriteRow,
+    PhysicalWriteState, RelationCatalog, RelationConstraint, SchemaSourceKind,
+    SqlInput, ValueDomain, physical_ordered_lifecycle_plan, to_bundle_json,
 };
 
 const FILTER: &str = "SELECT k FROM raw.orders WHERE k >= 1";
@@ -25,6 +29,150 @@ const DIALECTS: &[&str] = &[
     "duckdb",
     "databricks",
 ];
+
+
+fn physical_row(value: Option<i64>) -> PhysicalWriteRow {
+    let value = value.map_or(LiteralValue::Null, |value| {
+        LiteralValue::Number(value.to_string())
+    });
+    PhysicalWriteRow::new(BTreeMap::from([("k".to_string(), value)])).unwrap()
+}
+
+fn verify_complete_physical_filter(catalog: &RelationCatalog) -> (Vec<usize>, Vec<usize>) {
+    let dialect = dialect_from_name("duckdb").unwrap();
+    let sql = SqlInput::inline(FILTER);
+    let configured = [ConfiguredSqlInput::new(
+        "task173-physical",
+        &sql,
+        "duckdb",
+        dialect.as_ref(),
+    )];
+    let bundle = analyze_configured_inputs_with_catalog(&configured, catalog).unwrap();
+    let original = PhysicalWriteState::new(
+        "raw.orders",
+        vec![
+            physical_row(Some(1)),
+            physical_row(Some(1)),
+            physical_row(None),
+            physical_row(Some(0)),
+        ],
+    )
+    .unwrap();
+    let exact = match physical_ordered_lifecycle_plan(&bundle, &[original.clone()]) {
+        PhysicalOrderedLifecycleProof::Exact(exact) => exact,
+        other => panic!("full physical-source evidence must be exact: {other:?}"),
+    };
+    assert_eq!(exact.final_states, vec![original.clone()]);
+    assert_eq!(exact.checkpoints.len(), 1);
+    assert_eq!(exact.checkpoints[0].states, vec![original.clone()]);
+    let [read] = exact.reads.as_slice() else {
+        panic!("one canonical SELECT checkpoint is required");
+    };
+    assert_eq!(read.source, original);
+    assert_eq!(
+        read.output.rows(),
+        &[physical_row(Some(1)), physical_row(Some(1))]
+    );
+    assert_eq!(read.surviving_source_ordinals, vec![0, 1]);
+    assert_eq!(read.rejected_source_ordinals, vec![2, 3]);
+    assert_eq!(read.output_schema.columns()[0].data_type(), read.source_schema.columns()[0].data_type());
+    let domains = read.exact_domains().expect("complete typed output histogram");
+    assert_eq!(domains.len(), 1);
+    assert!(to_bundle_json(&bundle).contains(r#""protocol_version":"#));
+    assert_inclusive_lower_one(&filtered_output_domain(catalog, "duckdb"));
+    (
+        read.surviving_source_ordinals.clone(),
+        read.rejected_source_ordinals.clone(),
+    )
+}
+
+#[test]
+fn direct_dbt_catalog_and_manifest_fallback_attest_one_exact_physical_population() {
+    let sql = SqlInput::inline("CREATE TABLE raw.orders (k INTEGER)");
+    let dialect = dialect_from_name("duckdb").unwrap();
+    let ddl = analyze_inputs(&[sql], "duckdb", dialect.as_ref()).unwrap();
+    let direct_catalog = RelationCatalog::from_schemas(ddl.source_schemas()).unwrap();
+    let dbt_catalog = analyzed_dbt(Some("TEXT"), Some("INTEGER")).unwrap();
+    let dbt_manifest = analyzed_dbt(Some("INTEGER"), None).unwrap();
+    let dbt_catalog = RelationCatalog::from_schemas(dbt_catalog.source_schemas()).unwrap();
+    let dbt_manifest = RelationCatalog::from_schemas(dbt_manifest.source_schemas()).unwrap();
+
+    let expected = verify_complete_physical_filter(&direct_catalog);
+    assert_eq!(expected, (vec![0, 1], vec![2, 3]));
+    assert_eq!(verify_complete_physical_filter(&dbt_catalog), expected);
+    assert_eq!(verify_complete_physical_filter(&dbt_manifest), expected);
+}
+
+#[test]
+fn dbt_declared_constraints_and_generic_tests_keep_separate_unknown_enforcement() {
+    let mut value = manifest_json(Some("INTEGER"));
+    value["sources"]["source.task173.orders"]["columns"]["k"]["constraints"] =
+        json!([{"type": "unique"}]);
+    value["nodes"]["test.task173.unique_orders_k"] = json!({
+        "unique_id": "test.task173.unique_orders_k",
+        "resource_type": "test",
+        "relation_name": null,
+        "attached_node": "source.task173.orders",
+        "column_name": "k",
+        "test_metadata": {
+            "name": "unique",
+            "namespace": null,
+            "kwargs": {"column_name": "k"}
+        },
+        "depends_on": {"nodes": ["source.task173.orders"]}
+    });
+    let manifest = parse_dbt_manifest(&value.to_string()).unwrap();
+    let constraints = manifest.relation_constraints().iter().find(|set| {
+        set.relation() == "raw.orders"
+    }).expect("manifest owns declared key constraints and generic tests");
+    let key = constraints.constraints().iter().find_map(|constraint| {
+        match constraint {
+            RelationConstraint::UniqueKey(key) if key.columns() == ["k"] => Some(key),
+            _ => None,
+        }
+    }).expect("one canonical merged unique key");
+    assert_eq!(key.evidence().len(), 2);
+    assert!(key.evidence().iter().any(|evidence| {
+        evidence.provenance().source_kind() == ConstraintSourceKind::DbtConstraint
+    }));
+    assert!(key.evidence().iter().any(|evidence| {
+        evidence.provenance().source_kind() == ConstraintSourceKind::DbtTest
+    }));
+    assert!(key.evidence().iter().all(|evidence| {
+        evidence.enforcement() == ConstraintEnforcement::Unknown
+    }));
+    let catalog = parse_dbt_catalog(&catalog_json(Some("INTEGER")).to_string()).unwrap();
+    let dialect = dialect_from_name("duckdb").unwrap();
+    let bundle = analyze_dbt_artifacts(&manifest, &catalog, "duckdb", dialect.as_ref()).unwrap();
+    let doc = to_bundle_json(&bundle);
+    assert!(doc.contains(r#""source_kind":"dbt_test""#));
+    assert!(doc.contains(r#""source_kind":"dbt_constraint""#));
+    assert!(doc.contains(r#""enforcement":"unknown""#));
+
+    // A declared test is evidence of an asserted property, not a witnessed
+    // warehouse constraint. Our physical fixture intentionally includes 1,1.
+    let same_source = RelationCatalog::from_schemas(bundle.source_schemas()).unwrap();
+    assert_eq!(
+        verify_complete_physical_filter(&same_source),
+        (vec![0, 1], vec![2, 3])
+    );
+}
+
+#[test]
+fn manifest_column_without_data_type_is_explicitly_rejected() {
+    let mut manifest = manifest_json(Some("INTEGER"));
+    manifest["sources"]["source.task173.orders"]["columns"]["k"]
+        .as_object_mut()
+        .unwrap()
+        .remove("data_type");
+    let manifest = parse_dbt_manifest(&manifest.to_string()).unwrap();
+    let dialect = dialect_from_name("duckdb").unwrap();
+    assert!(matches!(
+        analyze_dbt_manifest_with_schemas(&manifest, "duckdb", dialect.as_ref()),
+        Err(DbtArtifactsError::MissingDeclaredColumnTypes { relation, columns })
+            if relation == "raw.orders" && columns == ["k"]
+    ));
+}
 
 fn manifest_json(source_type: Option<&str>) -> Value {
     let mut source = json!({
@@ -306,6 +454,17 @@ mod odcs_authority {
         assert_eq!(
             filtered_output_domain(&from_odcs, "duckdb"),
             filtered_output_domain(&from_dbt, "duckdb")
+        );
+    }
+
+
+    #[test]
+    fn odcs_physical_evidence_reuses_complete_source_and_terminal_oracle() {
+        let metadata = parse("        physicalType: INTEGER").unwrap();
+        let catalog = RelationCatalog::from_schemas(metadata.source_schemas()).unwrap();
+        assert_eq!(
+            verify_complete_physical_filter(&catalog),
+            (vec![0, 1], vec![2, 3])
         );
     }
 
