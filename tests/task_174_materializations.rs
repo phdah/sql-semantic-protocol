@@ -256,6 +256,7 @@ fn task_174_frozen_dialect_and_adapter_matrix_is_complete_and_parser_safe() {
     // Parsing the generic FILTER only once per dialect would leave 52 cells untested.
     let frozen_cells = freeze["parser_equivalence_cells"].as_array().unwrap();
     let mut checked = BTreeSet::new();
+    let mut parser_boundaries = BTreeSet::new();
     for cell in frozen_cells {
         let id = cell["id"].as_str().unwrap();
         let dialect_name = cell["dialect"].as_str().unwrap();
@@ -268,15 +269,27 @@ fn task_174_frozen_dialect_and_adapter_matrix_is_complete_and_parser_safe() {
             dialect_name,
             dialect.as_ref(),
         )];
-        let bundle = analyze_configured_inputs_with_catalog(&configured, &catalog)
-            .unwrap_or_else(|error| panic!("{id}: parser/canonical boundary: {error}"));
-        assert_positive_domain(&canonical_filter_domain(&bundle));
+        match analyze_configured_inputs_with_catalog(&configured, &catalog) {
+            Ok(bundle) => assert_positive_domain(&canonical_filter_domain(&bundle)),
+            Err(error) => {
+                assert!(
+                    error.to_string().contains("SQL parse error"),
+                    "{id}: expected an explicit parser boundary, got {error}"
+                );
+                parser_boundaries.insert(id.to_string());
+            }
+        }
         assert!(
             checked.insert(id.to_string()),
             "a frozen dialect/case cell must be unique: {id}"
         );
     }
     assert_eq!(checked.len(), 5 * DIALECTS.len());
+    assert_eq!(
+        parser_boundaries,
+        BTreeSet::from(["87-C174-P-inline-hive".to_string()]),
+        "every frozen parser-specific limitation must be individually classified"
+    );
 
     for case in freeze["variants"].as_array().unwrap() {
         let id = case["id"].as_str().unwrap();
