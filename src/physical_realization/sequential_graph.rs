@@ -4,13 +4,13 @@
 //! It never executes SQL twice, fabricates intermediate states, or treats a
 //! SELECT as a new physical producer.
 
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 
 use crate::bundle::AnalysisBundle;
 use crate::relation::RelationSchema;
 
 use super::{
-    physical_ordered_lifecycle_plan, PhysicalLifecycleRead, PhysicalOrderedLifecycleExact,
+    PhysicalLifecycleRead, PhysicalOrderedLifecycleExact,
     PhysicalOrderedLifecycleProof, PhysicalWriteColumnDomain, PhysicalWriteState,
     PhysicalWriteTransition,
 };
@@ -158,7 +158,25 @@ pub fn physical_sequential_state_graph_plan(
     bundle: &AnalysisBundle,
     initial_states: &[PhysicalWriteState],
 ) -> PhysicalSequentialStateGraphProof {
-    let exact = match physical_ordered_lifecycle_plan(bundle, initial_states) {
+    physical_sequential_state_graph_plan_with_create_evidence(
+        bundle,
+        initial_states,
+        &BTreeSet::new(),
+    )
+}
+
+/// Construct the same canonical graph while carrying proven CREATE provenance
+/// for an earlier SQL step of the same complete transaction script.
+pub(crate) fn physical_sequential_state_graph_plan_with_create_evidence(
+    bundle: &AnalysisBundle,
+    initial_states: &[PhysicalWriteState],
+    prior_created: &BTreeSet<String>,
+) -> PhysicalSequentialStateGraphProof {
+    let exact = match super::lifecycle_scripts::physical_ordered_lifecycle_plan_with_create_evidence(
+        bundle,
+        initial_states,
+        prior_created,
+    ) {
         PhysicalOrderedLifecycleProof::Exact(exact) => exact,
         PhysicalOrderedLifecycleProof::Impossible { reason } => {
             return PhysicalSequentialStateGraphProof::Impossible { reason };
