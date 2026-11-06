@@ -386,7 +386,7 @@ fn dbt_and_odcs_metadata_agree_with_direct_sql_on_filter_outcomes() {
 
     for bundle in [&direct, &from_odcs] {
         let source = source_bag();
-        let proof = physical_ordered_lifecycle_plan(bundle, &[source.clone()]);
+        let proof = physical_ordered_lifecycle_plan(bundle, std::slice::from_ref(&source));
         let PhysicalOrderedLifecycleProof::Exact(proof) = proof else {
             panic!("typed source complete-bag oracle must stay exact");
         };
