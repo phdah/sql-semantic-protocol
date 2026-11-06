@@ -586,6 +586,7 @@ mod sets;
 mod star_projection;
 mod subqueries;
 mod temporal_literals;
+mod transactions;
 mod typing;
 mod writes;
 
@@ -614,5 +615,6 @@ use relations::*;
 use sampling::*;
 use sets::*;
 use subqueries::*;
+pub use transactions::physical_duckdb_sql_transaction_plan;
 use typing::*;
 use writes::*;

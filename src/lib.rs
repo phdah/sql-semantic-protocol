@@ -64,6 +64,8 @@
 //! - physical_finite_producer_exists_plan composes exact finite leaf bags through canonical filter, projection, join, and correlated EXISTS producer layers.
 //! - physical_finite_cte_bag_plan evaluates complete ordinary and bounded monotone recursive CTE producer bags with explicit self-edges, closed-world absence and typed outcome domains.
 //! - physical_ordered_cte_read_plan composes ordered materialized write states with a final source-complete CTE read, without independent insertion of a produced relation.
+//! - physical_duckdb_transaction_plan certifies explicit BEGIN, COMMIT and ROLLBACK boundaries using complete canonical statement-state snapshots, with unverified SAVEPOINT laws reported as Residual.
+//! - physical_duckdb_sql_transaction_plan lowers real DuckDB SQL transaction commands at the sqlparser boundary and reuses canonical physical statement proofs.
 //! - physical_finite_view_read_plan proves bounded logical view reads without inventing an independent physical view population.
 //! - physical_finite_in_bag_plan proves scalar IN/NOT IN three-valued membership over complete finite physical bags.
 //! - physical_finite_table_plan proves exact source-free VALUES and typed array fanout, finite two-input equality joins, COUNT(*) grouping, fixed star/PIVOT/UNPIVOT complete bags, SQL NOT TRUE identities and typed domains.
@@ -108,7 +110,7 @@ use std::fmt;
 
 use sqlparser::dialect::{dialect_from_str, Dialect};
 
-pub use analysis::AnalysisError;
+pub use analysis::{physical_duckdb_sql_transaction_plan, AnalysisError};
 pub use bag_histogram::{
     equijoin_key_histogram, BagHistogramProof, BagKeyExpressionIdentity, BagKeyHistogram,
 };
@@ -182,9 +184,10 @@ pub use outcome_proofs::{OutcomeWitness, SourceColumnValues};
 pub use parser::ParseError;
 pub use physical_realization::{
     physical_alter_column_snapshot, physical_closed_world_schema_plan,
-    physical_finite_aggregate_bag_plan, physical_finite_chain_bag_plan,
-    physical_finite_composed_page_membership_plan, physical_finite_composed_page_plan,
-    physical_finite_cte_bag_plan, physical_finite_exists_bag_plan, physical_finite_in_bag_plan,
+    physical_duckdb_transaction_plan, physical_finite_aggregate_bag_plan,
+    physical_finite_chain_bag_plan, physical_finite_composed_page_membership_plan,
+    physical_finite_composed_page_plan, physical_finite_cte_bag_plan,
+    physical_finite_exists_bag_plan, physical_finite_in_bag_plan,
     physical_finite_join_aggregate_plan, physical_finite_joined_exists_bag_plan,
     physical_finite_page_bag_plan, physical_finite_page_membership_plan,
     physical_finite_producer_exists_plan, physical_finite_quantified_comparison,
@@ -227,8 +230,10 @@ pub use physical_realization::{
     PhysicalScriptStateEdge, PhysicalScriptStateNode, PhysicalSequentialStateGraphExact,
     PhysicalSequentialStateGraphProof, PhysicalSetColumnDomain, PhysicalSetTreeBranch,
     PhysicalSetTreeTuple, PhysicalSetTuple, PhysicalSingleTupleExact, PhysicalSingleTupleProof,
-    PhysicalSourcePlan, PhysicalTupleBucket, PhysicalTupleGoalError, PhysicalTupleHistogramGoal,
-    PhysicalTypeProof, PhysicalTypedPopulationPlan, PhysicalTypedValue, PhysicalTypedWriteRow,
+    PhysicalSourcePlan, PhysicalTransactionAction, PhysicalTransactionCheckpoint,
+    PhysicalTransactionScriptExact, PhysicalTransactionScriptProof, PhysicalTransactionStep,
+    PhysicalTupleBucket, PhysicalTupleGoalError, PhysicalTupleHistogramGoal, PhysicalTypeProof,
+    PhysicalTypedPopulationPlan, PhysicalTypedValue, PhysicalTypedWriteRow,
     PhysicalTypedWriteState, PhysicalViewExact, PhysicalViewProof, PhysicalWriteColumnDomain,
     PhysicalWriteRow, PhysicalWriteState, PhysicalWriteStateGap, PhysicalWriteStatePlan,
     PhysicalWriteTransition,
