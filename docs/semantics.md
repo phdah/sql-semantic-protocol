@@ -1314,3 +1314,21 @@ The optional `to_physical_single_tuple_json` sidecar emits exact terminal rows a
 The opt-in `physical_duckdb_sql_transaction_plan` accepts **one SQL statement per input** and a complete, typed initial physical catalog. Plain DuckDB `BEGIN TRANSACTION`, `COMMIT` and `ROLLBACK` are normalized at the parsing boundary and applied in source order. Every DDL, DML and SELECT is certified through the existing canonical sequential-state graph, not through separately invented intermediate rows. The exact proof includes every before/after full bag, SQL NULL and duplicate occurrences, typed source and terminal domains, mutation counts, TRUE/NOT TRUE read memberships, and versioned schema/constraint evidence. `ROLLBACK` restores the original catalog and enforceable constraints, including CREATE TABLE performed inside a transaction.
 
 For already analyzed single-statement DuckDB bundles, `physical_duckdb_transaction_plan` accepts typed `PhysicalTransactionStep` controls. The `SqlWithEvidence` variant accepts an explicitly enforced `RelationConstraintSet` with authoritative provenance. An ordinary SQL `PRIMARY KEY` declaration without `ConstraintEvidence::Enforced` remains `Residual`, rather than silently assuming engine enforcement. Exact certified constraints are carried across later writes and restored on rollback. Separately executed ALTER defaults remain `Residual` until TASK-164 can version the complete post-DDL constraint/default metadata. A missing SQL proof, a dialect or session-dependent option, an unsupported engine control, a mismatched schema or an unverified constraint transition is **Residual**, not an invented Exact. A demonstrated invalid control or constrained write is **Impossible**. Native DuckDB SAVEPOINT/ROLLBACK TO/RELEASE support is not established by sqlparser; the pinned DuckDB 1.10506.0 execution tests determine this conditional boundary. The opt-in transaction proof does not alter the emitted active JSON protocol or turn dbt/ODCS schema evidence into execution evidence.
+
+### Transaction session law evidence (TASK-163)
+
+The opt-in `physical_duckdb_transaction_plan_with_laws` and
+`physical_duckdb_sql_transaction_plan_with_laws` accept an explicit list of
+`PhysicalTransactionSessionLaw` requirements. A proof is `Exact` for
+`DuckDbTransactionalDdlRollback` only when the same complete native DuckDB
+script actually changes the schema *inside* a transaction and ROLLBACK
+restores its entire typed catalog. The native engine oracle is pinned to
+`duckdb ~1.10506.0`, not transferred to another SQL dialect.
+
+Temporary table lifetime, deferred constraint timing, concurrent isolation,
+vendor implicit DDL commits and transaction modifiers remain `Residual`
+with TASK-163 ownership, even when syntax parses. Existing
+`Impossible` and `Residual` statement results are preserved.
+The caller must still supply a closed-world source catalog and must not infer
+transaction guarantees from dbt or ODCS metadata. The base transaction
+API continues to certify only its original single-connection DuckDB scope.
