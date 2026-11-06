@@ -690,12 +690,30 @@ fn property_data_type(
         "logicalType",
     )?;
 
-    let logical_type = logical
-        .map(|logical| logical_data_type(source, &format!("{path}.logicalType"), logical))
-        .transpose()?;
+    // Physical column types are the authoritative ODCS datatype evidence. A lower-authority
+    // logicalType that we cannot normalize must not suppress a valid physicalType.
+    let physical_type = physical.map(|value| parse_data_type(value, dialect_name));
+    let logical_type = match logical
+        .map(|value| logical_data_type(source, &format!("{path}.logicalType"), value))
+        .transpose()
+    {
+        Ok(value) => value,
+        Err(error) if matches!(physical_type, Some(Ok(_))) => {
+            diagnostics.push(OdcsDiagnostic::new(
+                source,
+                "odcs_unsupported_logical_type",
+                format!(
+                    "{path}.logicalType '{}' is unsupported ({error}); valid physicalType is retained",
+                    logical.unwrap_or_default()
+                ),
+            ));
+            None
+        }
+        Err(error) => return Err(error),
+    };
 
     if let Some(physical) = physical {
-        match parse_data_type(physical, dialect_name) {
+        match physical_type.expect("present physicalType was parsed above") {
             Ok(physical_type) => {
                 if let Some(logical_type) = &logical_type {
                     if logical_type != &physical_type {
