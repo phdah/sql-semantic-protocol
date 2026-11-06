@@ -1,10 +1,10 @@
 ---
 id: TASK-163
 title: Classify auto-commit implicit DDL and engine isolation boundaries
-status: To Do
+status: In Progress
 assignee: []
 created_date: '2026-10-17'
-updated_date: '2026-10-17'
+updated_date: '2026-11-06'
 labels: []
 milestone: m-3
 dependencies:
@@ -43,3 +43,11 @@ type: feature
 ## Sequencing
 
 Next: [TASK-164](task-164%20-%20certify-ordered-mixed-script-state-and-final-targets.md) after this child is merged.
+
+## Initial bounded implementation (2026-11-06)
+
+- PR: https://github.com/phdah/sql-semantic-protocol/pull/190 (draft).
+- Versioned preimplementation freeze: `docs/task-163-acceptance-freeze.json` v1 with all named positive and conditional families, source/target row oracles, original AC mapping and explicit TASK-163 residual ownership.
+- Additive physical and SQL APIs classify native single-connection DuckDB DDL rollback separately from temp-table lifetime, deferred FK checks, concurrent isolation, vendor implicit DDL commits and vendor transaction options. Unsupported engine assumptions stay Residual; pre-existing impossible operations remain Impossible.
+- `tests/task_163_session_laws.rs` exercises native CREATE and DROP rollback, NULL/duplicate row occurrences, positive/NOT TRUE final SELECT and unproved contexts.
+- **Not signed off:** required 13-dialect parser freeze, canonical SQL/dbt/ODCS parity, native complete CI, independent review and remaining cells remain open. Parent TASK-84 stays To Do.
