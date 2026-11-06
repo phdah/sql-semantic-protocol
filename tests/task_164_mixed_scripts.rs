@@ -75,7 +75,10 @@ fn native_rows(
     columns: &[sql_semantic_protocol::SchemaColumn],
 ) -> Vec<PhysicalWriteRow> {
     assert!(matches!(table, "t" | "s"));
-    let names = columns.iter().map(|column| column.name()).collect::<Vec<_>>();
+    let names = columns
+        .iter()
+        .map(|column| column.name())
+        .collect::<Vec<_>>();
     assert!(names.iter().all(|name| matches!(*name, "id" | "v")));
     let sql = format!("SELECT {} FROM {table}", names.join(", "));
     let mut statement = db.prepare(&sql).unwrap();
@@ -103,8 +106,16 @@ fn native_rows(
 
 fn assert_frozen_catalog(checkpoint: &PhysicalScriptCatalog, expected: &Value, index: usize) {
     let relations = expected.as_object().expect("frozen complete live catalog");
-    assert_eq!(checkpoint.states.len(), relations.len(), "states at step {index}");
-    assert_eq!(checkpoint.schemas.len(), relations.len(), "schemas at step {index}");
+    assert_eq!(
+        checkpoint.states.len(),
+        relations.len(),
+        "states at step {index}"
+    );
+    assert_eq!(
+        checkpoint.schemas.len(),
+        relations.len(),
+        "schemas at step {index}"
+    );
     for (name, relation) in relations {
         let state = checkpoint
             .states
@@ -127,7 +138,10 @@ fn assert_frozen_catalog(checkpoint: &PhysicalScriptCatalog, expected: &Value, i
             .iter()
             .map(|column| column.as_str().unwrap())
             .collect::<Vec<_>>();
-        assert_eq!(column_names, expected_columns, "{name} schema at step {index}");
+        assert_eq!(
+            column_names, expected_columns,
+            "{name} schema at step {index}"
+        );
         assert_eq!(
             sorted(state.rows()),
             sorted(&expected_rows(&relation["rows"])),
@@ -172,23 +186,31 @@ fn assert_native_catalog(db: &Connection, checkpoint: &PhysicalScriptCatalog, in
                 .unwrap();
             let native_columns = statement
                 .query_map([table], |result| {
-                    Ok((
-                        result.get::<_, String>(0)?,
-                        result.get::<_, String>(1)?,
-                    ))
+                    Ok((result.get::<_, String>(0)?, result.get::<_, String>(1)?))
                 })
                 .unwrap()
                 .collect::<duckdb::Result<Vec<_>>>()
                 .unwrap();
-            assert_eq!(native_columns.len(), schema.columns().len(), "{table} column count at {index}");
-            let integer = sql_semantic_protocol::SchemaColumn::from_sql_type(
-                "integer", "INTEGER", "duckdb",
-            )
-            .unwrap();
+            assert_eq!(
+                native_columns.len(),
+                schema.columns().len(),
+                "{table} column count at {index}"
+            );
+            let integer =
+                sql_semantic_protocol::SchemaColumn::from_sql_type("integer", "INTEGER", "duckdb")
+                    .unwrap();
             for (native, column) in native_columns.iter().zip(schema.columns()) {
-                assert_eq!(native.0, column.name(), "{table} column identity at {index}");
+                assert_eq!(
+                    native.0,
+                    column.name(),
+                    "{table} column identity at {index}"
+                );
                 assert_eq!(native.1, "INTEGER", "{table} native column type at {index}");
-                assert_eq!(column.data_type(), integer.data_type(), "{table} typed column at {index}");
+                assert_eq!(
+                    column.data_type(),
+                    integer.data_type(),
+                    "{table} typed column at {index}"
+                );
             }
             assert_eq!(
                 sorted(state.rows()),
@@ -387,7 +409,10 @@ fn run_native_case(case: &Value) {
                     "original mutated target occurrence identities at step {index}"
                 );
             } else {
-                assert!(actual_ordinals.is_empty(), "unfrozen mutated occurrence at step {index}");
+                assert!(
+                    actual_ordinals.is_empty(),
+                    "unfrozen mutated occurrence at step {index}"
+                );
             }
         }
     }
@@ -505,11 +530,7 @@ fn native_alter_default_is_carried_across_independent_transaction_sql_units() {
         }
         let checkpoint = &exact.checkpoints[index].after;
         assert_native_catalog(&db, checkpoint, index);
-        assert_frozen_catalog(
-            checkpoint,
-            &case["checkpoint_catalogs"][index],
-            index,
-        );
+        assert_frozen_catalog(checkpoint, &case["checkpoint_catalogs"][index], index);
     }
     assert_eq!(
         exact.final_catalog.states[0].rows(),
@@ -568,7 +589,10 @@ fn duplicate_create_is_impossible_and_native_duckdb_rejects_it() {
     assert!(db.execute_batch(program[1]).is_err());
     let valid = physical_duckdb_sql_transaction_plan(
         &program[..1],
-        &PhysicalScriptCatalog { states: vec![], schemas: vec![] },
+        &PhysicalScriptCatalog {
+            states: vec![],
+            schemas: vec![],
+        },
     );
     let PhysicalTransactionScriptProof::Exact(valid) = valid else {
         panic!("first CREATE must remain valid: {valid:?}");
@@ -679,9 +703,15 @@ fn frozen_inventory_retains_original_scope_and_explicit_unverified_signoff() {
         serde_json::from_str(include_str!("../docs/task-164-acceptance-freeze-v3.json")).unwrap();
     assert_eq!(v2["version"], 2);
     assert_eq!(previous["version"], 3);
-    assert_eq!(previous["dialect_parser_matrix_expected"], freeze["dialect_parser_matrix_expected"]);
+    assert_eq!(
+        previous["dialect_parser_matrix_expected"],
+        freeze["dialect_parser_matrix_expected"]
+    );
     for (old, current) in previous["cases"]
-        .as_array().unwrap().iter().zip(freeze["cases"].as_array().unwrap())
+        .as_array()
+        .unwrap()
+        .iter()
+        .zip(freeze["cases"].as_array().unwrap())
     {
         for stable in ["id", "classification", "program", "expected_final"] {
             assert_eq!(old[stable], current[stable], "immutable {stable} scope");
