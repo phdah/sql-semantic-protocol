@@ -1,8 +1,8 @@
 {
-  "version": 1,
+  "version": 2,
   "owner": "TASK-164",
   "parent": "TASK-84",
-  "status": "frozen_before_semantic_implementation_unverified",
+  "status": "frozen_corrected_snapshot_alignment_unverified",
   "fixture_ids": [
     "84-C164-P",
     "84-C164-N"
@@ -120,7 +120,7 @@
         ]
       },
       "checkpoint_t": [
-        null,
+        [],
         [],
         [
           {
@@ -523,5 +523,12 @@
     "full_ci_verified": false,
     "independent_review_verified": false
   },
-  "change_policy": "Freeze v1 precedes semantic changes; revised variants require immutable v1 plus explicitly reviewed v2; mandatory exact cases may not be reclassified Residual to pass CI."
+  "change_policy": "Freeze v1 precedes semantic changes; revised variants require immutable v1 plus explicitly reviewed v2; mandatory exact cases may not be reclassified Residual to pass CI.",
+  "history": [
+    "docs/task-164-acceptance-freeze-v1.json"
+  ],
+  "scope_amendment": {
+    "from_version": 1,
+    "reason": "The initial mixed case checkpoint_t column inadvertently marked the first CREATE as absent; correct it to an existing empty table and retain v1 unchanged. No change to mandatory scope or oracles."
+  }
 }
