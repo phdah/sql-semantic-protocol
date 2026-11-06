@@ -4,7 +4,7 @@
     "parent": "TASK-84",
     "status": "in_progress_unverified",
     "freeze": "docs/task-163-acceptance-freeze.json",
-    "freeze_version": 1,
+    "freeze_version": 2,
     "fixture_ids": [
       "84-C163-P",
       "84-C163-N"
@@ -38,7 +38,10 @@
     "native_engine": "duckdb ~1.10506.0",
     "dialects_expected": 13,
     "public_api_oracles": [
-      "tests/task_163_session_laws.rs"
+      "tests/task_163_acceptance_inventory.rs",
+      "tests/task_163_session_laws.rs",
+      "tests/task_163_dialect_matrix.rs",
+      "tests/task_163_adapter_parity.rs"
     ],
     "mandatory_verified": false,
     "all_13_parser_dialects_verified": false,
@@ -48,7 +51,17 @@
     "independent_review_verified": false,
     "parent_closed": false,
     "release_approved": false,
-    "conditional_owner": "TASK-163"
+    "conditional_owner": "TASK-163",
+    "archive": "docs/task-163-acceptance-freeze-v1.json",
+    "dialect_parser_cells": 104,
+    "conditional_case_ids": [
+      "84-C163-N-temp-table-lifetime",
+      "84-C163-N-deferred-fk",
+      "84-C163-N-concurrent-isolation",
+      "84-C163-N-vendor-implicit-commit",
+      "84-C163-N-vendor-transaction-option"
+    ],
+    "frozen_matrix_red_evidence": "https://github.com/phdah/sql-semantic-protocol/actions/runs/42183888762"
   },
   "task_162_transaction_acceptance": {
     "owner": "TASK-162",
