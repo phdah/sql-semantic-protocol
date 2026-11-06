@@ -8,11 +8,10 @@ use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, analyze_dbt_artifacts,
     analyze_dbt_manifest_with_schemas, analyze_inputs, dialect_from_name, parse_dbt_catalog,
     parse_dbt_manifest, physical_closed_world_schema_plan, physical_ordered_lifecycle_plan,
-    to_bundle_json, ComposedSemantics,
-    ConfiguredSqlInput, ConstraintEnforcement, ConstraintSourceKind, DataType, DbtArtifactsError,
-    LiteralValue, PhysicalOrderedLifecycleProof, PhysicalWriteRow, PhysicalWriteState,
-    PhysicalWriteStatePlan,
-    RelationCatalog, RelationConstraint, SchemaSourceKind, SqlInput, ValueDomain,
+    to_bundle_json, ComposedSemantics, ConfiguredSqlInput, ConstraintEnforcement,
+    ConstraintSourceKind, DataType, DbtArtifactsError, LiteralValue, PhysicalOrderedLifecycleProof,
+    PhysicalWriteRow, PhysicalWriteState, PhysicalWriteStatePlan, RelationCatalog,
+    RelationConstraint, SchemaSourceKind, SqlInput, ValueDomain,
 };
 
 const FILTER: &str = "SELECT k FROM raw.orders WHERE k >= 1";
