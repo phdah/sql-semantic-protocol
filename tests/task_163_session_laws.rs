@@ -185,3 +185,52 @@ fn frozen_task_163_inventory_remains_explicitly_unverified_until_ci() {
         "84-C163-P-transactional-ddl-rollback"
     );
 }
+
+#[test]
+fn ddl_committed_outside_transaction_survives_later_dml_rollback() {
+    let sql = [
+        "CREATE TABLE t (id INTEGER, v INTEGER)",
+        "BEGIN",
+        "INSERT INTO t VALUES (1, 10), (2, NULL)",
+        "ROLLBACK",
+    ];
+    let proof = physical_duckdb_sql_transaction_plan_with_laws(&sql, &empty_catalog(), &[]);
+    let PhysicalTransactionScriptProof::Exact(exact) = proof else {
+        panic!("DDL before BEGIN must survive DML rollback: {proof:?}");
+    };
+    assert_eq!(exact.checkpoints[0].after.schemas.len(), 1);
+    assert!(exact.checkpoints[0].after.states[0].rows().is_empty());
+    assert_eq!(exact.checkpoints[2].after.states[0].rows().len(), 2);
+    assert_eq!(exact.checkpoints[3].after, exact.checkpoints[0].after);
+    assert!(exact.final_catalog.states[0].rows().is_empty());
+    let domains = exact.final_catalog.exact_domains().unwrap();
+    assert_eq!(domains[0].1.len(), 2);
+    assert!(domains[0].1.iter().all(|domain| domain.values().is_empty()));
+
+    let db = Connection::open_in_memory().unwrap();
+    for statement in sql {
+        db.execute_batch(statement).unwrap();
+    }
+    assert_rows(&db, &[]);
+}
+
+#[test]
+fn external_catalog_without_in_script_create_does_not_certify_drop() {
+    let created = physical_duckdb_sql_transaction_plan_with_laws(
+        &["CREATE TABLE t (id INTEGER, v INTEGER)"],
+        &empty_catalog(),
+        &[],
+    );
+    let PhysicalTransactionScriptProof::Exact(created) = created else {
+        panic!("expected canonical CREATE: {created:?}");
+    };
+    let proof = physical_duckdb_sql_transaction_plan_with_laws(
+        &["DROP TABLE t"],
+        &created.final_catalog,
+        &[],
+    );
+    assert!(
+        matches!(proof, PhysicalTransactionScriptProof::Residual { step_index: 0, .. }),
+        "a caller-supplied bag is not trusted CREATE provenance: {proof:?}"
+    );
+}
