@@ -1,0 +1,878 @@
+{
+  "owner": "TASK-173",
+  "parent": "TASK-87",
+  "freeze": "docs/task-173-acceptance-freeze.json",
+  "freeze_version": 2,
+  "immutable_prior_freeze": "docs/task-173-acceptance-freeze-v1.json",
+  "verification_source": "tests/task_173_metadata_authority.rs",
+  "code_head": "1e92cea7d353baede38fa539768e154fffc8d10d",
+  "ci_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/42258873335",
+  "ci_jobs_passed": "9/9",
+  "original_ac_verified": [
+    1,
+    2,
+    3,
+    4,
+    5
+  ],
+  "mandatory_cases": [
+    {
+      "id": "87-C173-P-dbt-compiled",
+      "status": "exact_for_proven_typed_source_filter",
+      "verified": true,
+      "oracle": "tests/task_173_metadata_authority.rs",
+      "source_bag_verified": true,
+      "terminal_bag_verified": true,
+      "typed_metadata_absence_verified": false
+    },
+    {
+      "id": "87-C173-P-dbt-catalog",
+      "status": "exact_for_proven_typed_source_filter",
+      "verified": true,
+      "oracle": "tests/task_173_metadata_authority.rs",
+      "source_bag_verified": true,
+      "terminal_bag_verified": true,
+      "typed_metadata_absence_verified": false
+    },
+    {
+      "id": "87-C173-P-dbt-manifest-fallback",
+      "status": "exact_for_proven_typed_source_filter",
+      "verified": true,
+      "oracle": "tests/task_173_metadata_authority.rs",
+      "source_bag_verified": true,
+      "terminal_bag_verified": true,
+      "typed_metadata_absence_verified": false
+    },
+    {
+      "id": "87-C173-P-dbt-constraints",
+      "status": "exact_metadata_unknown_constraint_enforcement",
+      "verified": true,
+      "oracle": "tests/task_173_metadata_authority.rs",
+      "source_bag_verified": true,
+      "terminal_bag_verified": true,
+      "typed_metadata_absence_verified": false
+    },
+    {
+      "id": "87-C173-P-odcs-physical",
+      "status": "exact_for_proven_typed_source_filter",
+      "verified": true,
+      "oracle": "tests/task_173_metadata_authority.rs",
+      "source_bag_verified": true,
+      "terminal_bag_verified": true,
+      "typed_metadata_absence_verified": false
+    },
+    {
+      "id": "87-C173-P-direct-ddl",
+      "status": "exact_for_proven_typed_source_filter",
+      "verified": true,
+      "oracle": "tests/task_173_metadata_authority.rs",
+      "source_bag_verified": true,
+      "terminal_bag_verified": true,
+      "typed_metadata_absence_verified": false
+    },
+    {
+      "id": "87-C173-N-no-catalog-no-declaration",
+      "status": "explicit_error",
+      "verified": true,
+      "oracle": "tests/task_173_metadata_authority.rs",
+      "source_bag_verified": true,
+      "terminal_bag_verified": false,
+      "typed_metadata_absence_verified": true
+    },
+    {
+      "id": "87-C173-N-odcs-no-types",
+      "status": "residual_no_typed_schema",
+      "verified": true,
+      "oracle": "tests/task_173_metadata_authority.rs",
+      "source_bag_verified": true,
+      "terminal_bag_verified": false,
+      "typed_metadata_absence_verified": true
+    }
+  ],
+  "dialect_cells": [
+    {
+      "id": "87-C173-P-dbt-compiled::generic",
+      "verified": true,
+      "scope": "portable_parser_and_typed_canonical_filter",
+      "native_execution": "not_claimed"
+    },
+    {
+      "id": "87-C173-P-dbt-compiled::mysql",
+      "verified": true,
+      "scope": "portable_parser_and_typed_canonical_filter",
+      "native_execution": "not_claimed"
+    },
+    {
+      "id": "87-C173-P-dbt-compiled::postgresql",
+      "verified": true,
+      "scope": "portable_parser_and_typed_canonical_filter",
+      "native_execution": "not_claimed"
+    },
+    {
+      "id": "87-C173-P-dbt-compiled::hive",
+      "verified": true,
+      "scope": "portable_parser_and_typed_canonical_filter",
+      "native_execution": "not_claimed"
+    },
+    {
+      "id": "87-C173-P-dbt-compiled::sqlite",
+      "verified": true,
+      "scope": "portable_parser_and_typed_canonical_filter",
+      "native_execution": "not_claimed"
+    },
+    {
+      "id": "87-C173-P-dbt-compiled::snowflake",
+      "verified": true,
+      "scope": "portable_parser_and_typed_canonical_filter",
+      "native_execution": "not_claimed"
+    },
+    {
+      "id": "87-C173-P-dbt-compiled::redshift",
+      "verified": true,
+      "scope": "portable_parser_and_typed_canonical_filter",
+      "native_execution": "not_claimed"
+    },
+    {
+      "id": "87-C173-P-dbt-compiled::mssql",
+      "verified": true,
+      "scope": "portable_parser_and_typed_canonical_filter",
+      "native_execution": "not_claimed"
+    },
+    {
+      "id": "87-C173-P-dbt-compiled::clickhouse",
+      "verified": true,
+      "scope": "portable_parser_and_typed_canonical_filter",
+      "native_execution": "not_claimed"
+    },
+    {
+      "id": "87-C173-P-dbt-compiled::bigquery",
+      "verified": true,
+      "scope": "portable_parser_and_typed_canonical_filter",
+      "native_execution": "not_claimed"
+    },
+    {
+      "id": "87-C173-P-dbt-compiled::ansi",
+      "verified": true,
+      "scope": "portable_parser_and_typed_canonical_filter",
+      "native_execution": "not_claimed"
+    },
+    {
+      "id": "87-C173-P-dbt-compiled::duckdb",
+      "verified": true,
+      "scope": "portable_parser_and_typed_canonical_filter",
+      "native_execution": "duckdb_only"
+    },
+    {
+      "id": "87-C173-P-dbt-compiled::databricks",
+      "verified": true,
+      "scope": "portable_parser_and_typed_canonical_filter",
+      "native_execution": "not_claimed"
+    },
+    {
+      "id": "87-C173-P-dbt-catalog::generic",
+      "verified": true,
+      "scope": "portable_parser_and_typed_canonical_filter",
+      "native_execution": "not_claimed"
+    },
+    {
+      "id": "87-C173-P-dbt-catalog::mysql",
+      "verified": true,
+      "scope": "portable_parser_and_typed_canonical_filter",
+      "native_execution": "not_claimed"
+    },
+    {
+      "id": "87-C173-P-dbt-catalog::postgresql",
+      "verified": true,
+      "scope": "portable_parser_and_typed_canonical_filter",
+      "native_execution": "not_claimed"
+    },
+    {
+      "id": "87-C173-P-dbt-catalog::hive",
+      "verified": true,
+      "scope": "portable_parser_and_typed_canonical_filter",
+      "native_execution": "not_claimed"
+    },
+    {
+      "id": "87-C173-P-dbt-catalog::sqlite",
+      "verified": true,
+      "scope": "portable_parser_and_typed_canonical_filter",
+      "native_execution": "not_claimed"
+    },
+    {
+      "id": "87-C173-P-dbt-catalog::snowflake",
+      "verified": true,
+      "scope": "portable_parser_and_typed_canonical_filter",
+      "native_execution": "not_claimed"
+    },
+    {
+      "id": "87-C173-P-dbt-catalog::redshift",
+      "verified": true,
+      "scope": "portable_parser_and_typed_canonical_filter",
+      "native_execution": "not_claimed"
+    },
+    {
+      "id": "87-C173-P-dbt-catalog::mssql",
+      "verified": true,
+      "scope": "portable_parser_and_typed_canonical_filter",
+      "native_execution": "not_claimed"
+    },
+    {
+      "id": "87-C173-P-dbt-catalog::clickhouse",
+      "verified": true,
+      "scope": "portable_parser_and_typed_canonical_filter",
+      "native_execution": "not_claimed"
+    },
+    {
+      "id": "87-C173-P-dbt-catalog::bigquery",
+      "verified": true,
+      "scope": "portable_parser_and_typed_canonical_filter",
+      "native_execution": "not_claimed"
+    },
+    {
+      "id": "87-C173-P-dbt-catalog::ansi",
+      "verified": true,
+      "scope": "portable_parser_and_typed_canonical_filter",
+      "native_execution": "not_claimed"
+    },
+    {
+      "id": "87-C173-P-dbt-catalog::duckdb",
+      "verified": true,
+      "scope": "portable_parser_and_typed_canonical_filter",
+      "native_execution": "duckdb_only"
+    },
+    {
+      "id": "87-C173-P-dbt-catalog::databricks",
+      "verified": true,
+      "scope": "portable_parser_and_typed_canonical_filter",
+      "native_execution": "not_claimed"
+    },
+    {
+      "id": "87-C173-P-dbt-manifest-fallback::generic",
+      "verified": true,
+      "scope": "portable_parser_and_typed_canonical_filter",
+      "native_execution": "not_claimed"
+    },
+    {
+      "id": "87-C173-P-dbt-manifest-fallback::mysql",
+      "verified": true,
+      "scope": "portable_parser_and_typed_canonical_filter",
+      "native_execution": "not_claimed"
+    },
+    {
+      "id": "87-C173-P-dbt-manifest-fallback::postgresql",
+      "verified": true,
+      "scope": "portable_parser_and_typed_canonical_filter",
+      "native_execution": "not_claimed"
+    },
+    {
+      "id": "87-C173-P-dbt-manifest-fallback::hive",
+      "verified": true,
+      "scope": "portable_parser_and_typed_canonical_filter",
+      "native_execution": "not_claimed"
+    },
+    {
+      "id": "87-C173-P-dbt-manifest-fallback::sqlite",
+      "verified": true,
+      "scope": "portable_parser_and_typed_canonical_filter",
+      "native_execution": "not_claimed"
+    },
+    {
+      "id": "87-C173-P-dbt-manifest-fallback::snowflake",
+      "verified": true,
+      "scope": "portable_parser_and_typed_canonical_filter",
+      "native_execution": "not_claimed"
+    },
+    {
+      "id": "87-C173-P-dbt-manifest-fallback::redshift",
+      "verified": true,
+      "scope": "portable_parser_and_typed_canonical_filter",
+      "native_execution": "not_claimed"
+    },
+    {
+      "id": "87-C173-P-dbt-manifest-fallback::mssql",
+      "verified": true,
+      "scope": "portable_parser_and_typed_canonical_filter",
+      "native_execution": "not_claimed"
+    },
+    {
+      "id": "87-C173-P-dbt-manifest-fallback::clickhouse",
+      "verified": true,
+      "scope": "portable_parser_and_typed_canonical_filter",
+      "native_execution": "not_claimed"
+    },
+    {
+      "id": "87-C173-P-dbt-manifest-fallback::bigquery",
+      "verified": true,
+      "scope": "portable_parser_and_typed_canonical_filter",
+      "native_execution": "not_claimed"
+    },
+    {
+      "id": "87-C173-P-dbt-manifest-fallback::ansi",
+      "verified": true,
+      "scope": "portable_parser_and_typed_canonical_filter",
+      "native_execution": "not_claimed"
+    },
+    {
+      "id": "87-C173-P-dbt-manifest-fallback::duckdb",
+      "verified": true,
+      "scope": "portable_parser_and_typed_canonical_filter",
+      "native_execution": "duckdb_only"
+    },
+    {
+      "id": "87-C173-P-dbt-manifest-fallback::databricks",
+      "verified": true,
+      "scope": "portable_parser_and_typed_canonical_filter",
+      "native_execution": "not_claimed"
+    },
+    {
+      "id": "87-C173-P-dbt-constraints::generic",
+      "verified": true,
+      "scope": "portable_parser_and_typed_canonical_filter",
+      "native_execution": "not_claimed"
+    },
+    {
+      "id": "87-C173-P-dbt-constraints::mysql",
+      "verified": true,
+      "scope": "portable_parser_and_typed_canonical_filter",
+      "native_execution": "not_claimed"
+    },
+    {
+      "id": "87-C173-P-dbt-constraints::postgresql",
+      "verified": true,
+      "scope": "portable_parser_and_typed_canonical_filter",
+      "native_execution": "not_claimed"
+    },
+    {
+      "id": "87-C173-P-dbt-constraints::hive",
+      "verified": true,
+      "scope": "portable_parser_and_typed_canonical_filter",
+      "native_execution": "not_claimed"
+    },
+    {
+      "id": "87-C173-P-dbt-constraints::sqlite",
+      "verified": true,
+      "scope": "portable_parser_and_typed_canonical_filter",
+      "native_execution": "not_claimed"
+    },
+    {
+      "id": "87-C173-P-dbt-constraints::snowflake",
+      "verified": true,
+      "scope": "portable_parser_and_typed_canonical_filter",
+      "native_execution": "not_claimed"
+    },
+    {
+      "id": "87-C173-P-dbt-constraints::redshift",
+      "verified": true,
+      "scope": "portable_parser_and_typed_canonical_filter",
+      "native_execution": "not_claimed"
+    },
+    {
+      "id": "87-C173-P-dbt-constraints::mssql",
+      "verified": true,
+      "scope": "portable_parser_and_typed_canonical_filter",
+      "native_execution": "not_claimed"
+    },
+    {
+      "id": "87-C173-P-dbt-constraints::clickhouse",
+      "verified": true,
+      "scope": "portable_parser_and_typed_canonical_filter",
+      "native_execution": "not_claimed"
+    },
+    {
+      "id": "87-C173-P-dbt-constraints::bigquery",
+      "verified": true,
+      "scope": "portable_parser_and_typed_canonical_filter",
+      "native_execution": "not_claimed"
+    },
+    {
+      "id": "87-C173-P-dbt-constraints::ansi",
+      "verified": true,
+      "scope": "portable_parser_and_typed_canonical_filter",
+      "native_execution": "not_claimed"
+    },
+    {
+      "id": "87-C173-P-dbt-constraints::duckdb",
+      "verified": true,
+      "scope": "portable_parser_and_typed_canonical_filter",
+      "native_execution": "duckdb_only"
+    },
+    {
+      "id": "87-C173-P-dbt-constraints::databricks",
+      "verified": true,
+      "scope": "portable_parser_and_typed_canonical_filter",
+      "native_execution": "not_claimed"
+    },
+    {
+      "id": "87-C173-P-odcs-physical::generic",
+      "verified": true,
+      "scope": "portable_parser_and_typed_canonical_filter",
+      "native_execution": "not_claimed"
+    },
+    {
+      "id": "87-C173-P-odcs-physical::mysql",
+      "verified": true,
+      "scope": "portable_parser_and_typed_canonical_filter",
+      "native_execution": "not_claimed"
+    },
+    {
+      "id": "87-C173-P-odcs-physical::postgresql",
+      "verified": true,
+      "scope": "portable_parser_and_typed_canonical_filter",
+      "native_execution": "not_claimed"
+    },
+    {
+      "id": "87-C173-P-odcs-physical::hive",
+      "verified": true,
+      "scope": "portable_parser_and_typed_canonical_filter",
+      "native_execution": "not_claimed"
+    },
+    {
+      "id": "87-C173-P-odcs-physical::sqlite",
+      "verified": true,
+      "scope": "portable_parser_and_typed_canonical_filter",
+      "native_execution": "not_claimed"
+    },
+    {
+      "id": "87-C173-P-odcs-physical::snowflake",
+      "verified": true,
+      "scope": "portable_parser_and_typed_canonical_filter",
+      "native_execution": "not_claimed"
+    },
+    {
+      "id": "87-C173-P-odcs-physical::redshift",
+      "verified": true,
+      "scope": "portable_parser_and_typed_canonical_filter",
+      "native_execution": "not_claimed"
+    },
+    {
+      "id": "87-C173-P-odcs-physical::mssql",
+      "verified": true,
+      "scope": "portable_parser_and_typed_canonical_filter",
+      "native_execution": "not_claimed"
+    },
+    {
+      "id": "87-C173-P-odcs-physical::clickhouse",
+      "verified": true,
+      "scope": "portable_parser_and_typed_canonical_filter",
+      "native_execution": "not_claimed"
+    },
+    {
+      "id": "87-C173-P-odcs-physical::bigquery",
+      "verified": true,
+      "scope": "portable_parser_and_typed_canonical_filter",
+      "native_execution": "not_claimed"
+    },
+    {
+      "id": "87-C173-P-odcs-physical::ansi",
+      "verified": true,
+      "scope": "portable_parser_and_typed_canonical_filter",
+      "native_execution": "not_claimed"
+    },
+    {
+      "id": "87-C173-P-odcs-physical::duckdb",
+      "verified": true,
+      "scope": "portable_parser_and_typed_canonical_filter",
+      "native_execution": "duckdb_only"
+    },
+    {
+      "id": "87-C173-P-odcs-physical::databricks",
+      "verified": true,
+      "scope": "portable_parser_and_typed_canonical_filter",
+      "native_execution": "not_claimed"
+    },
+    {
+      "id": "87-C173-P-direct-ddl::generic",
+      "verified": true,
+      "scope": "portable_parser_and_typed_canonical_filter",
+      "native_execution": "not_claimed"
+    },
+    {
+      "id": "87-C173-P-direct-ddl::mysql",
+      "verified": true,
+      "scope": "portable_parser_and_typed_canonical_filter",
+      "native_execution": "not_claimed"
+    },
+    {
+      "id": "87-C173-P-direct-ddl::postgresql",
+      "verified": true,
+      "scope": "portable_parser_and_typed_canonical_filter",
+      "native_execution": "not_claimed"
+    },
+    {
+      "id": "87-C173-P-direct-ddl::hive",
+      "verified": true,
+      "scope": "portable_parser_and_typed_canonical_filter",
+      "native_execution": "not_claimed"
+    },
+    {
+      "id": "87-C173-P-direct-ddl::sqlite",
+      "verified": true,
+      "scope": "portable_parser_and_typed_canonical_filter",
+      "native_execution": "not_claimed"
+    },
+    {
+      "id": "87-C173-P-direct-ddl::snowflake",
+      "verified": true,
+      "scope": "portable_parser_and_typed_canonical_filter",
+      "native_execution": "not_claimed"
+    },
+    {
+      "id": "87-C173-P-direct-ddl::redshift",
+      "verified": true,
+      "scope": "portable_parser_and_typed_canonical_filter",
+      "native_execution": "not_claimed"
+    },
+    {
+      "id": "87-C173-P-direct-ddl::mssql",
+      "verified": true,
+      "scope": "portable_parser_and_typed_canonical_filter",
+      "native_execution": "not_claimed"
+    },
+    {
+      "id": "87-C173-P-direct-ddl::clickhouse",
+      "verified": true,
+      "scope": "portable_parser_and_typed_canonical_filter",
+      "native_execution": "not_claimed"
+    },
+    {
+      "id": "87-C173-P-direct-ddl::bigquery",
+      "verified": true,
+      "scope": "portable_parser_and_typed_canonical_filter",
+      "native_execution": "not_claimed"
+    },
+    {
+      "id": "87-C173-P-direct-ddl::ansi",
+      "verified": true,
+      "scope": "portable_parser_and_typed_canonical_filter",
+      "native_execution": "not_claimed"
+    },
+    {
+      "id": "87-C173-P-direct-ddl::duckdb",
+      "verified": true,
+      "scope": "portable_parser_and_typed_canonical_filter",
+      "native_execution": "duckdb_only"
+    },
+    {
+      "id": "87-C173-P-direct-ddl::databricks",
+      "verified": true,
+      "scope": "portable_parser_and_typed_canonical_filter",
+      "native_execution": "not_claimed"
+    },
+    {
+      "id": "87-C173-N-no-catalog-no-declaration::generic",
+      "verified": true,
+      "scope": "portable_parser_and_typed_canonical_filter",
+      "native_execution": "not_claimed"
+    },
+    {
+      "id": "87-C173-N-no-catalog-no-declaration::mysql",
+      "verified": true,
+      "scope": "portable_parser_and_typed_canonical_filter",
+      "native_execution": "not_claimed"
+    },
+    {
+      "id": "87-C173-N-no-catalog-no-declaration::postgresql",
+      "verified": true,
+      "scope": "portable_parser_and_typed_canonical_filter",
+      "native_execution": "not_claimed"
+    },
+    {
+      "id": "87-C173-N-no-catalog-no-declaration::hive",
+      "verified": true,
+      "scope": "portable_parser_and_typed_canonical_filter",
+      "native_execution": "not_claimed"
+    },
+    {
+      "id": "87-C173-N-no-catalog-no-declaration::sqlite",
+      "verified": true,
+      "scope": "portable_parser_and_typed_canonical_filter",
+      "native_execution": "not_claimed"
+    },
+    {
+      "id": "87-C173-N-no-catalog-no-declaration::snowflake",
+      "verified": true,
+      "scope": "portable_parser_and_typed_canonical_filter",
+      "native_execution": "not_claimed"
+    },
+    {
+      "id": "87-C173-N-no-catalog-no-declaration::redshift",
+      "verified": true,
+      "scope": "portable_parser_and_typed_canonical_filter",
+      "native_execution": "not_claimed"
+    },
+    {
+      "id": "87-C173-N-no-catalog-no-declaration::mssql",
+      "verified": true,
+      "scope": "portable_parser_and_typed_canonical_filter",
+      "native_execution": "not_claimed"
+    },
+    {
+      "id": "87-C173-N-no-catalog-no-declaration::clickhouse",
+      "verified": true,
+      "scope": "portable_parser_and_typed_canonical_filter",
+      "native_execution": "not_claimed"
+    },
+    {
+      "id": "87-C173-N-no-catalog-no-declaration::bigquery",
+      "verified": true,
+      "scope": "portable_parser_and_typed_canonical_filter",
+      "native_execution": "not_claimed"
+    },
+    {
+      "id": "87-C173-N-no-catalog-no-declaration::ansi",
+      "verified": true,
+      "scope": "portable_parser_and_typed_canonical_filter",
+      "native_execution": "not_claimed"
+    },
+    {
+      "id": "87-C173-N-no-catalog-no-declaration::duckdb",
+      "verified": true,
+      "scope": "portable_parser_and_typed_canonical_filter",
+      "native_execution": "duckdb_only"
+    },
+    {
+      "id": "87-C173-N-no-catalog-no-declaration::databricks",
+      "verified": true,
+      "scope": "portable_parser_and_typed_canonical_filter",
+      "native_execution": "not_claimed"
+    },
+    {
+      "id": "87-C173-N-odcs-no-types::generic",
+      "verified": true,
+      "scope": "portable_parser_and_typed_canonical_filter",
+      "native_execution": "not_claimed"
+    },
+    {
+      "id": "87-C173-N-odcs-no-types::mysql",
+      "verified": true,
+      "scope": "portable_parser_and_typed_canonical_filter",
+      "native_execution": "not_claimed"
+    },
+    {
+      "id": "87-C173-N-odcs-no-types::postgresql",
+      "verified": true,
+      "scope": "portable_parser_and_typed_canonical_filter",
+      "native_execution": "not_claimed"
+    },
+    {
+      "id": "87-C173-N-odcs-no-types::hive",
+      "verified": true,
+      "scope": "portable_parser_and_typed_canonical_filter",
+      "native_execution": "not_claimed"
+    },
+    {
+      "id": "87-C173-N-odcs-no-types::sqlite",
+      "verified": true,
+      "scope": "portable_parser_and_typed_canonical_filter",
+      "native_execution": "not_claimed"
+    },
+    {
+      "id": "87-C173-N-odcs-no-types::snowflake",
+      "verified": true,
+      "scope": "portable_parser_and_typed_canonical_filter",
+      "native_execution": "not_claimed"
+    },
+    {
+      "id": "87-C173-N-odcs-no-types::redshift",
+      "verified": true,
+      "scope": "portable_parser_and_typed_canonical_filter",
+      "native_execution": "not_claimed"
+    },
+    {
+      "id": "87-C173-N-odcs-no-types::mssql",
+      "verified": true,
+      "scope": "portable_parser_and_typed_canonical_filter",
+      "native_execution": "not_claimed"
+    },
+    {
+      "id": "87-C173-N-odcs-no-types::clickhouse",
+      "verified": true,
+      "scope": "portable_parser_and_typed_canonical_filter",
+      "native_execution": "not_claimed"
+    },
+    {
+      "id": "87-C173-N-odcs-no-types::bigquery",
+      "verified": true,
+      "scope": "portable_parser_and_typed_canonical_filter",
+      "native_execution": "not_claimed"
+    },
+    {
+      "id": "87-C173-N-odcs-no-types::ansi",
+      "verified": true,
+      "scope": "portable_parser_and_typed_canonical_filter",
+      "native_execution": "not_claimed"
+    },
+    {
+      "id": "87-C173-N-odcs-no-types::duckdb",
+      "verified": true,
+      "scope": "portable_parser_and_typed_canonical_filter",
+      "native_execution": "duckdb_only"
+    },
+    {
+      "id": "87-C173-N-odcs-no-types::databricks",
+      "verified": true,
+      "scope": "portable_parser_and_typed_canonical_filter",
+      "native_execution": "not_claimed"
+    }
+  ],
+  "adapter_cells": [
+    {
+      "id": "87-C173-P-dbt-compiled::sql",
+      "verified": true,
+      "disposition": "tested_appropriate_authoritative_evidence"
+    },
+    {
+      "id": "87-C173-P-dbt-compiled::dbt",
+      "verified": true,
+      "disposition": "tested_appropriate_authoritative_evidence"
+    },
+    {
+      "id": "87-C173-P-dbt-compiled::odcs",
+      "verified": true,
+      "disposition": "reviewed_not_applicable"
+    },
+    {
+      "id": "87-C173-P-dbt-catalog::sql",
+      "verified": true,
+      "disposition": "tested_appropriate_authoritative_evidence"
+    },
+    {
+      "id": "87-C173-P-dbt-catalog::dbt",
+      "verified": true,
+      "disposition": "tested_appropriate_authoritative_evidence"
+    },
+    {
+      "id": "87-C173-P-dbt-catalog::odcs",
+      "verified": true,
+      "disposition": "tested_appropriate_authoritative_evidence"
+    },
+    {
+      "id": "87-C173-P-dbt-manifest-fallback::sql",
+      "verified": true,
+      "disposition": "tested_appropriate_authoritative_evidence"
+    },
+    {
+      "id": "87-C173-P-dbt-manifest-fallback::dbt",
+      "verified": true,
+      "disposition": "tested_appropriate_authoritative_evidence"
+    },
+    {
+      "id": "87-C173-P-dbt-manifest-fallback::odcs",
+      "verified": true,
+      "disposition": "tested_appropriate_authoritative_evidence"
+    },
+    {
+      "id": "87-C173-P-dbt-constraints::sql",
+      "verified": true,
+      "disposition": "tested_appropriate_authoritative_evidence"
+    },
+    {
+      "id": "87-C173-P-dbt-constraints::dbt",
+      "verified": true,
+      "disposition": "tested_appropriate_authoritative_evidence"
+    },
+    {
+      "id": "87-C173-P-dbt-constraints::odcs",
+      "verified": true,
+      "disposition": "tested_appropriate_authoritative_evidence"
+    },
+    {
+      "id": "87-C173-P-odcs-physical::sql",
+      "verified": true,
+      "disposition": "tested_appropriate_authoritative_evidence"
+    },
+    {
+      "id": "87-C173-P-odcs-physical::dbt",
+      "verified": true,
+      "disposition": "tested_appropriate_authoritative_evidence"
+    },
+    {
+      "id": "87-C173-P-odcs-physical::odcs",
+      "verified": true,
+      "disposition": "tested_appropriate_authoritative_evidence"
+    },
+    {
+      "id": "87-C173-P-direct-ddl::sql",
+      "verified": true,
+      "disposition": "tested_appropriate_authoritative_evidence"
+    },
+    {
+      "id": "87-C173-P-direct-ddl::dbt",
+      "verified": true,
+      "disposition": "tested_appropriate_authoritative_evidence"
+    },
+    {
+      "id": "87-C173-P-direct-ddl::odcs",
+      "verified": true,
+      "disposition": "tested_appropriate_authoritative_evidence"
+    },
+    {
+      "id": "87-C173-N-no-catalog-no-declaration::sql",
+      "verified": true,
+      "disposition": "reviewed_not_applicable"
+    },
+    {
+      "id": "87-C173-N-no-catalog-no-declaration::dbt",
+      "verified": true,
+      "disposition": "tested_appropriate_authoritative_evidence"
+    },
+    {
+      "id": "87-C173-N-no-catalog-no-declaration::odcs",
+      "verified": true,
+      "disposition": "reviewed_not_applicable"
+    },
+    {
+      "id": "87-C173-N-odcs-no-types::sql",
+      "verified": true,
+      "disposition": "reviewed_not_applicable"
+    },
+    {
+      "id": "87-C173-N-odcs-no-types::dbt",
+      "verified": true,
+      "disposition": "reviewed_not_applicable"
+    },
+    {
+      "id": "87-C173-N-odcs-no-types::odcs",
+      "verified": true,
+      "disposition": "tested_appropriate_authoritative_evidence"
+    }
+  ],
+  "conditional_boundaries": [
+    {
+      "id": "87-C173-C-native-enforcement",
+      "classification": "Residual",
+      "owner": "TASK-173",
+      "reviewed": true,
+      "release_disposition": "retain explicit unknown; requires native row-state evidence"
+    },
+    {
+      "id": "87-C173-C-vendor-runtime",
+      "classification": "Residual",
+      "owner": "TASK-173",
+      "reviewed": true,
+      "release_disposition": "native vendor execution not claimed"
+    }
+  ],
+  "native_duckdb_complete_bag_verified": true,
+  "all_13_parser_dialects_verified": true,
+  "sql_dbt_odcs_metadata_parity_verified": true,
+  "strict_clippy_verified": true,
+  "fmt_verified": true,
+  "full_cargo_tests_verified": true,
+  "no_default_features_verified": true,
+  "dbt_e2e_verified": true,
+  "active_protocol_schema_unchanged": true,
+  "pinned_sql_tdg_tests": {
+    "status": "not_applicable_to_changed_surface",
+    "basis": "sql-tdg pins protocol 2.0.3 with default-features=false; changed production code is ODCS-only; v3 pin gate owned by TASK-43/TASK-90/91"
+  },
+  "review": {
+    "standards": "pass",
+    "spec": "pass",
+    "independent_second_person": false,
+    "owner_directed_same_account_exception": true
+  },
+  "child_signed_off": true,
+  "parent_closed": false,
+  "release_approved": false
+}

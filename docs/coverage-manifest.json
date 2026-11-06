@@ -15026,9 +15026,9 @@
   "task_173_metadata_authority_acceptance": {
     "owner": "TASK-173",
     "parent": "TASK-87",
-    "status": "in_progress",
+    "status": "done_bounded_owner_directed_review_exception",
     "freeze": "docs/task-173-acceptance-freeze.json",
-    "freeze_version": 1,
+    "freeze_version": 2,
     "fixture_ids": [
       "87-C173-P",
       "87-C173-N"
@@ -15039,10 +15039,25 @@
     "public_api_oracles": [
       "tests/task_173_metadata_authority.rs"
     ],
-    "mandatory_verified": false,
-    "full_ci_verified": false,
+    "mandatory_verified": true,
+    "full_ci_verified": true,
     "independent_review_verified": false,
     "parent_closed": false,
-    "release_approved": false
+    "release_approved": false,
+    "archive": "docs/task-173-acceptance-freeze-v1.json",
+    "dialect_parser_cells": 104,
+    "adapter_cells": 24,
+    "acceptance_verification": "docs/task-173-acceptance-verification.json",
+    "acceptance_audit": "docs/task-173-acceptance-audit.md",
+    "all_13_parser_dialects_verified": true,
+    "adapter_parity_verified": true,
+    "native_duckdb_verified": true,
+    "two_axis_same_account_review_verified": true,
+    "owner_directed_review_process_exception": true,
+    "child_signed_off": true,
+    "code_head": "1e92cea7d353baede38fa539768e154fffc8d10d",
+    "implementation_ci_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/42258873335",
+    "implementation_ci_jobs_passed": "9/9",
+    "pinned_consumer_disposition": "not_applicable_to_odcs_only_change"
   }
 }
