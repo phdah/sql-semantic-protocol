@@ -150,7 +150,10 @@ fn rollback_restores_dropped_relation_duplicate_nulls_and_rejected_read() {
                 &[(1, Some(10)), (1, None)]
             };
             assert_rows(&db, expected);
-            assert_eq!(exact.checkpoints[index].after.states[0].rows().len(), expected.len());
+            assert_eq!(
+                exact.checkpoints[index].after.states[0].rows().len(),
+                expected.len()
+            );
         }
     }
 }
