@@ -698,7 +698,7 @@ fn property_data_type(
         .transpose()
     {
         Ok(value) => value,
-        Err(error) if matches!(physical_type, Some(Ok(_))) => {
+        Err(error) if matches!(&physical_type, Some(Ok(_))) => {
             diagnostics.push(OdcsDiagnostic::new(
                 source,
                 "odcs_unsupported_logical_type",
