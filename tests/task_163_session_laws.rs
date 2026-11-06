@@ -45,7 +45,27 @@ fn create_inside_transaction_is_rolled_back_without_implicit_commit() {
     assert_eq!(exact.checkpoints.len(), sql.len());
     assert!(exact.checkpoints[0].after.states.is_empty());
     assert_eq!(exact.checkpoints[2].after.states[0].rows().len(), 2);
-    assert_eq!(exact.checkpoints[2].after.exact_domains().unwrap().len(), 1);
+    let inserted = exact.checkpoints[2]
+        .statement
+        .as_ref()
+        .unwrap()
+        .write
+        .as_ref()
+        .unwrap();
+    assert_eq!(inserted.affected().inserted(), 2);
+    let domains = exact.checkpoints[2].after.exact_domains().unwrap();
+    assert_eq!(domains.len(), 1);
+    assert_eq!(
+        domains[0].1[0].values(),
+        &[(sql_semantic_protocol::LiteralValue::Number("1".into()), 2)]
+    );
+    assert_eq!(
+        domains[0].1[1].values(),
+        &[
+            (sql_semantic_protocol::LiteralValue::Number("10".into()), 1),
+            (sql_semantic_protocol::LiteralValue::Null, 1),
+        ]
+    );
     assert!(exact.checkpoints[3].after.states.is_empty());
     assert!(exact.final_catalog.schemas.is_empty());
 
@@ -85,8 +105,24 @@ fn rollback_restores_dropped_relation_duplicate_nulls_and_rejected_read() {
         panic!("DROP TABLE rollback must preserve complete source bag: {proof:?}");
     };
     assert!(exact.checkpoints[3].after.states.is_empty());
+    let drop = exact.checkpoints[3]
+        .statement
+        .as_ref()
+        .unwrap()
+        .write
+        .as_ref()
+        .unwrap();
+    assert_eq!(drop.affected().deleted(), 2);
+    assert_eq!(drop.affected_target_ordinals(), &[0, 1]);
     assert_eq!(exact.checkpoints[4].after, exact.checkpoints[2].after);
     assert_eq!(exact.final_catalog.states[0].rows().len(), 2);
+    let restored_domains = exact.final_catalog.exact_domains().unwrap();
+    assert_eq!(restored_domains[0].1[0].values().len(), 1);
+    assert_eq!(restored_domains[0].1[1].values().len(), 2);
+    assert_eq!(
+        restored_domains[0].1[1].values()[1].0,
+        sql_semantic_protocol::LiteralValue::Null
+    );
     let read = exact.checkpoints[5]
         .statement
         .as_ref()
@@ -208,10 +244,14 @@ fn ddl_committed_outside_transaction_survives_later_dml_rollback() {
     assert!(domains[0].1.iter().all(|domain| domain.values().is_empty()));
 
     let db = Connection::open_in_memory().unwrap();
-    for statement in sql {
+    for (index, statement) in sql.iter().enumerate() {
         db.execute_batch(statement).unwrap();
+        if index == 0 || index == 1 || index == 3 {
+            assert_rows(&db, &[]);
+        } else {
+            assert_rows(&db, &[(1, Some(10)), (2, None)]);
+        }
     }
-    assert_rows(&db, &[]);
 }
 
 #[test]
