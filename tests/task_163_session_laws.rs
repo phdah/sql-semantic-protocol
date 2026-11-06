@@ -218,10 +218,14 @@ fn unproved_sql_and_invalid_controls_are_not_upgraded_by_context() {
         &empty_catalog(),
         &[PhysicalTransactionSessionLaw::DuckDbTransactionalDdlRollback],
     );
-    assert!(matches!(
-        residual,
-        PhysicalTransactionScriptProof::Residual { step_index: 1, .. }
-    ));
+    match residual {
+        PhysicalTransactionScriptProof::Residual { step_index: 1, reason } => {
+            assert!(reason.contains("TASK-163"), "{reason}");
+            assert!(reason.contains("duckdb_transactional_ddl_rollback"), "{reason}");
+            assert!(reason.contains("canonical") || reason.contains("SQL"), "{reason}");
+        }
+        other => panic!("earlier SQL uncertainty cannot be upgraded: {other:?}"),
+    }
 }
 
 #[test]
@@ -309,10 +313,13 @@ fn conditional_sql_dialect_and_engine_laws_are_never_promoted_by_parser_only() {
         &empty_catalog(),
         &[PhysicalTransactionSessionLaw::TemporaryTableLifetime],
     );
-    assert!(
-        matches!(temp, PhysicalTransactionScriptProof::Residual { .. }),
-        "temporary table session lifetime requires engine evidence: {temp:?}"
-    );
+    match temp {
+        PhysicalTransactionScriptProof::Residual { step_index: 0, reason } => {
+            assert!(reason.contains("TASK-163"), "{reason}");
+            assert!(reason.contains("temporary_table_lifetime"), "{reason}");
+        }
+        other => panic!("temporary table lifetime must be unproved: {other:?}"),
+    }
     for sql in [
         "SET CONSTRAINTS ALL DEFERRED",
         "BEGIN TRANSACTION ISOLATION LEVEL SERIALIZABLE",
