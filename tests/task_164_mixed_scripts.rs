@@ -530,7 +530,10 @@ fn rolled_back_alter_default_does_not_leak_into_later_sql_units() {
             .all(|source| source.column() != "v")
     }));
     let db = Connection::open_in_memory().unwrap();
-    for statement in sql.iter().filter(|statement| !statement.starts_with("SELECT")) {
+    for statement in sql
+        .iter()
+        .filter(|statement| !statement.starts_with("SELECT"))
+    {
         db.execute_batch(statement).unwrap();
     }
     let id: i64 = db
