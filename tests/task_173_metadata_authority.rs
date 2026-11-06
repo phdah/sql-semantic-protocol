@@ -3,16 +3,27 @@
 
 use serde_json::{json, Value};
 use sql_semantic_protocol::{
-    analyze_configured_inputs_with_catalog, analyze_dbt_artifacts,
-    analyze_inputs, dialect_from_name, parse_dbt_catalog,
-    parse_dbt_manifest, ComposedSemantics, ConfiguredSqlInput, DataType, DbtArtifactsError,
-    LiteralValue, RelationCatalog, SchemaSourceKind, SqlInput, ValueDomain,
+    analyze_configured_inputs_with_catalog, analyze_dbt_artifacts, analyze_inputs,
+    dialect_from_name, parse_dbt_catalog, parse_dbt_manifest, ComposedSemantics,
+    ConfiguredSqlInput, DataType, DbtArtifactsError, LiteralValue, RelationCatalog,
+    SchemaSourceKind, SqlInput, ValueDomain,
 };
 
 const FILTER: &str = "SELECT k FROM raw.orders WHERE k >= 1";
 const DIALECTS: &[&str] = &[
-    "generic", "mysql", "postgresql", "hive", "sqlite", "snowflake", "redshift",
-    "mssql", "clickhouse", "bigquery", "ansi", "duckdb", "databricks",
+    "generic",
+    "mysql",
+    "postgresql",
+    "hive",
+    "sqlite",
+    "snowflake",
+    "redshift",
+    "mssql",
+    "clickhouse",
+    "bigquery",
+    "ansi",
+    "duckdb",
+    "databricks",
 ];
 
 fn manifest_json(source_type: Option<&str>) -> Value {
@@ -84,7 +95,10 @@ fn filtered_output_domain(catalog: &RelationCatalog, dialect_name: &str) -> Valu
     let input = SqlInput::inline(FILTER);
     let dialect = dialect_from_name(dialect_name).unwrap();
     let configured = [ConfiguredSqlInput::new(
-        "task173-filter", &input, dialect_name, dialect.as_ref(),
+        "task173-filter",
+        &input,
+        dialect_name,
+        dialect.as_ref(),
     )];
     let bundle = analyze_configured_inputs_with_catalog(&configured, catalog).unwrap();
     let ComposedSemantics::Resolved(semantics) = bundle.layers()[0].composed_semantics() else {
@@ -141,9 +155,10 @@ fn absent_warehouse_catalog_uses_only_explicit_manifest_type_evidence() {
         schema.columns()[0].data_type(),
         &DataType::SignedInteger { bits: Some(32) }
     );
-    assert_inclusive_lower_one(
-        &filtered_output_domain(&RelationCatalog::from_schemas(bundle.source_schemas()).unwrap(), "duckdb"),
-    );
+    assert_inclusive_lower_one(&filtered_output_domain(
+        &RelationCatalog::from_schemas(bundle.source_schemas()).unwrap(),
+        "duckdb",
+    ));
 }
 
 #[test]
@@ -250,19 +265,32 @@ mod odcs_authority {
         let [schema] = metadata.source_schemas() else {
             panic!("valid physical datatype must produce a typed schema");
         };
-        assert_eq!(schema.source_kind(), Some(SchemaSourceKind::ExternalMetadata));
-        assert_eq!(schema.columns()[0].data_type(), &DataType::SignedInteger { bits: Some(32) });
+        assert_eq!(
+            schema.source_kind(),
+            Some(SchemaSourceKind::ExternalMetadata)
+        );
+        assert_eq!(
+            schema.columns()[0].data_type(),
+            &DataType::SignedInteger { bits: Some(32) }
+        );
         assert!(metadata.diagnostics().iter().any(|diagnostic| {
             diagnostic.code() == "odcs_unsupported_logical_type"
-                && diagnostic.message().contains("valid physicalType is retained")
+                && diagnostic
+                    .message()
+                    .contains("valid physicalType is retained")
         }));
-        let constraint = metadata.relation_constraints()[0].constraints().iter().find_map(
-            |constraint| match constraint {
+        let constraint = metadata.relation_constraints()[0]
+            .constraints()
+            .iter()
+            .find_map(|constraint| match constraint {
                 RelationConstraint::NotNull(rule) => Some(rule),
                 _ => None,
-            },
-        ).expect("required ODCS column");
-        assert_eq!(constraint.evidence()[0].enforcement(), ConstraintEnforcement::Unknown);
+            })
+            .expect("required ODCS column");
+        assert_eq!(
+            constraint.evidence()[0].enforcement(),
+            ConstraintEnforcement::Unknown
+        );
         assert_eq!(
             constraint.evidence()[0].provenance().source_kind(),
             ConstraintSourceKind::ExternalMetadata
@@ -270,8 +298,11 @@ mod odcs_authority {
 
         let from_odcs = RelationCatalog::from_schemas(metadata.source_schemas()).unwrap();
         let from_dbt = RelationCatalog::from_schemas(
-            analyzed_dbt(Some("TEXT"), Some("INTEGER")).unwrap().source_schemas(),
-        ).unwrap();
+            analyzed_dbt(Some("TEXT"), Some("INTEGER"))
+                .unwrap()
+                .source_schemas(),
+        )
+        .unwrap();
         assert_eq!(
             filtered_output_domain(&from_odcs, "duckdb"),
             filtered_output_domain(&from_dbt, "duckdb")
@@ -290,7 +321,11 @@ mod odcs_authority {
     fn absent_types_report_both_column_and_relation_absence() {
         let metadata = parse("").unwrap();
         assert!(metadata.source_schemas().is_empty());
-        let codes = metadata.diagnostics().iter().map(|diagnostic| diagnostic.code()).collect::<Vec<_>>();
+        let codes = metadata
+            .diagnostics()
+            .iter()
+            .map(|diagnostic| diagnostic.code())
+            .collect::<Vec<_>>();
         assert!(codes.contains(&"odcs_unresolved_data_type"));
         assert!(codes.contains(&"odcs_incomplete_source_schema"));
     }
