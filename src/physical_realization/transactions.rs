@@ -442,7 +442,10 @@ pub(crate) fn certify_duckdb_session_laws(
             other => {
                 return residual(
                     0,
-                    format!("TASK-163: unproved session or vendor law {}", other.as_str()),
+                    format!(
+                        "TASK-163: unproved session or vendor law {}",
+                        other.as_str()
+                    ),
                 );
             }
         }
