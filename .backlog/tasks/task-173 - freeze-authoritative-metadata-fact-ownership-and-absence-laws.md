@@ -1,10 +1,10 @@
 ---
 id: TASK-173
 title: Freeze authoritative metadata fact ownership and absence laws
-status: To Do
+status: In Progress
 assignee: []
 created_date: '2026-10-17'
-updated_date: '2026-10-17'
+updated_date: '2026-11-06'
 labels: []
 milestone: m-3
 dependencies:
