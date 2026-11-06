@@ -291,8 +291,7 @@ fn dbt_adapter_matches_equivalent_generic_analysis() {
     // evidence, then assert its independent provenance and execution boundary.
     let mut adapted_json: serde_json::Value =
         serde_json::from_str(&to_bundle_json(&adapted)).unwrap();
-    let generic_json: serde_json::Value =
-        serde_json::from_str(&to_bundle_json(&generic)).unwrap();
+    let generic_json: serde_json::Value = serde_json::from_str(&to_bundle_json(&generic)).unwrap();
     let producer_evidence = adapted_json
         .as_object_mut()
         .unwrap()
