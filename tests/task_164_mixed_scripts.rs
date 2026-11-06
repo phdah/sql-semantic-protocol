@@ -69,16 +69,32 @@ fn expected_rows(values: &Value) -> Vec<PhysicalWriteRow> {
         .collect()
 }
 
-fn native_rows(db: &Connection, table: &str) -> Vec<PhysicalWriteRow> {
+fn native_rows(
+    db: &Connection,
+    table: &str,
+    columns: &[sql_semantic_protocol::SchemaColumn],
+) -> Vec<PhysicalWriteRow> {
     assert!(matches!(table, "t" | "s"));
-    let sql = format!("SELECT id, v FROM {table}");
+    let names = columns.iter().map(|column| column.name()).collect::<Vec<_>>();
+    assert!(names.iter().all(|name| matches!(*name, "id" | "v")));
+    let sql = format!("SELECT {} FROM {table}", names.join(", "));
     let mut statement = db.prepare(&sql).unwrap();
     statement
         .query_map([], |result| {
-            Ok(row(
-                result.get::<_, Option<i64>>(0)?,
-                result.get::<_, Option<i64>>(1)?,
-            ))
+            let values = names
+                .iter()
+                .enumerate()
+                .map(|(index, name)| {
+                    let value = result.get::<_, Option<i64>>(index)?;
+                    Ok((
+                        (*name).to_string(),
+                        value.map_or(LiteralValue::Null, |integer| {
+                            LiteralValue::Number(integer.to_string())
+                        }),
+                    ))
+                })
+                .collect::<duckdb::Result<BTreeMap<_, _>>>()?;
+            Ok(PhysicalWriteRow::new(values).unwrap())
         })
         .unwrap()
         .collect::<duckdb::Result<Vec<_>>>()
@@ -176,7 +192,7 @@ fn assert_native_catalog(db: &Connection, checkpoint: &PhysicalScriptCatalog, in
             }
             assert_eq!(
                 sorted(state.rows()),
-                sorted(&native_rows(db, table)),
+                sorted(&native_rows(db, table, schema.columns())),
                 "{table} complete bag after SQL step {index}"
             );
         }
@@ -487,16 +503,13 @@ fn native_alter_default_is_carried_across_independent_transaction_sql_units() {
         if !sql.starts_with("SELECT") {
             db.execute_batch(sql).unwrap();
         }
-        let native_count: i64 = db
-            .query_row("SELECT count(*) FROM t", [], |result| result.get(0))
-            .unwrap();
-        assert_eq!(
-            exact.checkpoints[index].after.states[0].rows().len(),
-            native_count as usize
+        let checkpoint = &exact.checkpoints[index].after;
+        assert_native_catalog(&db, checkpoint, index);
+        assert_frozen_catalog(
+            checkpoint,
+            &case["checkpoint_catalogs"][index],
+            index,
         );
-        if index >= 2 {
-            assert_eq!(exact.checkpoints[index].after.schemas[0].columns().len(), 2);
-        }
     }
     assert_eq!(
         exact.final_catalog.states[0].rows(),
@@ -511,7 +524,7 @@ fn native_alter_default_is_carried_across_independent_transaction_sql_units() {
         .unwrap();
     assert_read(read, &case["expected_terminal_read"]);
     assert_terminal_domains(&exact, &case["typed_domains"]);
-    let from_native = native_rows(&db, "t");
+    let from_native = native_rows(&db, "t", exact.final_catalog.schemas[0].columns());
     assert_eq!(
         sorted(&from_native),
         sorted(exact.final_catalog.states[0].rows())
