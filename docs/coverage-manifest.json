@@ -1,4 +1,41 @@
 {
+  "task_164_mixed_script_acceptance": {
+    "owner": "TASK-164",
+    "parent": "TASK-84",
+    "status": "in_progress_frozen_v1_pending_native_dialect_adapter_ci_and_review",
+    "freeze": "docs/task-164-acceptance-freeze.json",
+    "freeze_version": 1,
+    "fixture_ids": [
+      "84-C164-P",
+      "84-C164-N"
+    ],
+    "named_families": [
+      "MIXED_DDL_DML_MERGE_READ",
+      "NULL_DUPLICATE_NOT_TRUE",
+      "TRANSACTION_ROLLBACK",
+      "REPEATED_IDEMPOTENT_MERGE",
+      "INVALID_LIFECYCLE",
+      "NATIVE_ALTER_DEFAULT_PROPAGATION",
+      "SAVEPOINT_BOUNDARY",
+      "VENDOR_SESSION_BOUNDARY"
+    ],
+    "mandatory_cases": 6,
+    "conditional_cases": 2,
+    "dialects_expected": 13,
+    "public_api_oracles": [
+      "tests/task_164_mixed_scripts.rs",
+      "tests/task_164_dialect_matrix.rs",
+      "tests/task_164_adapter_parity.rs"
+    ],
+    "mandatory_verified": false,
+    "native_duckdb_verified": false,
+    "all_13_parser_dialects_verified": false,
+    "adapter_parity_verified": false,
+    "full_ci_verified": false,
+    "independent_review_verified": false,
+    "parent_closed": false,
+    "release_approved": false
+  },
   "task_163_transaction_session_acceptance": {
     "owner": "TASK-163",
     "parent": "TASK-84",
