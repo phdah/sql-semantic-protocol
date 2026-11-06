@@ -122,10 +122,11 @@ fn prove(catalog: &RelationCatalog) -> ExactOutcome {
     let configured = ConfiguredSqlInput::new("task163-step", &input, "duckdb", dialect.as_ref());
     let bundle = analyze_configured_inputs_with_catalog(&[configured], catalog).unwrap();
     let initial = PhysicalScriptCatalog {
-        states: vec![
-            PhysicalWriteState::new("t", vec![row(1, Some(10)), row(2, None), row(2, None)])
-                .unwrap(),
-        ],
+        states: vec![PhysicalWriteState::new(
+            "t",
+            vec![row(1, Some(10)), row(2, None), row(2, None)],
+        )
+        .unwrap()],
         schemas: catalog.schemas().to_vec(),
     };
     let steps = [
@@ -156,13 +157,20 @@ fn prove(catalog: &RelationCatalog) -> ExactOutcome {
         &[PhysicalTransactionSessionLaw::ConcurrentIsolation],
     );
     assert!(
-        matches!(residual, PhysicalTransactionScriptProof::Residual { step_index: 0, .. }),
+        matches!(
+            residual,
+            PhysicalTransactionScriptProof::Residual { step_index: 0, .. }
+        ),
         "metadata cannot attest isolation: {residual:?}"
     );
     let domains = exact.final_catalog.exact_domains().unwrap();
     (
         exact.final_catalog.states[0].rows().to_vec(),
-        domains[0].1.iter().map(|domain| domain.values().to_vec()).collect(),
+        domains[0]
+            .1
+            .iter()
+            .map(|domain| domain.values().to_vec())
+            .collect(),
     )
 }
 
