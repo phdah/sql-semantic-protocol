@@ -755,7 +755,10 @@ fn frozen_inventory_retains_original_scope_and_explicit_unverified_signoff() {
     assert_eq!(freeze["signoff"]["adapter_parity_verified"], true);
     assert_eq!(freeze["signoff"]["full_ci_verified"], true);
     assert_eq!(freeze["signoff"]["independent_review_verified"], false);
-    assert_eq!(freeze["signoff"]["two_axis_author_account_review_verified"], true);
+    assert_eq!(
+        freeze["signoff"]["two_axis_author_account_review_verified"],
+        true
+    );
     assert_eq!(freeze["signoff"]["parent_signed_off"], false);
     let v4: Value =
         serde_json::from_str(include_str!("../docs/task-164-acceptance-freeze-v4.json")).unwrap();
