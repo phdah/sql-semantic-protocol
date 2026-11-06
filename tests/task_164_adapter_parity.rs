@@ -6,10 +6,9 @@ use std::collections::BTreeMap;
 use serde_json::json;
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, analyze_dbt_artifacts, dialect_from_name,
-    parse_dbt_catalog, parse_dbt_manifest, physical_duckdb_transaction_plan,
-    ConfiguredSqlInput, LiteralValue, PhysicalScriptCatalog, PhysicalTransactionScriptProof,
-    PhysicalTransactionStep, PhysicalWriteRow, PhysicalWriteState, RelationCatalog,
-    RelationSchema, SchemaColumn, SqlInput,
+    parse_dbt_catalog, parse_dbt_manifest, physical_duckdb_transaction_plan, ConfiguredSqlInput,
+    LiteralValue, PhysicalScriptCatalog, PhysicalTransactionScriptProof, PhysicalTransactionStep,
+    PhysicalWriteRow, PhysicalWriteState, RelationCatalog, RelationSchema, SchemaColumn, SqlInput,
 };
 
 fn direct() -> RelationCatalog {
@@ -107,8 +106,7 @@ fn dbt() -> RelationCatalog {
     let manifest = parse_dbt_manifest(&manifest.to_string()).unwrap();
     let catalog = parse_dbt_catalog(&catalog.to_string()).unwrap();
     let dialect = dialect_from_name("duckdb").unwrap();
-    let bundle =
-        analyze_dbt_artifacts(&manifest, &catalog, "duckdb", dialect.as_ref()).unwrap();
+    let bundle = analyze_dbt_artifacts(&manifest, &catalog, "duckdb", dialect.as_ref()).unwrap();
     RelationCatalog::from_schemas(bundle.source_schemas()).unwrap()
 }
 
@@ -165,14 +163,22 @@ fn prove(catalog: &RelationCatalog) -> (Vec<PhysicalWriteRow>, Vec<usize>) {
         "DELETE FROM t WHERE id = 2",
         "SELECT id, v FROM t WHERE v >= 20",
     ];
-    let inputs = sql.iter().map(|sql| SqlInput::inline(*sql)).collect::<Vec<_>>();
+    let inputs = sql
+        .iter()
+        .map(|sql| SqlInput::inline(*sql))
+        .collect::<Vec<_>>();
     let ids = ["task164-merge", "task164-delete", "task164-read"];
     let bundles = inputs
         .iter()
         .zip(ids)
         .map(|(input, id)| {
             analyze_configured_inputs_with_catalog(
-                &[ConfiguredSqlInput::new(id, input, "duckdb", dialect.as_ref())],
+                &[ConfiguredSqlInput::new(
+                    id,
+                    input,
+                    "duckdb",
+                    dialect.as_ref(),
+                )],
                 catalog,
             )
             .unwrap()
@@ -194,14 +200,37 @@ fn prove(catalog: &RelationCatalog) -> (Vec<PhysicalWriteRow>, Vec<usize>) {
         panic!("equivalent source facts must preserve mixed-script proof: {proof:?}");
     };
     assert_eq!(exact.checkpoints.len(), 3);
-    let merge = exact.checkpoints[0].statement.as_ref().unwrap().write.as_ref().unwrap();
+    let merge = exact.checkpoints[0]
+        .statement
+        .as_ref()
+        .unwrap()
+        .write
+        .as_ref()
+        .unwrap();
     assert_eq!(merge.affected().updated(), 1);
-    let deletion = exact.checkpoints[1].statement.as_ref().unwrap().write.as_ref().unwrap();
+    let deletion = exact.checkpoints[1]
+        .statement
+        .as_ref()
+        .unwrap()
+        .write
+        .as_ref()
+        .unwrap();
     assert_eq!(deletion.affected().deleted(), 1);
-    let read = exact.checkpoints[2].statement.as_ref().unwrap().read.as_ref().unwrap();
+    let read = exact.checkpoints[2]
+        .statement
+        .as_ref()
+        .unwrap()
+        .read
+        .as_ref()
+        .unwrap();
     assert!(read.rejected_source_ordinals.is_empty());
     assert_eq!(read.output.rows(), &[row(1, Some(30))]);
-    let target = exact.final_catalog.states.iter().find(|state| state.relation() == "t").unwrap();
+    let target = exact
+        .final_catalog
+        .states
+        .iter()
+        .find(|state| state.relation() == "t")
+        .unwrap();
     let domains = exact.final_catalog.exact_domains().unwrap();
     assert!(domains
         .iter()
@@ -210,7 +239,10 @@ fn prove(catalog: &RelationCatalog) -> (Vec<PhysicalWriteRow>, Vec<usize>) {
         .1
         .iter()
         .all(|domain| !domain.values().is_empty()));
-    (target.rows().to_vec(), read.rejected_source_ordinals.clone())
+    (
+        target.rows().to_vec(),
+        read.rejected_source_ordinals.clone(),
+    )
 }
 
 #[test]
