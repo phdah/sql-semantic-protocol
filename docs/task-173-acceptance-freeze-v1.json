@@ -1,0 +1,608 @@
+{
+  "version": 1,
+  "owner": "TASK-173",
+  "parent": "TASK-87",
+  "created": "2026-11-06",
+  "frozen_before_semantic_changes": true,
+  "fixture_ids": [
+    "87-C173-P",
+    "87-C173-N"
+  ],
+  "scope": "Authoritative metadata fact ownership and absence laws for direct SQL DDL, dbt manifest compiled SQL/dependencies/declared constraints, dbt catalog-introspected datatypes, dbt manifest declaration fallback, and ODCS physical/logical types. Materializations are TASK-174 and qualified identities/FK-only schemas are TASK-175.",
+  "authority_priority": [
+    {
+      "fact": "model_sql",
+      "owner": "dbt_manifest.nodes.compiled_code",
+      "fallback": "raw_code only when non-Jinja and explicitly known",
+      "must_not_infer": "dbt catalog columns or materialization"
+    },
+    {
+      "fact": "model_dependencies",
+      "owner": "dbt_manifest.nodes.depends_on.nodes",
+      "fallback": "none",
+      "must_not_infer": "catalog resource list"
+    },
+    {
+      "fact": "constraints_and_tests",
+      "owner": "dbt_manifest declared constraints and built-in tests",
+      "fallback": "none",
+      "must_not_infer": "physical enforcement from a passing test definition"
+    },
+    {
+      "fact": "warehouse_datatype",
+      "owner": "dbt_catalog.columns.type",
+      "fallback": "complete dbt manifest columns.data_type as declared (not introspected) evidence",
+      "must_not_infer": "type from SQL literals or missing metadata"
+    },
+    {
+      "fact": "external_contract",
+      "owner": "ODCS physicalType when valid",
+      "fallback": "recognized logicalType with lower-authority diagnostic",
+      "must_not_infer": "unsupported logicalType over valid physicalType"
+    },
+    {
+      "fact": "direct_ddl",
+      "owner": "parsed CREATE TABLE column definitions",
+      "fallback": "none",
+      "must_not_infer": "executed runtime state without a physical oracle"
+    }
+  ],
+  "test_data": {
+    "dialect": "duckdb",
+    "create_sql": "CREATE TABLE raw.orders(k INTEGER)",
+    "seed_sql": "INSERT INTO raw.orders VALUES (1),(1),(NULL),(0)",
+    "terminal_sql": "SELECT k FROM raw.orders WHERE k >= 1 ORDER BY k NULLS LAST",
+    "source_bag": [
+      1,
+      1,
+      null,
+      0
+    ],
+    "terminal_bag": [
+      1,
+      1
+    ],
+    "positive_source_rows": [
+      0,
+      1
+    ],
+    "rejected_false": [
+      3
+    ],
+    "rejected_unknown": [
+      2
+    ],
+    "typed_domain": {
+      "type": "signed_integer",
+      "physical_type": "INTEGER",
+      "nullable_source": true,
+      "selection_lower": 1,
+      "selection_lower_inclusive": true,
+      "selection_upper": null,
+      "terminal_values": [
+        1,
+        1
+      ],
+      "terminal_nullable": false
+    }
+  },
+  "dialects": [
+    "generic",
+    "mysql",
+    "postgresql",
+    "hive",
+    "sqlite",
+    "snowflake",
+    "redshift",
+    "mssql",
+    "clickhouse",
+    "bigquery",
+    "ansi",
+    "duckdb",
+    "databricks"
+  ],
+  "parser_status_contract": "For the portable selection in every dialect, compare canonical predicate/outcome domain, not vendor execution. Explicit parser failures are separate boundary evidence, not an Exact engine claim.",
+  "adapters": [
+    "direct_sql",
+    "dbt_manifest",
+    "dbt_catalog",
+    "odcs"
+  ],
+  "cases": [
+    {
+      "id": "87-C173-P-dbt-compiled",
+      "fixture": "87-C173-P",
+      "family": "dbt_compiled_sql_and_dependencies",
+      "requirement": "mandatory",
+      "sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "source_bag": [
+        1,
+        1,
+        null,
+        0
+      ],
+      "terminal_bag": [
+        1,
+        1
+      ],
+      "source_row_identities": [
+        "raw.orders#0",
+        "raw.orders#1",
+        "raw.orders#2",
+        "raw.orders#3"
+      ],
+      "positive_source_rows": [
+        0,
+        1
+      ],
+      "not_true_rows": {
+        "false": [
+          3
+        ],
+        "unknown": [
+          2
+        ]
+      },
+      "typed_domain": {
+        "type": "signed_integer",
+        "physical_type": "INTEGER",
+        "nullable_source": true,
+        "selection_lower": 1,
+        "selection_lower_inclusive": true,
+        "selection_upper": null,
+        "terminal_values": [
+          1,
+          1
+        ],
+        "terminal_nullable": false
+      },
+      "expected_classification": "Exact for proven SQL predicate and complete fixture bag; metadata authority never implies enforced physical state",
+      "authority": "manifest.json nodes compiled_code and depends_on.nodes",
+      "expected": "compiled SQL and declared dependency graph retained even if raw_code differs; no catalog rewrite of model SQL"
+    },
+    {
+      "id": "87-C173-P-dbt-catalog",
+      "fixture": "87-C173-P",
+      "family": "dbt_catalog_authority",
+      "requirement": "mandatory",
+      "sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "source_bag": [
+        1,
+        1,
+        null,
+        0
+      ],
+      "terminal_bag": [
+        1,
+        1
+      ],
+      "source_row_identities": [
+        "raw.orders#0",
+        "raw.orders#1",
+        "raw.orders#2",
+        "raw.orders#3"
+      ],
+      "positive_source_rows": [
+        0,
+        1
+      ],
+      "not_true_rows": {
+        "false": [
+          3
+        ],
+        "unknown": [
+          2
+        ]
+      },
+      "typed_domain": {
+        "type": "signed_integer",
+        "physical_type": "INTEGER",
+        "nullable_source": true,
+        "selection_lower": 1,
+        "selection_lower_inclusive": true,
+        "selection_upper": null,
+        "terminal_values": [
+          1,
+          1
+        ],
+        "terminal_nullable": false
+      },
+      "expected_classification": "Exact for proven SQL predicate and complete fixture bag; metadata authority never implies enforced physical state",
+      "authority": "catalog.json columns.type by matching manifest resource unique_id",
+      "expected": "warehouse-introspected canonical INTEGER type with dbt_catalog schema provenance even if manifest column data_type conflicts"
+    },
+    {
+      "id": "87-C173-P-dbt-manifest-fallback",
+      "fixture": "87-C173-P",
+      "family": "dbt_declaration_without_catalog",
+      "requirement": "mandatory",
+      "sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "source_bag": [
+        1,
+        1,
+        null,
+        0
+      ],
+      "terminal_bag": [
+        1,
+        1
+      ],
+      "source_row_identities": [
+        "raw.orders#0",
+        "raw.orders#1",
+        "raw.orders#2",
+        "raw.orders#3"
+      ],
+      "positive_source_rows": [
+        0,
+        1
+      ],
+      "not_true_rows": {
+        "false": [
+          3
+        ],
+        "unknown": [
+          2
+        ]
+      },
+      "typed_domain": {
+        "type": "signed_integer",
+        "physical_type": "INTEGER",
+        "nullable_source": true,
+        "selection_lower": 1,
+        "selection_lower_inclusive": true,
+        "selection_upper": null,
+        "terminal_values": [
+          1,
+          1
+        ],
+        "terminal_nullable": false
+      },
+      "expected_classification": "Exact for proven SQL predicate and complete fixture bag; metadata authority never implies enforced physical state",
+      "authority": "manifest.json columns.data_type, only if complete and catalog resource absent",
+      "expected": "schema retains dbt_manifest declared-evidence provenance; never represented as warehouse-introspected"
+    },
+    {
+      "id": "87-C173-P-dbt-constraints",
+      "fixture": "87-C173-P",
+      "family": "dbt_constraint_provenance",
+      "requirement": "mandatory",
+      "sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "source_bag": [
+        1,
+        1,
+        null,
+        0
+      ],
+      "terminal_bag": [
+        1,
+        1
+      ],
+      "source_row_identities": [
+        "raw.orders#0",
+        "raw.orders#1",
+        "raw.orders#2",
+        "raw.orders#3"
+      ],
+      "positive_source_rows": [
+        0,
+        1
+      ],
+      "not_true_rows": {
+        "false": [
+          3
+        ],
+        "unknown": [
+          2
+        ]
+      },
+      "typed_domain": {
+        "type": "signed_integer",
+        "physical_type": "INTEGER",
+        "nullable_source": true,
+        "selection_lower": 1,
+        "selection_lower_inclusive": true,
+        "selection_upper": null,
+        "terminal_values": [
+          1,
+          1
+        ],
+        "terminal_nullable": false
+      },
+      "expected_classification": "Exact for proven SQL predicate and complete fixture bag; metadata authority never implies enforced physical state",
+      "authority": "manifest.json constraints and built-in data tests",
+      "expected": "typed canonical constraint has dbt provenance and never inferred physical enforcement"
+    },
+    {
+      "id": "87-C173-P-odcs-physical",
+      "fixture": "87-C173-P",
+      "family": "odcs_physical_type_and_logical_conflict",
+      "requirement": "mandatory",
+      "sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "source_bag": [
+        1,
+        1,
+        null,
+        0
+      ],
+      "terminal_bag": [
+        1,
+        1
+      ],
+      "source_row_identities": [
+        "raw.orders#0",
+        "raw.orders#1",
+        "raw.orders#2",
+        "raw.orders#3"
+      ],
+      "positive_source_rows": [
+        0,
+        1
+      ],
+      "not_true_rows": {
+        "false": [
+          3
+        ],
+        "unknown": [
+          2
+        ]
+      },
+      "typed_domain": {
+        "type": "signed_integer",
+        "physical_type": "INTEGER",
+        "nullable_source": true,
+        "selection_lower": 1,
+        "selection_lower_inclusive": true,
+        "selection_upper": null,
+        "terminal_values": [
+          1,
+          1
+        ],
+        "terminal_nullable": false
+      },
+      "expected_classification": "Exact for proven SQL predicate and complete fixture bag; metadata authority never implies enforced physical state",
+      "authority": "ODCS schema.properties physicalType",
+      "expected": "authoritative physical INTEGER retained when logicalType is unknown; explicit diagnostic odcs_unsupported_logical_type, external_metadata provenance, unknown enforcement"
+    },
+    {
+      "id": "87-C173-P-direct-ddl",
+      "fixture": "87-C173-P",
+      "family": "direct_sql_ddl_schema",
+      "requirement": "mandatory",
+      "sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "source_bag": [
+        1,
+        1,
+        null,
+        0
+      ],
+      "terminal_bag": [
+        1,
+        1
+      ],
+      "source_row_identities": [
+        "raw.orders#0",
+        "raw.orders#1",
+        "raw.orders#2",
+        "raw.orders#3"
+      ],
+      "positive_source_rows": [
+        0,
+        1
+      ],
+      "not_true_rows": {
+        "false": [
+          3
+        ],
+        "unknown": [
+          2
+        ]
+      },
+      "typed_domain": {
+        "type": "signed_integer",
+        "physical_type": "INTEGER",
+        "nullable_source": true,
+        "selection_lower": 1,
+        "selection_lower_inclusive": true,
+        "selection_upper": null,
+        "terminal_values": [
+          1,
+          1
+        ],
+        "terminal_nullable": false
+      },
+      "expected_classification": "Exact for proven SQL predicate and complete fixture bag; metadata authority never implies enforced physical state",
+      "authority": "SQL CREATE TABLE DDL",
+      "expected": "canonical INTEGER source schema uses sql_ddl provenance; direct SQL predicate retains exact output bound"
+    },
+    {
+      "id": "87-C173-N-no-catalog-no-declaration",
+      "fixture": "87-C173-N",
+      "family": "missing_warehouse_and_declaration",
+      "requirement": "mandatory",
+      "sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "source_bag": [
+        1,
+        1,
+        null,
+        0
+      ],
+      "terminal_bag": [
+        1,
+        1
+      ],
+      "source_row_identities": [
+        "raw.orders#0",
+        "raw.orders#1",
+        "raw.orders#2",
+        "raw.orders#3"
+      ],
+      "positive_source_rows": [
+        0,
+        1
+      ],
+      "not_true_rows": {
+        "false": [
+          3
+        ],
+        "unknown": [
+          2
+        ]
+      },
+      "typed_domain": {
+        "type": "signed_integer",
+        "physical_type": "INTEGER",
+        "nullable_source": true,
+        "selection_lower": 1,
+        "selection_lower_inclusive": true,
+        "selection_upper": null,
+        "terminal_values": [
+          1,
+          1
+        ],
+        "terminal_nullable": false
+      },
+      "expected_classification": "Explicit error, no Exact schema proof",
+      "authority": "no catalog relation and no manifest column data_type",
+      "expected": "DbtArtifactsError::MissingCatalogSchema or MissingDeclaredColumnTypes, never fabricated warehouse type"
+    },
+    {
+      "id": "87-C173-N-odcs-no-types",
+      "fixture": "87-C173-N",
+      "family": "odcs_absent_physical_and_logical",
+      "requirement": "mandatory",
+      "sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "source_bag": [
+        1,
+        1,
+        null,
+        0
+      ],
+      "terminal_bag": [
+        1,
+        1
+      ],
+      "source_row_identities": [
+        "raw.orders#0",
+        "raw.orders#1",
+        "raw.orders#2",
+        "raw.orders#3"
+      ],
+      "positive_source_rows": [
+        0,
+        1
+      ],
+      "not_true_rows": {
+        "false": [
+          3
+        ],
+        "unknown": [
+          2
+        ]
+      },
+      "typed_domain": {
+        "type": "signed_integer",
+        "physical_type": "INTEGER",
+        "nullable_source": true,
+        "selection_lower": 1,
+        "selection_lower_inclusive": true,
+        "selection_upper": null,
+        "terminal_values": [
+          1,
+          1
+        ],
+        "terminal_nullable": false
+      },
+      "expected_classification": "Residual missing source schema; no Exact type proof",
+      "authority": "ODCS property with no physicalType and no logicalType",
+      "expected": "explicit odcs_unresolved_data_type and odcs_incomplete_source_schema diagnostics; no schema emitted"
+    }
+  ],
+  "conditional_boundaries": [
+    {
+      "id": "87-C173-C-native-enforcement",
+      "owner": "TASK-173",
+      "classification": "Residual",
+      "reason": "dbt tests and ODCS required flags alone cannot prove physical warehouse enforcement",
+      "release_disposition": "retain explicit unknown; requires native row-state evidence"
+    },
+    {
+      "id": "87-C173-C-vendor-runtime",
+      "owner": "TASK-173",
+      "classification": "Residual",
+      "reason": "sqlparser dialect equivalence does not prove vendor runtime comparison or DDL law",
+      "release_disposition": "native vendor execution not claimed"
+    }
+  ],
+  "original_child_ac_map": {
+    "1": [
+      "87-C173-P-dbt-compiled",
+      "87-C173-P-dbt-catalog",
+      "87-C173-P-dbt-manifest-fallback",
+      "87-C173-P-dbt-constraints",
+      "87-C173-P-odcs-physical",
+      "87-C173-P-direct-ddl",
+      "87-C173-N-no-catalog-no-declaration",
+      "87-C173-N-odcs-no-types"
+    ],
+    "2": [
+      "87-C173-P-dbt-compiled",
+      "87-C173-P-dbt-catalog",
+      "87-C173-P-dbt-manifest-fallback",
+      "87-C173-P-dbt-constraints",
+      "87-C173-P-odcs-physical",
+      "87-C173-P-direct-ddl"
+    ],
+    "3": [
+      "87-C173-P-dbt-compiled",
+      "87-C173-P-dbt-catalog",
+      "87-C173-P-dbt-manifest-fallback",
+      "87-C173-P-dbt-constraints",
+      "87-C173-P-odcs-physical",
+      "87-C173-P-direct-ddl",
+      "87-C173-N-no-catalog-no-declaration",
+      "87-C173-N-odcs-no-types"
+    ],
+    "4": [
+      "87-C173-P-dbt-compiled",
+      "87-C173-P-dbt-catalog",
+      "87-C173-P-dbt-manifest-fallback",
+      "87-C173-P-dbt-constraints",
+      "87-C173-P-odcs-physical",
+      "87-C173-P-direct-ddl",
+      "87-C173-N-no-catalog-no-declaration",
+      "87-C173-N-odcs-no-types"
+    ],
+    "5": [
+      "87-C173-P-dbt-compiled",
+      "87-C173-P-dbt-catalog",
+      "87-C173-P-dbt-manifest-fallback",
+      "87-C173-P-dbt-constraints",
+      "87-C173-P-odcs-physical",
+      "87-C173-P-direct-ddl",
+      "87-C173-N-no-catalog-no-declaration",
+      "87-C173-N-odcs-no-types"
+    ]
+  },
+  "original_parent_ac": [
+    1,
+    2,
+    4,
+    5,
+    6
+  ],
+  "verification": {
+    "mandatory_cases_verified": false,
+    "sql_dbt_odcs_parity_verified": false,
+    "native_duckdb_full_bags_verified": false,
+    "all_13_dialects_verified": false,
+    "strict_clippy_verified": false,
+    "full_cargo_tests_verified": false,
+    "dbt_e2e_verified": false,
+    "pinned_sql_tdg_verified": false,
+    "independent_review_verified": false,
+    "child_signed_off": false,
+    "parent_closed": false,
+    "release_approved": false
+  }
+}
