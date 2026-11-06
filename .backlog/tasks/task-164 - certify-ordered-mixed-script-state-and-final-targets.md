@@ -46,7 +46,7 @@ Then independently verify all original TASK-84 AC and parent signoff; TASK-91 is
 
 ## Implementation evidence (2026-11-06)
 
-- Bounded v3 acceptance inventory: `docs/task-164-acceptance-freeze.json`, preserving preimplementation v1 and corrected pre-matrix v2 in immutable `docs/task-164-acceptance-freeze-v1.json` and `docs/task-164-acceptance-freeze-v2.json`; 598 parser statement cells are pinned before final technical signoff.
+- Bounded v4 acceptance inventory: `docs/task-164-acceptance-freeze.json`, with immutable v1/v2/v3 archived. All 598 parser statement classifications are pinned, together with complete per-step typed catalogs, write counts, affected row ordinals, and positive/NOT TRUE read ordinals for every Exact case.
 - Canonical typed ALTER-default propagation through transaction checkpoints: `src/physical_realization/transactions.rs`.
 - Full DuckDB, negative, NULL/duplicate and rollback oracles: `tests/task_164_mixed_scripts.rs`; equivalent SQL/dbt/ODCS source metadata: `tests/task_164_adapter_parity.rs`; 13 parser dialect classifications: `tests/task_164_dialect_matrix.rs`.
 - Status remains In Progress until final-head CI, complete mandatory oracle verification and an independent two-axis review. TASK-84 parent remains open. The TASK-162 native SAVEPOINT and TASK-163 vendor/session boundaries remain Residual.
