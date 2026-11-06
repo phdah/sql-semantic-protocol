@@ -4,8 +4,11 @@
     "parent": "TASK-84",
     "status": "in_progress_frozen_v1_pending_native_dialect_adapter_ci_and_review",
     "freeze": "docs/task-164-acceptance-freeze.json",
-    "freeze_version": 2,
+    "freeze_version": 3,
     "archive": "docs/task-164-acceptance-freeze-v1.json",
+    "previous_matrix": "docs/task-164-acceptance-freeze-v2.json",
+    "dialect_parser_cells": 598,
+    "frozen_matrix_red_evidence": "https://github.com/phdah/sql-semantic-protocol/actions/runs/42202839057",
     "fixture_ids": [
       "84-C164-P",
       "84-C164-N"
