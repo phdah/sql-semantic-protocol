@@ -735,12 +735,28 @@ fn frozen_inventory_retains_original_scope_and_explicit_unverified_signoff() {
     let original: Value =
         serde_json::from_str(include_str!("../docs/task-164-acceptance-freeze-v1.json")).unwrap();
     assert_eq!(original["version"], 1);
-    assert_eq!(freeze["version"], 5);
+    assert_eq!(freeze["version"], 6);
     assert_eq!(freeze["dialect_parser_cells"], 598);
     let v2: Value =
         serde_json::from_str(include_str!("../docs/task-164-acceptance-freeze-v2.json")).unwrap();
     let previous: Value =
         serde_json::from_str(include_str!("../docs/task-164-acceptance-freeze-v3.json")).unwrap();
+    let v5: Value =
+        serde_json::from_str(include_str!("../docs/task-164-acceptance-freeze-v5.json")).unwrap();
+    assert_eq!(v5["version"], 5);
+    assert_eq!(v5["cases"], freeze["cases"]);
+    assert_eq!(
+        v5["dialect_parser_matrix_expected"],
+        freeze["dialect_parser_matrix_expected"]
+    );
+    assert_eq!(freeze["signoff"]["mandatory_verified"], true);
+    assert_eq!(freeze["signoff"]["native_oracle_verified"], true);
+    assert_eq!(freeze["signoff"]["all_13_dialects_verified"], true);
+    assert_eq!(freeze["signoff"]["adapter_parity_verified"], true);
+    assert_eq!(freeze["signoff"]["full_ci_verified"], true);
+    assert_eq!(freeze["signoff"]["independent_review_verified"], false);
+    assert_eq!(freeze["signoff"]["two_axis_author_account_review_verified"], true);
+    assert_eq!(freeze["signoff"]["parent_signed_off"], false);
     let v4: Value =
         serde_json::from_str(include_str!("../docs/task-164-acceptance-freeze-v4.json")).unwrap();
     assert_eq!(v4["version"], 4);
@@ -828,7 +844,7 @@ fn frozen_inventory_retains_original_scope_and_explicit_unverified_signoff() {
         serde_json::from_str(include_str!("../docs/coverage-manifest.json")).unwrap();
     assert_eq!(
         manifest["task_164_mixed_script_acceptance"]["freeze_version"],
-        5
+        6
     );
     assert_eq!(
         manifest["task_164_mixed_script_acceptance"]["parent_closed"],
