@@ -10,9 +10,8 @@ use crate::bundle::AnalysisBundle;
 use crate::relation::RelationSchema;
 
 use super::{
-    PhysicalLifecycleRead, PhysicalOrderedLifecycleExact,
-    PhysicalOrderedLifecycleProof, PhysicalWriteColumnDomain, PhysicalWriteState,
-    PhysicalWriteTransition,
+    PhysicalLifecycleRead, PhysicalOrderedLifecycleExact, PhysicalOrderedLifecycleProof,
+    PhysicalWriteColumnDomain, PhysicalWriteState, PhysicalWriteTransition,
 };
 
 /// One closed-world live catalog before or after a SQL statement.
