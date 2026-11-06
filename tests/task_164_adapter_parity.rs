@@ -188,13 +188,27 @@ fn prove(catalog: &RelationCatalog) -> (Vec<PhysicalWriteRow>, Vec<usize>) {
         .iter()
         .map(PhysicalTransactionStep::Sql)
         .collect::<Vec<_>>();
-    let initial = PhysicalScriptCatalog {
-        states: vec![
-            PhysicalWriteState::new("t", vec![row(1, Some(10)), row(2, None)]).unwrap(),
-            PhysicalWriteState::new("s", vec![row(1, Some(30))]).unwrap(),
-        ],
-        schemas: catalog.schemas().to_vec(),
-    };
+    // Catalogs normalize by relation name. Pair each complete population with
+    // exactly its authoritative schema, not an independent input vector order.
+    let schemas = catalog
+        .schemas()
+        .iter()
+        .filter(|schema| matches!(schema.relation(), "t" | "s"))
+        .cloned()
+        .collect::<Vec<_>>();
+    assert_eq!(schemas.len(), 2);
+    let states = schemas
+        .iter()
+        .map(|schema| {
+            let rows = match schema.relation() {
+                "t" => vec![row(1, Some(10)), row(2, None)],
+                "s" => vec![row(1, Some(30))],
+                other => panic!("unexpected physical relation {other}"),
+            };
+            PhysicalWriteState::new(schema.relation(), rows).unwrap()
+        })
+        .collect();
+    let initial = PhysicalScriptCatalog { states, schemas };
     let proof = physical_duckdb_transaction_plan(&steps, &initial);
     let PhysicalTransactionScriptProof::Exact(exact) = proof else {
         panic!("equivalent source facts must preserve mixed-script proof: {proof:?}");
