@@ -90,6 +90,14 @@ fn task_164_all_thirteen_dialects_receive_explicit_parser_or_canonical_classific
             * 13
     );
 
+    // A classified parser path is evidence only when its expected boundary
+    // was independently frozen; a dynamic observation is not its own oracle.
+    let observed = serde_json::to_value(&matrix).unwrap();
+    if freeze["dialect_parser_matrix_expected"].is_null() {
+        panic!("TASK164_DIALECT_OBSERVED={observed}");
+    }
+    assert_eq!(observed, freeze["dialect_parser_matrix_expected"]);
+
     // The native DuckDB path is the sole engine oracle; common canonical
     // forms must not silently turn into parser-only vendor execution claims.
     let duckdb = matrix.get("duckdb").unwrap();
