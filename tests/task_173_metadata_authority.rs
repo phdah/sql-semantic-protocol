@@ -4,7 +4,7 @@
 use serde_json::{json, Value};
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, analyze_dbt_artifacts,
-    analyze_dbt_manifest_with_schemas, analyze_inputs, dialect_from_name, parse_dbt_catalog,
+    analyze_inputs, dialect_from_name, parse_dbt_catalog,
     parse_dbt_manifest, ComposedSemantics, ConfiguredSqlInput, DataType, DbtArtifactsError,
     LiteralValue, RelationCatalog, SchemaSourceKind, SqlInput, ValueDomain,
 };
