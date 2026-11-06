@@ -57,7 +57,7 @@ fn verify_complete_physical_filter(catalog: &RelationCatalog) -> (Vec<usize>, Ve
         ],
     )
     .unwrap();
-    let exact = match physical_ordered_lifecycle_plan(&bundle, &[original.clone()]) {
+    let exact = match physical_ordered_lifecycle_plan(&bundle, std::slice::from_ref(&original)) {
         PhysicalOrderedLifecycleProof::Exact(exact) => exact,
         other => panic!("full physical-source evidence must be exact: {other:?}"),
     };
