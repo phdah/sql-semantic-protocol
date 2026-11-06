@@ -361,7 +361,9 @@ pub fn physical_duckdb_transaction_plan(
                 (PhysicalTransactionAction::Commit, None)
             }
             PhysicalTransactionStep::Rollback => {
-                let Some((original, original_constraints, original_created)) = active_transaction.take() else {
+                let Some((original, original_constraints, original_created)) =
+                    active_transaction.take()
+                else {
                     return impossible(index, "ROLLBACK has no active DuckDB transaction");
                 };
                 current = original;
