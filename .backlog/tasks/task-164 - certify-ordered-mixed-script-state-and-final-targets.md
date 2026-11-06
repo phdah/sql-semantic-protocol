@@ -1,10 +1,10 @@
 ---
 id: TASK-164
 title: Certify ordered mixed script state and final targets
-status: To Do
+status: In Progress
 assignee: []
 created_date: '2026-10-17'
-updated_date: '2026-10-17'
+updated_date: '2026-11-06'
 labels: []
 milestone: m-3
 dependencies:
@@ -43,3 +43,10 @@ type: feature
 ## Sequencing
 
 Then independently verify all original TASK-84 AC and parent signoff; TASK-91 is a separate gate.
+
+## Implementation evidence (2026-11-06)
+
+- Bounded v2 acceptance inventory: `docs/task-164-acceptance-freeze.json`, preserving preimplementation v1 in `docs/task-164-acceptance-freeze-v1.json`.
+- Canonical typed ALTER-default propagation through transaction checkpoints: `src/physical_realization/transactions.rs`.
+- Full DuckDB, negative, NULL/duplicate and rollback oracles: `tests/task_164_mixed_scripts.rs`; equivalent SQL/dbt/ODCS source metadata: `tests/task_164_adapter_parity.rs`; 13 parser dialect classifications: `tests/task_164_dialect_matrix.rs`.
+- Status remains In Progress until final-head CI, complete mandatory oracle verification and an independent two-axis review. TASK-84 parent remains open. The TASK-162 native SAVEPOINT and TASK-163 vendor/session boundaries remain Residual.
