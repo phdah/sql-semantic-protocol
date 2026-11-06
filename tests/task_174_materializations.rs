@@ -349,3 +349,47 @@ fn complete_source_oracle_proves_positive_false_unknown_and_duplicate_rows() {
         vec![None]
     );
 }
+
+#[cfg(feature = "odcs")]
+#[test]
+fn dbt_and_odcs_metadata_agree_with_direct_sql_on_filter_outcomes() {
+    let manifest_bundle = analyze(&manifest("view", Some("filtered")));
+    let direct_catalog =
+        RelationCatalog::from_schemas(manifest_bundle.source_schemas()).unwrap();
+    let direct_dialect = dialect_from_name("duckdb").unwrap();
+    let sql = SqlInput::inline(FILTER);
+    let inputs = [ConfiguredSqlInput::new(
+        "task174-direct",
+        &sql,
+        "duckdb",
+        direct_dialect.as_ref(),
+    )];
+    let direct = analyze_configured_inputs_with_catalog(&inputs, &direct_catalog).unwrap();
+
+    let odcs = sql_semantic_protocol::parse_odcs_yaml(
+        "apiVersion: v3.2.0\nkind: DataContract\nid: task174\nname: TASK-174\nversion: 1.0.0\nstatus: active\nschema:\n  - name: orders\n    physicalName: raw.orders\n    properties:\n      - name: k\n        physicalType: INTEGER\n",
+        "duckdb",
+        &RelationCatalog::new(&["raw.orders"]).unwrap(),
+    )
+    .unwrap();
+    let odcs_catalog = RelationCatalog::from_schemas(odcs.source_schemas()).unwrap();
+    let from_odcs = analyze_configured_inputs_with_catalog(&inputs, &odcs_catalog).unwrap();
+
+    assert_eq!(canonical_filter_domain(&manifest_bundle), canonical_filter_domain(&direct));
+    assert_eq!(canonical_filter_domain(&from_odcs), canonical_filter_domain(&direct));
+    assert_positive_domain(&canonical_filter_domain(&from_odcs));
+
+    for bundle in [&direct, &from_odcs] {
+        let source = source_bag();
+        let proof = physical_ordered_lifecycle_plan(bundle, &[source.clone()]);
+        let PhysicalOrderedLifecycleProof::Exact(proof) = proof else {
+            panic!("typed source complete-bag oracle must stay exact");
+        };
+        let [read] = proof.reads.as_slice() else {
+            panic!("one exact read expected");
+        };
+        assert_eq!(read.output.rows(), &[row(Some(1)), row(Some(1))]);
+        assert_eq!(read.surviving_source_ordinals, vec![0, 1]);
+        assert_eq!(read.rejected_source_ordinals, vec![2, 3]);
+    }
+}
