@@ -213,12 +213,13 @@ fn task_163_active_matrix_and_immutable_preimplementation_freeze_are_versioned()
     let freeze: serde_json::Value =
         serde_json::from_str(include_str!("../docs/task-163-acceptance-freeze.json")).unwrap();
     assert_eq!(freeze["version"], 2);
-    let frozen_v1: serde_json::Value = serde_json::from_str(
-        include_str!("../docs/task-163-acceptance-freeze-v1.json"),
-    )
-    .unwrap();
+    let frozen_v1: serde_json::Value =
+        serde_json::from_str(include_str!("../docs/task-163-acceptance-freeze-v1.json")).unwrap();
     assert_eq!(frozen_v1["version"], 1);
-    assert_eq!(frozen_v1["status"], "frozen_before_implementation_unverified");
+    assert_eq!(
+        frozen_v1["status"],
+        "frozen_before_implementation_unverified"
+    );
     assert_eq!(freeze["owner"], "TASK-163");
     assert_eq!(freeze["dialects"].as_array().unwrap().len(), 13);
     assert_eq!(freeze["cases"].as_array().unwrap().len(), 8);
