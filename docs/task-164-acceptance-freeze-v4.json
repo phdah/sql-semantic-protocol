@@ -1,0 +1,2403 @@
+{
+  "version": 4,
+  "owner": "TASK-164",
+  "parent": "TASK-84",
+  "status": "frozen_full_checkpoint_and_occurrence_oracles_pending_final_ci_review",
+  "fixture_ids": [
+    "84-C164-P",
+    "84-C164-N"
+  ],
+  "original_child_ac": [
+    1,
+    2,
+    3,
+    4,
+    5
+  ],
+  "original_parent_ac": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6
+  ],
+  "canonical_owner": "src/physical_realization/transactions.rs",
+  "frontend": "src/analysis/transactions.rs",
+  "native_engine": "duckdb ~1.10506.0",
+  "scope": "Single connection, deterministic complete typed physical catalog, canonical SQL statement order; no consumer SQL reparsing or speculative vendor semantics.",
+  "evidence_rules": {
+    "states": "Exact requires every before/after live relation bag and source occurrence, including reads, writes and restored rollback generations",
+    "domain": "INTEGER point domains with inclusive lower/upper and explicit SQL NULL; all output counts and exact frequencies derive from complete bags",
+    "positive_negative": "Track every SQL TRUE and NOT TRUE (FALSE or UNKNOWN) source ordinal; rejected rows cannot be silently omitted",
+    "proof": "A contradictory complete schema/write or lifecycle is Impossible, unproved engine/adapter law is Residual with explicit owner",
+    "independent_engine": "DuckDB snapshots must be measured from executed SQL, not copied from protocol output"
+  },
+  "dialects": [
+    "generic",
+    "mysql",
+    "postgresql",
+    "hive",
+    "sqlite",
+    "snowflake",
+    "redshift",
+    "mssql",
+    "clickhouse",
+    "bigquery",
+    "ansi",
+    "duckdb",
+    "databricks"
+  ],
+  "adapter_matrix": {
+    "sql": "DuckDB native executable mixed script; canonical dialect parsing for all 13 names",
+    "dbt": "Compiled model SQL and equivalent relation schemas certify matching canonical source/terminal facts, not transaction execution or inferred DDL",
+    "odcs": "Equivalent typed relation schema, defaults and constraints only when contract explicitly attests them; no inferred session laws"
+  },
+  "cases": [
+    {
+      "id": "84-C164-P-mixed",
+      "classification": "Exact",
+      "program": [
+        "CREATE TABLE t (id INTEGER, v INTEGER)",
+        "CREATE TABLE s (id INTEGER, v INTEGER)",
+        "INSERT INTO t (id, v) VALUES (1, 10), (2, NULL)",
+        "INSERT INTO s (id, v) VALUES (1, 30)",
+        "MERGE INTO t USING s ON t.id = s.id WHEN MATCHED THEN UPDATE SET v = s.v",
+        "DELETE FROM t WHERE id = 2",
+        "SELECT id, v FROM t WHERE v >= 20"
+      ],
+      "initial_catalog": {},
+      "expected_final": {
+        "s": [
+          {
+            "id": 1,
+            "v": 30
+          }
+        ],
+        "t": [
+          {
+            "id": 1,
+            "v": 30
+          }
+        ]
+      },
+      "expected_terminal_read": {
+        "rows": [
+          {
+            "id": 1,
+            "v": 30
+          }
+        ],
+        "not_true_source_ordinals": [],
+        "surviving_source_ordinals": [
+          0
+        ]
+      },
+      "counts": {
+        "inserted": [
+          0,
+          0,
+          2,
+          1,
+          0,
+          0,
+          0
+        ],
+        "updated": [
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0
+        ],
+        "deleted": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0
+        ]
+      },
+      "checkpoint_t": [
+        [],
+        [],
+        [
+          {
+            "id": 1,
+            "v": 10
+          },
+          {
+            "id": 2,
+            "v": null
+          }
+        ],
+        [
+          {
+            "id": 1,
+            "v": 10
+          },
+          {
+            "id": 2,
+            "v": null
+          }
+        ],
+        [
+          {
+            "id": 1,
+            "v": 30
+          },
+          {
+            "id": 2,
+            "v": null
+          }
+        ],
+        [
+          {
+            "id": 1,
+            "v": 30
+          }
+        ],
+        [
+          {
+            "id": 1,
+            "v": 30
+          }
+        ]
+      ],
+      "typed_domains": {
+        "id": {
+          "lower": 1,
+          "upper": 1,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "nulls": 0
+        },
+        "v": {
+          "lower": 30,
+          "upper": 30,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "nulls": 0
+        }
+      },
+      "checkpoint_catalogs": [
+        {
+          "t": {
+            "columns": [
+              "id",
+              "v"
+            ],
+            "rows": []
+          }
+        },
+        {
+          "t": {
+            "columns": [
+              "id",
+              "v"
+            ],
+            "rows": []
+          },
+          "s": {
+            "columns": [
+              "id",
+              "v"
+            ],
+            "rows": []
+          }
+        },
+        {
+          "t": {
+            "columns": [
+              "id",
+              "v"
+            ],
+            "rows": [
+              {
+                "id": 1,
+                "v": 10
+              },
+              {
+                "id": 2,
+                "v": null
+              }
+            ]
+          },
+          "s": {
+            "columns": [
+              "id",
+              "v"
+            ],
+            "rows": []
+          }
+        },
+        {
+          "t": {
+            "columns": [
+              "id",
+              "v"
+            ],
+            "rows": [
+              {
+                "id": 1,
+                "v": 10
+              },
+              {
+                "id": 2,
+                "v": null
+              }
+            ]
+          },
+          "s": {
+            "columns": [
+              "id",
+              "v"
+            ],
+            "rows": [
+              {
+                "id": 1,
+                "v": 30
+              }
+            ]
+          }
+        },
+        {
+          "t": {
+            "columns": [
+              "id",
+              "v"
+            ],
+            "rows": [
+              {
+                "id": 1,
+                "v": 30
+              },
+              {
+                "id": 2,
+                "v": null
+              }
+            ]
+          },
+          "s": {
+            "columns": [
+              "id",
+              "v"
+            ],
+            "rows": [
+              {
+                "id": 1,
+                "v": 30
+              }
+            ]
+          }
+        },
+        {
+          "t": {
+            "columns": [
+              "id",
+              "v"
+            ],
+            "rows": [
+              {
+                "id": 1,
+                "v": 30
+              }
+            ]
+          },
+          "s": {
+            "columns": [
+              "id",
+              "v"
+            ],
+            "rows": [
+              {
+                "id": 1,
+                "v": 30
+              }
+            ]
+          }
+        },
+        {
+          "t": {
+            "columns": [
+              "id",
+              "v"
+            ],
+            "rows": [
+              {
+                "id": 1,
+                "v": 30
+              }
+            ]
+          },
+          "s": {
+            "columns": [
+              "id",
+              "v"
+            ],
+            "rows": [
+              {
+                "id": 1,
+                "v": 30
+              }
+            ]
+          }
+        }
+      ],
+      "affected_target_ordinals": {
+        "4": [
+          0
+        ],
+        "5": [
+          1
+        ]
+      }
+    },
+    {
+      "id": "84-C164-P-null-duplicates",
+      "classification": "Exact",
+      "program": [
+        "CREATE TABLE t (id INTEGER, v INTEGER)",
+        "CREATE TABLE s (id INTEGER, v INTEGER)",
+        "INSERT INTO t VALUES (1, 10), (2, NULL), (2, NULL)",
+        "INSERT INTO s VALUES (1, 30)",
+        "MERGE INTO t USING s ON t.id = s.id WHEN MATCHED THEN UPDATE SET v = s.v",
+        "SELECT id, v FROM t WHERE v >= 20",
+        "DELETE FROM t WHERE id = 2",
+        "SELECT id, v FROM t WHERE v >= 20"
+      ],
+      "initial_catalog": {},
+      "expected_final": {
+        "s": [
+          {
+            "id": 1,
+            "v": 30
+          }
+        ],
+        "t": [
+          {
+            "id": 1,
+            "v": 30
+          }
+        ]
+      },
+      "expected_terminal_read": {
+        "rows": [
+          {
+            "id": 1,
+            "v": 30
+          }
+        ],
+        "not_true_source_ordinals": [],
+        "surviving_source_ordinals": [
+          0
+        ]
+      },
+      "intermediate_read": {
+        "rows": [
+          {
+            "id": 1,
+            "v": 30
+          }
+        ],
+        "not_true_source_ordinals": [
+          1,
+          2
+        ],
+        "surviving_source_ordinals": [
+          0
+        ]
+      },
+      "source_occurrences": {
+        "before_delete": 3,
+        "after_delete": 1
+      },
+      "typed_domains": {
+        "v": {
+          "lower": 30,
+          "upper": 30,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "nulls": 0
+        }
+      },
+      "checkpoint_catalogs": [
+        {
+          "t": {
+            "columns": [
+              "id",
+              "v"
+            ],
+            "rows": []
+          }
+        },
+        {
+          "t": {
+            "columns": [
+              "id",
+              "v"
+            ],
+            "rows": []
+          },
+          "s": {
+            "columns": [
+              "id",
+              "v"
+            ],
+            "rows": []
+          }
+        },
+        {
+          "t": {
+            "columns": [
+              "id",
+              "v"
+            ],
+            "rows": [
+              {
+                "id": 1,
+                "v": 10
+              },
+              {
+                "id": 2,
+                "v": null
+              },
+              {
+                "id": 2,
+                "v": null
+              }
+            ]
+          },
+          "s": {
+            "columns": [
+              "id",
+              "v"
+            ],
+            "rows": []
+          }
+        },
+        {
+          "t": {
+            "columns": [
+              "id",
+              "v"
+            ],
+            "rows": [
+              {
+                "id": 1,
+                "v": 10
+              },
+              {
+                "id": 2,
+                "v": null
+              },
+              {
+                "id": 2,
+                "v": null
+              }
+            ]
+          },
+          "s": {
+            "columns": [
+              "id",
+              "v"
+            ],
+            "rows": [
+              {
+                "id": 1,
+                "v": 30
+              }
+            ]
+          }
+        },
+        {
+          "t": {
+            "columns": [
+              "id",
+              "v"
+            ],
+            "rows": [
+              {
+                "id": 1,
+                "v": 30
+              },
+              {
+                "id": 2,
+                "v": null
+              },
+              {
+                "id": 2,
+                "v": null
+              }
+            ]
+          },
+          "s": {
+            "columns": [
+              "id",
+              "v"
+            ],
+            "rows": [
+              {
+                "id": 1,
+                "v": 30
+              }
+            ]
+          }
+        },
+        {
+          "t": {
+            "columns": [
+              "id",
+              "v"
+            ],
+            "rows": [
+              {
+                "id": 1,
+                "v": 30
+              },
+              {
+                "id": 2,
+                "v": null
+              },
+              {
+                "id": 2,
+                "v": null
+              }
+            ]
+          },
+          "s": {
+            "columns": [
+              "id",
+              "v"
+            ],
+            "rows": [
+              {
+                "id": 1,
+                "v": 30
+              }
+            ]
+          }
+        },
+        {
+          "t": {
+            "columns": [
+              "id",
+              "v"
+            ],
+            "rows": [
+              {
+                "id": 1,
+                "v": 30
+              }
+            ]
+          },
+          "s": {
+            "columns": [
+              "id",
+              "v"
+            ],
+            "rows": [
+              {
+                "id": 1,
+                "v": 30
+              }
+            ]
+          }
+        },
+        {
+          "t": {
+            "columns": [
+              "id",
+              "v"
+            ],
+            "rows": [
+              {
+                "id": 1,
+                "v": 30
+              }
+            ]
+          },
+          "s": {
+            "columns": [
+              "id",
+              "v"
+            ],
+            "rows": [
+              {
+                "id": 1,
+                "v": 30
+              }
+            ]
+          }
+        }
+      ],
+      "counts": {
+        "inserted": [
+          0,
+          0,
+          3,
+          1,
+          0,
+          0,
+          0,
+          0
+        ],
+        "updated": [
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0
+        ],
+        "deleted": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          2,
+          0
+        ]
+      },
+      "affected_target_ordinals": {
+        "4": [
+          0
+        ],
+        "6": [
+          1,
+          2
+        ]
+      }
+    },
+    {
+      "id": "84-C164-P-rollback",
+      "classification": "Exact",
+      "program": [
+        "CREATE TABLE t (id INTEGER, v INTEGER)",
+        "CREATE TABLE s (id INTEGER, v INTEGER)",
+        "INSERT INTO t (id, v) VALUES (1, 10), (2, NULL)",
+        "INSERT INTO s (id, v) VALUES (1, 30)",
+        "BEGIN",
+        "MERGE INTO t USING s ON t.id = s.id WHEN MATCHED THEN UPDATE SET v = s.v",
+        "DELETE FROM t WHERE id = 2",
+        "ROLLBACK",
+        "SELECT id, v FROM t WHERE v >= 20"
+      ],
+      "initial_catalog": {},
+      "expected_final": {
+        "s": [
+          {
+            "id": 1,
+            "v": 30
+          }
+        ],
+        "t": [
+          {
+            "id": 1,
+            "v": 10
+          },
+          {
+            "id": 2,
+            "v": null
+          }
+        ]
+      },
+      "expected_terminal_read": {
+        "rows": [],
+        "not_true_source_ordinals": [
+          0,
+          1
+        ],
+        "surviving_source_ordinals": []
+      },
+      "checkpoint_t_after_rollback": [
+        {
+          "id": 1,
+          "v": 10
+        },
+        {
+          "id": 2,
+          "v": null
+        }
+      ],
+      "typed_domains": {
+        "v": {
+          "values": [
+            {
+              "value": 10,
+              "count": 1
+            },
+            {
+              "value": null,
+              "count": 1
+            }
+          ],
+          "lower": 10,
+          "upper": 10,
+          "lower_inclusive": true,
+          "upper_inclusive": true
+        }
+      },
+      "checkpoint_catalogs": [
+        {
+          "t": {
+            "columns": [
+              "id",
+              "v"
+            ],
+            "rows": []
+          }
+        },
+        {
+          "t": {
+            "columns": [
+              "id",
+              "v"
+            ],
+            "rows": []
+          },
+          "s": {
+            "columns": [
+              "id",
+              "v"
+            ],
+            "rows": []
+          }
+        },
+        {
+          "t": {
+            "columns": [
+              "id",
+              "v"
+            ],
+            "rows": [
+              {
+                "id": 1,
+                "v": 10
+              },
+              {
+                "id": 2,
+                "v": null
+              }
+            ]
+          },
+          "s": {
+            "columns": [
+              "id",
+              "v"
+            ],
+            "rows": []
+          }
+        },
+        {
+          "t": {
+            "columns": [
+              "id",
+              "v"
+            ],
+            "rows": [
+              {
+                "id": 1,
+                "v": 10
+              },
+              {
+                "id": 2,
+                "v": null
+              }
+            ]
+          },
+          "s": {
+            "columns": [
+              "id",
+              "v"
+            ],
+            "rows": [
+              {
+                "id": 1,
+                "v": 30
+              }
+            ]
+          }
+        },
+        {
+          "t": {
+            "columns": [
+              "id",
+              "v"
+            ],
+            "rows": [
+              {
+                "id": 1,
+                "v": 10
+              },
+              {
+                "id": 2,
+                "v": null
+              }
+            ]
+          },
+          "s": {
+            "columns": [
+              "id",
+              "v"
+            ],
+            "rows": [
+              {
+                "id": 1,
+                "v": 30
+              }
+            ]
+          }
+        },
+        {
+          "t": {
+            "columns": [
+              "id",
+              "v"
+            ],
+            "rows": [
+              {
+                "id": 1,
+                "v": 30
+              },
+              {
+                "id": 2,
+                "v": null
+              }
+            ]
+          },
+          "s": {
+            "columns": [
+              "id",
+              "v"
+            ],
+            "rows": [
+              {
+                "id": 1,
+                "v": 30
+              }
+            ]
+          }
+        },
+        {
+          "t": {
+            "columns": [
+              "id",
+              "v"
+            ],
+            "rows": [
+              {
+                "id": 1,
+                "v": 30
+              }
+            ]
+          },
+          "s": {
+            "columns": [
+              "id",
+              "v"
+            ],
+            "rows": [
+              {
+                "id": 1,
+                "v": 30
+              }
+            ]
+          }
+        },
+        {
+          "t": {
+            "columns": [
+              "id",
+              "v"
+            ],
+            "rows": [
+              {
+                "id": 1,
+                "v": 10
+              },
+              {
+                "id": 2,
+                "v": null
+              }
+            ]
+          },
+          "s": {
+            "columns": [
+              "id",
+              "v"
+            ],
+            "rows": [
+              {
+                "id": 1,
+                "v": 30
+              }
+            ]
+          }
+        },
+        {
+          "t": {
+            "columns": [
+              "id",
+              "v"
+            ],
+            "rows": [
+              {
+                "id": 1,
+                "v": 10
+              },
+              {
+                "id": 2,
+                "v": null
+              }
+            ]
+          },
+          "s": {
+            "columns": [
+              "id",
+              "v"
+            ],
+            "rows": [
+              {
+                "id": 1,
+                "v": 30
+              }
+            ]
+          }
+        }
+      ],
+      "counts": {
+        "inserted": [
+          0,
+          0,
+          2,
+          1,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "updated": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0
+        ],
+        "deleted": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0
+        ]
+      },
+      "affected_target_ordinals": {
+        "5": [
+          0
+        ],
+        "6": [
+          1
+        ]
+      }
+    },
+    {
+      "id": "84-C164-P-idempotent-merge",
+      "classification": "Exact",
+      "program": [
+        "CREATE TABLE t (id INTEGER, v INTEGER)",
+        "CREATE TABLE s (id INTEGER, v INTEGER)",
+        "INSERT INTO t (id, v) VALUES (1, 10), (2, NULL)",
+        "INSERT INTO s (id, v) VALUES (1, 30)",
+        "MERGE INTO t USING s ON t.id = s.id WHEN MATCHED THEN UPDATE SET v = s.v",
+        "MERGE INTO t USING s ON t.id = s.id WHEN MATCHED THEN UPDATE SET v = s.v",
+        "SELECT id, v FROM t WHERE v >= 20"
+      ],
+      "initial_catalog": {},
+      "expected_final": {
+        "s": [
+          {
+            "id": 1,
+            "v": 30
+          }
+        ],
+        "t": [
+          {
+            "id": 1,
+            "v": 30
+          },
+          {
+            "id": 2,
+            "v": null
+          }
+        ]
+      },
+      "expected_terminal_read": {
+        "rows": [
+          {
+            "id": 1,
+            "v": 30
+          }
+        ],
+        "not_true_source_ordinals": [
+          1
+        ],
+        "surviving_source_ordinals": [
+          0
+        ]
+      },
+      "update_count_per_merge": 1,
+      "expected_same_catalog_after_both_merges": true,
+      "typed_domains": {
+        "v": {
+          "values": [
+            {
+              "value": 30,
+              "count": 1
+            },
+            {
+              "value": null,
+              "count": 1
+            }
+          ],
+          "lower": 30,
+          "upper": 30,
+          "lower_inclusive": true,
+          "upper_inclusive": true
+        }
+      },
+      "checkpoint_catalogs": [
+        {
+          "t": {
+            "columns": [
+              "id",
+              "v"
+            ],
+            "rows": []
+          }
+        },
+        {
+          "t": {
+            "columns": [
+              "id",
+              "v"
+            ],
+            "rows": []
+          },
+          "s": {
+            "columns": [
+              "id",
+              "v"
+            ],
+            "rows": []
+          }
+        },
+        {
+          "t": {
+            "columns": [
+              "id",
+              "v"
+            ],
+            "rows": [
+              {
+                "id": 1,
+                "v": 10
+              },
+              {
+                "id": 2,
+                "v": null
+              }
+            ]
+          },
+          "s": {
+            "columns": [
+              "id",
+              "v"
+            ],
+            "rows": []
+          }
+        },
+        {
+          "t": {
+            "columns": [
+              "id",
+              "v"
+            ],
+            "rows": [
+              {
+                "id": 1,
+                "v": 10
+              },
+              {
+                "id": 2,
+                "v": null
+              }
+            ]
+          },
+          "s": {
+            "columns": [
+              "id",
+              "v"
+            ],
+            "rows": [
+              {
+                "id": 1,
+                "v": 30
+              }
+            ]
+          }
+        },
+        {
+          "t": {
+            "columns": [
+              "id",
+              "v"
+            ],
+            "rows": [
+              {
+                "id": 1,
+                "v": 30
+              },
+              {
+                "id": 2,
+                "v": null
+              }
+            ]
+          },
+          "s": {
+            "columns": [
+              "id",
+              "v"
+            ],
+            "rows": [
+              {
+                "id": 1,
+                "v": 30
+              }
+            ]
+          }
+        },
+        {
+          "t": {
+            "columns": [
+              "id",
+              "v"
+            ],
+            "rows": [
+              {
+                "id": 1,
+                "v": 30
+              },
+              {
+                "id": 2,
+                "v": null
+              }
+            ]
+          },
+          "s": {
+            "columns": [
+              "id",
+              "v"
+            ],
+            "rows": [
+              {
+                "id": 1,
+                "v": 30
+              }
+            ]
+          }
+        },
+        {
+          "t": {
+            "columns": [
+              "id",
+              "v"
+            ],
+            "rows": [
+              {
+                "id": 1,
+                "v": 30
+              },
+              {
+                "id": 2,
+                "v": null
+              }
+            ]
+          },
+          "s": {
+            "columns": [
+              "id",
+              "v"
+            ],
+            "rows": [
+              {
+                "id": 1,
+                "v": 30
+              }
+            ]
+          }
+        }
+      ],
+      "counts": {
+        "inserted": [
+          0,
+          0,
+          2,
+          1,
+          0,
+          0,
+          0
+        ],
+        "updated": [
+          0,
+          0,
+          0,
+          0,
+          1,
+          1,
+          0
+        ],
+        "deleted": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "affected_target_ordinals": {
+        "4": [
+          0
+        ],
+        "5": [
+          0
+        ]
+      }
+    },
+    {
+      "id": "84-C164-N-invalid-lifecycle",
+      "classification": "Impossible",
+      "program": [
+        "CREATE TABLE t(id INTEGER, v INTEGER)",
+        "CREATE TABLE t(id INTEGER, v INTEGER)"
+      ],
+      "initial_catalog": {},
+      "expected_final": {},
+      "expected_terminal_read": {
+        "rows": [],
+        "not_true_source_ordinals": []
+      },
+      "first_impossible_step": 1,
+      "reason": "duplicate live CREATE TABLE identity",
+      "expected_last_valid_catalog": {
+        "t": {
+          "columns": [
+            "id",
+            "v"
+          ],
+          "rows": []
+        }
+      },
+      "expected_first_impossible_step": 1
+    },
+    {
+      "id": "84-C164-N-savepoint",
+      "classification": "Residual",
+      "program": [
+        "BEGIN",
+        "SAVEPOINT x",
+        "ROLLBACK TO SAVEPOINT x",
+        "RELEASE SAVEPOINT x"
+      ],
+      "initial_catalog": {},
+      "expected_final": "unproved",
+      "expected_terminal_read": {
+        "rows": [],
+        "not_true_source_ordinals": []
+      },
+      "mandatory": false,
+      "owner": "TASK-162",
+      "disposition": "DuckDB ~1.10506.0 does not natively execute SAVEPOINT; parser acceptance alone is not execution proof",
+      "expected_first_residual_step": 1
+    },
+    {
+      "id": "84-C164-N-vendor-session",
+      "classification": "Residual",
+      "program": [
+        "BEGIN",
+        "CREATE TABLE t(id INTEGER)",
+        "ROLLBACK"
+      ],
+      "initial_catalog": {},
+      "expected_final": "unproved",
+      "expected_terminal_read": {
+        "rows": [],
+        "not_true_source_ordinals": []
+      },
+      "mandatory": false,
+      "owner": "TASK-163",
+      "disposition": "non-DuckDB implicit commit, isolation and vendor DDL session laws require engine-specific evidence",
+      "expected_first_residual_step": 0
+    },
+    {
+      "id": "84-C164-P-alter-default",
+      "classification": "Exact",
+      "program": [
+        "CREATE TABLE t(id INTEGER)",
+        "BEGIN",
+        "ALTER TABLE t ADD COLUMN v INTEGER DEFAULT 5",
+        "COMMIT",
+        "INSERT INTO t(id) VALUES (2)",
+        "SELECT id, v FROM t"
+      ],
+      "initial_catalog": {},
+      "expected_final": {
+        "t": [
+          {
+            "id": 2,
+            "v": 5
+          }
+        ]
+      },
+      "expected_terminal_read": {
+        "rows": [
+          {
+            "id": 2,
+            "v": 5
+          }
+        ],
+        "not_true_source_ordinals": [],
+        "surviving_source_ordinals": [
+          0
+        ]
+      },
+      "typed_domains": {
+        "id": {
+          "lower": 2,
+          "upper": 2,
+          "lower_inclusive": true,
+          "upper_inclusive": true
+        },
+        "v": {
+          "lower": 5,
+          "upper": 5,
+          "lower_inclusive": true,
+          "upper_inclusive": true
+        }
+      },
+      "carries_default_across_separate_sql_units": true,
+      "checkpoint_catalogs": [
+        {
+          "t": {
+            "columns": [
+              "id"
+            ],
+            "rows": []
+          }
+        },
+        {
+          "t": {
+            "columns": [
+              "id"
+            ],
+            "rows": []
+          }
+        },
+        {
+          "t": {
+            "columns": [
+              "id",
+              "v"
+            ],
+            "rows": []
+          }
+        },
+        {
+          "t": {
+            "columns": [
+              "id",
+              "v"
+            ],
+            "rows": []
+          }
+        },
+        {
+          "t": {
+            "columns": [
+              "id",
+              "v"
+            ],
+            "rows": [
+              {
+                "id": 2,
+                "v": 5
+              }
+            ]
+          }
+        },
+        {
+          "t": {
+            "columns": [
+              "id",
+              "v"
+            ],
+            "rows": [
+              {
+                "id": 2,
+                "v": 5
+              }
+            ]
+          }
+        }
+      ],
+      "counts": {
+        "inserted": [
+          0,
+          0,
+          0,
+          0,
+          1,
+          0
+        ],
+        "updated": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "deleted": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "affected_target_ordinals": {}
+    }
+  ],
+  "acceptance_mapping": {
+    "1": [
+      "84-C164-P-mixed",
+      "84-C164-P-null-duplicates",
+      "84-C164-P-alter-default"
+    ],
+    "2": [
+      "84-C164-P-rollback",
+      "84-C164-N-savepoint",
+      "84-C164-N-vendor-session"
+    ],
+    "3": [
+      "84-C164-P-mixed",
+      "84-C164-P-null-duplicates",
+      "84-C164-P-rollback",
+      "84-C164-P-idempotent-merge",
+      "84-C164-N-invalid-lifecycle"
+    ],
+    "4": [
+      "84-C164-P-mixed",
+      "84-C164-P-idempotent-merge"
+    ],
+    "5": [
+      "DuckDB every checkpoint including failed and rollback paths"
+    ],
+    "6": [
+      "all 13 parser paths",
+      "representable dbt/ODCS adapter parity",
+      "typed domain and complete row bag checks"
+    ]
+  },
+  "required_ci": [
+    "cargo fmt --check",
+    "cargo clippy --all-targets --all-features -- -D warnings",
+    "cargo test",
+    "cargo test --no-default-features",
+    "cargo doc --no-deps",
+    "dbt E2E and active protocol/schema/golden snapshots"
+  ],
+  "signoff": {
+    "mandatory_verified": false,
+    "native_oracle_verified": false,
+    "all_13_dialects_verified": false,
+    "adapter_parity_verified": false,
+    "full_ci_verified": false,
+    "independent_review_verified": false
+  },
+  "change_policy": "Freeze v1 precedes semantic changes; revised variants require immutable v1 plus explicitly reviewed v2; mandatory exact cases may not be reclassified Residual to pass CI.",
+  "history": [
+    "docs/task-164-acceptance-freeze-v1.json",
+    "docs/task-164-acceptance-freeze-v2.json",
+    "docs/task-164-acceptance-freeze-v3.json"
+  ],
+  "scope_amendment": {
+    "from_version": 1,
+    "reason": "The initial mixed case checkpoint_t column inadvertently marked the first CREATE as absent; correct it to an existing empty table and retain v1 unchanged. No change to mandatory scope or oracles."
+  },
+  "dialect_parser_cells": 598,
+  "dialect_parser_matrix_expected": {
+    "ansi": {
+      "84-C164-N-invalid-lifecycle": [
+        "definition",
+        "definition"
+      ],
+      "84-C164-N-savepoint": [
+        "transaction_control_requires_native_session_evidence",
+        "transaction_control_requires_native_session_evidence",
+        "transaction_control_requires_native_session_evidence",
+        "transaction_control_requires_native_session_evidence"
+      ],
+      "84-C164-N-vendor-session": [
+        "transaction_control_requires_native_session_evidence",
+        "definition",
+        "transaction_control_requires_native_session_evidence"
+      ],
+      "84-C164-P-alter-default": [
+        "definition",
+        "transaction_control_requires_native_session_evidence",
+        "alter",
+        "transaction_control_requires_native_session_evidence",
+        "insert",
+        "read"
+      ],
+      "84-C164-P-idempotent-merge": [
+        "definition",
+        "definition",
+        "insert",
+        "insert",
+        "merge",
+        "merge",
+        "read"
+      ],
+      "84-C164-P-mixed": [
+        "definition",
+        "definition",
+        "insert",
+        "insert",
+        "merge",
+        "delete",
+        "read"
+      ],
+      "84-C164-P-null-duplicates": [
+        "definition",
+        "definition",
+        "insert",
+        "insert",
+        "merge",
+        "read",
+        "delete",
+        "read"
+      ],
+      "84-C164-P-rollback": [
+        "definition",
+        "definition",
+        "insert",
+        "insert",
+        "transaction_control_requires_native_session_evidence",
+        "merge",
+        "delete",
+        "transaction_control_requires_native_session_evidence",
+        "read"
+      ]
+    },
+    "bigquery": {
+      "84-C164-N-invalid-lifecycle": [
+        "definition",
+        "definition"
+      ],
+      "84-C164-N-savepoint": [
+        "parser_boundary",
+        "transaction_control_requires_native_session_evidence",
+        "transaction_control_requires_native_session_evidence",
+        "transaction_control_requires_native_session_evidence"
+      ],
+      "84-C164-N-vendor-session": [
+        "parser_boundary",
+        "definition",
+        "transaction_control_requires_native_session_evidence"
+      ],
+      "84-C164-P-alter-default": [
+        "definition",
+        "parser_boundary",
+        "alter",
+        "transaction_control_requires_native_session_evidence",
+        "insert",
+        "read"
+      ],
+      "84-C164-P-idempotent-merge": [
+        "definition",
+        "definition",
+        "insert",
+        "insert",
+        "merge",
+        "merge",
+        "read"
+      ],
+      "84-C164-P-mixed": [
+        "definition",
+        "definition",
+        "insert",
+        "insert",
+        "merge",
+        "delete",
+        "read"
+      ],
+      "84-C164-P-null-duplicates": [
+        "definition",
+        "definition",
+        "insert",
+        "insert",
+        "merge",
+        "read",
+        "delete",
+        "read"
+      ],
+      "84-C164-P-rollback": [
+        "definition",
+        "definition",
+        "insert",
+        "insert",
+        "parser_boundary",
+        "merge",
+        "delete",
+        "transaction_control_requires_native_session_evidence",
+        "read"
+      ]
+    },
+    "clickhouse": {
+      "84-C164-N-invalid-lifecycle": [
+        "definition",
+        "definition"
+      ],
+      "84-C164-N-savepoint": [
+        "transaction_control_requires_native_session_evidence",
+        "transaction_control_requires_native_session_evidence",
+        "transaction_control_requires_native_session_evidence",
+        "transaction_control_requires_native_session_evidence"
+      ],
+      "84-C164-N-vendor-session": [
+        "transaction_control_requires_native_session_evidence",
+        "definition",
+        "transaction_control_requires_native_session_evidence"
+      ],
+      "84-C164-P-alter-default": [
+        "definition",
+        "transaction_control_requires_native_session_evidence",
+        "alter",
+        "transaction_control_requires_native_session_evidence",
+        "insert",
+        "read"
+      ],
+      "84-C164-P-idempotent-merge": [
+        "definition",
+        "definition",
+        "insert",
+        "insert",
+        "merge",
+        "merge",
+        "read"
+      ],
+      "84-C164-P-mixed": [
+        "definition",
+        "definition",
+        "insert",
+        "insert",
+        "merge",
+        "delete",
+        "read"
+      ],
+      "84-C164-P-null-duplicates": [
+        "definition",
+        "definition",
+        "insert",
+        "insert",
+        "merge",
+        "read",
+        "delete",
+        "read"
+      ],
+      "84-C164-P-rollback": [
+        "definition",
+        "definition",
+        "insert",
+        "insert",
+        "transaction_control_requires_native_session_evidence",
+        "merge",
+        "delete",
+        "transaction_control_requires_native_session_evidence",
+        "read"
+      ]
+    },
+    "databricks": {
+      "84-C164-N-invalid-lifecycle": [
+        "definition",
+        "definition"
+      ],
+      "84-C164-N-savepoint": [
+        "transaction_control_requires_native_session_evidence",
+        "transaction_control_requires_native_session_evidence",
+        "transaction_control_requires_native_session_evidence",
+        "transaction_control_requires_native_session_evidence"
+      ],
+      "84-C164-N-vendor-session": [
+        "transaction_control_requires_native_session_evidence",
+        "definition",
+        "transaction_control_requires_native_session_evidence"
+      ],
+      "84-C164-P-alter-default": [
+        "definition",
+        "transaction_control_requires_native_session_evidence",
+        "alter",
+        "transaction_control_requires_native_session_evidence",
+        "insert",
+        "read"
+      ],
+      "84-C164-P-idempotent-merge": [
+        "definition",
+        "definition",
+        "insert",
+        "insert",
+        "merge",
+        "merge",
+        "read"
+      ],
+      "84-C164-P-mixed": [
+        "definition",
+        "definition",
+        "insert",
+        "insert",
+        "merge",
+        "delete",
+        "read"
+      ],
+      "84-C164-P-null-duplicates": [
+        "definition",
+        "definition",
+        "insert",
+        "insert",
+        "merge",
+        "read",
+        "delete",
+        "read"
+      ],
+      "84-C164-P-rollback": [
+        "definition",
+        "definition",
+        "insert",
+        "insert",
+        "transaction_control_requires_native_session_evidence",
+        "merge",
+        "delete",
+        "transaction_control_requires_native_session_evidence",
+        "read"
+      ]
+    },
+    "duckdb": {
+      "84-C164-N-invalid-lifecycle": [
+        "definition",
+        "definition"
+      ],
+      "84-C164-N-savepoint": [
+        "transaction_control_requires_native_session_evidence",
+        "transaction_control_requires_native_session_evidence",
+        "transaction_control_requires_native_session_evidence",
+        "transaction_control_requires_native_session_evidence"
+      ],
+      "84-C164-N-vendor-session": [
+        "transaction_control_requires_native_session_evidence",
+        "definition",
+        "transaction_control_requires_native_session_evidence"
+      ],
+      "84-C164-P-alter-default": [
+        "definition",
+        "transaction_control_requires_native_session_evidence",
+        "alter",
+        "transaction_control_requires_native_session_evidence",
+        "insert",
+        "read"
+      ],
+      "84-C164-P-idempotent-merge": [
+        "definition",
+        "definition",
+        "insert",
+        "insert",
+        "merge",
+        "merge",
+        "read"
+      ],
+      "84-C164-P-mixed": [
+        "definition",
+        "definition",
+        "insert",
+        "insert",
+        "merge",
+        "delete",
+        "read"
+      ],
+      "84-C164-P-null-duplicates": [
+        "definition",
+        "definition",
+        "insert",
+        "insert",
+        "merge",
+        "read",
+        "delete",
+        "read"
+      ],
+      "84-C164-P-rollback": [
+        "definition",
+        "definition",
+        "insert",
+        "insert",
+        "transaction_control_requires_native_session_evidence",
+        "merge",
+        "delete",
+        "transaction_control_requires_native_session_evidence",
+        "read"
+      ]
+    },
+    "generic": {
+      "84-C164-N-invalid-lifecycle": [
+        "definition",
+        "definition"
+      ],
+      "84-C164-N-savepoint": [
+        "transaction_control_requires_native_session_evidence",
+        "transaction_control_requires_native_session_evidence",
+        "transaction_control_requires_native_session_evidence",
+        "transaction_control_requires_native_session_evidence"
+      ],
+      "84-C164-N-vendor-session": [
+        "transaction_control_requires_native_session_evidence",
+        "definition",
+        "transaction_control_requires_native_session_evidence"
+      ],
+      "84-C164-P-alter-default": [
+        "definition",
+        "transaction_control_requires_native_session_evidence",
+        "alter",
+        "transaction_control_requires_native_session_evidence",
+        "insert",
+        "read"
+      ],
+      "84-C164-P-idempotent-merge": [
+        "definition",
+        "definition",
+        "insert",
+        "insert",
+        "merge",
+        "merge",
+        "read"
+      ],
+      "84-C164-P-mixed": [
+        "definition",
+        "definition",
+        "insert",
+        "insert",
+        "merge",
+        "delete",
+        "read"
+      ],
+      "84-C164-P-null-duplicates": [
+        "definition",
+        "definition",
+        "insert",
+        "insert",
+        "merge",
+        "read",
+        "delete",
+        "read"
+      ],
+      "84-C164-P-rollback": [
+        "definition",
+        "definition",
+        "insert",
+        "insert",
+        "transaction_control_requires_native_session_evidence",
+        "merge",
+        "delete",
+        "transaction_control_requires_native_session_evidence",
+        "read"
+      ]
+    },
+    "hive": {
+      "84-C164-N-invalid-lifecycle": [
+        "definition",
+        "definition"
+      ],
+      "84-C164-N-savepoint": [
+        "transaction_control_requires_native_session_evidence",
+        "transaction_control_requires_native_session_evidence",
+        "transaction_control_requires_native_session_evidence",
+        "transaction_control_requires_native_session_evidence"
+      ],
+      "84-C164-N-vendor-session": [
+        "transaction_control_requires_native_session_evidence",
+        "definition",
+        "transaction_control_requires_native_session_evidence"
+      ],
+      "84-C164-P-alter-default": [
+        "definition",
+        "transaction_control_requires_native_session_evidence",
+        "alter",
+        "transaction_control_requires_native_session_evidence",
+        "insert",
+        "read"
+      ],
+      "84-C164-P-idempotent-merge": [
+        "definition",
+        "definition",
+        "insert",
+        "insert",
+        "merge",
+        "merge",
+        "read"
+      ],
+      "84-C164-P-mixed": [
+        "definition",
+        "definition",
+        "insert",
+        "insert",
+        "merge",
+        "delete",
+        "read"
+      ],
+      "84-C164-P-null-duplicates": [
+        "definition",
+        "definition",
+        "insert",
+        "insert",
+        "merge",
+        "read",
+        "delete",
+        "read"
+      ],
+      "84-C164-P-rollback": [
+        "definition",
+        "definition",
+        "insert",
+        "insert",
+        "transaction_control_requires_native_session_evidence",
+        "merge",
+        "delete",
+        "transaction_control_requires_native_session_evidence",
+        "read"
+      ]
+    },
+    "mssql": {
+      "84-C164-N-invalid-lifecycle": [
+        "definition",
+        "definition"
+      ],
+      "84-C164-N-savepoint": [
+        "transaction_control_requires_native_session_evidence",
+        "transaction_control_requires_native_session_evidence",
+        "transaction_control_requires_native_session_evidence",
+        "transaction_control_requires_native_session_evidence"
+      ],
+      "84-C164-N-vendor-session": [
+        "transaction_control_requires_native_session_evidence",
+        "definition",
+        "transaction_control_requires_native_session_evidence"
+      ],
+      "84-C164-P-alter-default": [
+        "definition",
+        "transaction_control_requires_native_session_evidence",
+        "alter",
+        "transaction_control_requires_native_session_evidence",
+        "insert",
+        "read"
+      ],
+      "84-C164-P-idempotent-merge": [
+        "definition",
+        "definition",
+        "insert",
+        "insert",
+        "merge",
+        "merge",
+        "read"
+      ],
+      "84-C164-P-mixed": [
+        "definition",
+        "definition",
+        "insert",
+        "insert",
+        "merge",
+        "delete",
+        "read"
+      ],
+      "84-C164-P-null-duplicates": [
+        "definition",
+        "definition",
+        "insert",
+        "insert",
+        "merge",
+        "read",
+        "delete",
+        "read"
+      ],
+      "84-C164-P-rollback": [
+        "definition",
+        "definition",
+        "insert",
+        "insert",
+        "transaction_control_requires_native_session_evidence",
+        "merge",
+        "delete",
+        "transaction_control_requires_native_session_evidence",
+        "read"
+      ]
+    },
+    "mysql": {
+      "84-C164-N-invalid-lifecycle": [
+        "definition",
+        "definition"
+      ],
+      "84-C164-N-savepoint": [
+        "transaction_control_requires_native_session_evidence",
+        "transaction_control_requires_native_session_evidence",
+        "transaction_control_requires_native_session_evidence",
+        "transaction_control_requires_native_session_evidence"
+      ],
+      "84-C164-N-vendor-session": [
+        "transaction_control_requires_native_session_evidence",
+        "definition",
+        "transaction_control_requires_native_session_evidence"
+      ],
+      "84-C164-P-alter-default": [
+        "definition",
+        "transaction_control_requires_native_session_evidence",
+        "alter",
+        "transaction_control_requires_native_session_evidence",
+        "insert",
+        "read"
+      ],
+      "84-C164-P-idempotent-merge": [
+        "definition",
+        "definition",
+        "insert",
+        "insert",
+        "merge",
+        "merge",
+        "read"
+      ],
+      "84-C164-P-mixed": [
+        "definition",
+        "definition",
+        "insert",
+        "insert",
+        "merge",
+        "delete",
+        "read"
+      ],
+      "84-C164-P-null-duplicates": [
+        "definition",
+        "definition",
+        "insert",
+        "insert",
+        "merge",
+        "read",
+        "delete",
+        "read"
+      ],
+      "84-C164-P-rollback": [
+        "definition",
+        "definition",
+        "insert",
+        "insert",
+        "transaction_control_requires_native_session_evidence",
+        "merge",
+        "delete",
+        "transaction_control_requires_native_session_evidence",
+        "read"
+      ]
+    },
+    "postgresql": {
+      "84-C164-N-invalid-lifecycle": [
+        "definition",
+        "definition"
+      ],
+      "84-C164-N-savepoint": [
+        "transaction_control_requires_native_session_evidence",
+        "transaction_control_requires_native_session_evidence",
+        "transaction_control_requires_native_session_evidence",
+        "transaction_control_requires_native_session_evidence"
+      ],
+      "84-C164-N-vendor-session": [
+        "transaction_control_requires_native_session_evidence",
+        "definition",
+        "transaction_control_requires_native_session_evidence"
+      ],
+      "84-C164-P-alter-default": [
+        "definition",
+        "transaction_control_requires_native_session_evidence",
+        "alter",
+        "transaction_control_requires_native_session_evidence",
+        "insert",
+        "read"
+      ],
+      "84-C164-P-idempotent-merge": [
+        "definition",
+        "definition",
+        "insert",
+        "insert",
+        "merge",
+        "merge",
+        "read"
+      ],
+      "84-C164-P-mixed": [
+        "definition",
+        "definition",
+        "insert",
+        "insert",
+        "merge",
+        "delete",
+        "read"
+      ],
+      "84-C164-P-null-duplicates": [
+        "definition",
+        "definition",
+        "insert",
+        "insert",
+        "merge",
+        "read",
+        "delete",
+        "read"
+      ],
+      "84-C164-P-rollback": [
+        "definition",
+        "definition",
+        "insert",
+        "insert",
+        "transaction_control_requires_native_session_evidence",
+        "merge",
+        "delete",
+        "transaction_control_requires_native_session_evidence",
+        "read"
+      ]
+    },
+    "redshift": {
+      "84-C164-N-invalid-lifecycle": [
+        "definition",
+        "definition"
+      ],
+      "84-C164-N-savepoint": [
+        "transaction_control_requires_native_session_evidence",
+        "transaction_control_requires_native_session_evidence",
+        "transaction_control_requires_native_session_evidence",
+        "transaction_control_requires_native_session_evidence"
+      ],
+      "84-C164-N-vendor-session": [
+        "transaction_control_requires_native_session_evidence",
+        "definition",
+        "transaction_control_requires_native_session_evidence"
+      ],
+      "84-C164-P-alter-default": [
+        "definition",
+        "transaction_control_requires_native_session_evidence",
+        "alter",
+        "transaction_control_requires_native_session_evidence",
+        "insert",
+        "read"
+      ],
+      "84-C164-P-idempotent-merge": [
+        "definition",
+        "definition",
+        "insert",
+        "insert",
+        "merge",
+        "merge",
+        "read"
+      ],
+      "84-C164-P-mixed": [
+        "definition",
+        "definition",
+        "insert",
+        "insert",
+        "merge",
+        "delete",
+        "read"
+      ],
+      "84-C164-P-null-duplicates": [
+        "definition",
+        "definition",
+        "insert",
+        "insert",
+        "merge",
+        "read",
+        "delete",
+        "read"
+      ],
+      "84-C164-P-rollback": [
+        "definition",
+        "definition",
+        "insert",
+        "insert",
+        "transaction_control_requires_native_session_evidence",
+        "merge",
+        "delete",
+        "transaction_control_requires_native_session_evidence",
+        "read"
+      ]
+    },
+    "snowflake": {
+      "84-C164-N-invalid-lifecycle": [
+        "definition",
+        "definition"
+      ],
+      "84-C164-N-savepoint": [
+        "parser_boundary",
+        "transaction_control_requires_native_session_evidence",
+        "transaction_control_requires_native_session_evidence",
+        "transaction_control_requires_native_session_evidence"
+      ],
+      "84-C164-N-vendor-session": [
+        "parser_boundary",
+        "definition",
+        "transaction_control_requires_native_session_evidence"
+      ],
+      "84-C164-P-alter-default": [
+        "definition",
+        "parser_boundary",
+        "alter",
+        "transaction_control_requires_native_session_evidence",
+        "insert",
+        "read"
+      ],
+      "84-C164-P-idempotent-merge": [
+        "definition",
+        "definition",
+        "insert",
+        "insert",
+        "merge",
+        "merge",
+        "read"
+      ],
+      "84-C164-P-mixed": [
+        "definition",
+        "definition",
+        "insert",
+        "insert",
+        "merge",
+        "delete",
+        "read"
+      ],
+      "84-C164-P-null-duplicates": [
+        "definition",
+        "definition",
+        "insert",
+        "insert",
+        "merge",
+        "read",
+        "delete",
+        "read"
+      ],
+      "84-C164-P-rollback": [
+        "definition",
+        "definition",
+        "insert",
+        "insert",
+        "parser_boundary",
+        "merge",
+        "delete",
+        "transaction_control_requires_native_session_evidence",
+        "read"
+      ]
+    },
+    "sqlite": {
+      "84-C164-N-invalid-lifecycle": [
+        "definition",
+        "definition"
+      ],
+      "84-C164-N-savepoint": [
+        "transaction_control_requires_native_session_evidence",
+        "transaction_control_requires_native_session_evidence",
+        "transaction_control_requires_native_session_evidence",
+        "transaction_control_requires_native_session_evidence"
+      ],
+      "84-C164-N-vendor-session": [
+        "transaction_control_requires_native_session_evidence",
+        "definition",
+        "transaction_control_requires_native_session_evidence"
+      ],
+      "84-C164-P-alter-default": [
+        "definition",
+        "transaction_control_requires_native_session_evidence",
+        "alter",
+        "transaction_control_requires_native_session_evidence",
+        "insert",
+        "read"
+      ],
+      "84-C164-P-idempotent-merge": [
+        "definition",
+        "definition",
+        "insert",
+        "insert",
+        "merge",
+        "merge",
+        "read"
+      ],
+      "84-C164-P-mixed": [
+        "definition",
+        "definition",
+        "insert",
+        "insert",
+        "merge",
+        "delete",
+        "read"
+      ],
+      "84-C164-P-null-duplicates": [
+        "definition",
+        "definition",
+        "insert",
+        "insert",
+        "merge",
+        "read",
+        "delete",
+        "read"
+      ],
+      "84-C164-P-rollback": [
+        "definition",
+        "definition",
+        "insert",
+        "insert",
+        "transaction_control_requires_native_session_evidence",
+        "merge",
+        "delete",
+        "transaction_control_requires_native_session_evidence",
+        "read"
+      ]
+    }
+  },
+  "dialect_observation": {
+    "red_ci_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/42202839057",
+    "observation": "deliberately failing test records per-statement canonical/parser boundaries before literal v3 freeze",
+    "meaning": "parser recognition is not non-DuckDB physical engine certification"
+  },
+  "reviewed_amendment": {
+    "from_version": 3,
+    "kind": "strengthened_independent_oracles_only",
+    "reason": "Explicitly freeze every Exact case's full per-step live catalogs, typed schema columns, affected write counts, prestate mutation ordinals, and positive read ordinals instead of inferring correctness from implementation-computed state; all eight original case identities and mandatory classifications unchanged."
+  }
+}
