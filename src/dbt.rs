@@ -1438,7 +1438,7 @@ fn validate_declared_dependencies(
             let represented_by_constraint = manifest
                 .relation_constraints
                 .iter()
-                .find(|constraints| constraints.relation() == model.relation_name)
+                .find(|constraints| model.relation_name.as_deref() == Some(constraints.relation()))
                 .is_some_and(|constraints| {
                     constraints.constraints().iter().any(|constraint| {
                         matches!(
