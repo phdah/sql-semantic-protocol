@@ -1,0 +1,432 @@
+{
+  "version": 2,
+  "owner": "TASK-163",
+  "parent": "TASK-84",
+  "status": "v2_parser_evidence_registered_pending_full_signoff",
+  "fixture_ids": [
+    "84-C163-P",
+    "84-C163-N"
+  ],
+  "original_child_ac": [
+    1,
+    2,
+    3,
+    4,
+    5
+  ],
+  "original_parent_ac": [
+    1,
+    2,
+    3,
+    5,
+    6
+  ],
+  "semantics": {
+    "canonical_owner": "src/physical_realization/transactions.rs",
+    "frontend": "src/analysis/transactions.rs",
+    "native_engine": "duckdb ~1.10506.0",
+    "scope": "Single native DuckDB connection and complete source-backed typed catalog; no implicit promise for other dialects",
+    "proof": "Exact only for complete original and terminal typed bags; Impossible only from proved contradiction; unsupported session or vendor laws are typed Residual, owned by TASK-163",
+    "domains": "INTEGER points have inclusive lower/upper, SQL NULL is explicit; empty table has exact empty frequency domain",
+    "occurrence": "Source rows retain per-occurrence identity; count duplicates without collapsing values",
+    "evidence": "DuckDB source, checkpoint and final-state oracles must be independent of protocol implementation"
+  },
+  "dialects": [
+    "generic",
+    "mysql",
+    "postgresql",
+    "hive",
+    "sqlite",
+    "snowflake",
+    "redshift",
+    "mssql",
+    "clickhouse",
+    "bigquery",
+    "ansi",
+    "duckdb",
+    "databricks"
+  ],
+  "adapters": {
+    "sql": "Exact native runtime evidence only for analyzed DuckDB SQL; other parser acceptances are not runtime certification",
+    "dbt": "Canonical compiled SQL plus matching schema evidence only; no transaction execution rights inferred",
+    "odcs": "Canonical schema/constraint evidence only; no inferred session, transaction or vendor law"
+  },
+  "cases": [
+    {
+      "id": "84-C163-P-transactional-ddl-rollback",
+      "family": "DUCKDB_DDL_ROLLBACK",
+      "mandatory": true,
+      "sql": [
+        "BEGIN",
+        "CREATE TABLE t (id INTEGER, v INTEGER)",
+        "INSERT INTO t VALUES (1, 10), (1, NULL)",
+        "ROLLBACK"
+      ],
+      "prestate": [],
+      "poststate": [],
+      "checkpoints": [
+        {
+          "after_step": 2,
+          "t": [
+            {
+              "id": 1,
+              "v": 10
+            },
+            {
+              "id": 1,
+              "v": null
+            }
+          ]
+        },
+        {
+          "after_step": 3,
+          "t": null
+        }
+      ],
+      "typed_domains": {
+        "after_insert": {
+          "id": {
+            "lower": 1,
+            "upper": 1,
+            "lower_inclusive": true,
+            "upper_inclusive": true
+          },
+          "v": {
+            "values": [
+              10,
+              null
+            ]
+          }
+        },
+        "after_rollback": {
+          "table_absent": true
+        }
+      },
+      "positive": "Two physical occurrences before ROLLBACK",
+      "not_true": "No relation t after ROLLBACK",
+      "expected_proof": "Exact",
+      "native_oracle": "independent full-bag DuckDB checkpoints and table absence"
+    },
+    {
+      "id": "84-C163-P-drop-rollback",
+      "family": "DUCKDB_DROP_ROLLBACK",
+      "mandatory": true,
+      "sql": [
+        "CREATE TABLE t (id INTEGER, v INTEGER)",
+        "INSERT INTO t VALUES (1, 10), (1, NULL)",
+        "BEGIN",
+        "DROP TABLE t",
+        "ROLLBACK",
+        "SELECT id, v FROM t WHERE v >= 10"
+      ],
+      "prestate": [],
+      "poststate": {
+        "t": [
+          {
+            "id": 1,
+            "v": 10
+          },
+          {
+            "id": 1,
+            "v": null
+          }
+        ]
+      },
+      "typed_domains": {
+        "id": {
+          "lower": 1,
+          "upper": 1,
+          "lower_inclusive": true,
+          "upper_inclusive": true
+        },
+        "v": {
+          "values": [
+            10,
+            null
+          ]
+        }
+      },
+      "positive": "SELECT returns (1,10) from preserved original source occurrence",
+      "not_true": "SELECT rejects (1,NULL) as UNKNOWN",
+      "expected_proof": "Exact",
+      "native_oracle": "DuckDB compare all existing checkpoint catalogs and final SELECT"
+    },
+    {
+      "id": "84-C163-P-ddl-outside-transaction",
+      "family": "DUCKDB_AUTOCOMMIT_CONTRAST",
+      "mandatory": true,
+      "sql": [
+        "CREATE TABLE t (id INTEGER, v INTEGER)",
+        "BEGIN",
+        "INSERT INTO t VALUES (1, 10)",
+        "ROLLBACK"
+      ],
+      "prestate": [],
+      "poststate": {
+        "t": []
+      },
+      "typed_domains": {
+        "id": {
+          "empty": true
+        },
+        "v": {
+          "empty": true
+        }
+      },
+      "positive": "CREATE persists as empty t",
+      "not_true": "Rolled-back INSERT row absent",
+      "expected_proof": "Exact",
+      "native_oracle": "DuckDB complete poststate and table existence"
+    },
+    {
+      "id": "84-C163-N-temp-table-lifetime",
+      "family": "TEMPORARY_TABLE_LIFETIME",
+      "mandatory": false,
+      "sql": [
+        "CREATE TEMP TABLE temp_t (id INTEGER)",
+        "INSERT INTO temp_t VALUES (1)"
+      ],
+      "prestate": [],
+      "poststate": "unproven",
+      "typed_domains": "unknown",
+      "positive": "not certified",
+      "not_true": "not certified",
+      "expected_proof": "Residual",
+      "owner": "TASK-163",
+      "disposition": "Conditional: temporary relation connection lifetime and engine/session scope need independent evidence"
+    },
+    {
+      "id": "84-C163-N-deferred-fk",
+      "family": "DEFERRED_FOREIGN_KEY",
+      "mandatory": false,
+      "sql": [
+        "SET CONSTRAINTS ALL DEFERRED"
+      ],
+      "prestate": [],
+      "poststate": "unproven",
+      "typed_domains": "unknown",
+      "positive": "not certified",
+      "not_true": "not certified",
+      "expected_proof": "Residual",
+      "owner": "TASK-163",
+      "disposition": "Conditional: deferred constraint timing needs native engine-specific attestation"
+    },
+    {
+      "id": "84-C163-N-concurrent-isolation",
+      "family": "CONCURRENT_ISOLATION",
+      "mandatory": false,
+      "sql": [
+        "BEGIN TRANSACTION ISOLATION LEVEL SERIALIZABLE"
+      ],
+      "prestate": [],
+      "poststate": "unproven",
+      "typed_domains": "unknown",
+      "positive": "not certified",
+      "not_true": "not certified",
+      "expected_proof": "Residual",
+      "owner": "TASK-163",
+      "disposition": "Conditional: cross-session snapshots, conflicts, isolation and concurrent writers cannot be certified from a single connection"
+    },
+    {
+      "id": "84-C163-N-vendor-implicit-commit",
+      "family": "VENDOR_IMPLICIT_DDL_COMMIT",
+      "mandatory": false,
+      "sql": [
+        "BEGIN",
+        "CREATE TABLE t (id INTEGER)",
+        "ROLLBACK"
+      ],
+      "dialect": "mysql",
+      "prestate": [],
+      "poststate": "unproven",
+      "typed_domains": "unknown",
+      "positive": "not certified",
+      "not_true": "not certified",
+      "expected_proof": "Residual",
+      "owner": "TASK-163",
+      "disposition": "Conditional: vendor implicit DDL commit must not inherit verified DuckDB rollback law"
+    },
+    {
+      "id": "84-C163-N-vendor-transaction-option",
+      "family": "VENDOR_TRANSACTION_OPTION",
+      "mandatory": false,
+      "sql": [
+        "COMMIT AND CHAIN"
+      ],
+      "prestate": [],
+      "poststate": "unproven",
+      "typed_domains": "unknown",
+      "positive": "not certified",
+      "not_true": "not certified",
+      "expected_proof": "Residual",
+      "owner": "TASK-163",
+      "disposition": "Conditional: supported AST syntax does not establish native execution law"
+    }
+  ],
+  "acceptance_mapping": {
+    "1": [
+      "84-C163-P-transactional-ddl-rollback",
+      "84-C163-N-temp-table-lifetime"
+    ],
+    "2": [
+      "84-C163-P-drop-rollback",
+      "84-C163-N-vendor-implicit-commit",
+      "84-C163-N-deferred-fk",
+      "84-C163-N-concurrent-isolation"
+    ],
+    "3": [
+      "84-C163-P-drop-rollback",
+      "84-C163-P-ddl-outside-transaction"
+    ],
+    "4": [
+      "all 13 dialect parser cells, SQL/dbt/ODCS representable parity, native engine oracles"
+    ],
+    "5": [
+      "fmt",
+      "strict clippy",
+      "cargo test",
+      "cargo doc",
+      "no-default-features",
+      "dbt E2E",
+      "active protocol/schema snapshot",
+      "independent review"
+    ]
+  },
+  "implementation_boundary": "A frozen fixture/variant is not a claim of implementation, verification or review. New cases require a new version. No native cross-vendor or cross-session exactness from parser success.",
+  "dialect_parser_matrix_expected": {
+    "ansi": {
+      "begin": "start_transaction",
+      "commit_chain": "commit",
+      "create_table": "create_table",
+      "defer_constraints": "parser_boundary",
+      "drop_table": "drop",
+      "isolation_level": "start_transaction",
+      "rollback": "rollback",
+      "temporary_table": "create_table"
+    },
+    "bigquery": {
+      "begin": "parser_boundary",
+      "commit_chain": "commit",
+      "create_table": "create_table",
+      "defer_constraints": "parser_boundary",
+      "drop_table": "drop",
+      "isolation_level": "parser_boundary",
+      "rollback": "rollback",
+      "temporary_table": "create_table"
+    },
+    "clickhouse": {
+      "begin": "start_transaction",
+      "commit_chain": "commit",
+      "create_table": "create_table",
+      "defer_constraints": "parser_boundary",
+      "drop_table": "drop",
+      "isolation_level": "start_transaction",
+      "rollback": "rollback",
+      "temporary_table": "create_table"
+    },
+    "databricks": {
+      "begin": "start_transaction",
+      "commit_chain": "commit",
+      "create_table": "create_table",
+      "defer_constraints": "parser_boundary",
+      "drop_table": "drop",
+      "isolation_level": "start_transaction",
+      "rollback": "rollback",
+      "temporary_table": "create_table"
+    },
+    "duckdb": {
+      "begin": "start_transaction",
+      "commit_chain": "commit",
+      "create_table": "create_table",
+      "defer_constraints": "parser_boundary",
+      "drop_table": "drop",
+      "isolation_level": "start_transaction",
+      "rollback": "rollback",
+      "temporary_table": "create_table"
+    },
+    "generic": {
+      "begin": "start_transaction",
+      "commit_chain": "commit",
+      "create_table": "create_table",
+      "defer_constraints": "parser_boundary",
+      "drop_table": "drop",
+      "isolation_level": "start_transaction",
+      "rollback": "rollback",
+      "temporary_table": "create_table"
+    },
+    "hive": {
+      "begin": "start_transaction",
+      "commit_chain": "commit",
+      "create_table": "create_table",
+      "defer_constraints": "parser_boundary",
+      "drop_table": "drop",
+      "isolation_level": "start_transaction",
+      "rollback": "rollback",
+      "temporary_table": "create_table"
+    },
+    "mssql": {
+      "begin": "start_transaction",
+      "commit_chain": "commit",
+      "create_table": "create_table",
+      "defer_constraints": "parser_boundary",
+      "drop_table": "drop",
+      "isolation_level": "start_transaction",
+      "rollback": "rollback",
+      "temporary_table": "create_table"
+    },
+    "mysql": {
+      "begin": "start_transaction",
+      "commit_chain": "commit",
+      "create_table": "create_table",
+      "defer_constraints": "parser_boundary",
+      "drop_table": "drop",
+      "isolation_level": "start_transaction",
+      "rollback": "rollback",
+      "temporary_table": "create_table"
+    },
+    "postgresql": {
+      "begin": "start_transaction",
+      "commit_chain": "commit",
+      "create_table": "create_table",
+      "defer_constraints": "parser_boundary",
+      "drop_table": "drop",
+      "isolation_level": "start_transaction",
+      "rollback": "rollback",
+      "temporary_table": "create_table"
+    },
+    "redshift": {
+      "begin": "start_transaction",
+      "commit_chain": "commit",
+      "create_table": "create_table",
+      "defer_constraints": "parser_boundary",
+      "drop_table": "drop",
+      "isolation_level": "start_transaction",
+      "rollback": "rollback",
+      "temporary_table": "create_table"
+    },
+    "snowflake": {
+      "begin": "parser_boundary",
+      "commit_chain": "commit",
+      "create_table": "create_table",
+      "defer_constraints": "parser_boundary",
+      "drop_table": "drop",
+      "isolation_level": "parser_boundary",
+      "rollback": "rollback",
+      "temporary_table": "create_table"
+    },
+    "sqlite": {
+      "begin": "start_transaction",
+      "commit_chain": "commit",
+      "create_table": "create_table",
+      "defer_constraints": "parser_boundary",
+      "drop_table": "drop",
+      "isolation_level": "start_transaction",
+      "rollback": "rollback",
+      "temporary_table": "create_table"
+    }
+  },
+  "dialect_parser_cells": 104,
+  "parser_evidence": "CI first observed full 13x8 matrix in workflow run 42183888762 (Rust tests deliberately red until explicit snapshot frozen); sqlparser 0.58; parser success never certifies runtime transaction law",
+  "previous_freeze": "docs/task-163-acceptance-freeze-v1.json",
+  "conditional_native_scope": "Unverified temporary-table lifetime, deferred constraints, concurrent isolation and vendor implicit commit/chain are typed Residual with TASK-163 ownership; only pinned native DuckDB DDL rollback cases are exact."
+}
