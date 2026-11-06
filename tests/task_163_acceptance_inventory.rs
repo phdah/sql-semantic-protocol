@@ -23,19 +23,46 @@ fn mandatory_and_conditional_frozen_cells_have_complete_reviewable_scope() {
         serde_json::from_str(include_str!("../docs/task-163-acceptance-freeze-v1.json")).unwrap();
     assert_eq!(v1["version"], 1);
     assert_eq!(freeze["version"], 2);
-    assert_eq!(freeze["previous_freeze"], "docs/task-163-acceptance-freeze-v1.json");
+    assert_eq!(
+        freeze["previous_freeze"],
+        "docs/task-163-acceptance-freeze-v1.json"
+    );
     assert_eq!(freeze["fixture_ids"], v1["fixture_ids"]);
-    assert_eq!(freeze["cases"], v1["cases"], "frozen fixture variants must not be silently weakened");
+    assert_eq!(
+        freeze["cases"], v1["cases"],
+        "frozen fixture variants must not be silently weakened"
+    );
     assert_eq!(freeze["dialects"], v1["dialects"]);
-    assert_eq!(freeze["original_child_ac"], serde_json::json!([1, 2, 3, 4, 5]));
-    assert_eq!(freeze["original_parent_ac"], serde_json::json!([1, 2, 3, 5, 6]));
+    assert_eq!(
+        freeze["original_child_ac"],
+        serde_json::json!([1, 2, 3, 4, 5])
+    );
+    assert_eq!(
+        freeze["original_parent_ac"],
+        serde_json::json!([1, 2, 3, 5, 6])
+    );
 
     let cases = freeze["cases"].as_array().unwrap();
     assert_eq!(cases.len(), EXPECTED.len());
-    let ids = cases.iter().map(|c| c["id"].as_str().unwrap()).collect::<BTreeSet<_>>();
+    let ids = cases
+        .iter()
+        .map(|c| c["id"].as_str().unwrap())
+        .collect::<BTreeSet<_>>();
     assert_eq!(ids, EXPECTED.into_iter().collect());
-    assert_eq!(cases.iter().filter(|case| case["mandatory"] == true).count(), 3);
-    assert_eq!(cases.iter().filter(|case| case["mandatory"] == false).count(), 5);
+    assert_eq!(
+        cases
+            .iter()
+            .filter(|case| case["mandatory"] == true)
+            .count(),
+        3
+    );
+    assert_eq!(
+        cases
+            .iter()
+            .filter(|case| case["mandatory"] == false)
+            .count(),
+        5
+    );
     for case in cases {
         assert!(case["sql"].as_array().is_some_and(|sql| !sql.is_empty()));
         assert!(!case["prestate"].is_null());
@@ -60,7 +87,10 @@ fn mandatory_and_conditional_frozen_cells_have_complete_reviewable_scope() {
     for ac in [1, 2, 3] {
         let entry = mapping.get(&ac.to_string()).unwrap().as_array().unwrap();
         for id in entry.iter().filter_map(Value::as_str) {
-            assert!(ids.contains(id), "original child AC maps to missing frozen fixture {id}");
+            assert!(
+                ids.contains(id),
+                "original child AC maps to missing frozen fixture {id}"
+            );
         }
     }
 }
@@ -69,7 +99,9 @@ fn mandatory_and_conditional_frozen_cells_have_complete_reviewable_scope() {
 fn explicit_dialect_matrix_covers_13_names_and_all_eight_variants() {
     let freeze: Value =
         serde_json::from_str(include_str!("../docs/task-163-acceptance-freeze.json")).unwrap();
-    let matrix = freeze["dialect_parser_matrix_expected"].as_object().unwrap();
+    let matrix = freeze["dialect_parser_matrix_expected"]
+        .as_object()
+        .unwrap();
     assert_eq!(matrix.len(), 13);
     assert_eq!(freeze["dialect_parser_cells"], 104);
     for name in freeze["dialects"].as_array().unwrap() {
@@ -97,7 +129,13 @@ fn coverage_manifest_tracks_every_parent_child_and_conditional_gate() {
     assert_eq!(task["parent"], "TASK-84");
     assert_eq!(task["parent_closed"], false);
     assert_eq!(task["freeze"], "docs/task-163-acceptance-freeze.json");
-    assert_eq!(task["fixture_ids"], serde_json::json!(["84-C163-P", "84-C163-N"]));
-    assert_eq!(task["parent_original_ac"], serde_json::json!([1, 2, 3, 5, 6]));
+    assert_eq!(
+        task["fixture_ids"],
+        serde_json::json!(["84-C163-P", "84-C163-N"])
+    );
+    assert_eq!(
+        task["parent_original_ac"],
+        serde_json::json!([1, 2, 3, 5, 6])
+    );
     assert_eq!(task["conditional_owner"], "TASK-163");
 }
