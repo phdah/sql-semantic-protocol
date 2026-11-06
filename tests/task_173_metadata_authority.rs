@@ -6,11 +6,11 @@ use std::collections::BTreeMap;
 use serde_json::{json, Value};
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, analyze_dbt_artifacts, analyze_inputs,
-    dialect_from_name, parse_dbt_catalog, parse_dbt_manifest, ComposedSemantics,
-    ConfiguredSqlInput, ConstraintEnforcement, ConstraintSourceKind, DataType,
-    DbtArtifactsError, LiteralValue, PhysicalOrderedLifecycleProof, PhysicalWriteRow,
-    PhysicalWriteState, RelationCatalog, RelationConstraint, SchemaSourceKind,
-    SqlInput, ValueDomain, physical_ordered_lifecycle_plan, to_bundle_json,
+    dialect_from_name, parse_dbt_catalog, parse_dbt_manifest, physical_ordered_lifecycle_plan,
+    to_bundle_json, analyze_dbt_manifest_with_schemas, ComposedSemantics, ConfiguredSqlInput, ConstraintEnforcement,
+    ConstraintSourceKind, DataType, DbtArtifactsError, LiteralValue, PhysicalOrderedLifecycleProof,
+    PhysicalWriteRow, PhysicalWriteState, RelationCatalog, RelationConstraint, SchemaSourceKind,
+    SqlInput, ValueDomain,
 };
 
 const FILTER: &str = "SELECT k FROM raw.orders WHERE k >= 1";
@@ -29,7 +29,6 @@ const DIALECTS: &[&str] = &[
     "duckdb",
     "databricks",
 ];
-
 
 fn physical_row(value: Option<i64>) -> PhysicalWriteRow {
     let value = value.map_or(LiteralValue::Null, |value| {
@@ -75,8 +74,13 @@ fn verify_complete_physical_filter(catalog: &RelationCatalog) -> (Vec<usize>, Ve
     );
     assert_eq!(read.surviving_source_ordinals, vec![0, 1]);
     assert_eq!(read.rejected_source_ordinals, vec![2, 3]);
-    assert_eq!(read.output_schema.columns()[0].data_type(), read.source_schema.columns()[0].data_type());
-    let domains = read.exact_domains().expect("complete typed output histogram");
+    assert_eq!(
+        read.output_schema.columns()[0].data_type(),
+        read.source_schema.columns()[0].data_type()
+    );
+    let domains = read
+        .exact_domains()
+        .expect("complete typed output histogram");
     assert_eq!(domains.len(), 1);
     assert!(to_bundle_json(&bundle).contains(r#""protocol_version":"#));
     assert_inclusive_lower_one(&filtered_output_domain(catalog, "duckdb"));
@@ -122,25 +126,31 @@ fn dbt_declared_constraints_and_generic_tests_keep_separate_unknown_enforcement(
         "depends_on": {"nodes": ["source.task173.orders"]}
     });
     let manifest = parse_dbt_manifest(&value.to_string()).unwrap();
-    let constraints = manifest.relation_constraints().iter().find(|set| {
-        set.relation() == "raw.orders"
-    }).expect("manifest owns declared key constraints and generic tests");
-    let key = constraints.constraints().iter().find_map(|constraint| {
-        match constraint {
+    let constraints = manifest
+        .relation_constraints()
+        .iter()
+        .find(|set| set.relation() == "raw.orders")
+        .expect("manifest owns declared key constraints and generic tests");
+    let key = constraints
+        .constraints()
+        .iter()
+        .find_map(|constraint| match constraint {
             RelationConstraint::UniqueKey(key) if key.columns() == ["k"] => Some(key),
             _ => None,
-        }
-    }).expect("one canonical merged unique key");
+        })
+        .expect("one canonical merged unique key");
     assert_eq!(key.evidence().len(), 2);
     assert!(key.evidence().iter().any(|evidence| {
         evidence.provenance().source_kind() == ConstraintSourceKind::DbtConstraint
     }));
-    assert!(key.evidence().iter().any(|evidence| {
-        evidence.provenance().source_kind() == ConstraintSourceKind::DbtTest
-    }));
-    assert!(key.evidence().iter().all(|evidence| {
-        evidence.enforcement() == ConstraintEnforcement::Unknown
-    }));
+    assert!(key
+        .evidence()
+        .iter()
+        .any(|evidence| { evidence.provenance().source_kind() == ConstraintSourceKind::DbtTest }));
+    assert!(key
+        .evidence()
+        .iter()
+        .all(|evidence| { evidence.enforcement() == ConstraintEnforcement::Unknown }));
     let catalog = parse_dbt_catalog(&catalog_json(Some("INTEGER")).to_string()).unwrap();
     let dialect = dialect_from_name("duckdb").unwrap();
     let bundle = analyze_dbt_artifacts(&manifest, &catalog, "duckdb", dialect.as_ref()).unwrap();
@@ -456,7 +466,6 @@ mod odcs_authority {
             filtered_output_domain(&from_dbt, "duckdb")
         );
     }
-
 
     #[test]
     fn odcs_physical_evidence_reuses_complete_source_and_terminal_oracle() {
