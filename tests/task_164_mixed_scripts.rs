@@ -498,6 +498,49 @@ fn unsupported_savepoints_and_vendor_ddl_laws_cannot_be_reported_exact() {
 }
 
 #[test]
+fn rolled_back_alter_default_does_not_leak_into_later_sql_units() {
+    let sql = [
+        "CREATE TABLE t (id INTEGER)",
+        "BEGIN",
+        "ALTER TABLE t ADD COLUMN v INTEGER DEFAULT 5",
+        "ROLLBACK",
+        "INSERT INTO t (id) VALUES (2)",
+        "SELECT id FROM t",
+    ];
+    let proof = physical_duckdb_sql_transaction_plan(
+        &sql,
+        &PhysicalScriptCatalog {
+            states: vec![],
+            schemas: vec![],
+        },
+    );
+    let PhysicalTransactionScriptProof::Exact(exact) = proof else {
+        panic!("rollback must restore the original schema and default evidence: {proof:?}");
+    };
+    assert_eq!(exact.checkpoints.len(), sql.len());
+    assert_eq!(exact.checkpoints[2].after.schemas[0].columns().len(), 2);
+    assert_eq!(exact.checkpoints[3].after, exact.checkpoints[1].after);
+    assert_eq!(exact.final_catalog.schemas[0].columns().len(), 1);
+    let values = exact.final_catalog.states[0].rows()[0].values();
+    assert_eq!(values.len(), 1);
+    assert_eq!(values["id"], LiteralValue::Number("2".to_string()));
+    assert!(exact.final_constraints.iter().all(|set| {
+        set.column_value_sources()
+            .iter()
+            .all(|source| source.column() != "v")
+    }));
+    let db = Connection::open_in_memory().unwrap();
+    for statement in sql.iter().filter(|statement| !statement.starts_with("SELECT")) {
+        db.execute_batch(statement).unwrap();
+    }
+    let id: i64 = db
+        .query_row("SELECT id FROM t", [], |result| result.get(0))
+        .unwrap();
+    assert_eq!(id, 2);
+    assert!(db.execute_batch("SELECT v FROM t").is_err());
+}
+
+#[test]
 fn frozen_inventory_retains_original_scope_and_explicit_unverified_signoff() {
     let freeze = frozen();
     let original: Value =
