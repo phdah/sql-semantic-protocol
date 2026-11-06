@@ -11,8 +11,8 @@ use crate::relation::{RelationSchema, SchemaColumn};
 
 use super::write_states::evaluate_ordered_read;
 use super::{
-    PhysicalWriteColumnDomain, PhysicalWriteRow,
-    PhysicalWriteState, PhysicalWriteStatePlan, PhysicalWriteTransition,
+    PhysicalWriteColumnDomain, PhysicalWriteRow, PhysicalWriteState, PhysicalWriteStatePlan,
+    PhysicalWriteTransition,
 };
 
 /// A complete, source-backed SELECT, evaluated at its actual SQL statement position.
@@ -204,11 +204,7 @@ pub fn physical_ordered_lifecycle_plan(
     bundle: &AnalysisBundle,
     initial_states: &[PhysicalWriteState],
 ) -> PhysicalOrderedLifecycleProof {
-    physical_ordered_lifecycle_plan_with_create_evidence(
-        bundle,
-        initial_states,
-        &BTreeSet::new(),
-    )
+    physical_ordered_lifecycle_plan_with_create_evidence(bundle, initial_states, &BTreeSet::new())
 }
 
 /// Interpret a source-complete script with a CREATE already proved by an
