@@ -4,16 +4,16 @@
 //! Transaction boundaries only snapshot, commit or restore that proven catalog;
 //! they never synthesize rows or guess an unsupported engine/session law.
 
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 
 use crate::bundle::AnalysisBundle;
 use crate::constraints::RelationConstraintSet;
-use crate::protocol::WriteKind;
+use crate::protocol::{ProtocolStatement, WriteDefinitionMode, WriteKind};
 use crate::relation::RelationSchema;
 
 use super::{
-    physical_sequential_state_graph_plan, PhysicalScriptCatalog, PhysicalScriptStateNode,
-    PhysicalSequentialStateGraphProof, PhysicalWriteState,
+    PhysicalScriptCatalog, PhysicalScriptStateNode, PhysicalSequentialStateGraphProof,
+    PhysicalWriteState,
 };
 
 /// One logical statement of a single-connection DuckDB transaction script.
@@ -61,6 +61,41 @@ pub enum PhysicalTransactionAction {
     Commit,
     /// ROLLBACK.
     Rollback,
+}
+
+/// Engine or session law requested in addition to a canonical statement proof.
+///
+/// Only transactional DDL rollback on the pinned, single-connection native
+/// DuckDB path has an executable closed-world oracle. The other variants
+/// require engine-specific evidence that this library does not possess.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+pub enum PhysicalTransactionSessionLaw {
+    /// One native DuckDB transaction rolls back a complete CREATE or DROP catalog.
+    DuckDbTransactionalDdlRollback,
+    /// Temporary relation visibility and lifetime across connections or sessions.
+    TemporaryTableLifetime,
+    /// The timing and scope of deferred foreign-key or other constraint checks.
+    DeferredForeignKeyChecks,
+    /// Concurrent session isolation, snapshots, conflicts and lost updates.
+    ConcurrentIsolation,
+    /// Vendor DDL that may commit an open transaction implicitly.
+    VendorImplicitDdlCommit,
+    /// Other vendor-specific transaction options, including chain and isolation.
+    VendorTransactionOptions,
+}
+
+impl PhysicalTransactionSessionLaw {
+    /// Stable diagnostic key for an otherwise unproved engine/session law.
+    pub const fn as_str(self) -> &'static str {
+        match self {
+            Self::DuckDbTransactionalDdlRollback => "duckdb_transactional_ddl_rollback",
+            Self::TemporaryTableLifetime => "temporary_table_lifetime",
+            Self::DeferredForeignKeyChecks => "deferred_foreign_key_checks",
+            Self::ConcurrentIsolation => "concurrent_isolation",
+            Self::VendorImplicitDdlCommit => "vendor_implicit_ddl_commit",
+            Self::VendorTransactionOptions => "vendor_transaction_options",
+        }
+    }
 }
 
 /// Full before/after catalogs and the canonical SQL proof at one step.
@@ -178,8 +213,11 @@ pub fn physical_duckdb_transaction_plan(
     let mut active_transaction: Option<(
         PhysicalScriptCatalog,
         BTreeMap<String, RelationConstraintSet>,
+        BTreeSet<String>,
     )> = None;
     let mut live_constraints = BTreeMap::<String, RelationConstraintSet>::new();
+    // Only prior in-script CREATE TABLE statements can certify a later DROP.
+    let mut certified_created = BTreeSet::<String>::new();
     let mut checkpoints = Vec::with_capacity(steps.len());
     for (index, step) in steps.iter().enumerate() {
         let before = current.clone();
@@ -220,8 +258,11 @@ pub fn physical_duckdb_transaction_plan(
                 if let PhysicalTransactionStep::SqlWithEvidence { constraints, .. } = step {
                     execution.enrich_relation_constraints(constraints);
                 }
-                let graph = match physical_sequential_state_graph_plan(&execution, &current.states)
-                {
+                let graph = match super::sequential_graph::physical_sequential_state_graph_plan_with_create_evidence(
+                    &execution,
+                    &current.states,
+                    &certified_created,
+                ) {
                     PhysicalSequentialStateGraphProof::Exact(graph) => graph,
                     PhysicalSequentialStateGraphProof::Impossible { reason } => {
                         return impossible(index, reason);
@@ -246,6 +287,24 @@ pub fn physical_duckdb_transaction_plan(
                 }
                 if let Some(write) = &node.write {
                     let target = write.before().relation();
+                    let created_here = input.statements().iter().any(|statement| match statement {
+                        ProtocolStatement::Query(query) => query.write().is_some_and(|operation| {
+                            operation.definition_mode() == Some(WriteDefinitionMode::CreateTable)
+                        }),
+                        ProtocolStatement::Unsupported(_) => false,
+                    });
+                    if created_here && write.after_exists() {
+                        certified_created.insert(write.after().relation().to_string());
+                    } else if !write.after_exists() {
+                        certified_created.remove(target);
+                    } else if write.after().relation() != target && certified_created.remove(target)
+                    {
+                        certified_created.insert(write.after().relation().to_string());
+                    } else if matches!(write.kind(), WriteKind::Definition) {
+                        // Replacement advances the table generation. A previous
+                        // CREATE alone cannot attest the replacement declaration.
+                        certified_created.remove(target);
+                    }
                     if matches!(write.kind(), WriteKind::SchemaAlter) {
                         // ALTER can create/drop/rename default-producing columns.
                         // Its canonical poststate is proven in TASK-158, but
@@ -291,7 +350,11 @@ pub fn physical_duckdb_transaction_plan(
                 if active_transaction.is_some() {
                     return impossible(index, "DuckDB does not support nested BEGIN transactions");
                 }
-                active_transaction = Some((current.clone(), live_constraints.clone()));
+                active_transaction = Some((
+                    current.clone(),
+                    live_constraints.clone(),
+                    certified_created.clone(),
+                ));
                 (PhysicalTransactionAction::Begin, None)
             }
             PhysicalTransactionStep::Commit => {
@@ -301,11 +364,14 @@ pub fn physical_duckdb_transaction_plan(
                 (PhysicalTransactionAction::Commit, None)
             }
             PhysicalTransactionStep::Rollback => {
-                let Some((original, original_constraints)) = active_transaction.take() else {
+                let Some((original, original_constraints, original_created)) =
+                    active_transaction.take()
+                else {
                     return impossible(index, "ROLLBACK has no active DuckDB transaction");
                 };
                 current = original;
                 live_constraints = original_constraints;
+                certified_created = original_created;
                 (PhysicalTransactionAction::Rollback, None)
             }
             PhysicalTransactionStep::Savepoint(name)
@@ -344,4 +410,100 @@ pub fn physical_duckdb_transaction_plan(
         final_catalog: current,
         final_constraints: live_constraints.into_values().collect(),
     }))
+}
+
+fn has_complete_duckdb_ddl_rollback(exact: &PhysicalTransactionScriptExact) -> bool {
+    let mut transaction_start: Option<&PhysicalScriptCatalog> = None;
+    let mut ddl_seen = false;
+    for checkpoint in &exact.checkpoints {
+        match checkpoint.action {
+            PhysicalTransactionAction::Begin => {
+                transaction_start = Some(&checkpoint.after);
+                ddl_seen = false;
+            }
+            PhysicalTransactionAction::Sql => {
+                if transaction_start.is_some()
+                    && checkpoint.before.schemas != checkpoint.after.schemas
+                {
+                    ddl_seen = true;
+                }
+            }
+            PhysicalTransactionAction::Rollback => {
+                if let Some(before_begin) = transaction_start.take() {
+                    if ddl_seen && checkpoint.after == *before_begin {
+                        return true;
+                    }
+                }
+                ddl_seen = false;
+            }
+            PhysicalTransactionAction::Commit => {
+                transaction_start = None;
+                ddl_seen = false;
+            }
+        }
+    }
+    false
+}
+
+/// Require additional native session-law evidence without changing the
+/// canonical statement proof or inferring vendor guarantees from sqlparser.
+///
+/// Impossible and Residual statement proofs always retain their classification.
+/// An Exact proof satisfies the DuckDB DDL rollback law only if the same typed
+/// script contains a schema transition *inside* a transaction and its complete
+/// original catalog is recovered by ROLLBACK. Other engine/session laws remain
+/// explicitly Residual under TASK-163, never guessed.
+pub(crate) fn certify_duckdb_session_laws(
+    proof: PhysicalTransactionScriptProof,
+    required_laws: &[PhysicalTransactionSessionLaw],
+) -> PhysicalTransactionScriptProof {
+    let PhysicalTransactionScriptProof::Exact(ref exact) = proof else {
+        return match (proof, required_laws.first()) {
+            (PhysicalTransactionScriptProof::Residual { step_index, reason }, Some(law)) => {
+                residual(
+                    step_index,
+                    format!(
+                        "{reason}; TASK-163: requested session or vendor law {} remains unproved",
+                        law.as_str()
+                    ),
+                )
+            }
+            (original, _) => original,
+        };
+    };
+    for law in required_laws {
+        match law {
+            PhysicalTransactionSessionLaw::DuckDbTransactionalDdlRollback => {
+                if !has_complete_duckdb_ddl_rollback(exact) {
+                    return residual(
+                        0,
+                        "TASK-163: script lacks a complete native DuckDB DDL rollback witness",
+                    );
+                }
+            }
+            other => {
+                return residual(
+                    0,
+                    format!(
+                        "TASK-163: unproved session or vendor law {}",
+                        other.as_str()
+                    ),
+                );
+            }
+        }
+    }
+    proof
+}
+
+/// Certify a canonical DuckDB script with caller-requested session-law
+/// requirements, while preserving any earlier Impossible or Residual result.
+pub fn physical_duckdb_transaction_plan_with_laws(
+    steps: &[PhysicalTransactionStep<'_>],
+    initial: &PhysicalScriptCatalog,
+    required_laws: &[PhysicalTransactionSessionLaw],
+) -> PhysicalTransactionScriptProof {
+    certify_duckdb_session_laws(
+        physical_duckdb_transaction_plan(steps, initial),
+        required_laws,
+    )
 }

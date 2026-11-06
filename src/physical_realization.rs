@@ -609,9 +609,11 @@ pub use set_trees::{
     PhysicalFiniteSetTreeExact, PhysicalFiniteSetTreeProof, PhysicalSetTreeBranch,
     PhysicalSetTreeTuple,
 };
+pub(crate) use transactions::certify_duckdb_session_laws;
 pub use transactions::{
-    physical_duckdb_transaction_plan, PhysicalTransactionAction, PhysicalTransactionCheckpoint,
-    PhysicalTransactionScriptExact, PhysicalTransactionScriptProof, PhysicalTransactionStep,
+    physical_duckdb_transaction_plan, physical_duckdb_transaction_plan_with_laws,
+    PhysicalTransactionAction, PhysicalTransactionCheckpoint, PhysicalTransactionScriptExact,
+    PhysicalTransactionScriptProof, PhysicalTransactionSessionLaw, PhysicalTransactionStep,
 };
 pub use view_bags::{physical_finite_view_read_plan, PhysicalViewExact, PhysicalViewProof};
 pub use window_bags::{

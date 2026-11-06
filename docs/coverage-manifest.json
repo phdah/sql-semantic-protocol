@@ -1,4 +1,83 @@
 {
+  "task_163_transaction_session_acceptance": {
+    "owner": "TASK-163",
+    "parent": "TASK-84",
+    "status": "done_owner_directed_author_account_review_exception",
+    "freeze": "docs/task-163-acceptance-freeze.json",
+    "freeze_version": 3,
+    "fixture_ids": [
+      "84-C163-P",
+      "84-C163-N"
+    ],
+    "named_families": [
+      "DUCKDB_DDL_ROLLBACK",
+      "DUCKDB_DROP_ROLLBACK",
+      "DUCKDB_AUTOCOMMIT_CONTRAST",
+      "TEMPORARY_TABLE_LIFETIME",
+      "DEFERRED_FOREIGN_KEY",
+      "CONCURRENT_ISOLATION",
+      "VENDOR_IMPLICIT_DDL_COMMIT",
+      "VENDOR_TRANSACTION_OPTION"
+    ],
+    "exact_core_cases": 3,
+    "conditional_cases": 5,
+    "original_child_ac": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "parent_original_ac": [
+      1,
+      2,
+      3,
+      5,
+      6
+    ],
+    "native_engine": "duckdb ~1.10506.0",
+    "dialects_expected": 13,
+    "public_api_oracles": [
+      "tests/task_163_acceptance_inventory.rs",
+      "tests/task_163_session_laws.rs",
+      "tests/task_163_dialect_matrix.rs",
+      "tests/task_163_adapter_parity.rs"
+    ],
+    "mandatory_verified": true,
+    "all_13_parser_dialects_verified": true,
+    "adapter_parity_verified": true,
+    "native_duckdb_verified": true,
+    "full_ci_verified": true,
+    "independent_review_verified": false,
+    "parent_closed": false,
+    "release_approved": false,
+    "conditional_owner": "TASK-163",
+    "archive": "docs/task-163-acceptance-freeze-v1.json",
+    "dialect_parser_cells": 104,
+    "conditional_case_ids": [
+      "84-C163-N-temp-table-lifetime",
+      "84-C163-N-deferred-fk",
+      "84-C163-N-concurrent-isolation",
+      "84-C163-N-vendor-implicit-commit",
+      "84-C163-N-vendor-transaction-option"
+    ],
+    "frozen_matrix_red_evidence": "https://github.com/phdah/sql-semantic-protocol/actions/runs/42183888762",
+    "previous_matrix": "docs/task-163-acceptance-freeze-v2.json",
+    "two_axis_author_account_review_verified": true,
+    "review_process_exception_approved": true,
+    "reviewer_provenance": "Connected PR author-account review, not independent second-person review; user requested full child signoff in current conversation",
+    "reviewed_implementation_head": "b5814e5261b7b7e2131aaa9fc0b38512e17fa612",
+    "verified_implementation_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/42185354954",
+    "two_axis_review": "https://github.com/phdah/sql-semantic-protocol/pull/190#pullrequestreview-5797413923",
+    "acceptance_audit": "docs/task-163-acceptance-audit.md",
+    "conditional_boundaries_signed_off": [
+      "84-C163-N-temp-table-lifetime",
+      "84-C163-N-deferred-fk",
+      "84-C163-N-concurrent-isolation",
+      "84-C163-N-vendor-implicit-commit",
+      "84-C163-N-vendor-transaction-option"
+    ]
+  },
   "task_162_transaction_acceptance": {
     "owner": "TASK-162",
     "parent": "TASK-84",

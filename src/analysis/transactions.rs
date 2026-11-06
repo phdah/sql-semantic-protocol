@@ -9,8 +9,8 @@ use sqlparser::ast::Statement;
 use crate::bundle::{analyze_inputs, AnalysisBundle, SqlInput};
 use crate::parser::parse_sql;
 use crate::physical_realization::{
-    physical_duckdb_transaction_plan, PhysicalScriptCatalog, PhysicalTransactionScriptProof,
-    PhysicalTransactionStep,
+    certify_duckdb_session_laws, physical_duckdb_transaction_plan, PhysicalScriptCatalog,
+    PhysicalTransactionScriptProof, PhysicalTransactionSessionLaw, PhysicalTransactionStep,
 };
 
 enum TransactionSqlUnit {
@@ -119,4 +119,20 @@ pub fn physical_duckdb_sql_transaction_plan(
         })
         .collect::<Vec<_>>();
     physical_duckdb_transaction_plan(&steps, initial)
+}
+
+/// Analyze native DuckDB SQL and require additional engine/session evidence.
+///
+/// This is the single-parse SQL counterpart of the canonical transaction
+/// plan's opt-in law check. Unsupported vendor/session assumptions remain
+/// Residual with owner TASK-163; parser success never proves execution laws.
+pub fn physical_duckdb_sql_transaction_plan_with_laws(
+    sql_statements: &[&str],
+    initial: &PhysicalScriptCatalog,
+    required_laws: &[PhysicalTransactionSessionLaw],
+) -> PhysicalTransactionScriptProof {
+    certify_duckdb_session_laws(
+        physical_duckdb_sql_transaction_plan(sql_statements, initial),
+        required_laws,
+    )
 }
