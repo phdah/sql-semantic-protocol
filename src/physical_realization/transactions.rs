@@ -300,6 +300,10 @@ pub fn physical_duckdb_transaction_plan(
                     } else if write.after().relation() != target && certified_created.remove(target)
                     {
                         certified_created.insert(write.after().relation().to_string());
+                    } else if matches!(write.kind(), WriteKind::Definition) {
+                        // Replacement advances the table generation. A previous
+                        // CREATE alone cannot attest the replacement declaration.
+                        certified_created.remove(target);
                     }
                     if matches!(write.kind(), WriteKind::SchemaAlter) {
                         // ALTER can create/drop/rename default-producing columns.
