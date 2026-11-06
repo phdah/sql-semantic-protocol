@@ -1,8 +1,8 @@
 {
-  "version": 3,
+  "version": 4,
   "owner": "TASK-164",
   "parent": "TASK-84",
-  "status": "frozen_598_parser_cells_pending_final_head_ci_and_independent_review",
+  "status": "frozen_full_checkpoint_and_occurrence_oracles_pending_final_ci_review",
   "fixture_ids": [
     "84-C164-P",
     "84-C164-N"
@@ -88,7 +88,10 @@
             "v": 30
           }
         ],
-        "not_true_source_ordinals": []
+        "not_true_source_ordinals": [],
+        "surviving_source_ordinals": [
+          0
+        ]
       },
       "counts": {
         "inserted": [
@@ -180,6 +183,178 @@
           "upper_inclusive": true,
           "nulls": 0
         }
+      },
+      "checkpoint_catalogs": [
+        {
+          "t": {
+            "columns": [
+              "id",
+              "v"
+            ],
+            "rows": []
+          }
+        },
+        {
+          "t": {
+            "columns": [
+              "id",
+              "v"
+            ],
+            "rows": []
+          },
+          "s": {
+            "columns": [
+              "id",
+              "v"
+            ],
+            "rows": []
+          }
+        },
+        {
+          "t": {
+            "columns": [
+              "id",
+              "v"
+            ],
+            "rows": [
+              {
+                "id": 1,
+                "v": 10
+              },
+              {
+                "id": 2,
+                "v": null
+              }
+            ]
+          },
+          "s": {
+            "columns": [
+              "id",
+              "v"
+            ],
+            "rows": []
+          }
+        },
+        {
+          "t": {
+            "columns": [
+              "id",
+              "v"
+            ],
+            "rows": [
+              {
+                "id": 1,
+                "v": 10
+              },
+              {
+                "id": 2,
+                "v": null
+              }
+            ]
+          },
+          "s": {
+            "columns": [
+              "id",
+              "v"
+            ],
+            "rows": [
+              {
+                "id": 1,
+                "v": 30
+              }
+            ]
+          }
+        },
+        {
+          "t": {
+            "columns": [
+              "id",
+              "v"
+            ],
+            "rows": [
+              {
+                "id": 1,
+                "v": 30
+              },
+              {
+                "id": 2,
+                "v": null
+              }
+            ]
+          },
+          "s": {
+            "columns": [
+              "id",
+              "v"
+            ],
+            "rows": [
+              {
+                "id": 1,
+                "v": 30
+              }
+            ]
+          }
+        },
+        {
+          "t": {
+            "columns": [
+              "id",
+              "v"
+            ],
+            "rows": [
+              {
+                "id": 1,
+                "v": 30
+              }
+            ]
+          },
+          "s": {
+            "columns": [
+              "id",
+              "v"
+            ],
+            "rows": [
+              {
+                "id": 1,
+                "v": 30
+              }
+            ]
+          }
+        },
+        {
+          "t": {
+            "columns": [
+              "id",
+              "v"
+            ],
+            "rows": [
+              {
+                "id": 1,
+                "v": 30
+              }
+            ]
+          },
+          "s": {
+            "columns": [
+              "id",
+              "v"
+            ],
+            "rows": [
+              {
+                "id": 1,
+                "v": 30
+              }
+            ]
+          }
+        }
+      ],
+      "affected_target_ordinals": {
+        "4": [
+          0
+        ],
+        "5": [
+          1
+        ]
       }
     },
     {
@@ -217,7 +392,10 @@
             "v": 30
           }
         ],
-        "not_true_source_ordinals": []
+        "not_true_source_ordinals": [],
+        "surviving_source_ordinals": [
+          0
+        ]
       },
       "intermediate_read": {
         "rows": [
@@ -229,6 +407,9 @@
         "not_true_source_ordinals": [
           1,
           2
+        ],
+        "surviving_source_ordinals": [
+          0
         ]
       },
       "source_occurrences": {
@@ -243,6 +424,257 @@
           "upper_inclusive": true,
           "nulls": 0
         }
+      },
+      "checkpoint_catalogs": [
+        {
+          "t": {
+            "columns": [
+              "id",
+              "v"
+            ],
+            "rows": []
+          }
+        },
+        {
+          "t": {
+            "columns": [
+              "id",
+              "v"
+            ],
+            "rows": []
+          },
+          "s": {
+            "columns": [
+              "id",
+              "v"
+            ],
+            "rows": []
+          }
+        },
+        {
+          "t": {
+            "columns": [
+              "id",
+              "v"
+            ],
+            "rows": [
+              {
+                "id": 1,
+                "v": 10
+              },
+              {
+                "id": 2,
+                "v": null
+              },
+              {
+                "id": 2,
+                "v": null
+              }
+            ]
+          },
+          "s": {
+            "columns": [
+              "id",
+              "v"
+            ],
+            "rows": []
+          }
+        },
+        {
+          "t": {
+            "columns": [
+              "id",
+              "v"
+            ],
+            "rows": [
+              {
+                "id": 1,
+                "v": 10
+              },
+              {
+                "id": 2,
+                "v": null
+              },
+              {
+                "id": 2,
+                "v": null
+              }
+            ]
+          },
+          "s": {
+            "columns": [
+              "id",
+              "v"
+            ],
+            "rows": [
+              {
+                "id": 1,
+                "v": 30
+              }
+            ]
+          }
+        },
+        {
+          "t": {
+            "columns": [
+              "id",
+              "v"
+            ],
+            "rows": [
+              {
+                "id": 1,
+                "v": 30
+              },
+              {
+                "id": 2,
+                "v": null
+              },
+              {
+                "id": 2,
+                "v": null
+              }
+            ]
+          },
+          "s": {
+            "columns": [
+              "id",
+              "v"
+            ],
+            "rows": [
+              {
+                "id": 1,
+                "v": 30
+              }
+            ]
+          }
+        },
+        {
+          "t": {
+            "columns": [
+              "id",
+              "v"
+            ],
+            "rows": [
+              {
+                "id": 1,
+                "v": 30
+              },
+              {
+                "id": 2,
+                "v": null
+              },
+              {
+                "id": 2,
+                "v": null
+              }
+            ]
+          },
+          "s": {
+            "columns": [
+              "id",
+              "v"
+            ],
+            "rows": [
+              {
+                "id": 1,
+                "v": 30
+              }
+            ]
+          }
+        },
+        {
+          "t": {
+            "columns": [
+              "id",
+              "v"
+            ],
+            "rows": [
+              {
+                "id": 1,
+                "v": 30
+              }
+            ]
+          },
+          "s": {
+            "columns": [
+              "id",
+              "v"
+            ],
+            "rows": [
+              {
+                "id": 1,
+                "v": 30
+              }
+            ]
+          }
+        },
+        {
+          "t": {
+            "columns": [
+              "id",
+              "v"
+            ],
+            "rows": [
+              {
+                "id": 1,
+                "v": 30
+              }
+            ]
+          },
+          "s": {
+            "columns": [
+              "id",
+              "v"
+            ],
+            "rows": [
+              {
+                "id": 1,
+                "v": 30
+              }
+            ]
+          }
+        }
+      ],
+      "counts": {
+        "inserted": [
+          0,
+          0,
+          3,
+          1,
+          0,
+          0,
+          0,
+          0
+        ],
+        "updated": [
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0
+        ],
+        "deleted": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          2,
+          0
+        ]
+      },
+      "affected_target_ordinals": {
+        "4": [
+          0
+        ],
+        "6": [
+          1,
+          2
+        ]
       }
     },
     {
@@ -283,7 +715,8 @@
         "not_true_source_ordinals": [
           0,
           1
-        ]
+        ],
+        "surviving_source_ordinals": []
       },
       "checkpoint_t_after_rollback": [
         {
@@ -312,6 +745,277 @@
           "lower_inclusive": true,
           "upper_inclusive": true
         }
+      },
+      "checkpoint_catalogs": [
+        {
+          "t": {
+            "columns": [
+              "id",
+              "v"
+            ],
+            "rows": []
+          }
+        },
+        {
+          "t": {
+            "columns": [
+              "id",
+              "v"
+            ],
+            "rows": []
+          },
+          "s": {
+            "columns": [
+              "id",
+              "v"
+            ],
+            "rows": []
+          }
+        },
+        {
+          "t": {
+            "columns": [
+              "id",
+              "v"
+            ],
+            "rows": [
+              {
+                "id": 1,
+                "v": 10
+              },
+              {
+                "id": 2,
+                "v": null
+              }
+            ]
+          },
+          "s": {
+            "columns": [
+              "id",
+              "v"
+            ],
+            "rows": []
+          }
+        },
+        {
+          "t": {
+            "columns": [
+              "id",
+              "v"
+            ],
+            "rows": [
+              {
+                "id": 1,
+                "v": 10
+              },
+              {
+                "id": 2,
+                "v": null
+              }
+            ]
+          },
+          "s": {
+            "columns": [
+              "id",
+              "v"
+            ],
+            "rows": [
+              {
+                "id": 1,
+                "v": 30
+              }
+            ]
+          }
+        },
+        {
+          "t": {
+            "columns": [
+              "id",
+              "v"
+            ],
+            "rows": [
+              {
+                "id": 1,
+                "v": 10
+              },
+              {
+                "id": 2,
+                "v": null
+              }
+            ]
+          },
+          "s": {
+            "columns": [
+              "id",
+              "v"
+            ],
+            "rows": [
+              {
+                "id": 1,
+                "v": 30
+              }
+            ]
+          }
+        },
+        {
+          "t": {
+            "columns": [
+              "id",
+              "v"
+            ],
+            "rows": [
+              {
+                "id": 1,
+                "v": 30
+              },
+              {
+                "id": 2,
+                "v": null
+              }
+            ]
+          },
+          "s": {
+            "columns": [
+              "id",
+              "v"
+            ],
+            "rows": [
+              {
+                "id": 1,
+                "v": 30
+              }
+            ]
+          }
+        },
+        {
+          "t": {
+            "columns": [
+              "id",
+              "v"
+            ],
+            "rows": [
+              {
+                "id": 1,
+                "v": 30
+              }
+            ]
+          },
+          "s": {
+            "columns": [
+              "id",
+              "v"
+            ],
+            "rows": [
+              {
+                "id": 1,
+                "v": 30
+              }
+            ]
+          }
+        },
+        {
+          "t": {
+            "columns": [
+              "id",
+              "v"
+            ],
+            "rows": [
+              {
+                "id": 1,
+                "v": 10
+              },
+              {
+                "id": 2,
+                "v": null
+              }
+            ]
+          },
+          "s": {
+            "columns": [
+              "id",
+              "v"
+            ],
+            "rows": [
+              {
+                "id": 1,
+                "v": 30
+              }
+            ]
+          }
+        },
+        {
+          "t": {
+            "columns": [
+              "id",
+              "v"
+            ],
+            "rows": [
+              {
+                "id": 1,
+                "v": 10
+              },
+              {
+                "id": 2,
+                "v": null
+              }
+            ]
+          },
+          "s": {
+            "columns": [
+              "id",
+              "v"
+            ],
+            "rows": [
+              {
+                "id": 1,
+                "v": 30
+              }
+            ]
+          }
+        }
+      ],
+      "counts": {
+        "inserted": [
+          0,
+          0,
+          2,
+          1,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "updated": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0
+        ],
+        "deleted": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0
+        ]
+      },
+      "affected_target_ordinals": {
+        "5": [
+          0
+        ],
+        "6": [
+          1
+        ]
       }
     },
     {
@@ -354,6 +1058,9 @@
         ],
         "not_true_source_ordinals": [
           1
+        ],
+        "surviving_source_ordinals": [
+          0
         ]
       },
       "update_count_per_merge": 1,
@@ -375,6 +1082,215 @@
           "lower_inclusive": true,
           "upper_inclusive": true
         }
+      },
+      "checkpoint_catalogs": [
+        {
+          "t": {
+            "columns": [
+              "id",
+              "v"
+            ],
+            "rows": []
+          }
+        },
+        {
+          "t": {
+            "columns": [
+              "id",
+              "v"
+            ],
+            "rows": []
+          },
+          "s": {
+            "columns": [
+              "id",
+              "v"
+            ],
+            "rows": []
+          }
+        },
+        {
+          "t": {
+            "columns": [
+              "id",
+              "v"
+            ],
+            "rows": [
+              {
+                "id": 1,
+                "v": 10
+              },
+              {
+                "id": 2,
+                "v": null
+              }
+            ]
+          },
+          "s": {
+            "columns": [
+              "id",
+              "v"
+            ],
+            "rows": []
+          }
+        },
+        {
+          "t": {
+            "columns": [
+              "id",
+              "v"
+            ],
+            "rows": [
+              {
+                "id": 1,
+                "v": 10
+              },
+              {
+                "id": 2,
+                "v": null
+              }
+            ]
+          },
+          "s": {
+            "columns": [
+              "id",
+              "v"
+            ],
+            "rows": [
+              {
+                "id": 1,
+                "v": 30
+              }
+            ]
+          }
+        },
+        {
+          "t": {
+            "columns": [
+              "id",
+              "v"
+            ],
+            "rows": [
+              {
+                "id": 1,
+                "v": 30
+              },
+              {
+                "id": 2,
+                "v": null
+              }
+            ]
+          },
+          "s": {
+            "columns": [
+              "id",
+              "v"
+            ],
+            "rows": [
+              {
+                "id": 1,
+                "v": 30
+              }
+            ]
+          }
+        },
+        {
+          "t": {
+            "columns": [
+              "id",
+              "v"
+            ],
+            "rows": [
+              {
+                "id": 1,
+                "v": 30
+              },
+              {
+                "id": 2,
+                "v": null
+              }
+            ]
+          },
+          "s": {
+            "columns": [
+              "id",
+              "v"
+            ],
+            "rows": [
+              {
+                "id": 1,
+                "v": 30
+              }
+            ]
+          }
+        },
+        {
+          "t": {
+            "columns": [
+              "id",
+              "v"
+            ],
+            "rows": [
+              {
+                "id": 1,
+                "v": 30
+              },
+              {
+                "id": 2,
+                "v": null
+              }
+            ]
+          },
+          "s": {
+            "columns": [
+              "id",
+              "v"
+            ],
+            "rows": [
+              {
+                "id": 1,
+                "v": 30
+              }
+            ]
+          }
+        }
+      ],
+      "counts": {
+        "inserted": [
+          0,
+          0,
+          2,
+          1,
+          0,
+          0,
+          0
+        ],
+        "updated": [
+          0,
+          0,
+          0,
+          0,
+          1,
+          1,
+          0
+        ],
+        "deleted": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "affected_target_ordinals": {
+        "4": [
+          0
+        ],
+        "5": [
+          0
+        ]
       }
     },
     {
@@ -391,7 +1307,17 @@
         "not_true_source_ordinals": []
       },
       "first_impossible_step": 1,
-      "reason": "duplicate live CREATE TABLE identity"
+      "reason": "duplicate live CREATE TABLE identity",
+      "expected_last_valid_catalog": {
+        "t": {
+          "columns": [
+            "id",
+            "v"
+          ],
+          "rows": []
+        }
+      },
+      "expected_first_impossible_step": 1
     },
     {
       "id": "84-C164-N-savepoint",
@@ -410,7 +1336,8 @@
       },
       "mandatory": false,
       "owner": "TASK-162",
-      "disposition": "DuckDB ~1.10506.0 does not natively execute SAVEPOINT; parser acceptance alone is not execution proof"
+      "disposition": "DuckDB ~1.10506.0 does not natively execute SAVEPOINT; parser acceptance alone is not execution proof",
+      "expected_first_residual_step": 1
     },
     {
       "id": "84-C164-N-vendor-session",
@@ -428,7 +1355,8 @@
       },
       "mandatory": false,
       "owner": "TASK-163",
-      "disposition": "non-DuckDB implicit commit, isolation and vendor DDL session laws require engine-specific evidence"
+      "disposition": "non-DuckDB implicit commit, isolation and vendor DDL session laws require engine-specific evidence",
+      "expected_first_residual_step": 0
     },
     {
       "id": "84-C164-P-alter-default",
@@ -457,7 +1385,10 @@
             "v": 5
           }
         ],
-        "not_true_source_ordinals": []
+        "not_true_source_ordinals": [],
+        "surviving_source_ordinals": [
+          0
+        ]
       },
       "typed_domains": {
         "id": {
@@ -473,7 +1404,98 @@
           "upper_inclusive": true
         }
       },
-      "carries_default_across_separate_sql_units": true
+      "carries_default_across_separate_sql_units": true,
+      "checkpoint_catalogs": [
+        {
+          "t": {
+            "columns": [
+              "id"
+            ],
+            "rows": []
+          }
+        },
+        {
+          "t": {
+            "columns": [
+              "id"
+            ],
+            "rows": []
+          }
+        },
+        {
+          "t": {
+            "columns": [
+              "id",
+              "v"
+            ],
+            "rows": []
+          }
+        },
+        {
+          "t": {
+            "columns": [
+              "id",
+              "v"
+            ],
+            "rows": []
+          }
+        },
+        {
+          "t": {
+            "columns": [
+              "id",
+              "v"
+            ],
+            "rows": [
+              {
+                "id": 2,
+                "v": 5
+              }
+            ]
+          }
+        },
+        {
+          "t": {
+            "columns": [
+              "id",
+              "v"
+            ],
+            "rows": [
+              {
+                "id": 2,
+                "v": 5
+              }
+            ]
+          }
+        }
+      ],
+      "counts": {
+        "inserted": [
+          0,
+          0,
+          0,
+          0,
+          1,
+          0
+        ],
+        "updated": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "deleted": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "affected_target_ordinals": {}
     }
   ],
   "acceptance_mapping": {
@@ -526,7 +1548,8 @@
   "change_policy": "Freeze v1 precedes semantic changes; revised variants require immutable v1 plus explicitly reviewed v2; mandatory exact cases may not be reclassified Residual to pass CI.",
   "history": [
     "docs/task-164-acceptance-freeze-v1.json",
-    "docs/task-164-acceptance-freeze-v2.json"
+    "docs/task-164-acceptance-freeze-v2.json",
+    "docs/task-164-acceptance-freeze-v3.json"
   ],
   "scope_amendment": {
     "from_version": 1,
@@ -1371,5 +2394,10 @@
     "red_ci_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/42202839057",
     "observation": "deliberately failing test records per-statement canonical/parser boundaries before literal v3 freeze",
     "meaning": "parser recognition is not non-DuckDB physical engine certification"
+  },
+  "reviewed_amendment": {
+    "from_version": 3,
+    "kind": "strengthened_independent_oracles_only",
+    "reason": "Explicitly freeze every Exact case's full per-step live catalogs, typed schema columns, affected write counts, prestate mutation ordinals, and positive read ordinals instead of inferring correctness from implementation-computed state; all eight original case identities and mandatory classifications unchanged."
   }
 }
