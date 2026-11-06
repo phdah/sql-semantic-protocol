@@ -85,6 +85,41 @@ fn native_rows(db: &Connection, table: &str) -> Vec<PhysicalWriteRow> {
         .unwrap()
 }
 
+fn assert_frozen_catalog(checkpoint: &PhysicalScriptCatalog, expected: &Value, index: usize) {
+    let relations = expected.as_object().expect("frozen complete live catalog");
+    assert_eq!(checkpoint.states.len(), relations.len(), "states at step {index}");
+    assert_eq!(checkpoint.schemas.len(), relations.len(), "schemas at step {index}");
+    for (name, relation) in relations {
+        let state = checkpoint
+            .states
+            .iter()
+            .find(|state| state.relation() == name)
+            .expect("frozen live state missing");
+        let schema = checkpoint
+            .schemas
+            .iter()
+            .find(|schema| schema.relation() == name)
+            .expect("frozen live schema missing");
+        let column_names = schema
+            .columns()
+            .iter()
+            .map(|column| column.name())
+            .collect::<Vec<_>>();
+        let expected_columns = relation["columns"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|column| column.as_str().unwrap())
+            .collect::<Vec<_>>();
+        assert_eq!(column_names, expected_columns, "{name} schema at step {index}");
+        assert_eq!(
+            sorted(state.rows()),
+            sorted(&expected_rows(&relation["rows"])),
+            "{name} complete frozen bag at step {index}"
+        );
+    }
+}
+
 fn assert_native_catalog(db: &Connection, checkpoint: &PhysicalScriptCatalog, index: usize) {
     assert_eq!(checkpoint.states.len(), checkpoint.schemas.len());
     assert!(
@@ -109,6 +144,36 @@ fn assert_native_catalog(db: &Connection, checkpoint: &PhysicalScriptCatalog, in
             "{table} presence at step {index}"
         );
         if let Some(state) = actual {
+            let schema = checkpoint
+                .schemas
+                .iter()
+                .find(|schema| schema.relation() == table)
+                .expect("every physical state has one typed schema");
+            let mut statement = db
+                .prepare(
+                    "SELECT column_name, data_type FROM information_schema.columns                      WHERE table_name = ?1 ORDER BY ordinal_position",
+                )
+                .unwrap();
+            let native_columns = statement
+                .query_map([table], |result| {
+                    Ok((
+                        result.get::<_, String>(0)?,
+                        result.get::<_, String>(1)?,
+                    ))
+                })
+                .unwrap()
+                .collect::<duckdb::Result<Vec<_>>>()
+                .unwrap();
+            assert_eq!(native_columns.len(), schema.columns().len(), "{table} column count at {index}");
+            let integer = sql_semantic_protocol::SchemaColumn::from_sql_type(
+                "integer", "INTEGER", "duckdb",
+            )
+            .unwrap();
+            for (native, column) in native_columns.iter().zip(schema.columns()) {
+                assert_eq!(native.0, column.name(), "{table} column identity at {index}");
+                assert_eq!(native.1, "INTEGER", "{table} native column type at {index}");
+                assert_eq!(column.data_type(), integer.data_type(), "{table} typed column at {index}");
+            }
             assert_eq!(
                 sorted(state.rows()),
                 sorted(&native_rows(db, table)),
@@ -127,11 +192,12 @@ fn assert_terminal_domains(exact: &PhysicalTransactionScriptExact, expected: &Va
         .iter()
         .find(|(relation, _)| relation == "t")
         .expect("final target table");
-    for column in &table.1 {
-        let wanted = &expected[column.column()];
-        if wanted.is_null() {
-            continue;
-        }
+    for (column_name, wanted) in expected.as_object().expect("frozen typed domains") {
+        let column = table
+            .1
+            .iter()
+            .find(|domain| domain.column() == column_name)
+            .expect("all frozen domain columns must exist in the final target");
         let mut integers = Vec::new();
         let mut nulls = 0u64;
         for (value, frequency) in column.values() {
@@ -188,9 +254,18 @@ fn assert_read(statement: &sql_semantic_protocol::PhysicalScriptStateNode, expec
         .map(|ordinal| ordinal.as_u64().unwrap() as usize)
         .collect::<Vec<_>>();
     assert_eq!(read.rejected_source_ordinals, rejected);
+    let surviving = expected["surviving_source_ordinals"]
+        .as_array()
+        .expect("fixed positive source occurrence list")
+        .iter()
+        .map(|ordinal| ordinal.as_u64().unwrap() as usize)
+        .collect::<Vec<_>>();
+    assert_eq!(read.surviving_source_ordinals, surviving);
+    assert_eq!(surviving.len(), read.output.rows().len());
     assert_eq!(
-        read.surviving_source_ordinals.len(),
-        read.output.rows().len()
+        surviving.len() + rejected.len(),
+        read.source.rows().len(),
+        "every source occurrence must be either TRUE or NOT TRUE"
     );
     assert!(read.exact_domains().is_some());
 }
@@ -245,6 +320,11 @@ fn run_native_case(case: &Value) {
                 .unwrap_or_else(|error| panic!("native SQL step {index} failed: {error}"));
         }
         assert_native_catalog(&db, &checkpoint.after, index);
+        let snapshots = case["checkpoint_catalogs"]
+            .as_array()
+            .expect("each Exact program freezes its full checkpoint catalog");
+        assert_eq!(snapshots.len(), program.len());
+        assert_frozen_catalog(&checkpoint.after, &snapshots[index], index);
         if let Some(snapshots) = case["checkpoint_t"].as_array() {
             let expected = expected_rows(&snapshots[index]);
             let actual = checkpoint
@@ -269,13 +349,29 @@ fn run_native_case(case: &Value) {
                 ("updated", write.affected().updated()),
                 ("deleted", write.affected().deleted()),
             ] {
-                if let Some(counts) = case["counts"][name].as_array() {
-                    assert_eq!(
-                        value,
-                        counts[index].as_u64().unwrap(),
-                        "{name} step {index}"
-                    );
-                }
+                let counts = case["counts"][name]
+                    .as_array()
+                    .expect("all exact mutation counts are frozen");
+                assert_eq!(counts.len(), program.len());
+                assert_eq!(
+                    value,
+                    counts[index].as_u64().unwrap(),
+                    "{name} step {index}"
+                );
+            }
+            let actual_ordinals = write.affected_target_ordinals();
+            let selected = &case["affected_target_ordinals"][index.to_string()];
+            if let Some(expected) = selected.as_array() {
+                assert_eq!(
+                    actual_ordinals,
+                    expected
+                        .iter()
+                        .map(|ordinal| ordinal.as_u64().unwrap() as usize)
+                        .collect::<Vec<_>>(),
+                    "original mutated target occurrence identities at step {index}"
+                );
+            } else {
+                assert!(actual_ordinals.is_empty(), "unfrozen mutated occurrence at step {index}");
             }
         }
     }
@@ -457,6 +553,19 @@ fn duplicate_create_is_impossible_and_native_duckdb_rejects_it() {
     let db = Connection::open_in_memory().unwrap();
     db.execute_batch(program[0]).unwrap();
     assert!(db.execute_batch(program[1]).is_err());
+    let valid = physical_duckdb_sql_transaction_plan(
+        &program[..1],
+        &PhysicalScriptCatalog { states: vec![], schemas: vec![] },
+    );
+    let PhysicalTransactionScriptProof::Exact(valid) = valid else {
+        panic!("first CREATE must remain valid: {valid:?}");
+    };
+    assert_frozen_catalog(
+        &valid.final_catalog,
+        &case["expected_last_valid_catalog"],
+        0,
+    );
+    assert_native_catalog(&db, &valid.final_catalog, 1);
 }
 
 #[test]
@@ -474,7 +583,7 @@ fn unsupported_savepoints_and_vendor_ddl_laws_cannot_be_reported_exact() {
         .collect::<Vec<_>>();
     assert!(matches!(
         physical_duckdb_sql_transaction_plan(&savepoint, &empty),
-        PhysicalTransactionScriptProof::Residual { .. }
+        PhysicalTransactionScriptProof::Residual { step_index: 1, .. }
     ));
     let db = Connection::open_in_memory().unwrap();
     db.execute_batch("BEGIN").unwrap();
@@ -493,7 +602,7 @@ fn unsupported_savepoints_and_vendor_ddl_laws_cannot_be_reported_exact() {
     );
     assert!(matches!(
         proof,
-        PhysicalTransactionScriptProof::Residual { .. }
+        PhysicalTransactionScriptProof::Residual { step_index: 0, .. }
     ));
 }
 
@@ -549,12 +658,33 @@ fn frozen_inventory_retains_original_scope_and_explicit_unverified_signoff() {
     let original: Value =
         serde_json::from_str(include_str!("../docs/task-164-acceptance-freeze-v1.json")).unwrap();
     assert_eq!(original["version"], 1);
-    assert_eq!(freeze["version"], 3);
+    assert_eq!(freeze["version"], 4);
     assert_eq!(freeze["dialect_parser_cells"], 598);
-    let previous: Value =
+    let v2: Value =
         serde_json::from_str(include_str!("../docs/task-164-acceptance-freeze-v2.json")).unwrap();
-    assert_eq!(previous["version"], 2);
-    assert_eq!(previous["cases"], freeze["cases"]);
+    let previous: Value =
+        serde_json::from_str(include_str!("../docs/task-164-acceptance-freeze-v3.json")).unwrap();
+    assert_eq!(v2["version"], 2);
+    assert_eq!(previous["version"], 3);
+    assert_eq!(previous["dialect_parser_matrix_expected"], freeze["dialect_parser_matrix_expected"]);
+    for (old, current) in previous["cases"]
+        .as_array().unwrap().iter().zip(freeze["cases"].as_array().unwrap())
+    {
+        for stable in ["id", "classification", "program", "expected_final"] {
+            assert_eq!(old[stable], current[stable], "immutable {stable} scope");
+        }
+    }
+    for case in freeze["cases"].as_array().unwrap() {
+        if case["classification"] != "Exact" {
+            continue;
+        }
+        let steps = case["program"].as_array().unwrap().len();
+        assert_eq!(case["checkpoint_catalogs"].as_array().unwrap().len(), steps);
+        for kind in ["inserted", "updated", "deleted"] {
+            assert_eq!(case["counts"][kind].as_array().unwrap().len(), steps);
+        }
+        assert!(case["expected_terminal_read"]["surviving_source_ordinals"].is_array());
+    }
     assert_eq!(freeze["owner"], "TASK-164");
     assert_eq!(freeze["parent"], "TASK-84");
     assert_eq!(freeze["dialects"].as_array().unwrap().len(), 13);
@@ -574,7 +704,7 @@ fn frozen_inventory_retains_original_scope_and_explicit_unverified_signoff() {
         serde_json::from_str(include_str!("../docs/coverage-manifest.json")).unwrap();
     assert_eq!(
         manifest["task_164_mixed_script_acceptance"]["freeze_version"],
-        3
+        4
     );
     assert_eq!(
         manifest["task_164_mixed_script_acceptance"]["parent_closed"],
