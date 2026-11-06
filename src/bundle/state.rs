@@ -150,7 +150,19 @@ impl AnalysisBundle {
                     let value = match default {
                         None | Some(LiteralValue::Null) => ConstraintValue::Null,
                         Some(LiteralValue::Boolean(value)) => ConstraintValue::Boolean(*value),
-                        Some(LiteralValue::Number(value)) => ConstraintValue::Number(value.clone()),
+                        Some(LiteralValue::Number(value)) => {
+                            // The schema validator distinguishes exact signed
+                            // integer defaults from decimal numeric literals.
+                            // Preserve the canonical scalar type when extending
+                            // an ALTER-created default into a later SQL unit.
+                            if let Ok(integer) = value.parse::<i64>() {
+                                ConstraintValue::Integer(integer)
+                            } else if let Ok(integer) = value.parse::<u64>() {
+                                ConstraintValue::UnsignedInteger(integer)
+                            } else {
+                                ConstraintValue::Number(value.clone())
+                            }
+                        }
                         Some(LiteralValue::Text(value)) => ConstraintValue::String(value.clone()),
                     };
                     let provenance = ConstraintProvenance::new(

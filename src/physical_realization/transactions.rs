@@ -306,15 +306,66 @@ pub fn physical_duckdb_transaction_plan(
                         certified_created.remove(target);
                     }
                     if matches!(write.kind(), WriteKind::SchemaAlter) {
-                        // ALTER can create/drop/rename default-producing columns.
-                        // Its canonical poststate is proven in TASK-158, but
-                        // carrying default/constraint metadata across *separate*
-                        // transaction SQL units belongs to TASK-164. Never
-                        // certify a later omitted-column INSERT from stale data.
-                        return residual(
-                            index,
-                            "TASK-164: ALTER default and constraint evidence is not versioned across transaction SQL units",
-                        );
+                        // The physical graph has already proved the whole ALTER
+                        // pre/post bag. Advance only its canonical scalar-default
+                        // declarations, on the same live table generation, before
+                        // the next separately parsed SQL statement consumes them.
+                        let Some(steps) =
+                            input
+                                .statements()
+                                .iter()
+                                .find_map(|statement| match statement {
+                                    ProtocolStatement::Query(query) => {
+                                        query.write().map(|write| write.column_alter_steps())
+                                    }
+                                    ProtocolStatement::Unsupported(_) => None,
+                                })
+                        else {
+                            return residual(index, "ALTER has no canonical column steps");
+                        };
+                        if steps.is_empty() || !certified_created.contains(target) {
+                            return residual(
+                                index,
+                                "ALTER requires an in-script certified table generation",
+                            );
+                        }
+                        // A changed datatype could invalidate a previously
+                        // declared default even if all existing rows cast. That
+                        // separate default-conversion law is not attested.
+                        if steps.iter().any(|step| match step {
+                            crate::protocol::ColumnAlterStep::SetType { column } => {
+                                live_constraints.get(target).is_some_and(|metadata| {
+                                    metadata
+                                        .column_value_sources()
+                                        .iter()
+                                        .any(|source| source.column() == column.name())
+                                })
+                            }
+                            _ => false,
+                        }) {
+                            return residual(
+                                index,
+                                "ALTER SET TYPE requires attested conversion of existing column defaults",
+                            );
+                        }
+                        if let Err(error) = execution.advance_physical_alter_defaults(target, steps)
+                        {
+                            return residual(
+                                index,
+                                format!("canonical ALTER metadata transition is unproved: {error}"),
+                            );
+                        }
+                        let Some(updated) = execution
+                            .relation_constraints()
+                            .iter()
+                            .find(|metadata| metadata.relation() == target)
+                        else {
+                            return residual(
+                                index,
+                                "ALTER did not retain authoritative default evidence",
+                            );
+                        };
+                        live_constraints.insert(target.to_string(), updated.clone());
                     }
                     if !write.after_exists() {
                         live_constraints.remove(target);

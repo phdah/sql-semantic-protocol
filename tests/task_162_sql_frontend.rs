@@ -262,7 +262,7 @@ fn rollback_restores_constraint_catalog_and_does_not_leak_dropped_primary_key() 
 }
 
 #[test]
-fn separate_step_alter_defaults_are_not_silently_lost() {
+fn separate_step_alter_defaults_are_carried_after_exact_ddl() {
     let sql = [
         "CREATE TABLE t (id INTEGER)",
         "BEGIN",
@@ -271,11 +271,22 @@ fn separate_step_alter_defaults_are_not_silently_lost() {
         "INSERT INTO t (id) VALUES (2)",
     ];
     let proof = physical_duckdb_sql_transaction_plan(&sql, &empty());
-    assert!(
-        matches!(
-            proof,
-            PhysicalTransactionScriptProof::Residual { step_index: 2, .. }
-        ),
-        "ALTER defaults must remain a typed residual until TASK-164: {proof:?}"
+    let PhysicalTransactionScriptProof::Exact(exact) = proof else {
+        panic!("TASK-164 must preserve proven ALTER default evidence: {proof:?}");
+    };
+    assert_eq!(exact.checkpoints.len(), sql.len());
+    assert_eq!(exact.final_catalog.states[0].rows(), &[row(2, Some(5))]);
+    assert_eq!(
+        exact.final_catalog.exact_domains().unwrap()[0].1[1].values(),
+        &[(LiteralValue::Number("5".into()), 1)]
     );
+
+    let db = Connection::open_in_memory().unwrap();
+    for statement in sql {
+        db.execute_batch(statement).unwrap();
+    }
+    let value: Option<i64> = db
+        .query_row("SELECT v FROM t WHERE id = 2", [], |result| result.get(0))
+        .unwrap();
+    assert_eq!(value, Some(5));
 }
