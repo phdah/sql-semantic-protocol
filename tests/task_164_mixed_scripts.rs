@@ -24,9 +24,13 @@ fn row_from_json(value: &Value) -> PhysicalWriteRow {
         .map(|(name, value)| {
             (
                 name.clone(),
-                value.as_i64().map_or(LiteralValue::Null, |number| {
-                    LiteralValue::Number(number.to_string())
-                }),
+                match value {
+                    Value::Null => LiteralValue::Null,
+                    Value::Number(number) => LiteralValue::Number(
+                        number.as_i64().expect("frozen exact INTEGER").to_string(),
+                    ),
+                    other => panic!("unsupported frozen physical scalar: {other:?}"),
+                },
             )
         })
         .collect::<BTreeMap<_, _>>();
@@ -142,11 +146,30 @@ fn assert_frozen_catalog(checkpoint: &PhysicalScriptCatalog, expected: &Value, i
             column_names, expected_columns,
             "{name} schema at step {index}"
         );
+        let frozen_rows = expected_rows(&relation["rows"]);
         assert_eq!(
             sorted(state.rows()),
-            sorted(&expected_rows(&relation["rows"])),
+            sorted(&frozen_rows),
             "{name} complete frozen bag at step {index}"
         );
+        let domains = state.exact_domains(schema).expect("frozen typed checkpoint");
+        for domain in domains {
+            let mut frequencies = BTreeMap::<String, u64>::new();
+            for row in &frozen_rows {
+                let value = row.values().get(domain.column()).expect("frozen column present");
+                *frequencies.entry(format!("{value:?}")).or_default() += 1;
+            }
+            let actual = domain
+                .values()
+                .iter()
+                .map(|(value, count)| (format!("{value:?}"), *count))
+                .collect::<BTreeMap<_, _>>();
+            assert_eq!(
+                actual, frequencies,
+                "{name}.{} frequency domain at step {index}",
+                domain.column()
+            );
+        }
     }
 }
 
@@ -230,6 +253,11 @@ fn assert_terminal_domains(exact: &PhysicalTransactionScriptExact, expected: &Va
         .iter()
         .find(|(relation, _)| relation == "t")
         .expect("final target table");
+    assert_eq!(
+        expected.as_object().unwrap().len(),
+        table.1.len(),
+        "all terminal columns require frozen exact domains"
+    );
     for (column_name, wanted) in expected.as_object().expect("frozen typed domains") {
         let column = table
             .1
@@ -259,23 +287,24 @@ fn assert_terminal_domains(exact: &PhysicalTransactionScriptExact, expected: &Va
         if let Some(expected_nulls) = wanted["nulls"].as_u64() {
             assert_eq!(nulls, expected_nulls, "column {}", column.column());
         }
-        if let Some(frequencies) = wanted["values"].as_array() {
-            let actual = column.values();
-            for frequency in frequencies {
-                let expected_value = if frequency["value"].is_null() {
+        let frequencies = wanted["values"]
+            .as_array()
+            .expect("every frozen terminal domain has complete frequencies");
+        let mut actual = column.values().to_vec();
+        actual.sort_by_key(|(value, _)| format!("{value:?}"));
+        let mut expected_frequencies = frequencies
+            .iter()
+            .map(|frequency| {
+                let value = if frequency["value"].is_null() {
                     LiteralValue::Null
                 } else {
                     LiteralValue::Number(frequency["value"].as_i64().unwrap().to_string())
                 };
-                assert_eq!(
-                    actual
-                        .iter()
-                        .find(|(value, _)| *value == expected_value)
-                        .map(|(_, n)| *n),
-                    Some(frequency["count"].as_u64().unwrap())
-                );
-            }
-        }
+                (value, frequency["count"].as_u64().unwrap())
+            })
+            .collect::<Vec<_>>();
+        expected_frequencies.sort_by_key(|(value, _)| format!("{value:?}"));
+        assert_eq!(actual, expected_frequencies, "complete column {}", column.column());
     }
 }
 
@@ -695,12 +724,21 @@ fn frozen_inventory_retains_original_scope_and_explicit_unverified_signoff() {
     let original: Value =
         serde_json::from_str(include_str!("../docs/task-164-acceptance-freeze-v1.json")).unwrap();
     assert_eq!(original["version"], 1);
-    assert_eq!(freeze["version"], 4);
+    assert_eq!(freeze["version"], 5);
     assert_eq!(freeze["dialect_parser_cells"], 598);
     let v2: Value =
         serde_json::from_str(include_str!("../docs/task-164-acceptance-freeze-v2.json")).unwrap();
     let previous: Value =
         serde_json::from_str(include_str!("../docs/task-164-acceptance-freeze-v3.json")).unwrap();
+    let v4: Value =
+        serde_json::from_str(include_str!("../docs/task-164-acceptance-freeze-v4.json")).unwrap();
+    assert_eq!(v4["version"], 4);
+    assert_eq!(v4["dialect_parser_matrix_expected"], freeze["dialect_parser_matrix_expected"]);
+    for (old, current) in v4["cases"].as_array().unwrap().iter().zip(freeze["cases"].as_array().unwrap()) {
+        for stable in ["id", "classification", "program", "checkpoint_catalogs", "counts"] {
+            assert_eq!(old[stable], current[stable], "v4 frozen {stable} preserved");
+        }
+    }
     assert_eq!(v2["version"], 2);
     assert_eq!(previous["version"], 3);
     assert_eq!(
@@ -727,6 +765,18 @@ fn frozen_inventory_retains_original_scope_and_explicit_unverified_signoff() {
             assert_eq!(case["counts"][kind].as_array().unwrap().len(), steps);
         }
         assert!(case["expected_terminal_read"]["surviving_source_ordinals"].is_array());
+        assert_eq!(
+            case["typed_domains"].as_object().unwrap().len(),
+            case["checkpoint_catalogs"].as_array().unwrap().last().unwrap()["t"]["columns"]
+                .as_array().unwrap().len(),
+            "all final typed columns must carry explicit bounds and frequencies"
+        );
+        for (_, domain) in case["typed_domains"].as_object().unwrap() {
+            assert_eq!(domain["lower_inclusive"], true);
+            assert_eq!(domain["upper_inclusive"], true);
+            assert!(domain["values"].is_array());
+            assert!(domain["nulls"].is_number());
+        }
     }
     assert_eq!(freeze["owner"], "TASK-164");
     assert_eq!(freeze["parent"], "TASK-84");
@@ -747,7 +797,7 @@ fn frozen_inventory_retains_original_scope_and_explicit_unverified_signoff() {
         serde_json::from_str(include_str!("../docs/coverage-manifest.json")).unwrap();
     assert_eq!(
         manifest["task_164_mixed_script_acceptance"]["freeze_version"],
-        4
+        5
     );
     assert_eq!(
         manifest["task_164_mixed_script_acceptance"]["parent_closed"],
