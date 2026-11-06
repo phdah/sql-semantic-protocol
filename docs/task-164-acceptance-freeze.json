@@ -1,8 +1,8 @@
 {
-  "version": 4,
+  "version": 5,
   "owner": "TASK-164",
   "parent": "TASK-84",
-  "status": "frozen_full_checkpoint_and_occurrence_oracles_pending_final_ci_review",
+  "status": "frozen_complete_typed_domains_and_checkpoint_oracles_pending_ci_review",
   "fixture_ids": [
     "84-C164-P",
     "84-C164-N"
@@ -174,14 +174,26 @@
           "upper": 1,
           "lower_inclusive": true,
           "upper_inclusive": true,
-          "nulls": 0
+          "nulls": 0,
+          "values": [
+            {
+              "value": 1,
+              "count": 1
+            }
+          ]
         },
         "v": {
           "lower": 30,
           "upper": 30,
           "lower_inclusive": true,
           "upper_inclusive": true,
-          "nulls": 0
+          "nulls": 0,
+          "values": [
+            {
+              "value": 30,
+              "count": 1
+            }
+          ]
         }
       },
       "checkpoint_catalogs": [
@@ -355,6 +367,20 @@
         "5": [
           1
         ]
+      },
+      "comparison_assumptions": {
+        "integer_equality": "typed exact signed integer comparison; no guessed coercion",
+        "predicate": "WHERE v >= 20 uses SQL TRUE and NOT TRUE (FALSE or UNKNOWN for NULL) on complete physical occurrences when present",
+        "collation": "none; all declared tested columns are INTEGER"
+      },
+      "adapter_evidence": {
+        "sql": "native_duckdb_single_connection_complete_oracle",
+        "dbt": "only_equivalent_compiled_sql_and_authoritative_typed_source_metadata_not_session_execution",
+        "odcs": "only_equivalent_typed_source_schema_and_explicit_constraints_not_session_execution"
+      },
+      "proof_strength": {
+        "positive": "Exact",
+        "not_true": "Exact"
       }
     },
     {
@@ -417,12 +443,31 @@
         "after_delete": 1
       },
       "typed_domains": {
+        "id": {
+          "lower": 1,
+          "upper": 1,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "nulls": 0,
+          "values": [
+            {
+              "value": 1,
+              "count": 1
+            }
+          ]
+        },
         "v": {
           "lower": 30,
           "upper": 30,
           "lower_inclusive": true,
           "upper_inclusive": true,
-          "nulls": 0
+          "nulls": 0,
+          "values": [
+            {
+              "value": 30,
+              "count": 1
+            }
+          ]
         }
       },
       "checkpoint_catalogs": [
@@ -675,6 +720,20 @@
           1,
           2
         ]
+      },
+      "comparison_assumptions": {
+        "integer_equality": "typed exact signed integer comparison; no guessed coercion",
+        "predicate": "WHERE v >= 20 uses SQL TRUE and NOT TRUE (FALSE or UNKNOWN for NULL) on complete physical occurrences when present",
+        "collation": "none; all declared tested columns are INTEGER"
+      },
+      "adapter_evidence": {
+        "sql": "native_duckdb_single_connection_complete_oracle",
+        "dbt": "only_equivalent_compiled_sql_and_authoritative_typed_source_metadata_not_session_execution",
+        "odcs": "only_equivalent_typed_source_schema_and_explicit_constraints_not_session_execution"
+      },
+      "proof_strength": {
+        "positive": "Exact",
+        "not_true": "Exact"
       }
     },
     {
@@ -729,7 +788,29 @@
         }
       ],
       "typed_domains": {
+        "id": {
+          "lower": 1,
+          "upper": 2,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "nulls": 0,
+          "values": [
+            {
+              "value": 1,
+              "count": 1
+            },
+            {
+              "value": 2,
+              "count": 1
+            }
+          ]
+        },
         "v": {
+          "lower": 10,
+          "upper": 10,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "nulls": 1,
           "values": [
             {
               "value": 10,
@@ -739,11 +820,7 @@
               "value": null,
               "count": 1
             }
-          ],
-          "lower": 10,
-          "upper": 10,
-          "lower_inclusive": true,
-          "upper_inclusive": true
+          ]
         }
       },
       "checkpoint_catalogs": [
@@ -1016,6 +1093,20 @@
         "6": [
           1
         ]
+      },
+      "comparison_assumptions": {
+        "integer_equality": "typed exact signed integer comparison; no guessed coercion",
+        "predicate": "WHERE v >= 20 uses SQL TRUE and NOT TRUE (FALSE or UNKNOWN for NULL) on complete physical occurrences when present",
+        "collation": "none; all declared tested columns are INTEGER"
+      },
+      "adapter_evidence": {
+        "sql": "native_duckdb_single_connection_complete_oracle",
+        "dbt": "only_equivalent_compiled_sql_and_authoritative_typed_source_metadata_not_session_execution",
+        "odcs": "only_equivalent_typed_source_schema_and_explicit_constraints_not_session_execution"
+      },
+      "proof_strength": {
+        "positive": "Exact",
+        "not_true": "Exact"
       }
     },
     {
@@ -1066,7 +1157,29 @@
       "update_count_per_merge": 1,
       "expected_same_catalog_after_both_merges": true,
       "typed_domains": {
+        "id": {
+          "lower": 1,
+          "upper": 2,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "nulls": 0,
+          "values": [
+            {
+              "value": 1,
+              "count": 1
+            },
+            {
+              "value": 2,
+              "count": 1
+            }
+          ]
+        },
         "v": {
+          "lower": 30,
+          "upper": 30,
+          "lower_inclusive": true,
+          "upper_inclusive": true,
+          "nulls": 1,
           "values": [
             {
               "value": 30,
@@ -1076,11 +1189,7 @@
               "value": null,
               "count": 1
             }
-          ],
-          "lower": 30,
-          "upper": 30,
-          "lower_inclusive": true,
-          "upper_inclusive": true
+          ]
         }
       },
       "checkpoint_catalogs": [
@@ -1291,6 +1400,20 @@
         "5": [
           0
         ]
+      },
+      "comparison_assumptions": {
+        "integer_equality": "typed exact signed integer comparison; no guessed coercion",
+        "predicate": "WHERE v >= 20 uses SQL TRUE and NOT TRUE (FALSE or UNKNOWN for NULL) on complete physical occurrences when present",
+        "collation": "none; all declared tested columns are INTEGER"
+      },
+      "adapter_evidence": {
+        "sql": "native_duckdb_single_connection_complete_oracle",
+        "dbt": "only_equivalent_compiled_sql_and_authoritative_typed_source_metadata_not_session_execution",
+        "odcs": "only_equivalent_typed_source_schema_and_explicit_constraints_not_session_execution"
+      },
+      "proof_strength": {
+        "positive": "Exact",
+        "not_true": "Exact"
       }
     },
     {
@@ -1317,7 +1440,21 @@
           "rows": []
         }
       },
-      "expected_first_impossible_step": 1
+      "expected_first_impossible_step": 1,
+      "comparison_assumptions": {
+        "integer_equality": "typed exact signed integer comparison; no guessed coercion",
+        "predicate": "WHERE v >= 20 uses SQL TRUE and NOT TRUE (FALSE or UNKNOWN for NULL) on complete physical occurrences when present",
+        "collation": "none; all declared tested columns are INTEGER"
+      },
+      "adapter_evidence": {
+        "sql": "native_duckdb_rejects_known_conflict",
+        "dbt": "only_equivalent_compiled_sql_and_authoritative_typed_source_metadata_not_session_execution",
+        "odcs": "only_equivalent_typed_source_schema_and_explicit_constraints_not_session_execution"
+      },
+      "proof_strength": {
+        "positive": "Impossible",
+        "not_true": "Impossible"
+      }
     },
     {
       "id": "84-C164-N-savepoint",
@@ -1337,7 +1474,21 @@
       "mandatory": false,
       "owner": "TASK-162",
       "disposition": "DuckDB ~1.10506.0 does not natively execute SAVEPOINT; parser acceptance alone is not execution proof",
-      "expected_first_residual_step": 1
+      "expected_first_residual_step": 1,
+      "comparison_assumptions": {
+        "integer_equality": "typed exact signed integer comparison; no guessed coercion",
+        "predicate": "WHERE v >= 20 uses SQL TRUE and NOT TRUE (FALSE or UNKNOWN for NULL) on complete physical occurrences when present",
+        "collation": "none; all declared tested columns are INTEGER"
+      },
+      "adapter_evidence": {
+        "sql": "conditional_not_native_exact",
+        "dbt": "only_equivalent_compiled_sql_and_authoritative_typed_source_metadata_not_session_execution",
+        "odcs": "only_equivalent_typed_source_schema_and_explicit_constraints_not_session_execution"
+      },
+      "proof_strength": {
+        "positive": "Residual",
+        "not_true": "Residual"
+      }
     },
     {
       "id": "84-C164-N-vendor-session",
@@ -1356,7 +1507,21 @@
       "mandatory": false,
       "owner": "TASK-163",
       "disposition": "non-DuckDB implicit commit, isolation and vendor DDL session laws require engine-specific evidence",
-      "expected_first_residual_step": 0
+      "expected_first_residual_step": 0,
+      "comparison_assumptions": {
+        "integer_equality": "typed exact signed integer comparison; no guessed coercion",
+        "predicate": "WHERE v >= 20 uses SQL TRUE and NOT TRUE (FALSE or UNKNOWN for NULL) on complete physical occurrences when present",
+        "collation": "none; all declared tested columns are INTEGER"
+      },
+      "adapter_evidence": {
+        "sql": "conditional_not_native_exact",
+        "dbt": "only_equivalent_compiled_sql_and_authoritative_typed_source_metadata_not_session_execution",
+        "odcs": "only_equivalent_typed_source_schema_and_explicit_constraints_not_session_execution"
+      },
+      "proof_strength": {
+        "positive": "Residual",
+        "not_true": "Residual"
+      }
     },
     {
       "id": "84-C164-P-alter-default",
@@ -1395,13 +1560,27 @@
           "lower": 2,
           "upper": 2,
           "lower_inclusive": true,
-          "upper_inclusive": true
+          "upper_inclusive": true,
+          "nulls": 0,
+          "values": [
+            {
+              "value": 2,
+              "count": 1
+            }
+          ]
         },
         "v": {
           "lower": 5,
           "upper": 5,
           "lower_inclusive": true,
-          "upper_inclusive": true
+          "upper_inclusive": true,
+          "nulls": 0,
+          "values": [
+            {
+              "value": 5,
+              "count": 1
+            }
+          ]
         }
       },
       "carries_default_across_separate_sql_units": true,
@@ -1495,7 +1674,21 @@
           0
         ]
       },
-      "affected_target_ordinals": {}
+      "affected_target_ordinals": {},
+      "comparison_assumptions": {
+        "integer_equality": "typed exact signed integer comparison; no guessed coercion",
+        "predicate": "WHERE v >= 20 uses SQL TRUE and NOT TRUE (FALSE or UNKNOWN for NULL) on complete physical occurrences when present",
+        "collation": "none; all declared tested columns are INTEGER"
+      },
+      "adapter_evidence": {
+        "sql": "native_duckdb_single_connection_complete_oracle",
+        "dbt": "only_equivalent_compiled_sql_and_authoritative_typed_source_metadata_not_session_execution",
+        "odcs": "only_equivalent_typed_source_schema_and_explicit_constraints_not_session_execution"
+      },
+      "proof_strength": {
+        "positive": "Exact",
+        "not_true": "Exact"
+      }
     }
   ],
   "acceptance_mapping": {
@@ -1549,7 +1742,8 @@
   "history": [
     "docs/task-164-acceptance-freeze-v1.json",
     "docs/task-164-acceptance-freeze-v2.json",
-    "docs/task-164-acceptance-freeze-v3.json"
+    "docs/task-164-acceptance-freeze-v3.json",
+    "docs/task-164-acceptance-freeze-v4.json"
   ],
   "scope_amendment": {
     "from_version": 1,
@@ -2396,8 +2590,8 @@
     "meaning": "parser recognition is not non-DuckDB physical engine certification"
   },
   "reviewed_amendment": {
-    "from_version": 3,
-    "kind": "strengthened_independent_oracles_only",
-    "reason": "Explicitly freeze every Exact case's full per-step live catalogs, typed schema columns, affected write counts, prestate mutation ordinals, and positive read ordinals instead of inferring correctness from implementation-computed state; all eight original case identities and mandatory classifications unchanged."
+    "from_version": 4,
+    "kind": "strict_type_and_adapter_assertions",
+    "reason": "Require exact full INTEGER/NULL frequency domains for every live terminal column and explicit per-case SQL/dbt/ODCS evidence limitations, without changing eight original case identities, classifications, programs, or frozen 598 parser cells."
   }
 }
