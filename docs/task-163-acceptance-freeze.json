@@ -1,8 +1,8 @@
 {
-  "version": 2,
+  "version": 3,
   "owner": "TASK-163",
   "parent": "TASK-84",
-  "status": "v2_parser_evidence_registered_pending_full_signoff",
+  "status": "v3_bounded_technical_signoff_owner_directed_author_account_review_exception",
   "fixture_ids": [
     "84-C163-P",
     "84-C163-N"
@@ -427,6 +427,24 @@
   },
   "dialect_parser_cells": 104,
   "parser_evidence": "CI first observed full 13x8 matrix in workflow run 42183888762 (Rust tests deliberately red until explicit snapshot frozen); sqlparser 0.58; parser success never certifies runtime transaction law",
-  "previous_freeze": "docs/task-163-acceptance-freeze-v1.json",
-  "conditional_native_scope": "Unverified temporary-table lifetime, deferred constraints, concurrent isolation and vendor implicit commit/chain are typed Residual with TASK-163 ownership; only pinned native DuckDB DDL rollback cases are exact."
+  "previous_freeze": "docs/task-163-acceptance-freeze-v2.json",
+  "conditional_native_scope": "Unverified temporary-table lifetime, deferred constraints, concurrent isolation and vendor implicit commit/chain are typed Residual with TASK-163 ownership; only pinned native DuckDB DDL rollback cases are exact.",
+  "preimplementation_freeze": "docs/task-163-acceptance-freeze-v1.json",
+  "mandatory_verified": true,
+  "native_duckdb_verified": true,
+  "parser_matrix_verified": true,
+  "adapter_parity_verified": true,
+  "reviewed_implementation_head": "b5814e5261b7b7e2131aaa9fc0b38512e17fa612",
+  "verified_implementation_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/42185354954",
+  "review_url": "https://github.com/phdah/sql-semantic-protocol/pull/190#pullrequestreview-5797413923",
+  "reviewer_provenance": "Author-account Matt two-axis code review, NOT independent second-person approval. User requested full TASK-163 AC signoff; owner-directed review-process exception recorded.",
+  "conditional_boundaries_signed_off": [
+    "84-C163-N-temp-table-lifetime",
+    "84-C163-N-deferred-fk",
+    "84-C163-N-concurrent-isolation",
+    "84-C163-N-vendor-implicit-commit",
+    "84-C163-N-vendor-transaction-option"
+  ],
+  "parent_closed": false,
+  "release_approved": false
 }
