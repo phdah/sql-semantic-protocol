@@ -503,7 +503,12 @@ fn frozen_inventory_retains_original_scope_and_explicit_unverified_signoff() {
     let original: Value =
         serde_json::from_str(include_str!("../docs/task-164-acceptance-freeze-v1.json")).unwrap();
     assert_eq!(original["version"], 1);
-    assert_eq!(freeze["version"], 2);
+    assert_eq!(freeze["version"], 3);
+    assert_eq!(freeze["dialect_parser_cells"], 598);
+    let previous: Value =
+        serde_json::from_str(include_str!("../docs/task-164-acceptance-freeze-v2.json")).unwrap();
+    assert_eq!(previous["version"], 2);
+    assert_eq!(previous["cases"], freeze["cases"]);
     assert_eq!(freeze["owner"], "TASK-164");
     assert_eq!(freeze["parent"], "TASK-84");
     assert_eq!(freeze["dialects"].as_array().unwrap().len(), 13);
@@ -523,7 +528,7 @@ fn frozen_inventory_retains_original_scope_and_explicit_unverified_signoff() {
         serde_json::from_str(include_str!("../docs/coverage-manifest.json")).unwrap();
     assert_eq!(
         manifest["task_164_mixed_script_acceptance"]["freeze_version"],
-        2
+        3
     );
     assert_eq!(
         manifest["task_164_mixed_script_acceptance"]["parent_closed"],
