@@ -461,6 +461,32 @@ pub fn physical_ordered_write_state_plan_with_identities(
     initial_states: &[PhysicalWriteState],
     sequences: &[PhysicalIdentitySequence],
 ) -> PhysicalWriteStatePlan {
+    physical_ordered_write_state_plan_with_creation_evidence(
+        bundle,
+        initial_states,
+        sequences,
+        &BTreeSet::new(),
+    )
+}
+
+/// Reuse canonical CREATE provenance from an earlier, individually proved
+/// statement of the same transaction script. Never accept arbitrary external
+/// schemas or physical bags as proof of an in-program CREATE.
+pub(crate) fn physical_ordered_write_state_plan_with_creation_evidence(
+    bundle: &AnalysisBundle,
+    initial_states: &[PhysicalWriteState],
+    sequences: &[PhysicalIdentitySequence],
+    created_in_script: &BTreeSet<String>,
+) -> PhysicalWriteStatePlan {
+    if created_in_script
+        .iter()
+        .any(|name| !initial_states.iter().any(|state| state.relation() == name))
+    {
+        return failure(
+            None,
+            residual("CREATE provenance refers to a relation absent from the initial catalog"),
+        );
+    }
     let mut identity_sequences = BTreeMap::<(String, String), PhysicalIdentitySequence>::new();
     let mut identity_columns = BTreeSet::<(String, String)>::new();
     for sequence in sequences {
@@ -524,7 +550,7 @@ pub fn physical_ordered_write_state_plan_with_identities(
         return failure(None, error);
     }
     let mut execution_bundle = bundle.clone();
-    let mut executed_create = BTreeSet::<String>::new();
+    let mut executed_create = created_in_script.clone();
     let mut proven_absent = BTreeSet::<String>::new();
     let mut transitions = Vec::new();
     for layer in bundle.layers() {
