@@ -615,6 +615,8 @@ use relations::*;
 use sampling::*;
 use sets::*;
 use subqueries::*;
-pub use transactions::physical_duckdb_sql_transaction_plan;
+pub use transactions::{
+    physical_duckdb_sql_transaction_plan, physical_duckdb_sql_transaction_plan_with_laws,
+};
 use typing::*;
 use writes::*;
