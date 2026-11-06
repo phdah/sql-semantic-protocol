@@ -1,8 +1,8 @@
 {
-  "version": 2,
+  "version": 3,
   "owner": "TASK-164",
   "parent": "TASK-84",
-  "status": "frozen_corrected_snapshot_alignment_unverified",
+  "status": "frozen_598_parser_cells_pending_final_head_ci_and_independent_review",
   "fixture_ids": [
     "84-C164-P",
     "84-C164-N"
@@ -525,10 +525,851 @@
   },
   "change_policy": "Freeze v1 precedes semantic changes; revised variants require immutable v1 plus explicitly reviewed v2; mandatory exact cases may not be reclassified Residual to pass CI.",
   "history": [
-    "docs/task-164-acceptance-freeze-v1.json"
+    "docs/task-164-acceptance-freeze-v1.json",
+    "docs/task-164-acceptance-freeze-v2.json"
   ],
   "scope_amendment": {
     "from_version": 1,
     "reason": "The initial mixed case checkpoint_t column inadvertently marked the first CREATE as absent; correct it to an existing empty table and retain v1 unchanged. No change to mandatory scope or oracles."
+  },
+  "dialect_parser_cells": 598,
+  "dialect_parser_matrix_expected": {
+    "ansi": {
+      "84-C164-N-invalid-lifecycle": [
+        "definition",
+        "definition"
+      ],
+      "84-C164-N-savepoint": [
+        "transaction_control_requires_native_session_evidence",
+        "transaction_control_requires_native_session_evidence",
+        "transaction_control_requires_native_session_evidence",
+        "transaction_control_requires_native_session_evidence"
+      ],
+      "84-C164-N-vendor-session": [
+        "transaction_control_requires_native_session_evidence",
+        "definition",
+        "transaction_control_requires_native_session_evidence"
+      ],
+      "84-C164-P-alter-default": [
+        "definition",
+        "transaction_control_requires_native_session_evidence",
+        "alter",
+        "transaction_control_requires_native_session_evidence",
+        "insert",
+        "read"
+      ],
+      "84-C164-P-idempotent-merge": [
+        "definition",
+        "definition",
+        "insert",
+        "insert",
+        "merge",
+        "merge",
+        "read"
+      ],
+      "84-C164-P-mixed": [
+        "definition",
+        "definition",
+        "insert",
+        "insert",
+        "merge",
+        "delete",
+        "read"
+      ],
+      "84-C164-P-null-duplicates": [
+        "definition",
+        "definition",
+        "insert",
+        "insert",
+        "merge",
+        "read",
+        "delete",
+        "read"
+      ],
+      "84-C164-P-rollback": [
+        "definition",
+        "definition",
+        "insert",
+        "insert",
+        "transaction_control_requires_native_session_evidence",
+        "merge",
+        "delete",
+        "transaction_control_requires_native_session_evidence",
+        "read"
+      ]
+    },
+    "bigquery": {
+      "84-C164-N-invalid-lifecycle": [
+        "definition",
+        "definition"
+      ],
+      "84-C164-N-savepoint": [
+        "parser_boundary",
+        "transaction_control_requires_native_session_evidence",
+        "transaction_control_requires_native_session_evidence",
+        "transaction_control_requires_native_session_evidence"
+      ],
+      "84-C164-N-vendor-session": [
+        "parser_boundary",
+        "definition",
+        "transaction_control_requires_native_session_evidence"
+      ],
+      "84-C164-P-alter-default": [
+        "definition",
+        "parser_boundary",
+        "alter",
+        "transaction_control_requires_native_session_evidence",
+        "insert",
+        "read"
+      ],
+      "84-C164-P-idempotent-merge": [
+        "definition",
+        "definition",
+        "insert",
+        "insert",
+        "merge",
+        "merge",
+        "read"
+      ],
+      "84-C164-P-mixed": [
+        "definition",
+        "definition",
+        "insert",
+        "insert",
+        "merge",
+        "delete",
+        "read"
+      ],
+      "84-C164-P-null-duplicates": [
+        "definition",
+        "definition",
+        "insert",
+        "insert",
+        "merge",
+        "read",
+        "delete",
+        "read"
+      ],
+      "84-C164-P-rollback": [
+        "definition",
+        "definition",
+        "insert",
+        "insert",
+        "parser_boundary",
+        "merge",
+        "delete",
+        "transaction_control_requires_native_session_evidence",
+        "read"
+      ]
+    },
+    "clickhouse": {
+      "84-C164-N-invalid-lifecycle": [
+        "definition",
+        "definition"
+      ],
+      "84-C164-N-savepoint": [
+        "transaction_control_requires_native_session_evidence",
+        "transaction_control_requires_native_session_evidence",
+        "transaction_control_requires_native_session_evidence",
+        "transaction_control_requires_native_session_evidence"
+      ],
+      "84-C164-N-vendor-session": [
+        "transaction_control_requires_native_session_evidence",
+        "definition",
+        "transaction_control_requires_native_session_evidence"
+      ],
+      "84-C164-P-alter-default": [
+        "definition",
+        "transaction_control_requires_native_session_evidence",
+        "alter",
+        "transaction_control_requires_native_session_evidence",
+        "insert",
+        "read"
+      ],
+      "84-C164-P-idempotent-merge": [
+        "definition",
+        "definition",
+        "insert",
+        "insert",
+        "merge",
+        "merge",
+        "read"
+      ],
+      "84-C164-P-mixed": [
+        "definition",
+        "definition",
+        "insert",
+        "insert",
+        "merge",
+        "delete",
+        "read"
+      ],
+      "84-C164-P-null-duplicates": [
+        "definition",
+        "definition",
+        "insert",
+        "insert",
+        "merge",
+        "read",
+        "delete",
+        "read"
+      ],
+      "84-C164-P-rollback": [
+        "definition",
+        "definition",
+        "insert",
+        "insert",
+        "transaction_control_requires_native_session_evidence",
+        "merge",
+        "delete",
+        "transaction_control_requires_native_session_evidence",
+        "read"
+      ]
+    },
+    "databricks": {
+      "84-C164-N-invalid-lifecycle": [
+        "definition",
+        "definition"
+      ],
+      "84-C164-N-savepoint": [
+        "transaction_control_requires_native_session_evidence",
+        "transaction_control_requires_native_session_evidence",
+        "transaction_control_requires_native_session_evidence",
+        "transaction_control_requires_native_session_evidence"
+      ],
+      "84-C164-N-vendor-session": [
+        "transaction_control_requires_native_session_evidence",
+        "definition",
+        "transaction_control_requires_native_session_evidence"
+      ],
+      "84-C164-P-alter-default": [
+        "definition",
+        "transaction_control_requires_native_session_evidence",
+        "alter",
+        "transaction_control_requires_native_session_evidence",
+        "insert",
+        "read"
+      ],
+      "84-C164-P-idempotent-merge": [
+        "definition",
+        "definition",
+        "insert",
+        "insert",
+        "merge",
+        "merge",
+        "read"
+      ],
+      "84-C164-P-mixed": [
+        "definition",
+        "definition",
+        "insert",
+        "insert",
+        "merge",
+        "delete",
+        "read"
+      ],
+      "84-C164-P-null-duplicates": [
+        "definition",
+        "definition",
+        "insert",
+        "insert",
+        "merge",
+        "read",
+        "delete",
+        "read"
+      ],
+      "84-C164-P-rollback": [
+        "definition",
+        "definition",
+        "insert",
+        "insert",
+        "transaction_control_requires_native_session_evidence",
+        "merge",
+        "delete",
+        "transaction_control_requires_native_session_evidence",
+        "read"
+      ]
+    },
+    "duckdb": {
+      "84-C164-N-invalid-lifecycle": [
+        "definition",
+        "definition"
+      ],
+      "84-C164-N-savepoint": [
+        "transaction_control_requires_native_session_evidence",
+        "transaction_control_requires_native_session_evidence",
+        "transaction_control_requires_native_session_evidence",
+        "transaction_control_requires_native_session_evidence"
+      ],
+      "84-C164-N-vendor-session": [
+        "transaction_control_requires_native_session_evidence",
+        "definition",
+        "transaction_control_requires_native_session_evidence"
+      ],
+      "84-C164-P-alter-default": [
+        "definition",
+        "transaction_control_requires_native_session_evidence",
+        "alter",
+        "transaction_control_requires_native_session_evidence",
+        "insert",
+        "read"
+      ],
+      "84-C164-P-idempotent-merge": [
+        "definition",
+        "definition",
+        "insert",
+        "insert",
+        "merge",
+        "merge",
+        "read"
+      ],
+      "84-C164-P-mixed": [
+        "definition",
+        "definition",
+        "insert",
+        "insert",
+        "merge",
+        "delete",
+        "read"
+      ],
+      "84-C164-P-null-duplicates": [
+        "definition",
+        "definition",
+        "insert",
+        "insert",
+        "merge",
+        "read",
+        "delete",
+        "read"
+      ],
+      "84-C164-P-rollback": [
+        "definition",
+        "definition",
+        "insert",
+        "insert",
+        "transaction_control_requires_native_session_evidence",
+        "merge",
+        "delete",
+        "transaction_control_requires_native_session_evidence",
+        "read"
+      ]
+    },
+    "generic": {
+      "84-C164-N-invalid-lifecycle": [
+        "definition",
+        "definition"
+      ],
+      "84-C164-N-savepoint": [
+        "transaction_control_requires_native_session_evidence",
+        "transaction_control_requires_native_session_evidence",
+        "transaction_control_requires_native_session_evidence",
+        "transaction_control_requires_native_session_evidence"
+      ],
+      "84-C164-N-vendor-session": [
+        "transaction_control_requires_native_session_evidence",
+        "definition",
+        "transaction_control_requires_native_session_evidence"
+      ],
+      "84-C164-P-alter-default": [
+        "definition",
+        "transaction_control_requires_native_session_evidence",
+        "alter",
+        "transaction_control_requires_native_session_evidence",
+        "insert",
+        "read"
+      ],
+      "84-C164-P-idempotent-merge": [
+        "definition",
+        "definition",
+        "insert",
+        "insert",
+        "merge",
+        "merge",
+        "read"
+      ],
+      "84-C164-P-mixed": [
+        "definition",
+        "definition",
+        "insert",
+        "insert",
+        "merge",
+        "delete",
+        "read"
+      ],
+      "84-C164-P-null-duplicates": [
+        "definition",
+        "definition",
+        "insert",
+        "insert",
+        "merge",
+        "read",
+        "delete",
+        "read"
+      ],
+      "84-C164-P-rollback": [
+        "definition",
+        "definition",
+        "insert",
+        "insert",
+        "transaction_control_requires_native_session_evidence",
+        "merge",
+        "delete",
+        "transaction_control_requires_native_session_evidence",
+        "read"
+      ]
+    },
+    "hive": {
+      "84-C164-N-invalid-lifecycle": [
+        "definition",
+        "definition"
+      ],
+      "84-C164-N-savepoint": [
+        "transaction_control_requires_native_session_evidence",
+        "transaction_control_requires_native_session_evidence",
+        "transaction_control_requires_native_session_evidence",
+        "transaction_control_requires_native_session_evidence"
+      ],
+      "84-C164-N-vendor-session": [
+        "transaction_control_requires_native_session_evidence",
+        "definition",
+        "transaction_control_requires_native_session_evidence"
+      ],
+      "84-C164-P-alter-default": [
+        "definition",
+        "transaction_control_requires_native_session_evidence",
+        "alter",
+        "transaction_control_requires_native_session_evidence",
+        "insert",
+        "read"
+      ],
+      "84-C164-P-idempotent-merge": [
+        "definition",
+        "definition",
+        "insert",
+        "insert",
+        "merge",
+        "merge",
+        "read"
+      ],
+      "84-C164-P-mixed": [
+        "definition",
+        "definition",
+        "insert",
+        "insert",
+        "merge",
+        "delete",
+        "read"
+      ],
+      "84-C164-P-null-duplicates": [
+        "definition",
+        "definition",
+        "insert",
+        "insert",
+        "merge",
+        "read",
+        "delete",
+        "read"
+      ],
+      "84-C164-P-rollback": [
+        "definition",
+        "definition",
+        "insert",
+        "insert",
+        "transaction_control_requires_native_session_evidence",
+        "merge",
+        "delete",
+        "transaction_control_requires_native_session_evidence",
+        "read"
+      ]
+    },
+    "mssql": {
+      "84-C164-N-invalid-lifecycle": [
+        "definition",
+        "definition"
+      ],
+      "84-C164-N-savepoint": [
+        "transaction_control_requires_native_session_evidence",
+        "transaction_control_requires_native_session_evidence",
+        "transaction_control_requires_native_session_evidence",
+        "transaction_control_requires_native_session_evidence"
+      ],
+      "84-C164-N-vendor-session": [
+        "transaction_control_requires_native_session_evidence",
+        "definition",
+        "transaction_control_requires_native_session_evidence"
+      ],
+      "84-C164-P-alter-default": [
+        "definition",
+        "transaction_control_requires_native_session_evidence",
+        "alter",
+        "transaction_control_requires_native_session_evidence",
+        "insert",
+        "read"
+      ],
+      "84-C164-P-idempotent-merge": [
+        "definition",
+        "definition",
+        "insert",
+        "insert",
+        "merge",
+        "merge",
+        "read"
+      ],
+      "84-C164-P-mixed": [
+        "definition",
+        "definition",
+        "insert",
+        "insert",
+        "merge",
+        "delete",
+        "read"
+      ],
+      "84-C164-P-null-duplicates": [
+        "definition",
+        "definition",
+        "insert",
+        "insert",
+        "merge",
+        "read",
+        "delete",
+        "read"
+      ],
+      "84-C164-P-rollback": [
+        "definition",
+        "definition",
+        "insert",
+        "insert",
+        "transaction_control_requires_native_session_evidence",
+        "merge",
+        "delete",
+        "transaction_control_requires_native_session_evidence",
+        "read"
+      ]
+    },
+    "mysql": {
+      "84-C164-N-invalid-lifecycle": [
+        "definition",
+        "definition"
+      ],
+      "84-C164-N-savepoint": [
+        "transaction_control_requires_native_session_evidence",
+        "transaction_control_requires_native_session_evidence",
+        "transaction_control_requires_native_session_evidence",
+        "transaction_control_requires_native_session_evidence"
+      ],
+      "84-C164-N-vendor-session": [
+        "transaction_control_requires_native_session_evidence",
+        "definition",
+        "transaction_control_requires_native_session_evidence"
+      ],
+      "84-C164-P-alter-default": [
+        "definition",
+        "transaction_control_requires_native_session_evidence",
+        "alter",
+        "transaction_control_requires_native_session_evidence",
+        "insert",
+        "read"
+      ],
+      "84-C164-P-idempotent-merge": [
+        "definition",
+        "definition",
+        "insert",
+        "insert",
+        "merge",
+        "merge",
+        "read"
+      ],
+      "84-C164-P-mixed": [
+        "definition",
+        "definition",
+        "insert",
+        "insert",
+        "merge",
+        "delete",
+        "read"
+      ],
+      "84-C164-P-null-duplicates": [
+        "definition",
+        "definition",
+        "insert",
+        "insert",
+        "merge",
+        "read",
+        "delete",
+        "read"
+      ],
+      "84-C164-P-rollback": [
+        "definition",
+        "definition",
+        "insert",
+        "insert",
+        "transaction_control_requires_native_session_evidence",
+        "merge",
+        "delete",
+        "transaction_control_requires_native_session_evidence",
+        "read"
+      ]
+    },
+    "postgresql": {
+      "84-C164-N-invalid-lifecycle": [
+        "definition",
+        "definition"
+      ],
+      "84-C164-N-savepoint": [
+        "transaction_control_requires_native_session_evidence",
+        "transaction_control_requires_native_session_evidence",
+        "transaction_control_requires_native_session_evidence",
+        "transaction_control_requires_native_session_evidence"
+      ],
+      "84-C164-N-vendor-session": [
+        "transaction_control_requires_native_session_evidence",
+        "definition",
+        "transaction_control_requires_native_session_evidence"
+      ],
+      "84-C164-P-alter-default": [
+        "definition",
+        "transaction_control_requires_native_session_evidence",
+        "alter",
+        "transaction_control_requires_native_session_evidence",
+        "insert",
+        "read"
+      ],
+      "84-C164-P-idempotent-merge": [
+        "definition",
+        "definition",
+        "insert",
+        "insert",
+        "merge",
+        "merge",
+        "read"
+      ],
+      "84-C164-P-mixed": [
+        "definition",
+        "definition",
+        "insert",
+        "insert",
+        "merge",
+        "delete",
+        "read"
+      ],
+      "84-C164-P-null-duplicates": [
+        "definition",
+        "definition",
+        "insert",
+        "insert",
+        "merge",
+        "read",
+        "delete",
+        "read"
+      ],
+      "84-C164-P-rollback": [
+        "definition",
+        "definition",
+        "insert",
+        "insert",
+        "transaction_control_requires_native_session_evidence",
+        "merge",
+        "delete",
+        "transaction_control_requires_native_session_evidence",
+        "read"
+      ]
+    },
+    "redshift": {
+      "84-C164-N-invalid-lifecycle": [
+        "definition",
+        "definition"
+      ],
+      "84-C164-N-savepoint": [
+        "transaction_control_requires_native_session_evidence",
+        "transaction_control_requires_native_session_evidence",
+        "transaction_control_requires_native_session_evidence",
+        "transaction_control_requires_native_session_evidence"
+      ],
+      "84-C164-N-vendor-session": [
+        "transaction_control_requires_native_session_evidence",
+        "definition",
+        "transaction_control_requires_native_session_evidence"
+      ],
+      "84-C164-P-alter-default": [
+        "definition",
+        "transaction_control_requires_native_session_evidence",
+        "alter",
+        "transaction_control_requires_native_session_evidence",
+        "insert",
+        "read"
+      ],
+      "84-C164-P-idempotent-merge": [
+        "definition",
+        "definition",
+        "insert",
+        "insert",
+        "merge",
+        "merge",
+        "read"
+      ],
+      "84-C164-P-mixed": [
+        "definition",
+        "definition",
+        "insert",
+        "insert",
+        "merge",
+        "delete",
+        "read"
+      ],
+      "84-C164-P-null-duplicates": [
+        "definition",
+        "definition",
+        "insert",
+        "insert",
+        "merge",
+        "read",
+        "delete",
+        "read"
+      ],
+      "84-C164-P-rollback": [
+        "definition",
+        "definition",
+        "insert",
+        "insert",
+        "transaction_control_requires_native_session_evidence",
+        "merge",
+        "delete",
+        "transaction_control_requires_native_session_evidence",
+        "read"
+      ]
+    },
+    "snowflake": {
+      "84-C164-N-invalid-lifecycle": [
+        "definition",
+        "definition"
+      ],
+      "84-C164-N-savepoint": [
+        "parser_boundary",
+        "transaction_control_requires_native_session_evidence",
+        "transaction_control_requires_native_session_evidence",
+        "transaction_control_requires_native_session_evidence"
+      ],
+      "84-C164-N-vendor-session": [
+        "parser_boundary",
+        "definition",
+        "transaction_control_requires_native_session_evidence"
+      ],
+      "84-C164-P-alter-default": [
+        "definition",
+        "parser_boundary",
+        "alter",
+        "transaction_control_requires_native_session_evidence",
+        "insert",
+        "read"
+      ],
+      "84-C164-P-idempotent-merge": [
+        "definition",
+        "definition",
+        "insert",
+        "insert",
+        "merge",
+        "merge",
+        "read"
+      ],
+      "84-C164-P-mixed": [
+        "definition",
+        "definition",
+        "insert",
+        "insert",
+        "merge",
+        "delete",
+        "read"
+      ],
+      "84-C164-P-null-duplicates": [
+        "definition",
+        "definition",
+        "insert",
+        "insert",
+        "merge",
+        "read",
+        "delete",
+        "read"
+      ],
+      "84-C164-P-rollback": [
+        "definition",
+        "definition",
+        "insert",
+        "insert",
+        "parser_boundary",
+        "merge",
+        "delete",
+        "transaction_control_requires_native_session_evidence",
+        "read"
+      ]
+    },
+    "sqlite": {
+      "84-C164-N-invalid-lifecycle": [
+        "definition",
+        "definition"
+      ],
+      "84-C164-N-savepoint": [
+        "transaction_control_requires_native_session_evidence",
+        "transaction_control_requires_native_session_evidence",
+        "transaction_control_requires_native_session_evidence",
+        "transaction_control_requires_native_session_evidence"
+      ],
+      "84-C164-N-vendor-session": [
+        "transaction_control_requires_native_session_evidence",
+        "definition",
+        "transaction_control_requires_native_session_evidence"
+      ],
+      "84-C164-P-alter-default": [
+        "definition",
+        "transaction_control_requires_native_session_evidence",
+        "alter",
+        "transaction_control_requires_native_session_evidence",
+        "insert",
+        "read"
+      ],
+      "84-C164-P-idempotent-merge": [
+        "definition",
+        "definition",
+        "insert",
+        "insert",
+        "merge",
+        "merge",
+        "read"
+      ],
+      "84-C164-P-mixed": [
+        "definition",
+        "definition",
+        "insert",
+        "insert",
+        "merge",
+        "delete",
+        "read"
+      ],
+      "84-C164-P-null-duplicates": [
+        "definition",
+        "definition",
+        "insert",
+        "insert",
+        "merge",
+        "read",
+        "delete",
+        "read"
+      ],
+      "84-C164-P-rollback": [
+        "definition",
+        "definition",
+        "insert",
+        "insert",
+        "transaction_control_requires_native_session_evidence",
+        "merge",
+        "delete",
+        "transaction_control_requires_native_session_evidence",
+        "read"
+      ]
+    }
+  },
+  "dialect_observation": {
+    "red_ci_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/42202839057",
+    "observation": "deliberately failing test records per-statement canonical/parser boundaries before literal v3 freeze",
+    "meaning": "parser recognition is not non-DuckDB physical engine certification"
   }
 }
