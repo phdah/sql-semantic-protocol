@@ -241,7 +241,7 @@ fn unproved_sql_and_invalid_controls_are_not_upgraded_by_context() {
 fn task_163_active_matrix_and_immutable_preimplementation_freeze_are_versioned() {
     let freeze: serde_json::Value =
         serde_json::from_str(include_str!("../docs/task-163-acceptance-freeze.json")).unwrap();
-    assert_eq!(freeze["version"], 2);
+    assert_eq!(freeze["version"], 3);
     let frozen_v1: serde_json::Value =
         serde_json::from_str(include_str!("../docs/task-163-acceptance-freeze-v1.json")).unwrap();
     assert_eq!(frozen_v1["version"], 1);
