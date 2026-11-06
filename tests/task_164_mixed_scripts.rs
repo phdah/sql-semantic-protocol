@@ -87,7 +87,10 @@ fn native_rows(db: &Connection, table: &str) -> Vec<PhysicalWriteRow> {
 
 fn assert_native_catalog(db: &Connection, checkpoint: &PhysicalScriptCatalog, index: usize) {
     assert_eq!(checkpoint.states.len(), checkpoint.schemas.len());
-    assert!(checkpoint.exact_domains().is_some(), "typed checkpoint {index}");
+    assert!(
+        checkpoint.exact_domains().is_some(),
+        "typed checkpoint {index}"
+    );
     for table in ["t", "s"] {
         let exists: i64 = db
             .query_row(
@@ -96,8 +99,15 @@ fn assert_native_catalog(db: &Connection, checkpoint: &PhysicalScriptCatalog, in
                 |result| result.get(0),
             )
             .unwrap();
-        let actual = checkpoint.states.iter().find(|state| state.relation() == table);
-        assert_eq!(exists == 1, actual.is_some(), "{table} presence at step {index}");
+        let actual = checkpoint
+            .states
+            .iter()
+            .find(|state| state.relation() == table);
+        assert_eq!(
+            exists == 1,
+            actual.is_some(),
+            "{table} presence at step {index}"
+        );
         if let Some(state) = actual {
             assert_eq!(
                 sorted(state.rows()),
@@ -154,7 +164,10 @@ fn assert_terminal_domains(exact: &PhysicalTransactionScriptExact, expected: &Va
                     LiteralValue::Number(frequency["value"].as_i64().unwrap().to_string())
                 };
                 assert_eq!(
-                    actual.iter().find(|(value, _)| *value == expected_value).map(|(_, n)| *n),
+                    actual
+                        .iter()
+                        .find(|(value, _)| *value == expected_value)
+                        .map(|(_, n)| *n),
                     Some(frequency["count"].as_u64().unwrap())
                 );
             }
@@ -207,8 +220,7 @@ fn run_native_case(case: &Value) {
         assert_eq!(checkpoint.step_index, index);
         if let Some(previous) = index.checked_sub(1) {
             assert_eq!(
-                checkpoint.before,
-                exact.checkpoints[previous].after,
+                checkpoint.before, exact.checkpoints[previous].after,
                 "same complete version at step {index}"
             );
         }
@@ -241,7 +253,11 @@ fn run_native_case(case: &Value) {
                 .iter()
                 .find(|state| state.relation() == "t")
                 .expect("t exists after CREATE");
-            assert_eq!(sorted(actual.rows()), sorted(&expected), "frozen t step {index}");
+            assert_eq!(
+                sorted(actual.rows()),
+                sorted(&expected),
+                "frozen t step {index}"
+            );
         }
         if let Some(write) = checkpoint
             .statement
@@ -254,7 +270,11 @@ fn run_native_case(case: &Value) {
                 ("deleted", write.affected().deleted()),
             ] {
                 if let Some(counts) = case["counts"][name].as_array() {
-                    assert_eq!(value, counts[index].as_u64().unwrap(), "{name} step {index}");
+                    assert_eq!(
+                        value,
+                        counts[index].as_u64().unwrap(),
+                        "{name} step {index}"
+                    );
                 }
             }
         }
@@ -281,7 +301,8 @@ fn run_native_case(case: &Value) {
     assert_terminal_domains(&exact, &case["typed_domains"]);
 
     if let Some(expected) = case["intermediate_read"].as_object() {
-        let first = exact.checkpoints
+        let first = exact
+            .checkpoints
             .iter()
             .filter_map(|checkpoint| checkpoint.statement.as_ref())
             .find(|statement| statement.read.is_some())
@@ -296,14 +317,20 @@ fn run_native_case(case: &Value) {
                 checkpoint.action == sql_semantic_protocol::PhysicalTransactionAction::Rollback
             })
             .unwrap();
-        let target = rollback.after.states.iter().find(|state| state.relation() == "t").unwrap();
+        let target = rollback
+            .after
+            .states
+            .iter()
+            .find(|state| state.relation() == "t")
+            .unwrap();
         assert_eq!(
             sorted(target.rows()),
             sorted(&rolled_back.iter().map(row_from_json).collect::<Vec<_>>())
         );
     }
     if case["expected_same_catalog_after_both_merges"] == true {
-        let updates = exact.checkpoints
+        let updates = exact
+            .checkpoints
             .iter()
             .filter_map(|checkpoint| checkpoint.statement.as_ref())
             .filter_map(|node| node.write.as_ref())
@@ -375,13 +402,27 @@ fn native_alter_default_is_carried_across_independent_transaction_sql_units() {
             assert_eq!(exact.checkpoints[index].after.schemas[0].columns().len(), 2);
         }
     }
-    assert_eq!(exact.final_catalog.states[0].rows(), &[row(Some(2), Some(5))]);
-    let read = exact.checkpoints.last().unwrap().statement.as_ref().unwrap();
+    assert_eq!(
+        exact.final_catalog.states[0].rows(),
+        &[row(Some(2), Some(5))]
+    );
+    let read = exact
+        .checkpoints
+        .last()
+        .unwrap()
+        .statement
+        .as_ref()
+        .unwrap();
     assert_read(read, &case["expected_terminal_read"]);
     assert_terminal_domains(&exact, &case["typed_domains"]);
     let from_native = native_rows(&db, "t");
-    assert_eq!(sorted(&from_native), sorted(exact.final_catalog.states[0].rows()));
-    let default_sources = exact.final_constraints.iter()
+    assert_eq!(
+        sorted(&from_native),
+        sorted(exact.final_catalog.states[0].rows())
+    );
+    let default_sources = exact
+        .final_constraints
+        .iter()
         .find(|set| set.relation() == "t")
         .unwrap()
         .column_value_sources();
@@ -407,7 +448,10 @@ fn duplicate_create_is_impossible_and_native_duckdb_rejects_it() {
         },
     );
     assert!(
-        matches!(proof, PhysicalTransactionScriptProof::Impossible { step_index: 1, .. }),
+        matches!(
+            proof,
+            PhysicalTransactionScriptProof::Impossible { step_index: 1, .. }
+        ),
         "{proof:?}"
     );
     let db = Connection::open_in_memory().unwrap();
@@ -457,8 +501,7 @@ fn unsupported_savepoints_and_vendor_ddl_laws_cannot_be_reported_exact() {
 fn frozen_inventory_retains_original_scope_and_explicit_unverified_signoff() {
     let freeze = frozen();
     let original: Value =
-        serde_json::from_str(include_str!("../docs/task-164-acceptance-freeze-v1.json"))
-            .unwrap();
+        serde_json::from_str(include_str!("../docs/task-164-acceptance-freeze-v1.json")).unwrap();
     assert_eq!(original["version"], 1);
     assert_eq!(freeze["version"], 2);
     assert_eq!(freeze["owner"], "TASK-164");
@@ -470,8 +513,9 @@ fn frozen_inventory_retains_original_scope_and_explicit_unverified_signoff() {
             .as_array()
             .unwrap()
             .iter()
-            .filter(|case| case["classification"] == "Exact"
-                || case["classification"] == "Impossible")
+            .filter(
+                |case| case["classification"] == "Exact" || case["classification"] == "Impossible"
+            )
             .count(),
         6
     );
