@@ -14,6 +14,7 @@ pub struct AnalysisBundle {
     pub(super) constraint_diagnostics: Vec<ConstraintDiagnostic>,
     pub(super) comparison_declarations: Vec<ComparisonAssumption>,
     pub(super) outcome_goals: Vec<crate::outcome_goals::EvaluatedOutcomeGoal>,
+    pub(super) producer_evidence: Vec<crate::materialization::ProducerEvidence>,
 }
 
 impl AnalysisBundle {
@@ -25,6 +26,17 @@ impl AnalysisBundle {
     /// Return analyzed inputs in caller-provided order.
     pub fn inputs(&self) -> &[AnalyzedInput] {
         &self.inputs
+    }
+
+    /// Return producer storage intent separately from verified execution evidence.
+    pub fn producer_evidence(&self) -> &[crate::materialization::ProducerEvidence] {
+        &self.producer_evidence
+    }
+
+    /// Attach source-specific declarations at the adapter boundary, preserving stable input order.
+    pub(crate) fn set_producer_evidence(&mut self, mut evidence: Vec<crate::materialization::ProducerEvidence>) {
+        evidence.sort_by(|a, b| a.input_id().cmp(b.input_id()));
+        self.producer_evidence = evidence;
     }
 
     /// Return query-backed transformation layers in deterministic statement order.
@@ -566,6 +578,7 @@ impl AnalysisBundle {
             constraint_diagnostics: schema_diagnostics,
             comparison_declarations: Vec::new(),
             outcome_goals: Vec::new(),
+            producer_evidence: Vec::new(),
         };
         bundle.recheck_boolean_witnesses();
         Ok(bundle)

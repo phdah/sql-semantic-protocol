@@ -30,6 +30,14 @@
     "graph": {
       "$ref": "#/$defs/graph"
     },
+    "producer_evidence": {
+      "type": "array",
+      "description": "Producer storage intent and unattested execution evidence, only present when supplied by an adapter; never proves physical target state.",
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/producerEvidence"
+      }
+    },
     "source_schemas": {
       "type": "array",
       "uniqueItems": true,
@@ -74,6 +82,51 @@
     }
   },
   "$defs": {
+    "producerEvidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "input_id",
+        "relation",
+        "materialization",
+        "execution",
+        "inline_dependencies",
+        "source_kind"
+      ],
+      "properties": {
+        "input_id": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "relation": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1
+        },
+        "materialization": {
+          "enum": [
+            "inline",
+            "logical_view",
+            "physical_table",
+            "incremental",
+            "unspecified"
+          ]
+        },
+        "execution": {
+          "const": "unattested"
+        },
+        "inline_dependencies": {
+          "enum": [
+            "not_applicable",
+            "unattested"
+          ]
+        },
+        "source_kind": {
+          "const": "dbt_manifest"
+        }
+      }
+    },
     "nonEmptyString": {
       "type": "string",
       "minLength": 1

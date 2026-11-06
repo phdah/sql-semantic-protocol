@@ -17,6 +17,7 @@ use crate::constraints::{
 };
 use crate::{
     analyze_configured_inputs_with_catalog, AnalysisBundle, ConfiguredInputAnalysisError,
+    InlineDependencyEvidence, ProducerEvidence, ProducerMaterialization,
     ConfiguredSqlInput, RelationCatalog, RelationContext, RelationSchema, SchemaColumn,
     SchemaSourceKind, SqlInput,
 };
@@ -329,7 +330,9 @@ impl DbtManifest {
 #[derive(Debug, Clone, PartialEq, Eq)]
 struct DbtModel {
     unique_id: String,
-    relation_name: String,
+    relation_name: Option<String>,
+    materialization: ProducerMaterialization,
+    compiled_sql: bool,
     original_file_path: Option<String>,
     database: Option<String>,
     schema: Option<String>,
@@ -753,12 +756,36 @@ fn catalog_invalid_field(path: impl Into<String>, message: impl Into<String>) ->
     }
 }
 
+fn model_materialization(
+    unique_id: &str,
+    object: &Map<String, Value>,
+    path: &str,
+) -> Result<ProducerMaterialization, DbtManifestError> {
+    let Some(config) = optional_object(object, "config", &format!("{path}.config"))? else {
+        return Ok(ProducerMaterialization::Unspecified);
+    };
+    let Some(value) =
+        optional_string(config, "materialized", &format!("{path}.config.materialized"))?
+    else {
+        return Ok(ProducerMaterialization::Unspecified);
+    };
+    match value.as_str() {
+        "ephemeral" => Ok(ProducerMaterialization::Inline),
+        "view" => Ok(ProducerMaterialization::LogicalView),
+        "table" => Ok(ProducerMaterialization::PhysicalTable),
+        "incremental" => Ok(ProducerMaterialization::Incremental),
+        other => Err(DbtManifestError::UnsupportedModel {
+            unique_id: unique_id.to_string(),
+            reason: format!("unknown dbt materialization '{other}'; no execution semantics can be inferred"),
+        }),
+    }
+}
+
 /// Parse and validate a dbt `manifest.json` artifact at the adapter boundary.
 ///
-/// The adapter accepts manifest schema v10 through v12. SQL models must have a materialized
-/// `relation_name` and analyzable SQL. `compiled_code` is preferred; plain `raw_code` is used only
-/// when it contains no Jinja delimiters. Python models, relation-less models such as ephemerals,
-/// and dependencies without relation identity fail explicitly instead of being omitted.
+/// The adapter accepts manifest schema v10 through v12. Named SQL models need a relation
+/// identity; ephemeral models remain anonymous. Compiled SQL is preferred, and uncompiled
+/// Jinja or unrecognized materializations fail closed instead of inventing execution.
 pub fn parse_dbt_manifest(json: &str) -> Result<DbtManifest, DbtManifestError> {
     let value =
         serde_json::from_str::<Value>(json).map_err(|error| DbtManifestError::InvalidJson {
@@ -832,15 +859,25 @@ pub fn parse_dbt_manifest(json: &str) -> Result<DbtManifest, DbtManifestError> {
             });
         }
 
+        let materialization = model_materialization(resource_id, object, &path)?;
         let relation_name = resources
             .get(resource_id)
             .and_then(|resource| resource.relation_name.clone())
-            .filter(|name| !name.trim().is_empty())
-            .ok_or_else(|| DbtManifestError::UnsupportedModel {
+            .filter(|name| !name.trim().is_empty());
+        if materialization == ProducerMaterialization::Inline && relation_name.is_some() {
+            return Err(DbtManifestError::UnsupportedModel {
                 unique_id: resource_id.clone(),
-                reason: "relation_name is unavailable; relation-less models cannot be represented as named protocol outcomes"
-                    .to_string(),
-            })?;
+                reason: "ephemeral models cannot declare a physical relation_name".to_string(),
+            });
+        }
+        if materialization != ProducerMaterialization::Inline && relation_name.is_none() {
+            return Err(DbtManifestError::UnsupportedModel {
+                unique_id: resource_id.clone(),
+                reason: "relation_name is unavailable for a non-ephemeral model".to_string(),
+            });
+        }
+        let compiled_sql = object.get("compiled_code").and_then(Value::as_str)
+            .is_some_and(|code| !code.trim().is_empty());
         let sql = model_sql(resource_id, object, &path)?;
         let dependencies = dependency_ids(object, &path)?;
         for dependency_id in &dependencies {
@@ -850,18 +887,19 @@ pub fn parse_dbt_manifest(json: &str) -> Result<DbtManifest, DbtManifestError> {
                     dependency_id: dependency_id.clone(),
                 });
             };
-            if resource
-                .relation_name
-                .as_deref()
-                .map(str::trim)
-                .unwrap_or("")
-                .is_empty()
-            {
-                return Err(DbtManifestError::UnsupportedDependency {
-                    model_id: resource_id.clone(),
-                    dependency_id: dependency_id.clone(),
-                    reason: "resource has no relation_name".to_string(),
-                });
+            if resource.relation_name.is_none() {
+                let inline_model = nodes.get(dependency_id).and_then(Value::as_object)
+                    .is_some_and(|node| matches!(
+                        model_materialization(dependency_id, node, &format!("$.nodes.{dependency_id}")),
+                        Ok(ProducerMaterialization::Inline)
+                    ));
+                if !inline_model || !compiled_sql {
+                    return Err(DbtManifestError::UnsupportedDependency {
+                        model_id: resource_id.clone(),
+                        dependency_id: dependency_id.clone(),
+                        reason: "relation-less dependency requires an ephemeral model and compiled downstream SQL".to_string(),
+                    });
+                }
             }
         }
 
@@ -881,6 +919,8 @@ pub fn parse_dbt_manifest(json: &str) -> Result<DbtManifest, DbtManifestError> {
             DbtModel {
                 unique_id: resource_id.clone(),
                 relation_name,
+                materialization,
+                compiled_sql,
                 original_file_path,
                 database,
                 schema,
@@ -1008,11 +1048,23 @@ fn analyze_dbt_with_catalog(
 
     let mut prepared = Vec::with_capacity(manifest.models.len());
     for model in &manifest.models {
-        let sql = format!(
-            "CREATE VIEW {} AS\n{}",
-            model.relation_name,
-            model.sql.trim()
-        );
+        // The wrapper describes a producer's SELECT outcome and declared storage intent.
+        // It is not an attestation that dbt executed this model or populated its target.
+        let sql = match model.materialization {
+            ProducerMaterialization::Inline => model.sql.trim().to_string(),
+            ProducerMaterialization::PhysicalTable => format!(
+                "CREATE TABLE {} AS\n{}",
+                model.relation_name.as_deref().expect("non-ephemeral identity validated"),
+                model.sql.trim()
+            ),
+            ProducerMaterialization::LogicalView
+            | ProducerMaterialization::Incremental
+            | ProducerMaterialization::Unspecified => format!(
+                "CREATE VIEW {} AS\n{}",
+                model.relation_name.as_deref().expect("non-ephemeral identity validated"),
+                model.sql.trim()
+            ),
+        };
         let input = match &model.original_file_path {
             Some(path) => SqlInput::file(path.clone(), sql),
             None => SqlInput::inline(sql),
@@ -1051,6 +1103,21 @@ fn analyze_dbt_with_catalog(
         .map_err(DbtManifestError::Analysis)?;
 
     validate_declared_dependencies(manifest, &bundle)?;
+    bundle.set_producer_evidence(manifest.models.iter().map(|model| {
+        let has_inline_dependencies = model.dependencies.iter().any(|id| {
+            manifest.resources.get(id).is_some_and(|resource| resource.relation_name.is_none())
+        });
+        ProducerEvidence::declared(
+            model.unique_id.clone(),
+            model.relation_name.clone(),
+            model.materialization,
+            if has_inline_dependencies {
+                InlineDependencyEvidence::Unattested
+            } else {
+                InlineDependencyEvidence::NotApplicable
+            },
+        )
+    }).collect());
 
     let mut resolved_constraints = Vec::with_capacity(manifest.relation_constraints.len());
     for constraints in &manifest.relation_constraints {
@@ -1087,7 +1154,7 @@ fn required_physical_constraint_columns(
     let produced = manifest
         .models
         .iter()
-        .map(|model| model.relation_name.as_str())
+        .filter_map(|model| model.relation_name.as_deref())
         .collect::<BTreeSet<_>>();
     let mut required = BTreeMap::<String, BTreeSet<String>>::new();
     for set in &manifest.relation_constraints {
@@ -1350,11 +1417,23 @@ fn validate_declared_dependencies(
             })?;
 
         for dependency_id in &model.dependencies {
-            let relation = manifest
+            let Some(relation) = manifest
                 .resources
                 .get(dependency_id)
                 .and_then(|resource| resource.relation_name.as_deref())
-                .expect("dependency relation identity is validated during manifest parsing");
+            else {
+                // Compiled SQL is authoritative for an inlined ephemeral producer.
+                // The manifest cannot prove the macro expansion itself; the
+                // producer_evidence records this as unattested, not an exact edge.
+                if model.compiled_sql {
+                    continue;
+                }
+                return Err(DbtManifestError::UnsupportedDependency {
+                    model_id: model.unique_id.clone(),
+                    dependency_id: dependency_id.clone(),
+                    reason: "relation-less dependency without compiled SQL".to_string(),
+                });
+            };
             let represented_by_sql = layer.consumes().iter().any(|consumed| consumed == relation);
             let represented_by_constraint = manifest
                 .relation_constraints
