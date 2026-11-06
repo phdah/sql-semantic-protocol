@@ -454,7 +454,19 @@ pub(crate) fn certify_duckdb_session_laws(
     required_laws: &[PhysicalTransactionSessionLaw],
 ) -> PhysicalTransactionScriptProof {
     let PhysicalTransactionScriptProof::Exact(ref exact) = proof else {
-        return proof;
+        return match (proof, required_laws.first()) {
+            (
+                PhysicalTransactionScriptProof::Residual { step_index, reason },
+                Some(law),
+            ) => residual(
+                step_index,
+                format!(
+                    "{reason}; TASK-163: requested session or vendor law {} remains unproved",
+                    law.as_str()
+                ),
+            ),
+            (original, _) => original,
+        };
     };
     for law in required_laws {
         match law {
