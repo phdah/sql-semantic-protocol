@@ -310,14 +310,17 @@ pub fn physical_duckdb_transaction_plan(
                         // pre/post bag. Advance only its canonical scalar-default
                         // declarations, on the same live table generation, before
                         // the next separately parsed SQL statement consumes them.
-                        let Some(steps) = input.statements().iter().find_map(|statement| {
-                            match statement {
-                                ProtocolStatement::Query(query) => {
-                                    query.write().map(|write| write.column_alter_steps())
-                                }
-                                ProtocolStatement::Unsupported(_) => None,
-                            }
-                        }) else {
+                        let Some(steps) =
+                            input
+                                .statements()
+                                .iter()
+                                .find_map(|statement| match statement {
+                                    ProtocolStatement::Query(query) => {
+                                        query.write().map(|write| write.column_alter_steps())
+                                    }
+                                    ProtocolStatement::Unsupported(_) => None,
+                                })
+                        else {
                             return residual(index, "ALTER has no canonical column steps");
                         };
                         if steps.is_empty() || !certified_created.contains(target) {
@@ -332,9 +335,10 @@ pub fn physical_duckdb_transaction_plan(
                         if steps.iter().any(|step| match step {
                             crate::protocol::ColumnAlterStep::SetType { column } => {
                                 live_constraints.get(target).is_some_and(|metadata| {
-                                    metadata.column_value_sources().iter().any(|source| {
-                                        source.column() == column.name()
-                                    })
+                                    metadata
+                                        .column_value_sources()
+                                        .iter()
+                                        .any(|source| source.column() == column.name())
                                 })
                             }
                             _ => false,
@@ -344,8 +348,7 @@ pub fn physical_duckdb_transaction_plan(
                                 "ALTER SET TYPE requires attested conversion of existing column defaults",
                             );
                         }
-                        if let Err(error) =
-                            execution.advance_physical_alter_defaults(target, steps)
+                        if let Err(error) = execution.advance_physical_alter_defaults(target, steps)
                         {
                             return residual(
                                 index,
