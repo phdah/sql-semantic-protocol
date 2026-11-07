@@ -1,0 +1,1021 @@
+{
+  "owner": "TASK-175",
+  "parent": "TASK-87",
+  "freeze": "docs/task-175-acceptance-freeze.json",
+  "freeze_version": 2,
+  "archive": "docs/task-175-acceptance-freeze-v1.json",
+  "immutable_preimplementation_case_identity": true,
+  "retrospective_dialect_adapter_cell_detail": true,
+  "process_deviation": "v1 specified all eight original cases before semantics but did not fully enumerate parser/adapter cells; v2 adds evidence after semantics; not retroactive compliance",
+  "acceptance_audit": "docs/task-175-acceptance-audit.md",
+  "review_scope": "bounded child technical acceptance only",
+  "code_head": "91ab73aadaf7f804ab2c8d0379b37e81a07cbc5c",
+  "ci_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/42376329382",
+  "ci_jobs_expected": 9,
+  "ci_jobs_passed": "pending_final_job",
+  "original_ac_verified": [
+    1,
+    2,
+    3,
+    4
+  ],
+  "original_ac_pending": [
+    5
+  ],
+  "mapped_parent_ac_reviewed": [
+    1,
+    2,
+    4,
+    5,
+    6
+  ],
+  "mandatory_cases": [
+    {
+      "id": "87-C175-P-quoted-qualified",
+      "verified": true,
+      "source_bag_verified": true,
+      "terminal_bag_verified": true,
+      "typed_domain_verified": true,
+      "positive_false_unknown_verified": true,
+      "diagnostic_or_constraint_verified": true,
+      "native_engine": "duckdb_full_bag_for_sql_outcome_only",
+      "proof": "Exact for source-attested physical filter, no engine-enforced dbt FK/test claim",
+      "evidence": [
+        "tests/task_175_adapter_boundaries.rs::frozen_quoted_sql_uses_the_exact_frozen_case_and_domain",
+        "tests/task_175_adapter_boundaries.rs::quoted_dbt_source_identity_is_not_alias_collapsed",
+        "tests/task_175_adapter_boundaries.rs::quoted_schema_qualified_names_do_not_collapse_onto_unquoted_aliases",
+        "tests/task_175_adapter_boundaries.rs::each_frozen_variant_has_complete_independent_duckdb_source_and_terminal_oracle"
+      ]
+    },
+    {
+      "id": "87-C175-P-fk-only",
+      "verified": true,
+      "source_bag_verified": true,
+      "terminal_bag_verified": true,
+      "typed_domain_verified": true,
+      "positive_false_unknown_verified": true,
+      "diagnostic_or_constraint_verified": true,
+      "native_engine": "duckdb_full_bag_for_sql_outcome_only",
+      "proof": "Exact for source-attested physical filter, no engine-enforced dbt FK/test claim",
+      "evidence": [
+        "tests/task_175_adapter_boundaries.rs::resolved_relationship_keeps_unknown_enforcement_and_fk_only_target_schema",
+        "tests/task_175_adapter_boundaries.rs::catalog_is_authoritative_for_fk_only_target_types",
+        "tests/dbt_constraint_schemas.rs::constraint_only_source_relationships_emit_both_typed_physical_schemas",
+        "tests/task_175_adapter_boundaries.rs::each_frozen_variant_has_complete_independent_duckdb_source_and_terminal_oracle"
+      ]
+    },
+    {
+      "id": "87-C175-P-tests",
+      "verified": true,
+      "source_bag_verified": true,
+      "terminal_bag_verified": true,
+      "typed_domain_verified": true,
+      "positive_false_unknown_verified": true,
+      "diagnostic_or_constraint_verified": true,
+      "native_engine": "duckdb_full_bag_for_sql_outcome_only",
+      "proof": "Exact for source-attested physical filter, no engine-enforced dbt FK/test claim",
+      "evidence": [
+        "tests/task_175_adapter_boundaries.rs::resolved_relationship_keeps_unknown_enforcement_and_fk_only_target_schema",
+        "tests/task_173_metadata_authority.rs::dbt_declared_constraints_and_generic_tests_keep_separate_unknown_enforcement",
+        "tests/task_175_adapter_boundaries.rs::each_frozen_variant_has_complete_independent_duckdb_source_and_terminal_oracle"
+      ]
+    },
+    {
+      "id": "87-C175-P-canonical-parity",
+      "verified": true,
+      "source_bag_verified": true,
+      "terminal_bag_verified": true,
+      "typed_domain_verified": true,
+      "positive_false_unknown_verified": true,
+      "diagnostic_or_constraint_verified": true,
+      "native_engine": "duckdb_full_bag_for_sql_outcome_only",
+      "proof": "Exact for source-attested physical filter, no engine-enforced dbt FK/test claim",
+      "evidence": [
+        "tests/task_175_adapter_boundaries.rs::direct_dbt_and_odcs_metadata_produce_one_canonical_typed_filter_domain",
+        "tests/task_175_adapter_boundaries.rs::canonical_fk_only_primary_key_has_sql_dbt_and_odcs_fact_parity",
+        "tests/task_175_adapter_boundaries.rs::each_frozen_variant_has_complete_independent_duckdb_source_and_terminal_oracle"
+      ]
+    },
+    {
+      "id": "87-C175-N-missing-relationship-target",
+      "verified": true,
+      "source_bag_verified": true,
+      "terminal_bag_verified": true,
+      "typed_domain_verified": true,
+      "positive_false_unknown_verified": true,
+      "diagnostic_or_constraint_verified": true,
+      "native_engine": "duckdb_full_bag_for_sql_outcome_only",
+      "proof": "Exact for source-attested physical filter, no engine-enforced dbt FK/test claim",
+      "evidence": [
+        "tests/task_175_adapter_boundaries.rs::unknown_relationship_to_does_not_become_fk_from_dependency_alone",
+        "tests/task_175_adapter_boundaries.rs::missing_fk_target_diagnostic_is_emitted_in_protocol_without_fake_fk",
+        "tests/task_175_adapter_boundaries.rs::each_frozen_variant_has_complete_independent_duckdb_source_and_terminal_oracle"
+      ]
+    },
+    {
+      "id": "87-C175-N-missing-declared-fk-target",
+      "verified": true,
+      "source_bag_verified": true,
+      "terminal_bag_verified": true,
+      "typed_domain_verified": true,
+      "positive_false_unknown_verified": true,
+      "diagnostic_or_constraint_verified": true,
+      "native_engine": "duckdb_full_bag_for_sql_outcome_only",
+      "proof": "Exact for source-attested physical filter, no engine-enforced dbt FK/test claim",
+      "evidence": [
+        "tests/task_175_adapter_boundaries.rs::declared_fk_with_unknown_target_is_diagnostic_without_losing_other_constraints",
+        "tests/task_175_adapter_boundaries.rs::each_frozen_variant_has_complete_independent_duckdb_source_and_terminal_oracle"
+      ]
+    }
+  ],
+  "conditional_cases": [
+    {
+      "id": "87-C175-N-untyped-fk-source",
+      "verified": true,
+      "classification": "explicit_residual_or_invalid_metadata",
+      "owner": "TASK-175",
+      "native_execution": "not_claimed",
+      "review_disposition": "typed schema evidence required before exactness",
+      "evidence": [
+        "tests/task_175_adapter_boundaries.rs::missing_fk_only_warehouse_types_are_explicitly_rejected"
+      ]
+    },
+    {
+      "id": "87-C175-N-ambiguous-quoted-alias",
+      "verified": true,
+      "classification": "explicit_residual_or_invalid_metadata",
+      "owner": "TASK-175",
+      "native_execution": "not_claimed",
+      "review_disposition": "requires explicit qualified identity or dialect evidence",
+      "evidence": [
+        "tests/task_175_adapter_boundaries.rs::quoted_schema_qualified_names_do_not_collapse_onto_unquoted_aliases"
+      ]
+    }
+  ],
+  "dialect_cells": [
+    {
+      "id": "87-C175-P-quoted-qualified::generic",
+      "verified": true,
+      "parser_claim": "portable_filter_parser_and_typed_domain_only",
+      "native_execution": "not_claimed",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-P-quoted-qualified::mysql",
+      "verified": true,
+      "parser_claim": "portable_filter_parser_and_typed_domain_only",
+      "native_execution": "not_claimed",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-P-quoted-qualified::postgresql",
+      "verified": true,
+      "parser_claim": "portable_filter_parser_and_typed_domain_only",
+      "native_execution": "not_claimed",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-P-quoted-qualified::hive",
+      "verified": true,
+      "parser_claim": "portable_filter_parser_and_typed_domain_only",
+      "native_execution": "not_claimed",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-P-quoted-qualified::sqlite",
+      "verified": true,
+      "parser_claim": "portable_filter_parser_and_typed_domain_only",
+      "native_execution": "not_claimed",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-P-quoted-qualified::snowflake",
+      "verified": true,
+      "parser_claim": "portable_filter_parser_and_typed_domain_only",
+      "native_execution": "not_claimed",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-P-quoted-qualified::redshift",
+      "verified": true,
+      "parser_claim": "portable_filter_parser_and_typed_domain_only",
+      "native_execution": "not_claimed",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-P-quoted-qualified::mssql",
+      "verified": true,
+      "parser_claim": "portable_filter_parser_and_typed_domain_only",
+      "native_execution": "not_claimed",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-P-quoted-qualified::clickhouse",
+      "verified": true,
+      "parser_claim": "portable_filter_parser_and_typed_domain_only",
+      "native_execution": "not_claimed",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-P-quoted-qualified::bigquery",
+      "verified": true,
+      "parser_claim": "portable_filter_parser_and_typed_domain_only",
+      "native_execution": "not_claimed",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-P-quoted-qualified::ansi",
+      "verified": true,
+      "parser_claim": "portable_filter_parser_and_typed_domain_only",
+      "native_execution": "not_claimed",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-P-quoted-qualified::duckdb",
+      "verified": true,
+      "parser_claim": "portable_filter_parser_and_typed_domain_only",
+      "native_execution": "not_claimed",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-P-quoted-qualified::databricks",
+      "verified": true,
+      "parser_claim": "portable_filter_parser_and_typed_domain_only",
+      "native_execution": "not_claimed",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-P-fk-only::generic",
+      "verified": true,
+      "parser_claim": "portable_filter_parser_and_typed_domain_only",
+      "native_execution": "not_claimed",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-P-fk-only::mysql",
+      "verified": true,
+      "parser_claim": "portable_filter_parser_and_typed_domain_only",
+      "native_execution": "not_claimed",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-P-fk-only::postgresql",
+      "verified": true,
+      "parser_claim": "portable_filter_parser_and_typed_domain_only",
+      "native_execution": "not_claimed",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-P-fk-only::hive",
+      "verified": true,
+      "parser_claim": "portable_filter_parser_and_typed_domain_only",
+      "native_execution": "not_claimed",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-P-fk-only::sqlite",
+      "verified": true,
+      "parser_claim": "portable_filter_parser_and_typed_domain_only",
+      "native_execution": "not_claimed",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-P-fk-only::snowflake",
+      "verified": true,
+      "parser_claim": "portable_filter_parser_and_typed_domain_only",
+      "native_execution": "not_claimed",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-P-fk-only::redshift",
+      "verified": true,
+      "parser_claim": "portable_filter_parser_and_typed_domain_only",
+      "native_execution": "not_claimed",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-P-fk-only::mssql",
+      "verified": true,
+      "parser_claim": "portable_filter_parser_and_typed_domain_only",
+      "native_execution": "not_claimed",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-P-fk-only::clickhouse",
+      "verified": true,
+      "parser_claim": "portable_filter_parser_and_typed_domain_only",
+      "native_execution": "not_claimed",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-P-fk-only::bigquery",
+      "verified": true,
+      "parser_claim": "portable_filter_parser_and_typed_domain_only",
+      "native_execution": "not_claimed",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-P-fk-only::ansi",
+      "verified": true,
+      "parser_claim": "portable_filter_parser_and_typed_domain_only",
+      "native_execution": "not_claimed",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-P-fk-only::duckdb",
+      "verified": true,
+      "parser_claim": "portable_filter_parser_and_typed_domain_only",
+      "native_execution": "not_claimed",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-P-fk-only::databricks",
+      "verified": true,
+      "parser_claim": "portable_filter_parser_and_typed_domain_only",
+      "native_execution": "not_claimed",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-P-tests::generic",
+      "verified": true,
+      "parser_claim": "portable_filter_parser_and_typed_domain_only",
+      "native_execution": "not_claimed",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-P-tests::mysql",
+      "verified": true,
+      "parser_claim": "portable_filter_parser_and_typed_domain_only",
+      "native_execution": "not_claimed",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-P-tests::postgresql",
+      "verified": true,
+      "parser_claim": "portable_filter_parser_and_typed_domain_only",
+      "native_execution": "not_claimed",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-P-tests::hive",
+      "verified": true,
+      "parser_claim": "portable_filter_parser_and_typed_domain_only",
+      "native_execution": "not_claimed",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-P-tests::sqlite",
+      "verified": true,
+      "parser_claim": "portable_filter_parser_and_typed_domain_only",
+      "native_execution": "not_claimed",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-P-tests::snowflake",
+      "verified": true,
+      "parser_claim": "portable_filter_parser_and_typed_domain_only",
+      "native_execution": "not_claimed",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-P-tests::redshift",
+      "verified": true,
+      "parser_claim": "portable_filter_parser_and_typed_domain_only",
+      "native_execution": "not_claimed",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-P-tests::mssql",
+      "verified": true,
+      "parser_claim": "portable_filter_parser_and_typed_domain_only",
+      "native_execution": "not_claimed",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-P-tests::clickhouse",
+      "verified": true,
+      "parser_claim": "portable_filter_parser_and_typed_domain_only",
+      "native_execution": "not_claimed",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-P-tests::bigquery",
+      "verified": true,
+      "parser_claim": "portable_filter_parser_and_typed_domain_only",
+      "native_execution": "not_claimed",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-P-tests::ansi",
+      "verified": true,
+      "parser_claim": "portable_filter_parser_and_typed_domain_only",
+      "native_execution": "not_claimed",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-P-tests::duckdb",
+      "verified": true,
+      "parser_claim": "portable_filter_parser_and_typed_domain_only",
+      "native_execution": "not_claimed",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-P-tests::databricks",
+      "verified": true,
+      "parser_claim": "portable_filter_parser_and_typed_domain_only",
+      "native_execution": "not_claimed",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-P-canonical-parity::generic",
+      "verified": true,
+      "parser_claim": "portable_filter_parser_and_typed_domain_only",
+      "native_execution": "not_claimed",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-P-canonical-parity::mysql",
+      "verified": true,
+      "parser_claim": "portable_filter_parser_and_typed_domain_only",
+      "native_execution": "not_claimed",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-P-canonical-parity::postgresql",
+      "verified": true,
+      "parser_claim": "portable_filter_parser_and_typed_domain_only",
+      "native_execution": "not_claimed",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-P-canonical-parity::hive",
+      "verified": true,
+      "parser_claim": "portable_filter_parser_and_typed_domain_only",
+      "native_execution": "not_claimed",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-P-canonical-parity::sqlite",
+      "verified": true,
+      "parser_claim": "portable_filter_parser_and_typed_domain_only",
+      "native_execution": "not_claimed",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-P-canonical-parity::snowflake",
+      "verified": true,
+      "parser_claim": "portable_filter_parser_and_typed_domain_only",
+      "native_execution": "not_claimed",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-P-canonical-parity::redshift",
+      "verified": true,
+      "parser_claim": "portable_filter_parser_and_typed_domain_only",
+      "native_execution": "not_claimed",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-P-canonical-parity::mssql",
+      "verified": true,
+      "parser_claim": "portable_filter_parser_and_typed_domain_only",
+      "native_execution": "not_claimed",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-P-canonical-parity::clickhouse",
+      "verified": true,
+      "parser_claim": "portable_filter_parser_and_typed_domain_only",
+      "native_execution": "not_claimed",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-P-canonical-parity::bigquery",
+      "verified": true,
+      "parser_claim": "portable_filter_parser_and_typed_domain_only",
+      "native_execution": "not_claimed",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-P-canonical-parity::ansi",
+      "verified": true,
+      "parser_claim": "portable_filter_parser_and_typed_domain_only",
+      "native_execution": "not_claimed",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-P-canonical-parity::duckdb",
+      "verified": true,
+      "parser_claim": "portable_filter_parser_and_typed_domain_only",
+      "native_execution": "not_claimed",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-P-canonical-parity::databricks",
+      "verified": true,
+      "parser_claim": "portable_filter_parser_and_typed_domain_only",
+      "native_execution": "not_claimed",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-N-missing-relationship-target::generic",
+      "verified": true,
+      "parser_claim": "portable_filter_parser_and_typed_domain_only",
+      "native_execution": "not_claimed",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-N-missing-relationship-target::mysql",
+      "verified": true,
+      "parser_claim": "portable_filter_parser_and_typed_domain_only",
+      "native_execution": "not_claimed",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-N-missing-relationship-target::postgresql",
+      "verified": true,
+      "parser_claim": "portable_filter_parser_and_typed_domain_only",
+      "native_execution": "not_claimed",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-N-missing-relationship-target::hive",
+      "verified": true,
+      "parser_claim": "portable_filter_parser_and_typed_domain_only",
+      "native_execution": "not_claimed",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-N-missing-relationship-target::sqlite",
+      "verified": true,
+      "parser_claim": "portable_filter_parser_and_typed_domain_only",
+      "native_execution": "not_claimed",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-N-missing-relationship-target::snowflake",
+      "verified": true,
+      "parser_claim": "portable_filter_parser_and_typed_domain_only",
+      "native_execution": "not_claimed",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-N-missing-relationship-target::redshift",
+      "verified": true,
+      "parser_claim": "portable_filter_parser_and_typed_domain_only",
+      "native_execution": "not_claimed",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-N-missing-relationship-target::mssql",
+      "verified": true,
+      "parser_claim": "portable_filter_parser_and_typed_domain_only",
+      "native_execution": "not_claimed",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-N-missing-relationship-target::clickhouse",
+      "verified": true,
+      "parser_claim": "portable_filter_parser_and_typed_domain_only",
+      "native_execution": "not_claimed",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-N-missing-relationship-target::bigquery",
+      "verified": true,
+      "parser_claim": "portable_filter_parser_and_typed_domain_only",
+      "native_execution": "not_claimed",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-N-missing-relationship-target::ansi",
+      "verified": true,
+      "parser_claim": "portable_filter_parser_and_typed_domain_only",
+      "native_execution": "not_claimed",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-N-missing-relationship-target::duckdb",
+      "verified": true,
+      "parser_claim": "portable_filter_parser_and_typed_domain_only",
+      "native_execution": "not_claimed",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-N-missing-relationship-target::databricks",
+      "verified": true,
+      "parser_claim": "portable_filter_parser_and_typed_domain_only",
+      "native_execution": "not_claimed",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-N-missing-declared-fk-target::generic",
+      "verified": true,
+      "parser_claim": "portable_filter_parser_and_typed_domain_only",
+      "native_execution": "not_claimed",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-N-missing-declared-fk-target::mysql",
+      "verified": true,
+      "parser_claim": "portable_filter_parser_and_typed_domain_only",
+      "native_execution": "not_claimed",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-N-missing-declared-fk-target::postgresql",
+      "verified": true,
+      "parser_claim": "portable_filter_parser_and_typed_domain_only",
+      "native_execution": "not_claimed",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-N-missing-declared-fk-target::hive",
+      "verified": true,
+      "parser_claim": "portable_filter_parser_and_typed_domain_only",
+      "native_execution": "not_claimed",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-N-missing-declared-fk-target::sqlite",
+      "verified": true,
+      "parser_claim": "portable_filter_parser_and_typed_domain_only",
+      "native_execution": "not_claimed",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-N-missing-declared-fk-target::snowflake",
+      "verified": true,
+      "parser_claim": "portable_filter_parser_and_typed_domain_only",
+      "native_execution": "not_claimed",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-N-missing-declared-fk-target::redshift",
+      "verified": true,
+      "parser_claim": "portable_filter_parser_and_typed_domain_only",
+      "native_execution": "not_claimed",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-N-missing-declared-fk-target::mssql",
+      "verified": true,
+      "parser_claim": "portable_filter_parser_and_typed_domain_only",
+      "native_execution": "not_claimed",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-N-missing-declared-fk-target::clickhouse",
+      "verified": true,
+      "parser_claim": "portable_filter_parser_and_typed_domain_only",
+      "native_execution": "not_claimed",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-N-missing-declared-fk-target::bigquery",
+      "verified": true,
+      "parser_claim": "portable_filter_parser_and_typed_domain_only",
+      "native_execution": "not_claimed",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-N-missing-declared-fk-target::ansi",
+      "verified": true,
+      "parser_claim": "portable_filter_parser_and_typed_domain_only",
+      "native_execution": "not_claimed",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-N-missing-declared-fk-target::duckdb",
+      "verified": true,
+      "parser_claim": "portable_filter_parser_and_typed_domain_only",
+      "native_execution": "not_claimed",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-N-missing-declared-fk-target::databricks",
+      "verified": true,
+      "parser_claim": "portable_filter_parser_and_typed_domain_only",
+      "native_execution": "not_claimed",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    }
+  ],
+  "adapter_cells": [
+    {
+      "id": "87-C175-P-quoted-qualified::direct_sql",
+      "verified": true,
+      "canonical_fact_evidence": "parsed_sql_ddl_or_query",
+      "engine_execution": "not_claimed",
+      "evidence": [
+        {
+          "file": "tests/task_175_adapter_boundaries.rs",
+          "test": "frozen_quoted_sql_uses_the_exact_frozen_case_and_domain"
+        },
+        {
+          "file": "tests/task_175_adapter_boundaries.rs",
+          "test": "quoted_dbt_source_identity_is_not_alias_collapsed"
+        },
+        {
+          "file": "tests/task_175_adapter_boundaries.rs",
+          "test": "quoted_schema_qualified_names_do_not_collapse_onto_unquoted_aliases"
+        }
+      ]
+    },
+    {
+      "id": "87-C175-P-quoted-qualified::dbt_manifest",
+      "verified": true,
+      "canonical_fact_evidence": "dbt_manifest_declared_metadata",
+      "engine_execution": "not_claimed",
+      "evidence": [
+        {
+          "file": "tests/task_175_adapter_boundaries.rs",
+          "test": "frozen_quoted_sql_uses_the_exact_frozen_case_and_domain"
+        },
+        {
+          "file": "tests/task_175_adapter_boundaries.rs",
+          "test": "quoted_dbt_source_identity_is_not_alias_collapsed"
+        },
+        {
+          "file": "tests/task_175_adapter_boundaries.rs",
+          "test": "quoted_schema_qualified_names_do_not_collapse_onto_unquoted_aliases"
+        }
+      ]
+    },
+    {
+      "id": "87-C175-P-fk-only::dbt_manifest",
+      "verified": true,
+      "canonical_fact_evidence": "dbt_manifest_declared_metadata",
+      "engine_execution": "not_claimed",
+      "evidence": [
+        {
+          "file": "tests/task_175_adapter_boundaries.rs",
+          "test": "resolved_relationship_keeps_unknown_enforcement_and_fk_only_target_schema"
+        },
+        {
+          "file": "tests/task_175_adapter_boundaries.rs",
+          "test": "catalog_is_authoritative_for_fk_only_target_types"
+        },
+        {
+          "file": "tests/dbt_constraint_schemas.rs",
+          "test": "constraint_only_source_relationships_emit_both_typed_physical_schemas"
+        }
+      ]
+    },
+    {
+      "id": "87-C175-P-fk-only::dbt_catalog",
+      "verified": true,
+      "canonical_fact_evidence": "warehouse_metadata_type_only",
+      "engine_execution": "not_claimed",
+      "evidence": [
+        {
+          "file": "tests/task_175_adapter_boundaries.rs",
+          "test": "resolved_relationship_keeps_unknown_enforcement_and_fk_only_target_schema"
+        },
+        {
+          "file": "tests/task_175_adapter_boundaries.rs",
+          "test": "catalog_is_authoritative_for_fk_only_target_types"
+        },
+        {
+          "file": "tests/dbt_constraint_schemas.rs",
+          "test": "constraint_only_source_relationships_emit_both_typed_physical_schemas"
+        }
+      ]
+    },
+    {
+      "id": "87-C175-P-fk-only::odcs",
+      "verified": true,
+      "canonical_fact_evidence": "external_metadata_only",
+      "engine_execution": "not_claimed",
+      "evidence": [
+        {
+          "file": "tests/task_175_adapter_boundaries.rs",
+          "test": "resolved_relationship_keeps_unknown_enforcement_and_fk_only_target_schema"
+        },
+        {
+          "file": "tests/task_175_adapter_boundaries.rs",
+          "test": "catalog_is_authoritative_for_fk_only_target_types"
+        },
+        {
+          "file": "tests/dbt_constraint_schemas.rs",
+          "test": "constraint_only_source_relationships_emit_both_typed_physical_schemas"
+        }
+      ]
+    },
+    {
+      "id": "87-C175-P-fk-only::direct_sql",
+      "verified": true,
+      "canonical_fact_evidence": "parsed_sql_ddl_or_query",
+      "engine_execution": "not_claimed",
+      "evidence": [
+        {
+          "file": "tests/task_175_adapter_boundaries.rs",
+          "test": "resolved_relationship_keeps_unknown_enforcement_and_fk_only_target_schema"
+        },
+        {
+          "file": "tests/task_175_adapter_boundaries.rs",
+          "test": "catalog_is_authoritative_for_fk_only_target_types"
+        },
+        {
+          "file": "tests/dbt_constraint_schemas.rs",
+          "test": "constraint_only_source_relationships_emit_both_typed_physical_schemas"
+        }
+      ]
+    },
+    {
+      "id": "87-C175-P-tests::dbt_manifest",
+      "verified": true,
+      "canonical_fact_evidence": "dbt_manifest_declared_metadata",
+      "engine_execution": "not_claimed",
+      "evidence": [
+        {
+          "file": "tests/task_175_adapter_boundaries.rs",
+          "test": "resolved_relationship_keeps_unknown_enforcement_and_fk_only_target_schema"
+        },
+        {
+          "file": "tests/task_173_metadata_authority.rs",
+          "test": "dbt_declared_constraints_and_generic_tests_keep_separate_unknown_enforcement"
+        }
+      ]
+    },
+    {
+      "id": "87-C175-P-tests::direct_sql",
+      "verified": true,
+      "canonical_fact_evidence": "parsed_sql_ddl_or_query",
+      "engine_execution": "not_claimed",
+      "evidence": [
+        {
+          "file": "tests/task_175_adapter_boundaries.rs",
+          "test": "resolved_relationship_keeps_unknown_enforcement_and_fk_only_target_schema"
+        },
+        {
+          "file": "tests/task_173_metadata_authority.rs",
+          "test": "dbt_declared_constraints_and_generic_tests_keep_separate_unknown_enforcement"
+        }
+      ]
+    },
+    {
+      "id": "87-C175-P-tests::odcs",
+      "verified": true,
+      "canonical_fact_evidence": "external_metadata_only",
+      "engine_execution": "not_claimed",
+      "evidence": [
+        {
+          "file": "tests/task_175_adapter_boundaries.rs",
+          "test": "resolved_relationship_keeps_unknown_enforcement_and_fk_only_target_schema"
+        },
+        {
+          "file": "tests/task_173_metadata_authority.rs",
+          "test": "dbt_declared_constraints_and_generic_tests_keep_separate_unknown_enforcement"
+        }
+      ]
+    },
+    {
+      "id": "87-C175-P-canonical-parity::direct_sql",
+      "verified": true,
+      "canonical_fact_evidence": "parsed_sql_ddl_or_query",
+      "engine_execution": "not_claimed",
+      "evidence": [
+        {
+          "file": "tests/task_175_adapter_boundaries.rs",
+          "test": "direct_dbt_and_odcs_metadata_produce_one_canonical_typed_filter_domain"
+        },
+        {
+          "file": "tests/task_175_adapter_boundaries.rs",
+          "test": "canonical_fk_only_primary_key_has_sql_dbt_and_odcs_fact_parity"
+        }
+      ]
+    },
+    {
+      "id": "87-C175-P-canonical-parity::dbt_manifest",
+      "verified": true,
+      "canonical_fact_evidence": "dbt_manifest_declared_metadata",
+      "engine_execution": "not_claimed",
+      "evidence": [
+        {
+          "file": "tests/task_175_adapter_boundaries.rs",
+          "test": "direct_dbt_and_odcs_metadata_produce_one_canonical_typed_filter_domain"
+        },
+        {
+          "file": "tests/task_175_adapter_boundaries.rs",
+          "test": "canonical_fk_only_primary_key_has_sql_dbt_and_odcs_fact_parity"
+        }
+      ]
+    },
+    {
+      "id": "87-C175-P-canonical-parity::odcs",
+      "verified": true,
+      "canonical_fact_evidence": "external_metadata_only",
+      "engine_execution": "not_claimed",
+      "evidence": [
+        {
+          "file": "tests/task_175_adapter_boundaries.rs",
+          "test": "direct_dbt_and_odcs_metadata_produce_one_canonical_typed_filter_domain"
+        },
+        {
+          "file": "tests/task_175_adapter_boundaries.rs",
+          "test": "canonical_fk_only_primary_key_has_sql_dbt_and_odcs_fact_parity"
+        }
+      ]
+    },
+    {
+      "id": "87-C175-N-missing-relationship-target::dbt_manifest",
+      "verified": true,
+      "canonical_fact_evidence": "dbt_manifest_declared_metadata",
+      "engine_execution": "not_claimed",
+      "evidence": [
+        {
+          "file": "tests/task_175_adapter_boundaries.rs",
+          "test": "unknown_relationship_to_does_not_become_fk_from_dependency_alone"
+        },
+        {
+          "file": "tests/task_175_adapter_boundaries.rs",
+          "test": "missing_fk_target_diagnostic_is_emitted_in_protocol_without_fake_fk"
+        }
+      ]
+    },
+    {
+      "id": "87-C175-N-missing-declared-fk-target::dbt_manifest",
+      "verified": true,
+      "canonical_fact_evidence": "dbt_manifest_declared_metadata",
+      "engine_execution": "not_claimed",
+      "evidence": [
+        {
+          "file": "tests/task_175_adapter_boundaries.rs",
+          "test": "declared_fk_with_unknown_target_is_diagnostic_without_losing_other_constraints"
+        }
+      ]
+    },
+    {
+      "id": "87-C175-N-untyped-fk-source::dbt_manifest",
+      "verified": true,
+      "canonical_fact_evidence": "dbt_manifest_declared_metadata",
+      "engine_execution": "not_claimed",
+      "evidence": [
+        {
+          "file": "tests/task_175_adapter_boundaries.rs",
+          "test": "missing_fk_only_warehouse_types_are_explicitly_rejected"
+        }
+      ]
+    },
+    {
+      "id": "87-C175-N-untyped-fk-source::dbt_catalog",
+      "verified": true,
+      "canonical_fact_evidence": "warehouse_metadata_type_only",
+      "engine_execution": "not_claimed",
+      "evidence": [
+        {
+          "file": "tests/task_175_adapter_boundaries.rs",
+          "test": "missing_fk_only_warehouse_types_are_explicitly_rejected"
+        }
+      ]
+    },
+    {
+      "id": "87-C175-N-ambiguous-quoted-alias::direct_sql",
+      "verified": true,
+      "canonical_fact_evidence": "parsed_sql_ddl_or_query",
+      "engine_execution": "not_claimed",
+      "evidence": [
+        {
+          "file": "tests/task_175_adapter_boundaries.rs",
+          "test": "quoted_schema_qualified_names_do_not_collapse_onto_unquoted_aliases"
+        }
+      ]
+    },
+    {
+      "id": "87-C175-N-ambiguous-quoted-alias::dbt_manifest",
+      "verified": true,
+      "canonical_fact_evidence": "dbt_manifest_declared_metadata",
+      "engine_execution": "not_claimed",
+      "evidence": [
+        {
+          "file": "tests/task_175_adapter_boundaries.rs",
+          "test": "quoted_schema_qualified_names_do_not_collapse_onto_unquoted_aliases"
+        }
+      ]
+    },
+    {
+      "id": "87-C175-N-ambiguous-quoted-alias::odcs",
+      "verified": true,
+      "canonical_fact_evidence": "external_metadata_only",
+      "engine_execution": "not_claimed",
+      "evidence": [
+        {
+          "file": "tests/task_175_adapter_boundaries.rs",
+          "test": "quoted_schema_qualified_names_do_not_collapse_onto_unquoted_aliases"
+        }
+      ]
+    }
+  ],
+  "adapter_parity_verified": true,
+  "full_duckdb_oracle_verified": true,
+  "all_13_parser_dialects_verified": true,
+  "pinned_consumer_disposition": "not_applicable_to_unreleased_dbt_adapter_only_change; sql-tdg Cargo.toml pins published 2.0.3 with default-features=false; external v3 acceptance remains TASK-91",
+  "active_schema_or_golden_contract": "no new protocol root/schema variants; exercised by full Rust test suite",
+  "full_ci_verified": false,
+  "two_axis_same_account_review_verified": false,
+  "independent_review_verified": false,
+  "owner_directed_review_process_exception": true,
+  "child_signed_off": false,
+  "parent_closed": false,
+  "release_approved": false
+}
