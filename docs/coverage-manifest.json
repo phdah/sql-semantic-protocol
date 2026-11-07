@@ -2,9 +2,9 @@
   "task_175_schema_fk_acceptance": {
     "owner": "TASK-175",
     "parent": "TASK-87",
-    "status": "in_progress",
+    "status": "done_bounded_owner_directed_review_exception",
     "freeze": "docs/task-175-acceptance-freeze.json",
-    "freeze_version": 1,
+    "freeze_version": 2,
     "fixture_ids": [
       "87-C175-P",
       "87-C175-N"
@@ -12,9 +12,9 @@
     "mandatory_cases": 6,
     "conditional_cases": 2,
     "dialects_expected": 13,
-    "mandatory_verified": false,
+    "mandatory_verified": true,
     "independent_review_verified": false,
-    "full_ci_verified": false,
+    "full_ci_verified": true,
     "parent_closed": false,
     "release_approved": false,
     "original_child_ac": [
@@ -34,10 +34,22 @@
     "public_api_oracles": [
       "tests/task_175_adapter_boundaries.rs"
     ],
-    "all_13_parser_dialects_verified": false,
-    "adapter_parity_verified": false,
-    "native_duckdb_verified": false,
-    "child_signed_off": false
+    "all_13_parser_dialects_verified": true,
+    "adapter_parity_verified": true,
+    "native_duckdb_verified": true,
+    "child_signed_off": true,
+    "archive": "docs/task-175-acceptance-freeze-v1.json",
+    "acceptance_verification": "docs/task-175-acceptance-verification.json",
+    "acceptance_audit": "docs/task-175-acceptance-audit.md",
+    "dialect_parser_cells": 78,
+    "adapter_cells": 19,
+    "code_head": "91ab73aadaf7f804ab2c8d0379b37e81a07cbc5c",
+    "implementation_ci_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/42376329382",
+    "implementation_ci_jobs_passed": "9/9",
+    "two_axis_same_account_review_verified": true,
+    "same_account_review_url": "https://github.com/phdah/sql-semantic-protocol/pull/194#pullrequestreview-5812435290",
+    "owner_directed_review_process_exception": true,
+    "pinned_consumer_disposition": "not_applicable_to_dbt_only_change; published_2.0.3_consumer_pin"
   },
   "task_174_dbt_materialization_acceptance": {
     "owner": "TASK-174",
