@@ -204,10 +204,9 @@ fn canonical_public_api_analysis_has_a_fixed_fail_closed_dialect_boundary_matrix
                 match analyze_sql(sql, dialect_name, dialect.as_ref()) {
                     Err(_) => 'E',
                     Ok(protocol)
-                        if protocol
-                            .statements()
-                            .iter()
-                            .any(|statement| matches!(statement, ProtocolStatement::Unsupported(_))) =>
+                        if protocol.statements().iter().any(|statement| {
+                            matches!(statement, ProtocolStatement::Unsupported(_))
+                        }) =>
                     {
                         'U'
                     }
@@ -237,7 +236,9 @@ fn canonical_public_api_analysis_has_a_fixed_fail_closed_dialect_boundary_matrix
             .expect("complete fixed analysis mask");
         assert_eq!(pinned.len(), 13, "{id}: incomplete analysis matrix");
         assert!(
-            pinned.chars().all(|status| matches!(status, 'R' | 'E' | 'U' | 'A')),
+            pinned
+                .chars()
+                .all(|status| matches!(status, 'R' | 'E' | 'U' | 'A')),
             "{id}: unsupported evidence status"
         );
         assert_eq!(
