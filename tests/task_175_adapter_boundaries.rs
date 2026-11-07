@@ -143,7 +143,14 @@ fn task_175_freeze_is_versioned_and_complete() {
     let freeze: Value =
         serde_json::from_str(include_str!("../docs/task-175-acceptance-freeze.json")).unwrap();
     assert_eq!(freeze["owner"], "TASK-175");
-    assert_eq!(freeze["version"], 1);
+    assert_eq!(freeze["version"], 2);
+    let original: Value =
+        serde_json::from_str(include_str!("../docs/task-175-acceptance-freeze-v1.json"))
+            .unwrap();
+    assert_eq!(original["version"], 1);
+    assert_eq!(original["cases"], freeze["cases"], "v2 must not weaken frozen variants");
+    assert_eq!(original["oracle"], freeze["oracle"]);
+    assert_eq!(original["fixture_ids"], freeze["fixture_ids"]);
     assert_eq!(freeze["frozen_before_semantic_changes"], true);
     assert_eq!(freeze["fixture_ids"], json!(["87-C175-P", "87-C175-N"]));
     assert_eq!(freeze["oracle"]["source"], json!([1, 1, null, 0]));
@@ -166,6 +173,17 @@ fn task_175_freeze_is_versioned_and_complete() {
         assert!(case["proof"].as_str().is_some());
     }
     assert_eq!(freeze["dialects"].as_array().unwrap().len(), 13);
+    assert_eq!(freeze["dialect_cells"].as_array().unwrap().len(), 78);
+    assert_eq!(freeze["adapter_cells"].as_array().unwrap().len(), 19);
+    let mut cells = std::collections::BTreeSet::new();
+    for entry in freeze["adapter_cells"].as_array().unwrap() {
+        assert!(cells.insert(entry["id"].as_str().unwrap()));
+        assert_eq!(entry["verified"], false, "freeze must not preapprove evidence");
+        assert!(entry["evidence"].as_array().unwrap().iter().all(|test| {
+            test["file"].as_str().is_some() && test["test"].as_str().is_some()
+        }));
+        assert!(entry["materialization_or_engine_execution"] == "not_attested");
+    }
 }
 
 #[test]
@@ -497,6 +515,8 @@ fn canonical_dialect_matrix_exercises_every_frozen_mandatory_case() {
     .unwrap();
     let mut seen = BTreeSet::new();
     let mut mandatory = 0;
+    let cells = freeze["dialect_cells"].as_array().unwrap();
+    let mut exercised = BTreeSet::new();
     for case in cases {
         if case["requirement"] != "mandatory" {
             continue;
@@ -512,12 +532,22 @@ fn canonical_dialect_matrix_exercises_every_frozen_mandatory_case() {
         for dialect in dialects {
             let dialect = dialect.as_str().unwrap();
             assert!(seen.insert(format!("{id}/{dialect}")));
-            let domain = filtered_domain(&catalog, dialect, FILTER);
+            let cell = cells.iter()
+                .find(|cell| cell["id"] == format!("{id}::{dialect}"))
+                .expect("every mandatory case and dialect has a frozen cell");
+            assert!(exercised.insert(cell["id"].as_str().unwrap()));
+            assert_eq!(cell["case_id"], id);
+            assert_eq!(cell["dialect"], dialect);
+            assert_eq!(cell["verified"], false, "matrix is independently verified after CI");
+            assert_eq!(cell["native_engine"], "not_attested");
+            let sql = cell["portable_sql"].as_str().unwrap();
+            let domain = filtered_domain(&catalog, dialect, sql);
             assert_lower_inclusive_one(&domain);
         }
     }
     assert_eq!(mandatory, 6);
     assert_eq!(seen.len(), 78);
+    assert_eq!(exercised.len(), cells.len());
 }
 
 #[test]
