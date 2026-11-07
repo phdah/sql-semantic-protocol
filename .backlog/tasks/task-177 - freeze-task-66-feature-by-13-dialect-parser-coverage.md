@@ -79,3 +79,21 @@ Next: [TASK-178](task-178%20-%20certify-canonical-equivalence-for-shared-dialect
   gates remain blocking. All original AC #1..#5 stay unchecked, TASK-88
   remains open, and TASK-178 stays dependency-blocked until this child is
   fully certified, Done and merged.
+
+## Parser sample inventory extension (2026-11-07)
+
+- `docs/task-177-parser-samples.json` adds 251 task-owned sample SQL
+  statements, one per reviewed TASK-66 feature variant.
+- `docs/task-177-parser-snapshot.json` records independent CI-observed
+  classifications for the 3,263 example SQL/dialect pairs:
+  **3,208 parsed, 55 parser-rejected**. The 55 sample rejections belong to
+  12 named variant families. No silent dialect skip or vendor execution
+  claim is permitted.
+- `docs/task-177-parser-boundaries.json` names all 55 rejected
+  sample/dialect pairs, with conditional ownership and *unapproved*
+  release disposition. Alternative native syntax requires independent
+  evidence, not automatic fallback or claimed impossibility.
+- `docs/task-177-acceptance-audit.md` maps all five original AC
+  individually and enumerates remaining mandatory semantic, typed physical,
+  SQL/dbt/ODCS, native session, consumer and independent-review gates.
+  **Do not mark the child Done merely because parser and CI tests pass.**
