@@ -5,17 +5,27 @@ use std::collections::BTreeMap;
 
 use serde_json::{json, Value};
 use sql_semantic_protocol::{
-    analyze_configured_inputs_with_catalog, analyze_dbt_manifest_with_schemas,
-    dialect_from_name, parse_dbt_manifest, physical_ordered_lifecycle_plan, to_bundle_json,
-    ComposedSemantics, ConstraintEnforcement, DbtArtifactsError, LiteralValue,
+    analyze_configured_inputs_with_catalog, analyze_dbt_manifest_with_schemas, dialect_from_name,
+    parse_dbt_manifest, physical_ordered_lifecycle_plan, to_bundle_json, ComposedSemantics,
+    ConfiguredSqlInput, ConstraintEnforcement, DbtArtifactsError, LiteralValue,
     PhysicalOrderedLifecycleProof, PhysicalWriteRow, PhysicalWriteState, RelationCatalog,
-    RelationConstraint, RelationSchema, SchemaColumn, SchemaSourceKind, SqlInput,
-    ConfiguredSqlInput, ValueDomain,
+    RelationConstraint, RelationSchema, SchemaColumn, SchemaSourceKind, SqlInput, ValueDomain,
 };
 
 const DIALECTS: &[&str] = &[
-    "generic", "mysql", "postgresql", "hive", "sqlite", "snowflake", "redshift",
-    "mssql", "clickhouse", "bigquery", "ansi", "duckdb", "databricks",
+    "generic",
+    "mysql",
+    "postgresql",
+    "hive",
+    "sqlite",
+    "snowflake",
+    "redshift",
+    "mssql",
+    "clickhouse",
+    "bigquery",
+    "ansi",
+    "duckdb",
+    "databricks",
 ];
 
 const FILTER: &str = "SELECT k FROM raw.orders WHERE k >= 1";
@@ -80,8 +90,12 @@ fn relationship_test(to: &str) -> Value {
     })
 }
 
-fn constraints<'a>(manifest: &'a sql_semantic_protocol::DbtManifest) -> &'a sql_semantic_protocol::RelationConstraintSet {
-    manifest.relation_constraints().iter()
+fn constraints<'a>(
+    manifest: &'a sql_semantic_protocol::DbtManifest,
+) -> &'a sql_semantic_protocol::RelationConstraintSet {
+    manifest
+        .relation_constraints()
+        .iter()
         .find(|set| set.relation() == ORDERS)
         .expect("source constraint metadata")
 }
@@ -110,7 +124,12 @@ fn physical_row(k: Option<i64>) -> PhysicalWriteRow {
 fn filtered_domain(catalog: &RelationCatalog, dialect_name: &str, sql: &str) -> ValueDomain {
     let dialect = dialect_from_name(dialect_name).unwrap();
     let sql = SqlInput::inline(sql);
-    let configured = [ConfiguredSqlInput::new("task175", &sql, dialect_name, dialect.as_ref())];
+    let configured = [ConfiguredSqlInput::new(
+        "task175",
+        &sql,
+        dialect_name,
+        dialect.as_ref(),
+    )];
     let bundle = analyze_configured_inputs_with_catalog(&configured, catalog).unwrap();
     let ComposedSemantics::Resolved(composed) = bundle.layers()[0].composed_semantics() else {
         panic!("expected resolved SQL semantics for {dialect_name}");
@@ -120,7 +139,8 @@ fn filtered_domain(catalog: &RelationCatalog, dialect_name: &str, sql: &str) -> 
 
 #[test]
 fn task_175_freeze_is_versioned_and_complete() {
-    let freeze: Value = serde_json::from_str(include_str!("../docs/task-175-acceptance-freeze.json")).unwrap();
+    let freeze: Value =
+        serde_json::from_str(include_str!("../docs/task-175-acceptance-freeze.json")).unwrap();
     assert_eq!(freeze["owner"], "TASK-175");
     assert_eq!(freeze["version"], 1);
     assert_eq!(freeze["frozen_before_semantic_changes"], true);
@@ -134,7 +154,10 @@ fn task_175_freeze_is_versioned_and_complete() {
     let cases = freeze["cases"].as_array().unwrap();
     assert_eq!(cases.len(), 8);
     for case in cases {
-        assert!(matches!(case["fixture"].as_str(), Some("87-C175-P" | "87-C175-N")));
+        assert!(matches!(
+            case["fixture"].as_str(),
+            Some("87-C175-P" | "87-C175-N")
+        ));
         assert_eq!(case["oracle"]["source"], freeze["oracle"]["source"]);
         assert_eq!(case["oracle"]["terminal"], freeze["oracle"]["terminal"]);
         assert!(case["id"].as_str().is_some());
@@ -150,8 +173,14 @@ fn unknown_relationship_to_does_not_become_fk_from_dependency_alone() {
     value["nodes"]["test.task175.orders_parents"] = relationship_test("source('raw', 'missing')");
     let parsed = parsed(&value);
     let set = constraints(&parsed);
-    assert!(set.constraints().iter().all(|constraint| !matches!(constraint, RelationConstraint::ForeignKey(_))));
-    assert!(set.diagnostics().iter().any(|diagnostic| diagnostic.code() == "unresolved_relationship_target"));
+    assert!(set
+        .constraints()
+        .iter()
+        .all(|constraint| !matches!(constraint, RelationConstraint::ForeignKey(_))));
+    assert!(set
+        .diagnostics()
+        .iter()
+        .any(|diagnostic| diagnostic.code() == "unresolved_relationship_target"));
 }
 
 #[test]
@@ -163,9 +192,18 @@ fn declared_fk_with_unknown_target_is_diagnostic_without_losing_other_constraint
     ]);
     let parsed = parsed(&value);
     let set = constraints(&parsed);
-    assert!(set.constraints().iter().any(|constraint| matches!(constraint, RelationConstraint::NotNull(_))));
-    assert!(set.constraints().iter().all(|constraint| !matches!(constraint, RelationConstraint::ForeignKey(_))));
-    assert!(set.diagnostics().iter().any(|diagnostic| diagnostic.code() == "unresolved_foreign_key_target"));
+    assert!(set
+        .constraints()
+        .iter()
+        .any(|constraint| matches!(constraint, RelationConstraint::NotNull(_))));
+    assert!(set
+        .constraints()
+        .iter()
+        .all(|constraint| !matches!(constraint, RelationConstraint::ForeignKey(_))));
+    assert!(set
+        .diagnostics()
+        .iter()
+        .any(|diagnostic| diagnostic.code() == "unresolved_foreign_key_target"));
 }
 
 #[test]
@@ -174,16 +212,26 @@ fn resolved_relationship_keeps_unknown_enforcement_and_fk_only_target_schema() {
     value["nodes"]["test.task175.orders_parents"] = relationship_test("source('raw', 'parents')");
     let manifest = parsed(&value);
     let set = constraints(&manifest);
-    let foreign_key = set.constraints().iter().find_map(|rule| match rule {
-        RelationConstraint::ForeignKey(key) => Some(key),
-        _ => None
-    }).expect("resolved relationships test must contribute an FK");
+    let foreign_key = set
+        .constraints()
+        .iter()
+        .find_map(|rule| match rule {
+            RelationConstraint::ForeignKey(key) => Some(key),
+            _ => None,
+        })
+        .expect("resolved relationships test must contribute an FK");
     assert_eq!(foreign_key.referenced_relation(), PARENTS);
-    assert_eq!(foreign_key.evidence()[0].enforcement(), ConstraintEnforcement::Unknown);
+    assert_eq!(
+        foreign_key.evidence()[0].enforcement(),
+        ConstraintEnforcement::Unknown
+    );
 
     let dialect = dialect_from_name("duckdb").unwrap();
     let bundle = analyze_dbt_manifest_with_schemas(&manifest, "duckdb", dialect.as_ref()).unwrap();
-    let parent = bundle.source_schemas().iter().find(|schema| schema.relation() == PARENTS)
+    let parent = bundle
+        .source_schemas()
+        .iter()
+        .find(|schema| schema.relation() == PARENTS)
         .expect("FK-only relation must receive a typed source schema");
     assert_eq!(parent.source_kind(), Some(SchemaSourceKind::DbtManifest));
     assert_eq!(parent.columns()[0].name(), "id");
@@ -208,21 +256,44 @@ fn missing_fk_only_warehouse_types_are_explicitly_rejected() {
 fn quoted_schema_qualified_names_do_not_collapse_onto_unquoted_aliases() {
     let quoted = "\"Raw\".\"Orders\"";
     let catalog = RelationCatalog::from_schemas(&[
-        RelationSchema::new(quoted, vec![SchemaColumn::from_sql_type("k", "INTEGER", "postgresql").unwrap()]).unwrap(),
-        RelationSchema::new("raw.orders", vec![SchemaColumn::from_sql_type("k", "INTEGER", "postgresql").unwrap()]).unwrap(),
-    ]).unwrap();
+        RelationSchema::new(
+            quoted,
+            vec![SchemaColumn::from_sql_type("k", "INTEGER", "postgresql").unwrap()],
+        )
+        .unwrap(),
+        RelationSchema::new(
+            "raw.orders",
+            vec![SchemaColumn::from_sql_type("k", "INTEGER", "postgresql").unwrap()],
+        )
+        .unwrap(),
+    ])
+    .unwrap();
     assert_eq!(catalog.resolve(quoted, "postgresql", None).unwrap(), quoted);
-    assert_eq!(catalog.resolve("raw.orders", "postgresql", None).unwrap(), "raw.orders");
-    assert_lower_inclusive_one(&filtered_domain(&catalog, "postgresql", "SELECT k FROM \"Raw\".\"Orders\" WHERE k >= 1"));
-    assert_lower_inclusive_one(&filtered_domain(&catalog, "postgresql", "SELECT k FROM raw.orders WHERE k >= 1"));
+    assert_eq!(
+        catalog.resolve("raw.orders", "postgresql", None).unwrap(),
+        "raw.orders"
+    );
+    assert_lower_inclusive_one(&filtered_domain(
+        &catalog,
+        "postgresql",
+        "SELECT k FROM \"Raw\".\"Orders\" WHERE k >= 1",
+    ));
+    assert_lower_inclusive_one(&filtered_domain(
+        &catalog,
+        "postgresql",
+        "SELECT k FROM raw.orders WHERE k >= 1",
+    ));
     assert!(catalog.resolve("orders", "postgresql", None).is_ok());
 }
 
 #[test]
 fn all_exposed_dialects_preserve_portable_typed_filter_bound() {
-    let catalog = RelationCatalog::from_schemas(&[
-        RelationSchema::new(ORDERS, vec![SchemaColumn::from_sql_type("k", "INTEGER", "duckdb").unwrap()]).unwrap()
-    ]).unwrap();
+    let catalog = RelationCatalog::from_schemas(&[RelationSchema::new(
+        ORDERS,
+        vec![SchemaColumn::from_sql_type("k", "INTEGER", "duckdb").unwrap()],
+    )
+    .unwrap()])
+    .unwrap();
     for dialect in DIALECTS {
         assert_lower_inclusive_one(&filtered_domain(&catalog, dialect, FILTER));
     }
@@ -234,33 +305,68 @@ fn full_duckdb_source_and_terminal_bags_match_canonical_positive_and_not_true() 
     conn.execute_batch("CREATE SCHEMA raw; CREATE TABLE raw.orders(k INTEGER); INSERT INTO raw.orders VALUES (1),(1),(NULL),(0);").unwrap();
     let values = |sql: &str| {
         let mut stmt = conn.prepare(sql).unwrap();
-        stmt.query_map([], |row| row.get::<_, Option<i32>>(0)).unwrap()
-            .collect::<Result<Vec<_>, _>>().unwrap()
+        stmt.query_map([], |row| row.get::<_, Option<i32>>(0))
+            .unwrap()
+            .collect::<Result<Vec<_>, _>>()
+            .unwrap()
     };
-    assert_eq!(values("SELECT k FROM raw.orders ORDER BY k NULLS LAST"), vec![Some(0), Some(1), Some(1), None]);
-    assert_eq!(values("SELECT k FROM raw.orders WHERE k >= 1 ORDER BY k"), vec![Some(1), Some(1)]);
-    assert_eq!(values("SELECT k FROM raw.orders WHERE NOT (k >= 1)"), vec![Some(0)]);
-    assert_eq!(values("SELECT k FROM raw.orders WHERE (k >= 1) IS NULL"), vec![None]);
+    assert_eq!(
+        values("SELECT k FROM raw.orders ORDER BY k NULLS LAST"),
+        vec![Some(0), Some(1), Some(1), None]
+    );
+    assert_eq!(
+        values("SELECT k FROM raw.orders WHERE k >= 1 ORDER BY k"),
+        vec![Some(1), Some(1)]
+    );
+    assert_eq!(
+        values("SELECT k FROM raw.orders WHERE NOT (k >= 1)"),
+        vec![Some(0)]
+    );
+    assert_eq!(
+        values("SELECT k FROM raw.orders WHERE (k >= 1) IS NULL"),
+        vec![None]
+    );
 
     let manifest = parsed(&manifest_json());
     let dialect = dialect_from_name("duckdb").unwrap();
     let bundle = analyze_dbt_manifest_with_schemas(&manifest, "duckdb", dialect.as_ref()).unwrap();
     let catalog = RelationCatalog::from_schemas(bundle.source_schemas()).unwrap();
     let sql = SqlInput::inline(FILTER);
-    let inputs = [ConfiguredSqlInput::new("task175-physical", &sql, "duckdb", dialect.as_ref())];
+    let inputs = [ConfiguredSqlInput::new(
+        "task175-physical",
+        &sql,
+        "duckdb",
+        dialect.as_ref(),
+    )];
     let read = analyze_configured_inputs_with_catalog(&inputs, &catalog).unwrap();
-    let source = PhysicalWriteState::new(ORDERS, vec![physical_row(Some(1)), physical_row(Some(1)), physical_row(None), physical_row(Some(0))]).unwrap();
-    let PhysicalOrderedLifecycleProof::Exact(exact) = physical_ordered_lifecycle_plan(&read, std::slice::from_ref(&source)) else {
+    let source = PhysicalWriteState::new(
+        ORDERS,
+        vec![
+            physical_row(Some(1)),
+            physical_row(Some(1)),
+            physical_row(None),
+            physical_row(Some(0)),
+        ],
+    )
+    .unwrap();
+    let PhysicalOrderedLifecycleProof::Exact(exact) =
+        physical_ordered_lifecycle_plan(&read, std::slice::from_ref(&source))
+    else {
         panic!("complete typed source must prove exact filter output");
     };
-    let [observation] = exact.reads.as_slice() else { panic!("one exact read"); };
-    assert_eq!(observation.output.rows(), &[physical_row(Some(1)), physical_row(Some(1))]);
-    assert_eq!(observation.surviving_source_ordinals, vec![0,1]);
-    assert_eq!(observation.rejected_source_ordinals, vec![2,3]);
+    let [observation] = exact.reads.as_slice() else {
+        panic!("one exact read");
+    };
+    assert_eq!(
+        observation.output.rows(),
+        &[physical_row(Some(1)), physical_row(Some(1))]
+    );
+    assert_eq!(observation.surviving_source_ordinals, vec![0, 1]);
+    assert_eq!(observation.rejected_source_ordinals, vec![2, 3]);
     assert_lower_inclusive_one(&filtered_domain(&catalog, "duckdb", FILTER));
 }
 
-#[cfg(feature="odcs")]
+#[cfg(feature = "odcs")]
 #[test]
 fn direct_dbt_and_odcs_metadata_produce_one_canonical_typed_filter_domain() {
     use sql_semantic_protocol::{parse_odcs_yaml, DataType};
@@ -275,11 +381,22 @@ fn direct_dbt_and_odcs_metadata_produce_one_canonical_typed_filter_domain() {
         "duckdb",
         &RelationCatalog::new(&[ORDERS]).unwrap()
     ).unwrap();
-    assert_eq!(odcs.source_schemas()[0].source_kind(), Some(SchemaSourceKind::ExternalMetadata));
-    assert_eq!(odcs.source_schemas()[0].columns()[0].data_type(), &DataType::SignedInteger { bits: Some(32) });
+    assert_eq!(
+        odcs.source_schemas()[0].source_kind(),
+        Some(SchemaSourceKind::ExternalMetadata)
+    );
+    assert_eq!(
+        odcs.source_schemas()[0].columns()[0].data_type(),
+        &DataType::SignedInteger { bits: Some(32) }
+    );
     let odcs_catalog = RelationCatalog::from_schemas(odcs.source_schemas()).unwrap();
 
-    let ddl = sql_semantic_protocol::analyze_inputs(&[SqlInput::inline("CREATE TABLE raw.orders (k INTEGER)")], "duckdb", dialect.as_ref()).unwrap();
+    let ddl = sql_semantic_protocol::analyze_inputs(
+        &[SqlInput::inline("CREATE TABLE raw.orders (k INTEGER)")],
+        "duckdb",
+        dialect.as_ref(),
+    )
+    .unwrap();
     let direct_catalog = RelationCatalog::from_schemas(ddl.source_schemas()).unwrap();
     let expected = filtered_domain(&direct_catalog, "duckdb", FILTER);
     assert_eq!(filtered_domain(&dbt_catalog, "duckdb", FILTER), expected);
