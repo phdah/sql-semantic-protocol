@@ -581,20 +581,28 @@ fn missing_fk_target_diagnostic_is_emitted_in_protocol_without_fake_fk() {
     ));
 }
 
-
 #[test]
 fn frozen_quoted_sql_uses_the_exact_frozen_case_and_domain() {
     let freeze: Value =
         serde_json::from_str(include_str!("../docs/task-175-acceptance-freeze.json")).unwrap();
-    let case = freeze["cases"].as_array().unwrap().iter()
-        .find(|case| case["id"] == "87-C175-P-quoted-qualified").unwrap();
+    let case = freeze["cases"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|case| case["id"] == "87-C175-P-quoted-qualified")
+        .unwrap();
     let relation = case["source_relation"].as_str().unwrap();
     let sql = case["sql"].as_str().unwrap();
     let schema = RelationSchema::new(
-        relation, vec![SchemaColumn::from_sql_type("k", "INTEGER", "postgresql").unwrap()]
-    ).unwrap();
+        relation,
+        vec![SchemaColumn::from_sql_type("k", "INTEGER", "postgresql").unwrap()],
+    )
+    .unwrap();
     let catalog = RelationCatalog::from_schemas(&[schema]).unwrap();
-    assert_eq!(catalog.resolve(relation, "postgresql", None).unwrap(), relation);
+    assert_eq!(
+        catalog.resolve(relation, "postgresql", None).unwrap(),
+        relation
+    );
     assert_lower_inclusive_one(&filtered_domain(&catalog, "postgresql", sql));
 }
 
@@ -606,13 +614,17 @@ fn canonical_fk_only_primary_key_has_sql_dbt_and_odcs_fact_parity() {
     manifest_json["sources"]["source.task175.raw.parents"]["constraints"] =
         json!([{"type": "primary_key", "columns": ["id"]}]);
     let dialect = dialect_from_name("duckdb").unwrap();
-    let dbt = analyze_dbt_manifest_with_schemas(
-        &parsed(&manifest_json), "duckdb", dialect.as_ref()
-    ).unwrap();
+    let dbt =
+        analyze_dbt_manifest_with_schemas(&parsed(&manifest_json), "duckdb", dialect.as_ref())
+            .unwrap();
     let ddl = analyze_inputs(
-        &[SqlInput::inline("CREATE TABLE raw.parents (id INTEGER PRIMARY KEY)")],
-        "duckdb", dialect.as_ref()
-    ).unwrap();
+        &[SqlInput::inline(
+            "CREATE TABLE raw.parents (id INTEGER PRIMARY KEY)",
+        )],
+        "duckdb",
+        dialect.as_ref(),
+    )
+    .unwrap();
     let odcs = parse_odcs_yaml(
         "apiVersion: v3.2.0\nkind: DataContract\nid: task175-key\nname: TASK-175\nversion: 1.0.0\nstatus: active\nschema:\n  - name: parents\n    physicalName: raw.parents\n    properties:\n      - id: parent_id\n        name: id\n        physicalType: INTEGER\n        primaryKey: true\n",
         "duckdb",
@@ -621,24 +633,43 @@ fn canonical_fk_only_primary_key_has_sql_dbt_and_odcs_fact_parity() {
 
     let key = |sets: &[sql_semantic_protocol::RelationConstraintSet]| {
         let set = sets.iter().find(|set| set.relation() == PARENTS).unwrap();
-        let pk = set.constraints().iter().find_map(|rule| match rule {
-            RelationConstraint::PrimaryKey(pk) => Some(pk),
-            _ => None,
-        }).unwrap();
+        let pk = set
+            .constraints()
+            .iter()
+            .find_map(|rule| match rule {
+                RelationConstraint::PrimaryKey(pk) => Some(pk),
+                _ => None,
+            })
+            .unwrap();
         pk.columns().to_vec()
     };
     assert_eq!(key(dbt.relation_constraints()), ["id"]);
     assert_eq!(key(ddl.relation_constraints()), ["id"]);
     assert_eq!(key(odcs.relation_constraints()), ["id"]);
 
-    let dbt_parent = dbt.source_schemas().iter()
-        .find(|schema| schema.relation() == PARENTS).unwrap();
-    let odcs_parent = odcs.source_schemas().iter()
-        .find(|schema| schema.relation() == PARENTS).unwrap();
-    assert_eq!(dbt_parent.columns()[0].data_type(), odcs_parent.columns()[0].data_type());
+    let dbt_parent = dbt
+        .source_schemas()
+        .iter()
+        .find(|schema| schema.relation() == PARENTS)
+        .unwrap();
+    let odcs_parent = odcs
+        .source_schemas()
+        .iter()
+        .find(|schema| schema.relation() == PARENTS)
+        .unwrap();
+    assert_eq!(
+        dbt_parent.columns()[0].data_type(),
+        odcs_parent.columns()[0].data_type()
+    );
     // None of these declarations is independently verified database enforcement.
-    assert!(dbt.relation_constraints().iter().find(|set| set.relation() == PARENTS)
-        .unwrap().constraints().iter().any(|constraint| matches!(
+    assert!(dbt
+        .relation_constraints()
+        .iter()
+        .find(|set| set.relation() == PARENTS)
+        .unwrap()
+        .constraints()
+        .iter()
+        .any(|constraint| matches!(
             constraint, RelationConstraint::PrimaryKey(key)
             if key.evidence().iter().all(|e| e.enforcement() == ConstraintEnforcement::Unknown)
         )));
