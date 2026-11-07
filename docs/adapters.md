@@ -86,6 +86,14 @@ built-in test whose tested resource still cannot be identified is reported as
 `unattributed_dbt_test` in the bundle-level `constraint_diagnostics` and contributes no
 constraint, rather than aborting analysis or assigning the constraint to a guessed relation.
 
+For a declared dbt `foreign_key` or `relationships` test, `to` must independently resolve to a
+known canonical manifest relation. A `depends_on` target is not sufficient evidence for an
+unresolved `to`. Missing targets emit relation-scoped `unresolved_foreign_key_target` or
+`unresolved_relationship_target` diagnostics and contribute no foreign key; multiple candidate
+relationships targets emit `ambiguous_relationship_target`. A resolvable but contradictory `to`
+and `depends_on` emits `inconsistent_relationship_target`. These metadata diagnostics do not
+establish runtime test execution or database FK enforcement.
+
 The adapter joins the artifacts by dbt resource `unique_id`, normalizes catalog datatypes into the
 same parser-independent `DataType` model used by direct callers, and runs compiled model SQL
 through the ordinary analyzer, graph builder, composition, and outcome-domain pipeline. dbt-specific
