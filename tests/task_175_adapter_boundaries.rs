@@ -734,7 +734,6 @@ fn each_frozen_variant_has_complete_independent_duckdb_source_and_terminal_oracl
     }
 }
 
-
 #[test]
 fn dbt_unqualified_alias_with_two_physical_sources_fails_closed() {
     let mut value = manifest_json();
