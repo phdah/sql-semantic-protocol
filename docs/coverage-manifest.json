@@ -1,4 +1,34 @@
 {
+  "task_177_dialect_parser_acceptance": {
+    "owner": "TASK-177",
+    "parent": "TASK-88",
+    "status": "in_progress_parser_inventory_release_blocked",
+    "freeze": "docs/task-177-acceptance-freeze.json",
+    "freeze_version": 1,
+    "feature_variants": 251,
+    "public_dialects": 13,
+    "variant_dialect_cells": 3263,
+    "parser_evidence_counts": {
+      "unverified": 3002,
+      "fixture_tested": 156,
+      "representative_only": 105
+    },
+    "positive_and_negative_native_fixtures": [
+      "88-C177-P",
+      "88-C177-N"
+    ],
+    "contract_test": "tests/task_177_dialect_inventory.rs",
+    "canonical_equivalence_certified_for_full_matrix": false,
+    "typed_terminal_oracles_certified_for_full_matrix": false,
+    "direct_dbt_odcs_parity_certified_for_full_matrix": false,
+    "external_engine_laws_certified": false,
+    "independent_review_verified": false,
+    "full_ci_verified": false,
+    "child_done": false,
+    "parent_closed": false,
+    "release_approved": false,
+    "boundary": "Only the named positive/impossible goldens have native DuckDB oracles; sparse sampled parser evidence must not be promoted to variant-wide semantic or vendor certification."
+  },
   "task_176_paired_adapter_write_acceptance": {
     "owner": "TASK-176",
     "parent": "TASK-87",
