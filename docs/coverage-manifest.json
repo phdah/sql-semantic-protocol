@@ -39,9 +39,9 @@
     ],
     "original_ac_status": {
       "1": "in_progress:251_sql_samples_3263_fixed_parser_cells_but_typed_oracles_missing",
-      "2": "unverified_full_semantic_matrix",
+      "2": "only_sampled_canonical_return_and_unsupported_classifications;full_typed_semantics_unverified",
       "3": "two_goldens_verified_but_remaining_oracles_missing",
-      "4": "parser_boundary_snapshot_fixed;55_rejections_review_pending;full_canonical_adapter_parity_not_certified",
+      "4": "3263_fixed_parser_and_public_analyzer_cells;116_explicit_unsupported_blocking;55_parser_rejections_review_pending;adapter_exact_matrix_missing",
       "5": "final_head_ci_and_independent_signoff_pending"
     },
     "parser_observed": {
@@ -49,7 +49,15 @@
       "parse_rejected": 55
     },
     "parser_boundary_register": "docs/task-177-parser-boundaries.json",
-    "parser_rejected_sample_variants": 12
+    "parser_rejected_sample_variants": 12,
+    "public_analyzer_snapshot": {
+      "returned_protocol": 3092,
+      "explicit_unsupported": 116,
+      "analysis_error": 0,
+      "parser_rejected": 55
+    },
+    "analyzer_status": "fixed_observation_not_semantic_proof",
+    "canonical_unsupported_registry": "docs/task-177-analysis-boundaries.json"
   },
   "task_176_paired_adapter_write_acceptance": {
     "owner": "TASK-176",
