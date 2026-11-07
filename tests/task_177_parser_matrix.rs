@@ -38,7 +38,10 @@ fn every_named_variant_has_a_unique_sql_shape_and_owned_parser_classification() 
         .iter()
         .flat_map(|feature| {
             rows(feature, "variants").iter().map(move |variant| {
-                (field(feature, "id"), variant.as_str().expect("variant syntax"))
+                (
+                    field(feature, "id"),
+                    variant.as_str().expect("variant syntax"),
+                )
             })
         })
         .collect();
@@ -49,7 +52,10 @@ fn every_named_variant_has_a_unique_sql_shape_and_owned_parser_classification() 
         let feature = field(case, "feature_id");
         let variant = field(case, "variant");
         assert!(ids.insert(id), "duplicate parser fixture {id}");
-        assert!(actual.insert((feature, variant)), "duplicate variant {feature}/{variant}");
+        assert!(
+            actual.insert((feature, variant)),
+            "duplicate variant {feature}/{variant}"
+        );
         assert!(!field(case, "sql").is_empty(), "empty SQL for {id}");
         assert_eq!(case["test_scope"], "sqlparser_parser_boundary_only");
         assert_eq!(case["canonical_evidence"], "not_certified");
@@ -110,7 +116,10 @@ fn parser_dialect_matrix_matches_fixed_non_tautological_snapshot() {
 
     let expected_ids: BTreeSet<_> = expected.keys().map(String::as_str).collect();
     let observed_ids: BTreeSet<_> = observed.keys().map(String::as_str).collect();
-    assert_eq!(expected_ids, observed_ids, "frozen parser case scope changed");
+    assert_eq!(
+        expected_ids, observed_ids,
+        "frozen parser case scope changed"
+    );
     for (id, result) in observed {
         let frozen = expected
             .get(&id)
@@ -118,7 +127,10 @@ fn parser_dialect_matrix_matches_fixed_non_tautological_snapshot() {
             .expect("frozen per-dialect parser mask");
         assert_eq!(frozen.len(), 13, "{id}: incomplete parser snapshot");
         assert!(frozen.chars().all(|status| matches!(status, 'P' | 'R')));
-        assert_eq!(result, frozen, "{id}: parser behavior changed; review SQL dialect boundary before editing snapshot");
+        assert_eq!(
+            result, frozen,
+            "{id}: parser behavior changed; review SQL dialect boundary before editing snapshot"
+        );
     }
 
     assert_eq!(snapshot["vendor_execution_certified"], false);
