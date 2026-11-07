@@ -398,9 +398,9 @@ fn canonical_source_constraints_match_without_inventing_adapter_enforcement() {
         {"type":"check", "expression":"score IN (7,9)"}
     ]);
     let dbt = parse_dbt_manifest(&manifest.to_string()).unwrap();
-    let find = |sets: &[RelationConstraintSet]| {
+    fn find(sets: &[RelationConstraintSet]) -> &RelationConstraintSet {
         sets.iter().find(|set| set.relation() == "target").unwrap()
-    };
+    }
     let sql_set = find(ddl.relation_constraints());
     let odcs_set = find(odcs.relation_constraints());
     let dbt_set = find(dbt.relation_constraints());
