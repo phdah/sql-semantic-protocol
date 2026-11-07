@@ -220,13 +220,18 @@ fn relationless_ephemeral_dependency_is_accepted_only_when_downstream_is_compile
     // Independently execute the compiled CTE as a pure read of the physical
     // source. No relation with the ephemeral producer's ID is created.
     let connection = duckdb::Connection::open_in_memory().unwrap();
-    connection.execute_batch(
-        "CREATE SCHEMA raw; CREATE TABLE raw.orders(k INTEGER);
-         INSERT INTO raw.orders VALUES (1), (1), (NULL), (0);"
-    ).unwrap();
+    connection
+        .execute_batch(
+            "CREATE SCHEMA raw; CREATE TABLE raw.orders(k INTEGER);
+         INSERT INTO raw.orders VALUES (1), (1), (NULL), (0);",
+        )
+        .unwrap();
     let mut statement = connection.prepare(INLINE_COMPILED).unwrap();
-    let actual = statement.query_map([], |row| row.get::<_, Option<i32>>(0))
-        .unwrap().collect::<Result<Vec<_>, _>>().unwrap();
+    let actual = statement
+        .query_map([], |row| row.get::<_, Option<i32>>(0))
+        .unwrap()
+        .collect::<Result<Vec<_>, _>>()
+        .unwrap();
     assert_eq!(actual, vec![Some(1), Some(1)]);
 
     value["nodes"]["model.task174.consumer"]["compiled_code"] = Value::Null;
@@ -588,7 +593,10 @@ fn all_twenty_adapter_cells_are_classified_and_canonical_filter_proofs_match() {
     )];
     let inline_source_bundle =
         analyze_configured_inputs_with_catalog(&inline_direct, &physical_catalog).unwrap();
-    assert_eq!(canonical_filter_domain(&inline_source_bundle), direct_domain);
+    assert_eq!(
+        canonical_filter_domain(&inline_source_bundle),
+        direct_domain
+    );
     let mut reviewed = BTreeSet::new();
 
     for cell in adapter_cells {
