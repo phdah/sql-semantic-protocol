@@ -733,3 +733,37 @@ fn each_frozen_variant_has_complete_independent_duckdb_source_and_terminal_oracl
         );
     }
 }
+
+
+#[test]
+fn dbt_unqualified_alias_with_two_physical_sources_fails_closed() {
+    let mut value = manifest_json();
+    value["sources"]["source.task175.archive.orders"] = json!({
+        "unique_id": "source.task175.archive.orders",
+        "resource_type": "source",
+        "relation_name": "archive.orders",
+        "columns": {"k": {"name": "k", "data_type": "INTEGER"}}
+    });
+    value["nodes"]["model.task175.filtered"]["compiled_code"] =
+        json!("SELECT k FROM orders WHERE k >= 1");
+    let manifest = parsed(&value);
+    let dialect = dialect_from_name("postgresql").unwrap();
+    let failure = analyze_dbt_manifest_with_schemas(&manifest, "postgresql", dialect.as_ref())
+        .expect_err("ambiguous source must not be selected from model dependencies");
+    assert!(failure.to_string().contains("ambiguous"));
+}
+
+#[cfg(feature = "odcs")]
+#[test]
+fn odcs_unqualified_alias_with_two_sources_reports_ambiguous_resolution() {
+    use sql_semantic_protocol::{parse_odcs_yaml, OdcsError};
+    let catalog = RelationCatalog::new(&["archive.orders", "raw.orders"]).unwrap();
+    let yaml = "apiVersion: v3.2.0\nkind: DataContract\nid: task175-ambiguous\nname: TASK-175\nversion: 1.0.0\nstatus: active\nschema:\n  - name: orders\n    physicalName: orders\n    properties:\n      - id: k\n        name: k\n        physicalType: INTEGER\n";
+    let error = parse_odcs_yaml(yaml, "postgresql", &catalog)
+        .expect_err("ODCS cannot infer one canonical physical source");
+    let OdcsError::RelationResolution { error, .. } = error else {
+        panic!("expected explicit ODCS relation resolution failure");
+    };
+    assert_eq!(error.reference(), "orders");
+    assert_eq!(error.candidates(), &["archive.orders", "raw.orders"]);
+}
