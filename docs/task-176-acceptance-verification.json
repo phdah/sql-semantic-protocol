@@ -1,0 +1,836 @@
+{
+  "owner": "TASK-176",
+  "parent": "TASK-87",
+  "pr": "https://github.com/phdah/sql-semantic-protocol/pull/195",
+  "freeze": "docs/task-176-acceptance-freeze.json",
+  "freeze_version": 2,
+  "original_freeze_archive": "docs/task-176-acceptance-freeze-v1.json",
+  "original_frozen_before_implementation": true,
+  "retrospective_correction_to_write_oracle": true,
+  "process_deviation": "Original frozen v1 incorrectly attached a read-filter oracle to the distinct write case. V2 corrects it with an independent write-case target/source/terminal matrix and retains the original snapshot. This cannot retroactively satisfy the preimplementation oracle-completeness rule.",
+  "code_head": "pending_final_head",
+  "ci_run": "pending_final_head",
+  "ci_jobs_expected": 9,
+  "ci_jobs_passed": "pending",
+  "original_ac_verified": [],
+  "original_ac_pending": [
+    1,
+    2,
+    3,
+    4,
+    5
+  ],
+  "mapped_parent_ac_reviewed": [],
+  "mandatory_cases": [
+    {
+      "id": "87-C176-P-table",
+      "verification": "pending_final_ci_and_review",
+      "source_and_terminal_oracle": "DuckDB complete bags",
+      "expected_classification": "exact_given_complete_typed_source",
+      "evidence": [
+        "tests/task_176_adapter_write_parity.rs::table_view_ephemeral_and_incremental_share_exact_read_facts_not_execution_claims",
+        "tests/task_176_adapter_write_parity.rs::direct_dbt_odcs_prove_identical_complete_read_bag_and_bounds",
+        "tests/task_176_adapter_write_parity.rs::native_duckdb_materialized_and_inline_outputs_match_the_complete_read_bag"
+      ]
+    },
+    {
+      "id": "87-C176-P-view",
+      "verification": "pending_final_ci_and_review",
+      "source_and_terminal_oracle": "DuckDB complete bags",
+      "expected_classification": "exact_given_complete_typed_source",
+      "evidence": [
+        "tests/task_176_adapter_write_parity.rs::table_view_ephemeral_and_incremental_share_exact_read_facts_not_execution_claims",
+        "tests/task_176_adapter_write_parity.rs::direct_dbt_odcs_prove_identical_complete_read_bag_and_bounds",
+        "tests/task_176_adapter_write_parity.rs::native_duckdb_materialized_and_inline_outputs_match_the_complete_read_bag"
+      ]
+    },
+    {
+      "id": "87-C176-P-ephemeral",
+      "verification": "pending_final_ci_and_review",
+      "source_and_terminal_oracle": "DuckDB complete bags",
+      "expected_classification": "exact_given_complete_typed_source",
+      "evidence": [
+        "tests/task_176_adapter_write_parity.rs::table_view_ephemeral_and_incremental_share_exact_read_facts_not_execution_claims",
+        "tests/task_176_adapter_write_parity.rs::direct_dbt_odcs_prove_identical_complete_read_bag_and_bounds",
+        "tests/task_176_adapter_write_parity.rs::native_duckdb_materialized_and_inline_outputs_match_the_complete_read_bag"
+      ]
+    },
+    {
+      "id": "87-C176-P-incremental",
+      "verification": "pending_final_ci_and_review",
+      "source_and_terminal_oracle": "DuckDB complete bags",
+      "expected_classification": "exact_given_complete_typed_source",
+      "evidence": [
+        "tests/task_176_adapter_write_parity.rs::table_view_ephemeral_and_incremental_share_exact_read_facts_not_execution_claims",
+        "tests/task_176_adapter_write_parity.rs::direct_dbt_odcs_prove_identical_complete_read_bag_and_bounds",
+        "tests/task_176_adapter_write_parity.rs::native_duckdb_materialized_and_inline_outputs_match_the_complete_read_bag"
+      ]
+    },
+    {
+      "id": "87-C176-P-write",
+      "verification": "pending_final_ci_and_review",
+      "source_and_terminal_oracle": "DuckDB complete bags",
+      "expected_classification": "exact_given_complete_typed_source",
+      "evidence": [
+        "tests/task_176_adapter_write_parity.rs::compiled_dbt_and_direct_sql_preserve_exact_merges_deletes_and_rejections",
+        "tests/task_176_adapter_write_parity.rs::odcs_and_dbt_catalogs_preserve_the_same_write_and_terminal_proof",
+        "tests/task_176_adapter_write_parity.rs::write_case_uses_the_actual_dml_oracle_not_the_read_filter_oracle"
+      ]
+    },
+    {
+      "id": "87-C176-N-null-unknown",
+      "verification": "pending_final_ci_and_review",
+      "source_and_terminal_oracle": "DuckDB complete bags",
+      "expected_classification": "exact_when_source_attested_plus_unknown_rejection",
+      "evidence": [
+        "tests/task_176_adapter_write_parity.rs::direct_dbt_odcs_prove_identical_complete_read_bag_and_bounds",
+        "tests/task_176_adapter_write_parity.rs::odcs_and_dbt_catalogs_preserve_the_same_write_and_terminal_proof"
+      ]
+    },
+    {
+      "id": "87-C176-N-unattested-write",
+      "verification": "pending_final_ci_and_review",
+      "source_and_terminal_oracle": "DuckDB complete bags",
+      "expected_classification": "execution_unattested",
+      "evidence": [
+        "tests/task_176_adapter_write_parity.rs::table_view_ephemeral_and_incremental_share_exact_read_facts_not_execution_claims",
+        "tests/task_176_adapter_write_parity.rs::compiled_dbt_and_direct_sql_preserve_exact_merges_deletes_and_rejections"
+      ]
+    }
+  ],
+  "conditional_cases": [
+    {
+      "id": "87-C176-N-vendor-session",
+      "owner": "TASK-176",
+      "review_disposition": "Do not promote a vendor/session or dbt incremental execution to native Exact without evidence; TASK-91 owns consumer release gate",
+      "verification": "pending_final_ci_and_review",
+      "evidence": [
+        "tests/task_176_adapter_write_parity.rs::impossible_transition_and_unattested_session_law_remain_distinct"
+      ]
+    }
+  ],
+  "dialect_cells": [
+    {
+      "id": "87-C176-P-table-generic",
+      "case_id": "87-C176-P-table",
+      "dialect": "generic",
+      "verification": "pending_final_ci",
+      "claim": "canonical portable SQL source and output range",
+      "native_engine": "not_attested",
+      "evidence": "tests/task_176_adapter_write_parity.rs::frozen_matrix_identifies_all_adapter_and_dialect_obligations"
+    },
+    {
+      "id": "87-C176-P-table-mysql",
+      "case_id": "87-C176-P-table",
+      "dialect": "mysql",
+      "verification": "pending_final_ci",
+      "claim": "canonical portable SQL source and output range",
+      "native_engine": "not_attested",
+      "evidence": "tests/task_176_adapter_write_parity.rs::frozen_matrix_identifies_all_adapter_and_dialect_obligations"
+    },
+    {
+      "id": "87-C176-P-table-postgresql",
+      "case_id": "87-C176-P-table",
+      "dialect": "postgresql",
+      "verification": "pending_final_ci",
+      "claim": "canonical portable SQL source and output range",
+      "native_engine": "not_attested",
+      "evidence": "tests/task_176_adapter_write_parity.rs::frozen_matrix_identifies_all_adapter_and_dialect_obligations"
+    },
+    {
+      "id": "87-C176-P-table-hive",
+      "case_id": "87-C176-P-table",
+      "dialect": "hive",
+      "verification": "pending_final_ci",
+      "claim": "canonical portable SQL source and output range",
+      "native_engine": "not_attested",
+      "evidence": "tests/task_176_adapter_write_parity.rs::frozen_matrix_identifies_all_adapter_and_dialect_obligations"
+    },
+    {
+      "id": "87-C176-P-table-sqlite",
+      "case_id": "87-C176-P-table",
+      "dialect": "sqlite",
+      "verification": "pending_final_ci",
+      "claim": "canonical portable SQL source and output range",
+      "native_engine": "not_attested",
+      "evidence": "tests/task_176_adapter_write_parity.rs::frozen_matrix_identifies_all_adapter_and_dialect_obligations"
+    },
+    {
+      "id": "87-C176-P-table-snowflake",
+      "case_id": "87-C176-P-table",
+      "dialect": "snowflake",
+      "verification": "pending_final_ci",
+      "claim": "canonical portable SQL source and output range",
+      "native_engine": "not_attested",
+      "evidence": "tests/task_176_adapter_write_parity.rs::frozen_matrix_identifies_all_adapter_and_dialect_obligations"
+    },
+    {
+      "id": "87-C176-P-table-redshift",
+      "case_id": "87-C176-P-table",
+      "dialect": "redshift",
+      "verification": "pending_final_ci",
+      "claim": "canonical portable SQL source and output range",
+      "native_engine": "not_attested",
+      "evidence": "tests/task_176_adapter_write_parity.rs::frozen_matrix_identifies_all_adapter_and_dialect_obligations"
+    },
+    {
+      "id": "87-C176-P-table-mssql",
+      "case_id": "87-C176-P-table",
+      "dialect": "mssql",
+      "verification": "pending_final_ci",
+      "claim": "canonical portable SQL source and output range",
+      "native_engine": "not_attested",
+      "evidence": "tests/task_176_adapter_write_parity.rs::frozen_matrix_identifies_all_adapter_and_dialect_obligations"
+    },
+    {
+      "id": "87-C176-P-table-clickhouse",
+      "case_id": "87-C176-P-table",
+      "dialect": "clickhouse",
+      "verification": "pending_final_ci",
+      "claim": "canonical portable SQL source and output range",
+      "native_engine": "not_attested",
+      "evidence": "tests/task_176_adapter_write_parity.rs::frozen_matrix_identifies_all_adapter_and_dialect_obligations"
+    },
+    {
+      "id": "87-C176-P-table-bigquery",
+      "case_id": "87-C176-P-table",
+      "dialect": "bigquery",
+      "verification": "pending_final_ci",
+      "claim": "canonical portable SQL source and output range",
+      "native_engine": "not_attested",
+      "evidence": "tests/task_176_adapter_write_parity.rs::frozen_matrix_identifies_all_adapter_and_dialect_obligations"
+    },
+    {
+      "id": "87-C176-P-table-ansi",
+      "case_id": "87-C176-P-table",
+      "dialect": "ansi",
+      "verification": "pending_final_ci",
+      "claim": "canonical portable SQL source and output range",
+      "native_engine": "not_attested",
+      "evidence": "tests/task_176_adapter_write_parity.rs::frozen_matrix_identifies_all_adapter_and_dialect_obligations"
+    },
+    {
+      "id": "87-C176-P-table-duckdb",
+      "case_id": "87-C176-P-table",
+      "dialect": "duckdb",
+      "verification": "pending_final_ci",
+      "claim": "canonical portable SQL source and output range",
+      "native_engine": "DuckDB oracle separately tested",
+      "evidence": "tests/task_176_adapter_write_parity.rs::frozen_matrix_identifies_all_adapter_and_dialect_obligations"
+    },
+    {
+      "id": "87-C176-P-table-databricks",
+      "case_id": "87-C176-P-table",
+      "dialect": "databricks",
+      "verification": "pending_final_ci",
+      "claim": "canonical portable SQL source and output range",
+      "native_engine": "not_attested",
+      "evidence": "tests/task_176_adapter_write_parity.rs::frozen_matrix_identifies_all_adapter_and_dialect_obligations"
+    },
+    {
+      "id": "87-C176-P-view-generic",
+      "case_id": "87-C176-P-view",
+      "dialect": "generic",
+      "verification": "pending_final_ci",
+      "claim": "canonical portable SQL source and output range",
+      "native_engine": "not_attested",
+      "evidence": "tests/task_176_adapter_write_parity.rs::frozen_matrix_identifies_all_adapter_and_dialect_obligations"
+    },
+    {
+      "id": "87-C176-P-view-mysql",
+      "case_id": "87-C176-P-view",
+      "dialect": "mysql",
+      "verification": "pending_final_ci",
+      "claim": "canonical portable SQL source and output range",
+      "native_engine": "not_attested",
+      "evidence": "tests/task_176_adapter_write_parity.rs::frozen_matrix_identifies_all_adapter_and_dialect_obligations"
+    },
+    {
+      "id": "87-C176-P-view-postgresql",
+      "case_id": "87-C176-P-view",
+      "dialect": "postgresql",
+      "verification": "pending_final_ci",
+      "claim": "canonical portable SQL source and output range",
+      "native_engine": "not_attested",
+      "evidence": "tests/task_176_adapter_write_parity.rs::frozen_matrix_identifies_all_adapter_and_dialect_obligations"
+    },
+    {
+      "id": "87-C176-P-view-hive",
+      "case_id": "87-C176-P-view",
+      "dialect": "hive",
+      "verification": "pending_final_ci",
+      "claim": "canonical portable SQL source and output range",
+      "native_engine": "not_attested",
+      "evidence": "tests/task_176_adapter_write_parity.rs::frozen_matrix_identifies_all_adapter_and_dialect_obligations"
+    },
+    {
+      "id": "87-C176-P-view-sqlite",
+      "case_id": "87-C176-P-view",
+      "dialect": "sqlite",
+      "verification": "pending_final_ci",
+      "claim": "canonical portable SQL source and output range",
+      "native_engine": "not_attested",
+      "evidence": "tests/task_176_adapter_write_parity.rs::frozen_matrix_identifies_all_adapter_and_dialect_obligations"
+    },
+    {
+      "id": "87-C176-P-view-snowflake",
+      "case_id": "87-C176-P-view",
+      "dialect": "snowflake",
+      "verification": "pending_final_ci",
+      "claim": "canonical portable SQL source and output range",
+      "native_engine": "not_attested",
+      "evidence": "tests/task_176_adapter_write_parity.rs::frozen_matrix_identifies_all_adapter_and_dialect_obligations"
+    },
+    {
+      "id": "87-C176-P-view-redshift",
+      "case_id": "87-C176-P-view",
+      "dialect": "redshift",
+      "verification": "pending_final_ci",
+      "claim": "canonical portable SQL source and output range",
+      "native_engine": "not_attested",
+      "evidence": "tests/task_176_adapter_write_parity.rs::frozen_matrix_identifies_all_adapter_and_dialect_obligations"
+    },
+    {
+      "id": "87-C176-P-view-mssql",
+      "case_id": "87-C176-P-view",
+      "dialect": "mssql",
+      "verification": "pending_final_ci",
+      "claim": "canonical portable SQL source and output range",
+      "native_engine": "not_attested",
+      "evidence": "tests/task_176_adapter_write_parity.rs::frozen_matrix_identifies_all_adapter_and_dialect_obligations"
+    },
+    {
+      "id": "87-C176-P-view-clickhouse",
+      "case_id": "87-C176-P-view",
+      "dialect": "clickhouse",
+      "verification": "pending_final_ci",
+      "claim": "canonical portable SQL source and output range",
+      "native_engine": "not_attested",
+      "evidence": "tests/task_176_adapter_write_parity.rs::frozen_matrix_identifies_all_adapter_and_dialect_obligations"
+    },
+    {
+      "id": "87-C176-P-view-bigquery",
+      "case_id": "87-C176-P-view",
+      "dialect": "bigquery",
+      "verification": "pending_final_ci",
+      "claim": "canonical portable SQL source and output range",
+      "native_engine": "not_attested",
+      "evidence": "tests/task_176_adapter_write_parity.rs::frozen_matrix_identifies_all_adapter_and_dialect_obligations"
+    },
+    {
+      "id": "87-C176-P-view-ansi",
+      "case_id": "87-C176-P-view",
+      "dialect": "ansi",
+      "verification": "pending_final_ci",
+      "claim": "canonical portable SQL source and output range",
+      "native_engine": "not_attested",
+      "evidence": "tests/task_176_adapter_write_parity.rs::frozen_matrix_identifies_all_adapter_and_dialect_obligations"
+    },
+    {
+      "id": "87-C176-P-view-duckdb",
+      "case_id": "87-C176-P-view",
+      "dialect": "duckdb",
+      "verification": "pending_final_ci",
+      "claim": "canonical portable SQL source and output range",
+      "native_engine": "DuckDB oracle separately tested",
+      "evidence": "tests/task_176_adapter_write_parity.rs::frozen_matrix_identifies_all_adapter_and_dialect_obligations"
+    },
+    {
+      "id": "87-C176-P-view-databricks",
+      "case_id": "87-C176-P-view",
+      "dialect": "databricks",
+      "verification": "pending_final_ci",
+      "claim": "canonical portable SQL source and output range",
+      "native_engine": "not_attested",
+      "evidence": "tests/task_176_adapter_write_parity.rs::frozen_matrix_identifies_all_adapter_and_dialect_obligations"
+    },
+    {
+      "id": "87-C176-P-ephemeral-generic",
+      "case_id": "87-C176-P-ephemeral",
+      "dialect": "generic",
+      "verification": "pending_final_ci",
+      "claim": "canonical portable SQL source and output range",
+      "native_engine": "not_attested",
+      "evidence": "tests/task_176_adapter_write_parity.rs::frozen_matrix_identifies_all_adapter_and_dialect_obligations"
+    },
+    {
+      "id": "87-C176-P-ephemeral-mysql",
+      "case_id": "87-C176-P-ephemeral",
+      "dialect": "mysql",
+      "verification": "pending_final_ci",
+      "claim": "canonical portable SQL source and output range",
+      "native_engine": "not_attested",
+      "evidence": "tests/task_176_adapter_write_parity.rs::frozen_matrix_identifies_all_adapter_and_dialect_obligations"
+    },
+    {
+      "id": "87-C176-P-ephemeral-postgresql",
+      "case_id": "87-C176-P-ephemeral",
+      "dialect": "postgresql",
+      "verification": "pending_final_ci",
+      "claim": "canonical portable SQL source and output range",
+      "native_engine": "not_attested",
+      "evidence": "tests/task_176_adapter_write_parity.rs::frozen_matrix_identifies_all_adapter_and_dialect_obligations"
+    },
+    {
+      "id": "87-C176-P-ephemeral-hive",
+      "case_id": "87-C176-P-ephemeral",
+      "dialect": "hive",
+      "verification": "pending_final_ci",
+      "claim": "canonical portable SQL source and output range",
+      "native_engine": "not_attested",
+      "evidence": "tests/task_176_adapter_write_parity.rs::frozen_matrix_identifies_all_adapter_and_dialect_obligations"
+    },
+    {
+      "id": "87-C176-P-ephemeral-sqlite",
+      "case_id": "87-C176-P-ephemeral",
+      "dialect": "sqlite",
+      "verification": "pending_final_ci",
+      "claim": "canonical portable SQL source and output range",
+      "native_engine": "not_attested",
+      "evidence": "tests/task_176_adapter_write_parity.rs::frozen_matrix_identifies_all_adapter_and_dialect_obligations"
+    },
+    {
+      "id": "87-C176-P-ephemeral-snowflake",
+      "case_id": "87-C176-P-ephemeral",
+      "dialect": "snowflake",
+      "verification": "pending_final_ci",
+      "claim": "canonical portable SQL source and output range",
+      "native_engine": "not_attested",
+      "evidence": "tests/task_176_adapter_write_parity.rs::frozen_matrix_identifies_all_adapter_and_dialect_obligations"
+    },
+    {
+      "id": "87-C176-P-ephemeral-redshift",
+      "case_id": "87-C176-P-ephemeral",
+      "dialect": "redshift",
+      "verification": "pending_final_ci",
+      "claim": "canonical portable SQL source and output range",
+      "native_engine": "not_attested",
+      "evidence": "tests/task_176_adapter_write_parity.rs::frozen_matrix_identifies_all_adapter_and_dialect_obligations"
+    },
+    {
+      "id": "87-C176-P-ephemeral-mssql",
+      "case_id": "87-C176-P-ephemeral",
+      "dialect": "mssql",
+      "verification": "pending_final_ci",
+      "claim": "canonical portable SQL source and output range",
+      "native_engine": "not_attested",
+      "evidence": "tests/task_176_adapter_write_parity.rs::frozen_matrix_identifies_all_adapter_and_dialect_obligations"
+    },
+    {
+      "id": "87-C176-P-ephemeral-clickhouse",
+      "case_id": "87-C176-P-ephemeral",
+      "dialect": "clickhouse",
+      "verification": "pending_final_ci",
+      "claim": "canonical portable SQL source and output range",
+      "native_engine": "not_attested",
+      "evidence": "tests/task_176_adapter_write_parity.rs::frozen_matrix_identifies_all_adapter_and_dialect_obligations"
+    },
+    {
+      "id": "87-C176-P-ephemeral-bigquery",
+      "case_id": "87-C176-P-ephemeral",
+      "dialect": "bigquery",
+      "verification": "pending_final_ci",
+      "claim": "canonical portable SQL source and output range",
+      "native_engine": "not_attested",
+      "evidence": "tests/task_176_adapter_write_parity.rs::frozen_matrix_identifies_all_adapter_and_dialect_obligations"
+    },
+    {
+      "id": "87-C176-P-ephemeral-ansi",
+      "case_id": "87-C176-P-ephemeral",
+      "dialect": "ansi",
+      "verification": "pending_final_ci",
+      "claim": "canonical portable SQL source and output range",
+      "native_engine": "not_attested",
+      "evidence": "tests/task_176_adapter_write_parity.rs::frozen_matrix_identifies_all_adapter_and_dialect_obligations"
+    },
+    {
+      "id": "87-C176-P-ephemeral-duckdb",
+      "case_id": "87-C176-P-ephemeral",
+      "dialect": "duckdb",
+      "verification": "pending_final_ci",
+      "claim": "canonical portable SQL source and output range",
+      "native_engine": "DuckDB oracle separately tested",
+      "evidence": "tests/task_176_adapter_write_parity.rs::frozen_matrix_identifies_all_adapter_and_dialect_obligations"
+    },
+    {
+      "id": "87-C176-P-ephemeral-databricks",
+      "case_id": "87-C176-P-ephemeral",
+      "dialect": "databricks",
+      "verification": "pending_final_ci",
+      "claim": "canonical portable SQL source and output range",
+      "native_engine": "not_attested",
+      "evidence": "tests/task_176_adapter_write_parity.rs::frozen_matrix_identifies_all_adapter_and_dialect_obligations"
+    },
+    {
+      "id": "87-C176-P-incremental-generic",
+      "case_id": "87-C176-P-incremental",
+      "dialect": "generic",
+      "verification": "pending_final_ci",
+      "claim": "canonical portable SQL source and output range",
+      "native_engine": "not_attested",
+      "evidence": "tests/task_176_adapter_write_parity.rs::frozen_matrix_identifies_all_adapter_and_dialect_obligations"
+    },
+    {
+      "id": "87-C176-P-incremental-mysql",
+      "case_id": "87-C176-P-incremental",
+      "dialect": "mysql",
+      "verification": "pending_final_ci",
+      "claim": "canonical portable SQL source and output range",
+      "native_engine": "not_attested",
+      "evidence": "tests/task_176_adapter_write_parity.rs::frozen_matrix_identifies_all_adapter_and_dialect_obligations"
+    },
+    {
+      "id": "87-C176-P-incremental-postgresql",
+      "case_id": "87-C176-P-incremental",
+      "dialect": "postgresql",
+      "verification": "pending_final_ci",
+      "claim": "canonical portable SQL source and output range",
+      "native_engine": "not_attested",
+      "evidence": "tests/task_176_adapter_write_parity.rs::frozen_matrix_identifies_all_adapter_and_dialect_obligations"
+    },
+    {
+      "id": "87-C176-P-incremental-hive",
+      "case_id": "87-C176-P-incremental",
+      "dialect": "hive",
+      "verification": "pending_final_ci",
+      "claim": "canonical portable SQL source and output range",
+      "native_engine": "not_attested",
+      "evidence": "tests/task_176_adapter_write_parity.rs::frozen_matrix_identifies_all_adapter_and_dialect_obligations"
+    },
+    {
+      "id": "87-C176-P-incremental-sqlite",
+      "case_id": "87-C176-P-incremental",
+      "dialect": "sqlite",
+      "verification": "pending_final_ci",
+      "claim": "canonical portable SQL source and output range",
+      "native_engine": "not_attested",
+      "evidence": "tests/task_176_adapter_write_parity.rs::frozen_matrix_identifies_all_adapter_and_dialect_obligations"
+    },
+    {
+      "id": "87-C176-P-incremental-snowflake",
+      "case_id": "87-C176-P-incremental",
+      "dialect": "snowflake",
+      "verification": "pending_final_ci",
+      "claim": "canonical portable SQL source and output range",
+      "native_engine": "not_attested",
+      "evidence": "tests/task_176_adapter_write_parity.rs::frozen_matrix_identifies_all_adapter_and_dialect_obligations"
+    },
+    {
+      "id": "87-C176-P-incremental-redshift",
+      "case_id": "87-C176-P-incremental",
+      "dialect": "redshift",
+      "verification": "pending_final_ci",
+      "claim": "canonical portable SQL source and output range",
+      "native_engine": "not_attested",
+      "evidence": "tests/task_176_adapter_write_parity.rs::frozen_matrix_identifies_all_adapter_and_dialect_obligations"
+    },
+    {
+      "id": "87-C176-P-incremental-mssql",
+      "case_id": "87-C176-P-incremental",
+      "dialect": "mssql",
+      "verification": "pending_final_ci",
+      "claim": "canonical portable SQL source and output range",
+      "native_engine": "not_attested",
+      "evidence": "tests/task_176_adapter_write_parity.rs::frozen_matrix_identifies_all_adapter_and_dialect_obligations"
+    },
+    {
+      "id": "87-C176-P-incremental-clickhouse",
+      "case_id": "87-C176-P-incremental",
+      "dialect": "clickhouse",
+      "verification": "pending_final_ci",
+      "claim": "canonical portable SQL source and output range",
+      "native_engine": "not_attested",
+      "evidence": "tests/task_176_adapter_write_parity.rs::frozen_matrix_identifies_all_adapter_and_dialect_obligations"
+    },
+    {
+      "id": "87-C176-P-incremental-bigquery",
+      "case_id": "87-C176-P-incremental",
+      "dialect": "bigquery",
+      "verification": "pending_final_ci",
+      "claim": "canonical portable SQL source and output range",
+      "native_engine": "not_attested",
+      "evidence": "tests/task_176_adapter_write_parity.rs::frozen_matrix_identifies_all_adapter_and_dialect_obligations"
+    },
+    {
+      "id": "87-C176-P-incremental-ansi",
+      "case_id": "87-C176-P-incremental",
+      "dialect": "ansi",
+      "verification": "pending_final_ci",
+      "claim": "canonical portable SQL source and output range",
+      "native_engine": "not_attested",
+      "evidence": "tests/task_176_adapter_write_parity.rs::frozen_matrix_identifies_all_adapter_and_dialect_obligations"
+    },
+    {
+      "id": "87-C176-P-incremental-duckdb",
+      "case_id": "87-C176-P-incremental",
+      "dialect": "duckdb",
+      "verification": "pending_final_ci",
+      "claim": "canonical portable SQL source and output range",
+      "native_engine": "DuckDB oracle separately tested",
+      "evidence": "tests/task_176_adapter_write_parity.rs::frozen_matrix_identifies_all_adapter_and_dialect_obligations"
+    },
+    {
+      "id": "87-C176-P-incremental-databricks",
+      "case_id": "87-C176-P-incremental",
+      "dialect": "databricks",
+      "verification": "pending_final_ci",
+      "claim": "canonical portable SQL source and output range",
+      "native_engine": "not_attested",
+      "evidence": "tests/task_176_adapter_write_parity.rs::frozen_matrix_identifies_all_adapter_and_dialect_obligations"
+    },
+    {
+      "id": "87-C176-P-write-generic",
+      "case_id": "87-C176-P-write",
+      "dialect": "generic",
+      "verification": "pending_final_ci",
+      "claim": "parser-supported canonical MERGE match or explicit parser-boundary rejection",
+      "native_engine": "not_attested",
+      "evidence": "tests/task_176_adapter_write_parity.rs::frozen_matrix_identifies_all_adapter_and_dialect_obligations"
+    },
+    {
+      "id": "87-C176-P-write-mysql",
+      "case_id": "87-C176-P-write",
+      "dialect": "mysql",
+      "verification": "pending_final_ci",
+      "claim": "parser-supported canonical MERGE match or explicit parser-boundary rejection",
+      "native_engine": "not_attested",
+      "evidence": "tests/task_176_adapter_write_parity.rs::frozen_matrix_identifies_all_adapter_and_dialect_obligations"
+    },
+    {
+      "id": "87-C176-P-write-postgresql",
+      "case_id": "87-C176-P-write",
+      "dialect": "postgresql",
+      "verification": "pending_final_ci",
+      "claim": "parser-supported canonical MERGE match or explicit parser-boundary rejection",
+      "native_engine": "not_attested",
+      "evidence": "tests/task_176_adapter_write_parity.rs::frozen_matrix_identifies_all_adapter_and_dialect_obligations"
+    },
+    {
+      "id": "87-C176-P-write-hive",
+      "case_id": "87-C176-P-write",
+      "dialect": "hive",
+      "verification": "pending_final_ci",
+      "claim": "parser-supported canonical MERGE match or explicit parser-boundary rejection",
+      "native_engine": "not_attested",
+      "evidence": "tests/task_176_adapter_write_parity.rs::frozen_matrix_identifies_all_adapter_and_dialect_obligations"
+    },
+    {
+      "id": "87-C176-P-write-sqlite",
+      "case_id": "87-C176-P-write",
+      "dialect": "sqlite",
+      "verification": "pending_final_ci",
+      "claim": "parser-supported canonical MERGE match or explicit parser-boundary rejection",
+      "native_engine": "not_attested",
+      "evidence": "tests/task_176_adapter_write_parity.rs::frozen_matrix_identifies_all_adapter_and_dialect_obligations"
+    },
+    {
+      "id": "87-C176-P-write-snowflake",
+      "case_id": "87-C176-P-write",
+      "dialect": "snowflake",
+      "verification": "pending_final_ci",
+      "claim": "parser-supported canonical MERGE match or explicit parser-boundary rejection",
+      "native_engine": "not_attested",
+      "evidence": "tests/task_176_adapter_write_parity.rs::frozen_matrix_identifies_all_adapter_and_dialect_obligations"
+    },
+    {
+      "id": "87-C176-P-write-redshift",
+      "case_id": "87-C176-P-write",
+      "dialect": "redshift",
+      "verification": "pending_final_ci",
+      "claim": "parser-supported canonical MERGE match or explicit parser-boundary rejection",
+      "native_engine": "not_attested",
+      "evidence": "tests/task_176_adapter_write_parity.rs::frozen_matrix_identifies_all_adapter_and_dialect_obligations"
+    },
+    {
+      "id": "87-C176-P-write-mssql",
+      "case_id": "87-C176-P-write",
+      "dialect": "mssql",
+      "verification": "pending_final_ci",
+      "claim": "parser-supported canonical MERGE match or explicit parser-boundary rejection",
+      "native_engine": "not_attested",
+      "evidence": "tests/task_176_adapter_write_parity.rs::frozen_matrix_identifies_all_adapter_and_dialect_obligations"
+    },
+    {
+      "id": "87-C176-P-write-clickhouse",
+      "case_id": "87-C176-P-write",
+      "dialect": "clickhouse",
+      "verification": "pending_final_ci",
+      "claim": "parser-supported canonical MERGE match or explicit parser-boundary rejection",
+      "native_engine": "not_attested",
+      "evidence": "tests/task_176_adapter_write_parity.rs::frozen_matrix_identifies_all_adapter_and_dialect_obligations"
+    },
+    {
+      "id": "87-C176-P-write-bigquery",
+      "case_id": "87-C176-P-write",
+      "dialect": "bigquery",
+      "verification": "pending_final_ci",
+      "claim": "parser-supported canonical MERGE match or explicit parser-boundary rejection",
+      "native_engine": "not_attested",
+      "evidence": "tests/task_176_adapter_write_parity.rs::frozen_matrix_identifies_all_adapter_and_dialect_obligations"
+    },
+    {
+      "id": "87-C176-P-write-ansi",
+      "case_id": "87-C176-P-write",
+      "dialect": "ansi",
+      "verification": "pending_final_ci",
+      "claim": "parser-supported canonical MERGE match or explicit parser-boundary rejection",
+      "native_engine": "not_attested",
+      "evidence": "tests/task_176_adapter_write_parity.rs::frozen_matrix_identifies_all_adapter_and_dialect_obligations"
+    },
+    {
+      "id": "87-C176-P-write-duckdb",
+      "case_id": "87-C176-P-write",
+      "dialect": "duckdb",
+      "verification": "pending_final_ci",
+      "claim": "parser-supported canonical MERGE match or explicit parser-boundary rejection",
+      "native_engine": "DuckDB oracle separately tested",
+      "evidence": "tests/task_176_adapter_write_parity.rs::frozen_matrix_identifies_all_adapter_and_dialect_obligations"
+    },
+    {
+      "id": "87-C176-P-write-databricks",
+      "case_id": "87-C176-P-write",
+      "dialect": "databricks",
+      "verification": "pending_final_ci",
+      "claim": "parser-supported canonical MERGE match or explicit parser-boundary rejection",
+      "native_engine": "not_attested",
+      "evidence": "tests/task_176_adapter_write_parity.rs::frozen_matrix_identifies_all_adapter_and_dialect_obligations"
+    }
+  ],
+  "adapter_cells": [
+    {
+      "id": "87-C176-P-table-direct_sql",
+      "case_id": "87-C176-P-table",
+      "adapter": "direct_sql",
+      "verification": "pending_final_ci",
+      "semantic": "canonical typed source and output/physical proof under complete supplied bag; distinct adapter provenance preserved",
+      "evidence": "tests/task_176_adapter_write_parity.rs::every_frozen_adapter_cell_exercises_canonical_source_and_terminal_facts"
+    },
+    {
+      "id": "87-C176-P-table-dbt_manifest",
+      "case_id": "87-C176-P-table",
+      "adapter": "dbt_manifest",
+      "verification": "pending_final_ci",
+      "semantic": "canonical typed source and output/physical proof under complete supplied bag; distinct adapter provenance preserved",
+      "evidence": "tests/task_176_adapter_write_parity.rs::every_frozen_adapter_cell_exercises_canonical_source_and_terminal_facts"
+    },
+    {
+      "id": "87-C176-P-table-odcs",
+      "case_id": "87-C176-P-table",
+      "adapter": "odcs",
+      "verification": "pending_final_ci",
+      "semantic": "canonical typed source and output/physical proof under complete supplied bag; distinct adapter provenance preserved",
+      "evidence": "tests/task_176_adapter_write_parity.rs::every_frozen_adapter_cell_exercises_canonical_source_and_terminal_facts"
+    },
+    {
+      "id": "87-C176-P-view-direct_sql",
+      "case_id": "87-C176-P-view",
+      "adapter": "direct_sql",
+      "verification": "pending_final_ci",
+      "semantic": "canonical typed source and output/physical proof under complete supplied bag; distinct adapter provenance preserved",
+      "evidence": "tests/task_176_adapter_write_parity.rs::every_frozen_adapter_cell_exercises_canonical_source_and_terminal_facts"
+    },
+    {
+      "id": "87-C176-P-view-dbt_manifest",
+      "case_id": "87-C176-P-view",
+      "adapter": "dbt_manifest",
+      "verification": "pending_final_ci",
+      "semantic": "canonical typed source and output/physical proof under complete supplied bag; distinct adapter provenance preserved",
+      "evidence": "tests/task_176_adapter_write_parity.rs::every_frozen_adapter_cell_exercises_canonical_source_and_terminal_facts"
+    },
+    {
+      "id": "87-C176-P-view-odcs",
+      "case_id": "87-C176-P-view",
+      "adapter": "odcs",
+      "verification": "pending_final_ci",
+      "semantic": "canonical typed source and output/physical proof under complete supplied bag; distinct adapter provenance preserved",
+      "evidence": "tests/task_176_adapter_write_parity.rs::every_frozen_adapter_cell_exercises_canonical_source_and_terminal_facts"
+    },
+    {
+      "id": "87-C176-P-ephemeral-direct_sql",
+      "case_id": "87-C176-P-ephemeral",
+      "adapter": "direct_sql",
+      "verification": "pending_final_ci",
+      "semantic": "canonical typed source and output/physical proof under complete supplied bag; distinct adapter provenance preserved",
+      "evidence": "tests/task_176_adapter_write_parity.rs::every_frozen_adapter_cell_exercises_canonical_source_and_terminal_facts"
+    },
+    {
+      "id": "87-C176-P-ephemeral-dbt_manifest",
+      "case_id": "87-C176-P-ephemeral",
+      "adapter": "dbt_manifest",
+      "verification": "pending_final_ci",
+      "semantic": "canonical typed source and output/physical proof under complete supplied bag; distinct adapter provenance preserved",
+      "evidence": "tests/task_176_adapter_write_parity.rs::every_frozen_adapter_cell_exercises_canonical_source_and_terminal_facts"
+    },
+    {
+      "id": "87-C176-P-ephemeral-odcs",
+      "case_id": "87-C176-P-ephemeral",
+      "adapter": "odcs",
+      "verification": "pending_final_ci",
+      "semantic": "canonical typed source and output/physical proof under complete supplied bag; distinct adapter provenance preserved",
+      "evidence": "tests/task_176_adapter_write_parity.rs::every_frozen_adapter_cell_exercises_canonical_source_and_terminal_facts"
+    },
+    {
+      "id": "87-C176-P-incremental-direct_sql",
+      "case_id": "87-C176-P-incremental",
+      "adapter": "direct_sql",
+      "verification": "pending_final_ci",
+      "semantic": "canonical typed source and output/physical proof under complete supplied bag; distinct adapter provenance preserved",
+      "evidence": "tests/task_176_adapter_write_parity.rs::every_frozen_adapter_cell_exercises_canonical_source_and_terminal_facts"
+    },
+    {
+      "id": "87-C176-P-incremental-dbt_manifest",
+      "case_id": "87-C176-P-incremental",
+      "adapter": "dbt_manifest",
+      "verification": "pending_final_ci",
+      "semantic": "canonical typed source and output/physical proof under complete supplied bag; distinct adapter provenance preserved",
+      "evidence": "tests/task_176_adapter_write_parity.rs::every_frozen_adapter_cell_exercises_canonical_source_and_terminal_facts"
+    },
+    {
+      "id": "87-C176-P-incremental-odcs",
+      "case_id": "87-C176-P-incremental",
+      "adapter": "odcs",
+      "verification": "pending_final_ci",
+      "semantic": "canonical typed source and output/physical proof under complete supplied bag; distinct adapter provenance preserved",
+      "evidence": "tests/task_176_adapter_write_parity.rs::every_frozen_adapter_cell_exercises_canonical_source_and_terminal_facts"
+    },
+    {
+      "id": "87-C176-P-write-direct_sql",
+      "case_id": "87-C176-P-write",
+      "adapter": "direct_sql",
+      "verification": "pending_final_ci",
+      "semantic": "canonical typed source and output/physical proof under complete supplied bag; distinct adapter provenance preserved",
+      "evidence": "tests/task_176_adapter_write_parity.rs::every_frozen_adapter_cell_exercises_canonical_source_and_terminal_facts"
+    },
+    {
+      "id": "87-C176-P-write-dbt_catalog",
+      "case_id": "87-C176-P-write",
+      "adapter": "dbt_catalog",
+      "verification": "pending_final_ci",
+      "semantic": "canonical typed source and output/physical proof under complete supplied bag; distinct adapter provenance preserved",
+      "evidence": "tests/task_176_adapter_write_parity.rs::every_frozen_adapter_cell_exercises_canonical_source_and_terminal_facts"
+    },
+    {
+      "id": "87-C176-P-write-odcs",
+      "case_id": "87-C176-P-write",
+      "adapter": "odcs",
+      "verification": "pending_final_ci",
+      "semantic": "canonical typed source and output/physical proof under complete supplied bag; distinct adapter provenance preserved",
+      "evidence": "tests/task_176_adapter_write_parity.rs::every_frozen_adapter_cell_exercises_canonical_source_and_terminal_facts"
+    }
+  ],
+  "pinned_consumer_disposition": {
+    "repository": "phdah/sql-tdg",
+    "cargo_requirement": "sql-semantic-protocol 2.0.3; default-features=false",
+    "this_pr_changes_public_runtime_or_wire_contract": false,
+    "relevant_current_consumer_tests": "cannot exercise unreleased TASK-176 adapter-only tests against pinned published 2.0.3",
+    "v3_gate": "TASK-91 remains separate; do not claim consumer v3 signed off"
+  },
+  "review": {
+    "standards_axis": "pending",
+    "spec_axis": "pending",
+    "independent_second_human": false,
+    "owner_directed_review_exception": "not yet recorded"
+  },
+  "parent_closed": false,
+  "release_approved": false
+}
