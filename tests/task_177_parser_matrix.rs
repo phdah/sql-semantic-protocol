@@ -14,6 +14,7 @@ const CASES: &str = include_str!("../docs/task-177-parser-samples.json");
 const COVERAGE: &str = include_str!("../docs/coverage-manifest.json");
 const SNAPSHOT: &str = include_str!("../docs/task-177-parser-snapshot.json");
 const BOUNDARIES: &str = include_str!("../docs/task-177-parser-boundaries.json");
+const ANALYSIS_BOUNDARIES: &str = include_str!("../docs/task-177-analysis-boundaries.json");
 
 fn parse(source: &str) -> Value {
     serde_json::from_str(source).expect("valid versioned JSON")
@@ -247,4 +248,46 @@ fn canonical_public_api_analysis_has_a_fixed_fail_closed_dialect_boundary_matrix
         );
     }
     assert_eq!(snapshot["canonical_semantics_certified"], false);
+}
+
+#[test]
+fn every_canonical_unsupported_path_has_a_named_blocking_semantic_owner() {
+    let snapshot = parse(SNAPSHOT);
+    let examples = parse(CASES);
+    let boundaries = parse(ANALYSIS_BOUNDARIES);
+    assert_eq!(boundaries["owner"], "TASK-177");
+    assert_eq!(boundaries["cell_count"], 116);
+    assert_eq!(boundaries["affected_sample_count"], 10);
+
+    let dialects = rows(&snapshot, "dialects");
+    let mut required = BTreeSet::new();
+    for (case_id, mask) in snapshot["canonical_analysis_matrix"]
+        .as_object()
+        .expect("fixed canonical matrix")
+    {
+        let mask = mask.as_str().expect("classification mask");
+        for (position, marker) in mask.chars().enumerate() {
+            if marker == 'U' {
+                let dialect = dialects[position].as_str().expect("dialect name");
+                required.insert(format!("{case_id}-{dialect}"));
+            }
+        }
+    }
+
+    let mut actual = BTreeSet::new();
+    for cell in rows(&boundaries, "cells") {
+        let id = field(cell, "id");
+        assert!(actual.insert(id.to_owned()), "duplicate unsupported cell");
+        assert_eq!(cell["classification"], "canonical_explicit_unsupported");
+        assert_eq!(cell["release_disposition"], "blocking_not_approved_residual");
+        assert_eq!(cell["vendor_runtime"], "not_certified");
+        assert!(!field(cell, "reason").is_empty());
+        let sample = rows(&examples, "cases")
+            .iter()
+            .find(|case| case["id"] == cell["case_id"])
+            .expect("unsupported cell source SQL");
+        assert_eq!(cell["sql"], sample["sql"]);
+        assert_eq!(cell["owner"], sample["semantic_owner"]);
+    }
+    assert_eq!(actual, required, "lost explicit Unsupported semantic owner");
 }
