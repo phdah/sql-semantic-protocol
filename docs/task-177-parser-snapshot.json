@@ -278,5 +278,8 @@
   "observed_from": "https://github.com/phdah/sql-semantic-protocol/actions/runs/42414789070",
   "parser_version": "sqlparser 0.58 (Cargo.toml)",
   "parser_boundary": "sqlparser::Parser::parse_sql; P=one or more parsed AST statements, R=parse rejected or empty",
-  "review_policy": "A parser result is not proof of canonical equivalence, native vendor behavior, physical source feasibility or complete variant semantics."
+  "review_policy": "A parser result is not proof of canonical equivalence, native vendor behavior, physical source feasibility or complete variant semantics.",
+  "canonical_analysis_matrix": {},
+  "canonical_analysis_status": "pending_independent_ci_red_green_capture",
+  "public_api_classification": "R=parser rejection, E=public analysis error, U=explicit unsupported statement, A=returned protocol (may contain Unknown domains); none certifies exact semantics"
 }
