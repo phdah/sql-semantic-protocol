@@ -7,7 +7,7 @@
 use std::collections::{BTreeMap, BTreeSet};
 
 use serde_json::Value;
-use sql_semantic_protocol::dialect_from_name;
+use sql_semantic_protocol::{analyze_sql, dialect_from_name, ProtocolStatement};
 use sqlparser::parser::Parser;
 
 const CASES: &str = include_str!("../docs/task-177-parser-samples.json");
@@ -182,4 +182,68 @@ fn every_rejected_sql_sample_has_an_explicit_reviewable_parser_boundary() {
         assert!(!field(boundary, "reason").is_empty());
     }
     assert_eq!(reviewed, rejected, "a parser rejection lost its owner");
+}
+
+#[test]
+fn canonical_public_api_analysis_has_a_fixed_fail_closed_dialect_boundary_matrix() {
+    let examples = parse(CASES);
+    let snapshot = parse(SNAPSHOT);
+    let mut observed = BTreeMap::new();
+
+    for case in rows(&examples, "cases") {
+        let id = field(case, "id");
+        let sql = field(case, "sql");
+        let parser_mask = snapshot["matrix"][id].as_str().expect("pinned parser row");
+        let mut classes = String::new();
+        for (position, name) in rows(&examples, "dialects").iter().enumerate() {
+            let dialect_name = name.as_str().expect("named dialect");
+            let dialect = dialect_from_name(dialect_name).expect("public parser dialect");
+            let class = if parser_mask.as_bytes()[position] == b'R' {
+                'R'
+            } else {
+                match analyze_sql(sql, dialect_name, dialect.as_ref()) {
+                    Err(_) => 'E',
+                    Ok(protocol)
+                        if protocol
+                            .statements()
+                            .iter()
+                            .any(|statement| matches!(statement, ProtocolStatement::Unsupported(_))) =>
+                    {
+                        'U'
+                    }
+                    Ok(_) => 'A',
+                }
+            };
+            classes.push(class);
+        }
+        observed.insert(id.to_owned(), classes);
+    }
+
+    let expected = snapshot["canonical_analysis_matrix"]
+        .as_object()
+        .expect("frozen canonical analysis boundary matrix");
+    if expected.is_empty() {
+        panic!(
+            "TASK177_CANONICAL_MATRIX={}",
+            serde_json::to_string(&observed).expect("serializable analysis classification")
+        );
+    }
+    assert_eq!(observed.len(), 251);
+    assert_eq!(expected.len(), 251);
+    for (id, mask) in observed {
+        let pinned = expected
+            .get(&id)
+            .and_then(Value::as_str)
+            .expect("complete fixed analysis mask");
+        assert_eq!(pinned.len(), 13, "{id}: incomplete analysis matrix");
+        assert!(
+            pinned.chars().all(|status| matches!(status, 'R' | 'E' | 'U' | 'A')),
+            "{id}: unsupported evidence status"
+        );
+        assert_eq!(
+            mask, pinned,
+            "{id}: public analysis path changed; inspect exact outcome and boundary before updating"
+        );
+    }
+    assert_eq!(snapshot["canonical_semantics_certified"], false);
 }
