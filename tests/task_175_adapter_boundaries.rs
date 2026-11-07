@@ -90,9 +90,9 @@ fn relationship_test(to: &str) -> Value {
     })
 }
 
-fn constraints<'a>(
-    manifest: &'a sql_semantic_protocol::DbtManifest,
-) -> &'a sql_semantic_protocol::RelationConstraintSet {
+fn constraints(
+    manifest: &sql_semantic_protocol::DbtManifest,
+) -> &sql_semantic_protocol::RelationConstraintSet {
     manifest
         .relation_constraints()
         .iter()
