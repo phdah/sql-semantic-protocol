@@ -329,6 +329,101 @@ fn direct_dbt_odcs_prove_identical_complete_read_bag_and_bounds() {
     );
 }
 
+#[test]
+fn native_duckdb_materialized_and_inline_outputs_match_the_complete_read_bag() {
+    let connection = duckdb::Connection::open_in_memory().unwrap();
+    connection.execute_batch(
+        "CREATE SCHEMA raw; CREATE TABLE raw.orders(k INTEGER);
+         INSERT INTO raw.orders VALUES (1), (1), (NULL), (0);
+         CREATE TABLE task176_table AS SELECT k FROM raw.orders WHERE k >= 1;
+         CREATE VIEW task176_view AS SELECT k FROM raw.orders WHERE k >= 1;",
+    ).unwrap();
+    let values = |sql: &str| {
+        let mut statement = connection.prepare(sql).unwrap();
+        statement.query_map([], |row| row.get::<_, Option<i32>>(0))
+            .unwrap().collect::<Result<Vec<_>, _>>().unwrap()
+    };
+    for sql in [
+        "SELECT k FROM task176_table ORDER BY k",
+        "SELECT k FROM task176_view ORDER BY k",
+        "WITH inline_model AS (SELECT k FROM raw.orders WHERE k >= 1) SELECT k FROM inline_model ORDER BY k",
+        "SELECT k FROM raw.orders WHERE k >= 1 ORDER BY k",
+    ] {
+        assert_eq!(values(sql), vec![Some(1), Some(1)], "{sql}");
+    }
+}
+
+#[cfg(feature = "odcs")]
+#[test]
+fn canonical_source_constraints_match_without_inventing_adapter_enforcement() {
+    use sql_semantic_protocol::{
+        ConstraintEnforcement, ConstraintSourceKind, RelationConstraint, RelationConstraintSet,
+    };
+
+    let catalog = RelationCatalog::from_schemas(&[RelationSchema::new(
+        "target",
+        vec![
+            SchemaColumn::from_sql_type("id", "INTEGER", "duckdb").unwrap(),
+            SchemaColumn::from_sql_type("score", "INTEGER", "duckdb").unwrap(),
+        ],
+    ).unwrap()]).unwrap();
+    let dialect = dialect_from_name("duckdb").unwrap();
+    let ddl = analyze_inputs(
+        &[SqlInput::inline(
+            "CREATE TABLE target(id INTEGER PRIMARY KEY,score INTEGER NOT NULL CHECK(score IN (7,9)))",
+        )],
+        "duckdb", dialect.as_ref(),
+    ).unwrap();
+    let odcs = sql_semantic_protocol::parse_odcs_yaml(
+        "apiVersion: v3.2.0\nkind: DataContract\nid: task176-constraints\nname: TASK-176 constraints\nversion: 1.0.0\nstatus: active\nschema:\n  - name: target\n    properties:\n      - name: id\n        physicalType: INTEGER\n        primaryKey: true\n      - name: score\n        physicalType: INTEGER\n        required: true\n        enum: [7, 9]\n",
+        "duckdb", &catalog,
+    ).unwrap();
+    let mut manifest: Value =
+        serde_json::from_str(include_str!("fixtures/dbt/manifest-v12.json")).unwrap();
+    manifest["sources"]["source.demo.orders"]["relation_name"] = json!("target");
+    manifest["sources"]["source.demo.orders"]["columns"] = json!({
+        "id": {"name":"id", "data_type":"INTEGER"},
+        "score": {"name":"score", "data_type":"INTEGER"}
+    });
+    manifest["sources"]["source.demo.orders"]["constraints"] = json!([
+        {"type":"primary_key", "columns":["id"]},
+        {"type":"not_null", "columns":["score"]},
+        {"type":"check", "expression":"score IN (7,9)"}
+    ]);
+    let dbt = parse_dbt_manifest(&manifest.to_string()).unwrap();
+    let find = |sets: &[RelationConstraintSet]| {
+        sets.iter().find(|set| set.relation() == "target").unwrap()
+    };
+    let sql_set = find(ddl.relation_constraints());
+    let odcs_set = find(odcs.relation_constraints());
+    let dbt_set = find(dbt.relation_constraints());
+    let facts = |set: &RelationConstraintSet| {
+        set.constraints().iter().map(|constraint| match constraint {
+            RelationConstraint::PrimaryKey(key) => format!("pk:{}", key.columns().join(",")),
+            RelationConstraint::NotNull(rule) => format!("required:{}", rule.column()),
+            RelationConstraint::AcceptedValues(rule) => {
+                format!("accepted:{}:{:?}", rule.column(), rule.values())
+            }
+            other => format!("unexpected:{other:?}"),
+        }).collect::<BTreeSet<_>>()
+    };
+    let canonical = facts(sql_set);
+    assert_eq!(canonical.len(), 3, "all typed constraints should remain canonical");
+    assert_eq!(facts(dbt_set), canonical);
+    assert_eq!(facts(odcs_set), canonical);
+    for (set, source) in [
+        (dbt_set, ConstraintSourceKind::DbtConstraint),
+        (odcs_set, ConstraintSourceKind::ExternalMetadata),
+    ] {
+        for constraint in set.constraints() {
+            assert!(constraint.evidence().iter().any(|evidence| {
+                evidence.enforcement() == ConstraintEnforcement::Unknown
+                    && evidence.provenance().source_kind() == source
+            }));
+        }
+    }
+}
+
 fn direct_write_catalog() -> RelationCatalog {
     RelationCatalog::from_schemas(
         &["t", "s"]
