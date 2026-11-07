@@ -10,7 +10,14 @@ The [versioned TASK-177 inventory](task-177-acceptance-freeze.json) records ever
 one of the 251 TASK-66 variants against all 13 exposed parsing dialects,
 for 3,263 explicit cells. It preserves **156 fixture-tested**, **105
 representative-only** and **3,002 unverified** cells from exact variant-level
-evidence without inheriting a feature-level sample. The public-API
+evidence without inheriting a feature-level sample. A separate, now pinned
+[251-case SQL sample suite](task-177-parser-samples.json) and
+[3,263-cell observed parser snapshot](task-177-parser-snapshot.json) classify
+**3,208 parsed** and **55 rejected** exact SQL examples. All rejected pairs
+retain their [12 named boundary families](task-177-parser-boundaries.json)
+with owner and pending review disposition. None of these parser results
+proves variant-wide semantics or changes the original release-blocking
+evidence baseline. The public-API
 [contract test](../tests/task_177_dialect_inventory.rs) guards the complete
 cross-product and compares two named portable SQL fixtures against closed-world
 DuckDB TRUE, NOT TRUE and UNKNOWN bags.
