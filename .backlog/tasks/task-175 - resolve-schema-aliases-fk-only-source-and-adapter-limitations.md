@@ -1,10 +1,10 @@
 ---
 id: TASK-175
 title: Resolve schema aliases FK-only source and adapter limitations
-status: To Do
+status: In Progress
 assignee: []
 created_date: '2026-10-17'
-updated_date: '2026-10-17'
+updated_date: '2026-11-07'
 labels: []
 milestone: m-3
 dependencies:
@@ -43,3 +43,8 @@ type: feature
 ## Next
 
 Next: [TASK-176](task-176%20-%20certify-sql-dbt-odcs-paired-canonical-parity-across-writes.md), only after completion and merge.
+
+## Implementation (2026-11-07)
+
+- Acceptance matrix frozen before semantic changes: `docs/task-175-acceptance-freeze.json` v1, registered in `docs/coverage-manifest.json`.
+- TASK-87 parent and TASK-91 release gates stay open; mandatory CI and review are not preapproved.
