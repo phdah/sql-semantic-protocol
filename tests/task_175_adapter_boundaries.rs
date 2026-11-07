@@ -685,3 +685,51 @@ fn canonical_fk_only_primary_key_has_sql_dbt_and_odcs_fact_parity() {
             if key.evidence().iter().all(|e| e.enforcement() == ConstraintEnforcement::Unknown)
         )));
 }
+
+
+#[test]
+fn each_frozen_variant_has_complete_independent_duckdb_source_and_terminal_oracle() {
+    let freeze: Value =
+        serde_json::from_str(include_str!("../docs/task-175-acceptance-freeze.json")).unwrap();
+    for case in freeze["cases"].as_array().unwrap() {
+        let id = case["id"].as_str().unwrap();
+        let conn = duckdb::Connection::open_in_memory().unwrap();
+        conn.execute_batch(
+            "CREATE SCHEMA raw;
+             CREATE TABLE raw.orders(k INTEGER);
+             INSERT INTO raw.orders VALUES (1),(1),(NULL),(0);",
+        ).unwrap();
+        let values = |sql: &str| {
+            let mut stmt = conn.prepare(sql).unwrap();
+            stmt.query_map([], |row| row.get::<_, Option<i32>>(0))
+                .unwrap()
+                .collect::<Result<Vec<_>, _>>()
+                .unwrap()
+        };
+        assert_eq!(
+            json!(values("SELECT k FROM raw.orders ORDER BY rowid")),
+            case["oracle"]["source"],
+            "{id} physical source rows must match independently executed oracle",
+        );
+        let terminal_sql = if id == "87-C175-P-quoted-qualified" {
+            case["sql"].as_str().unwrap()
+        } else {
+            FILTER
+        };
+        assert_eq!(
+            json!(values(terminal_sql)),
+            case["oracle"]["terminal"],
+            "{id} full terminal bag",
+        );
+        assert_eq!(
+            json!(values("SELECT k FROM raw.orders WHERE NOT (k >= 1)")),
+            json!([0]),
+            "{id} FALSE source row",
+        );
+        assert_eq!(
+            json!(values("SELECT k FROM raw.orders WHERE (k >= 1) IS NULL")),
+            json!([null]),
+            "{id} UNKNOWN source row",
+        );
+    }
+}
