@@ -684,8 +684,7 @@ fn write_proof(
     );
     assert_eq!(read.surviving_source_ordinals, [0, 1]);
     assert_eq!(read.rejected_source_ordinals, [2, 3]);
-    let ComposedSemantics::Resolved(terminal) = bundles[2].layers()[0].composed_semantics()
-    else {
+    let ComposedSemantics::Resolved(terminal) = bundles[2].layers()[0].composed_semantics() else {
         panic!("write terminal must expose canonical resolved output bounds");
     };
     let ValueDomain::Ranges(ranges) = terminal.output().columns()[1].domain() else {
