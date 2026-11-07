@@ -33,4 +33,4 @@ The original preimplementation v1 inventory is retained as `docs/task-176-accept
 
 ## Integration state
 
-Pending final-head CI, recorded review, and completion-state reconciliation. This child cannot independently close TASK-87 or TASK-91.
+The implementation-head CI completed 9/9 jobs at `52f65e8674213c53d1ce1c20cb3ebc4cbe308d45`: https://github.com/phdah/sql-semantic-protocol/actions/runs/42397057115. A standards/spec two-axis same-account review is recorded at https://github.com/phdah/sql-semantic-protocol/pull/195#pullrequestreview-5814037915. The child is technically signed off with disclosed freeze and independent-human review exceptions; the final metadata-head CI remains an integration check. TASK-87 and TASK-91 are not closed.
