@@ -31,19 +31,25 @@
     "sql_cases": "docs/task-177-parser-samples.json",
     "parser_snapshot": "docs/task-177-parser-snapshot.json",
     "explicit_sql_cases": 251,
-    "snapshot_status": "pending_red_green_capture",
+    "snapshot_status": "frozen_from_red_green_ci_observation_pending_final_head",
     "parser_snapshot_cells": 3263,
     "test_sources": [
       "tests/task_177_dialect_inventory.rs",
       "tests/task_177_parser_matrix.rs"
     ],
     "original_ac_status": {
-      "1": "in_progress",
+      "1": "in_progress:251_sql_samples_3263_fixed_parser_cells_but_typed_oracles_missing",
       "2": "unverified_full_semantic_matrix",
       "3": "two_goldens_verified_but_remaining_oracles_missing",
-      "4": "full_parser_snapshot_pending;adapter_parity_only_partial",
-      "5": "full_ci_and_independent_signoff_pending"
-    }
+      "4": "parser_boundary_snapshot_fixed;55_rejections_review_pending;full_canonical_adapter_parity_not_certified",
+      "5": "final_head_ci_and_independent_signoff_pending"
+    },
+    "parser_observed": {
+      "parsed": 3208,
+      "parse_rejected": 55
+    },
+    "parser_boundary_register": "docs/task-177-parser-boundaries.json",
+    "parser_rejected_sample_variants": 12
   },
   "task_176_paired_adapter_write_acceptance": {
     "owner": "TASK-176",
