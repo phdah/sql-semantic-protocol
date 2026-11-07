@@ -1,4 +1,57 @@
 {
+  "task_176_paired_adapter_write_acceptance": {
+    "owner": "TASK-176",
+    "parent": "TASK-87",
+    "status": "done_bounded_owner_directed_review_exception",
+    "freeze": "docs/task-176-acceptance-freeze.json",
+    "freeze_version": 2,
+    "fixture_ids": [
+      "87-C176-P",
+      "87-C176-N"
+    ],
+    "mandatory_cases": 7,
+    "conditional_cases": 1,
+    "parser_cells": 65,
+    "adapter_cells": 15,
+    "public_api_oracles": [
+      "tests/task_176_adapter_write_parity.rs"
+    ],
+    "mandatory_verified": true,
+    "independent_review_verified": false,
+    "full_ci_verified": true,
+    "parent_closed": false,
+    "release_approved": false,
+    "original_child_ac": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "original_parent_ac": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+    ],
+    "archive": "docs/task-176-acceptance-freeze-v1.json",
+    "acceptance_verification": "docs/task-176-acceptance-verification.json",
+    "acceptance_audit": "docs/task-176-acceptance-audit.md",
+    "child_signed_off": true,
+    "all_13_parser_dialects_verified": true,
+    "adapter_parity_verified": true,
+    "native_duckdb_verified": true,
+    "code_head": "52f65e8674213c53d1ce1c20cb3ebc4cbe308d45",
+    "implementation_ci_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/42397057115",
+    "implementation_ci_jobs_passed": "9/9",
+    "two_axis_same_account_review_verified": true,
+    "same_account_review_url": "https://github.com/phdah/sql-semantic-protocol/pull/195#pullrequestreview-5814037915",
+    "owner_directed_review_process_exception": true,
+    "original_v1_write_oracle_process_deviation": true,
+    "pinned_consumer_disposition": "not_applicable_to_test_only_changes; published_2.0.3_consumer_pin; TASK-91_remains_open"
+  },
   "task_175_schema_fk_acceptance": {
     "owner": "TASK-175",
     "parent": "TASK-87",
