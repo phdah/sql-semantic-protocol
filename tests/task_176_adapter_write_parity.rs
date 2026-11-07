@@ -228,9 +228,8 @@ fn frozen_matrix_identifies_all_adapter_and_dialect_obligations() {
         if !is_write {
             assert_lower_bound(&domain(&actual.unwrap()));
         } else {
-            // AST variants that parse the shared MERGE must preserve the same
-            // canonical write contract. Parser rejection is a named boundary,
-            // not a native vendor execution proof.
+            // Shared MERGE syntax is canonical across all 13 parser dialects;
+            // only independent DuckDB engine execution is attested.
             let duckdb = dialect_from_name("duckdb").unwrap();
             let reference = analyze_configured_inputs_with_catalog(
                 &[ConfiguredSqlInput::new(
@@ -242,24 +241,18 @@ fn frozen_matrix_identifies_all_adapter_and_dialect_obligations() {
                 &write_catalog,
             )
             .unwrap();
-            match actual {
-                Ok(parsed) => {
-                    let canonical: Value = serde_json::from_str(&to_bundle_json(&parsed)).unwrap();
-                    let expected: Value =
-                        serde_json::from_str(&to_bundle_json(&reference)).unwrap();
-                    assert_eq!(
-                        canonical["inputs"][0]["statements"][0]["write"],
-                        expected["inputs"][0]["statements"][0]["write"],
-                        "{id}: parser-supported MERGE cannot change canonical write semantics"
-                    );
-                }
-                Err(error) => {
-                    assert!(
-                        error.to_string().contains("SQL parse error"),
-                        "{id}: parser boundary must be explicit: {error}"
-                    );
-                }
-            }
+            let parsed = actual.unwrap_or_else(|error| {
+                panic!("{id}: shared MERGE must parse and analyze canonically: {error}")
+            });
+            let canonical: Value = serde_json::from_str(&to_bundle_json(&parsed)).unwrap();
+            let expected: Value = serde_json::from_str(&to_bundle_json(&reference)).unwrap();
+            let expected_write = &expected["inputs"][0]["statements"][0]["write"];
+            assert!(expected_write.is_object(), "{id}: reference must emit a real write");
+            assert_eq!(
+                canonical["inputs"][0]["statements"][0]["write"],
+                *expected_write,
+                "{id}: shared MERGE must preserve the canonical write contract"
+            );
         }
     }
     assert_eq!(ids.len(), 65);
