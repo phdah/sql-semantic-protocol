@@ -180,7 +180,10 @@ fn frozen_matrix_identifies_all_adapter_and_dialect_obligations() {
         serde_json::from_str(include_str!("../docs/task-176-acceptance-freeze.json")).unwrap();
     assert_eq!(freeze["version"], 2);
     assert_eq!(freeze["archive"], "docs/task-176-acceptance-freeze-v1.json");
-    assert!(freeze["process_deviation"].as_str().unwrap().contains("write oracle"));
+    assert!(freeze["process_deviation"]
+        .as_str()
+        .unwrap()
+        .contains("write oracle"));
     assert_eq!(freeze["owner"], "TASK-176");
     assert_eq!(freeze["frozen_before_implementation"], true);
     assert_eq!(freeze["fixture_ids"], json!(["87-C176-P", "87-C176-N"]));
@@ -234,8 +237,7 @@ fn frozen_matrix_identifies_all_adapter_and_dialect_obligations() {
             .unwrap();
             match actual {
                 Ok(parsed) => {
-                    let canonical: Value =
-                        serde_json::from_str(&to_bundle_json(&parsed)).unwrap();
+                    let canonical: Value = serde_json::from_str(&to_bundle_json(&parsed)).unwrap();
                     let expected: Value =
                         serde_json::from_str(&to_bundle_json(&reference)).unwrap();
                     assert_eq!(
@@ -801,7 +803,10 @@ fn every_frozen_adapter_cell_exercises_canonical_source_and_terminal_facts() {
                 "direct_sql" => read_proof(&direct_read_catalog()),
                 "dbt_manifest" => {
                     let (catalog, bundle) = dbt_read_catalog(kind, relation);
-                    assert_eq!(bundle.producer_evidence()[0].execution(), ProducerExecution::Unattested);
+                    assert_eq!(
+                        bundle.producer_evidence()[0].execution(),
+                        ProducerExecution::Unattested
+                    );
                     read_proof(&catalog)
                 }
                 #[cfg(feature = "odcs")]
@@ -818,33 +823,58 @@ fn every_frozen_adapter_cell_exercises_canonical_source_and_terminal_facts() {
     #[cfg(feature = "odcs")]
     assert_eq!(checked.len(), 15);
     #[cfg(not(feature = "odcs"))]
-    assert_eq!(checked.len(), 15, "all disabled ODCS cases are explicitly classified");
+    assert_eq!(
+        checked.len(),
+        15,
+        "all disabled ODCS cases are explicitly classified"
+    );
 }
 
 #[test]
 fn write_case_uses_the_actual_dml_oracle_not_the_read_filter_oracle() {
     let freeze: Value =
         serde_json::from_str(include_str!("../docs/task-176-acceptance-freeze.json")).unwrap();
-    let write = freeze["cases"].as_array().unwrap().iter()
-        .find(|case| case["id"] == "87-C176-P-write").unwrap();
+    let write = freeze["cases"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|case| case["id"] == "87-C176-P-write")
+        .unwrap();
     let oracle = &write["oracle"];
     assert_eq!(oracle["source"]["relation"], "t");
-    assert_eq!(oracle["source"]["rows"], json!([[1, 10], [2, null], [3, 99], [4, 10], [5, null]]));
+    assert_eq!(
+        oracle["source"]["rows"],
+        json!([[1, 10], [2, null], [3, 99], [4, 10], [5, null]])
+    );
     assert_eq!(oracle["additional_source"]["rows"], json!([[1, 30]]));
-    assert_eq!(oracle["source"]["source_occurrences"], json!(["t#0", "t#1", "t#2", "t#3", "t#4"]));
+    assert_eq!(
+        oracle["source"]["source_occurrences"],
+        json!(["t#0", "t#1", "t#2", "t#3", "t#4"])
+    );
     assert_eq!(oracle["terminal"], json!([[1, 30], [3, 99]]));
-    assert_eq!(oracle["final_target"], json!([[1, 30], [3, 99], [4, 10], [5, null]]));
+    assert_eq!(
+        oracle["final_target"],
+        json!([[1, 30], [3, 99], [4, 10], [5, null]])
+    );
     assert_eq!(oracle["rejected_false"], json!([2]));
     assert_eq!(oracle["rejected_unknown"], json!([3]));
     assert_eq!(oracle["domain"]["lower"], 20);
     assert_eq!(oracle["domain"]["lower_inclusive"], true);
     assert_eq!(oracle["domain"]["nullable"], false);
     let direct = write_proof(&direct_write_catalog());
-    assert_eq!(direct.0, vec![
-        write_row(1, Some(30)), write_row(3, Some(99)),
-        write_row(4, Some(10)), write_row(5, None),
-    ]);
-    assert_eq!(direct.1, vec![write_row(1, Some(30)), write_row(3, Some(99))]);
+    assert_eq!(
+        direct.0,
+        vec![
+            write_row(1, Some(30)),
+            write_row(3, Some(99)),
+            write_row(4, Some(10)),
+            write_row(5, None),
+        ]
+    );
+    assert_eq!(
+        direct.1,
+        vec![write_row(1, Some(30)), write_row(3, Some(99))]
+    );
 }
 
 #[test]
@@ -853,24 +883,34 @@ fn impossible_transition_and_unattested_session_law_remain_distinct() {
         physical_duckdb_transaction_plan_with_laws, PhysicalTransactionSessionLaw,
     };
 
-    let empty = PhysicalScriptCatalog { states: vec![], schemas: vec![] };
-    let impossible = physical_duckdb_transaction_plan(
-        &[PhysicalTransactionStep::Commit], &empty,
-    );
+    let empty = PhysicalScriptCatalog {
+        states: vec![],
+        schemas: vec![],
+    };
+    let impossible = physical_duckdb_transaction_plan(&[PhysicalTransactionStep::Commit], &empty);
     assert!(
-        matches!(impossible, PhysicalTransactionScriptProof::Impossible { step_index: 0, .. }),
+        matches!(
+            impossible,
+            PhysicalTransactionScriptProof::Impossible { step_index: 0, .. }
+        ),
         "a COMMIT without BEGIN must not claim Exact: {impossible:?}"
     );
     let connection = duckdb::Connection::open_in_memory().unwrap();
     assert!(connection.execute_batch("COMMIT").is_err());
 
     let residual = physical_duckdb_transaction_plan_with_laws(
-        &[PhysicalTransactionStep::Begin, PhysicalTransactionStep::Commit],
+        &[
+            PhysicalTransactionStep::Begin,
+            PhysicalTransactionStep::Commit,
+        ],
         &empty,
         &[PhysicalTransactionSessionLaw::ConcurrentIsolation],
     );
     assert!(
-        matches!(residual, PhysicalTransactionScriptProof::Residual { step_index: 0, .. }),
+        matches!(
+            residual,
+            PhysicalTransactionScriptProof::Residual { step_index: 0, .. }
+        ),
         "metadata cannot attest concurrent isolation: {residual:?}"
     );
 }
