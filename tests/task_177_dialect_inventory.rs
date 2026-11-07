@@ -96,10 +96,7 @@ fn every_task_66_variant_has_thirteen_explicit_parser_evidence_cells() {
         for dialect in &expected_dialects {
             count += 1;
             let cell = &row["dialect_cells"][*dialect];
-            assert_eq!(
-                text(cell, "id"),
-                format!("{}-{dialect}", text(row, "id"))
-            );
+            assert_eq!(text(cell, "id"), format!("{}-{dialect}", text(row, "id")));
             let explicit = &feature["variant_overrides"][variant][*dialect];
             let expected_status = explicit["parse"].as_str().unwrap_or("unverified");
             assert_eq!(
@@ -141,12 +138,8 @@ fn every_task_66_variant_has_thirteen_explicit_parser_evidence_cells() {
                         .unwrap_or_else(|| panic!("missing manifest fixture {id}"));
                     assert_eq!(fixture["feature"], feature_id);
                     assert_eq!(fixture["variant_status"], expected_status);
-                    assert!(
-                        array(fixture, "covered_variants").contains(&Value::from(variant))
-                    );
-                    assert!(
-                        array(fixture, "dialects").contains(&Value::from(*dialect))
-                    );
+                    assert!(array(fixture, "covered_variants").contains(&Value::from(variant)));
+                    assert!(array(fixture, "dialects").contains(&Value::from(*dialect)));
                     assert_eq!(fixture["sql"], samples[index]);
                 }
             }
@@ -213,11 +206,7 @@ fn frozen_positive_and_impossible_goldens_match_full_duckdb_bags_and_portable_do
             .expect("closed physical input fixture");
 
         let source = pairs(&db, "SELECT id, amount FROM orders ORDER BY id");
-        assert_eq!(
-            source,
-            expected_pairs(case, "source_rows"),
-            "{id}: source"
-        );
+        assert_eq!(source, expected_pairs(case, "source_rows"), "{id}: source");
         let predicate = sql
             .split_once(" WHERE ")
             .unwrap_or_else(|| panic!("{id}: expected WHERE"))
@@ -225,15 +214,11 @@ fn frozen_positive_and_impossible_goldens_match_full_duckdb_bags_and_portable_do
         let selected = pairs(&db, &format!("{sql} ORDER BY id"));
         let not_true = pairs(
             &db,
-            &format!(
-                "SELECT id, amount FROM orders WHERE ({predicate}) IS NOT TRUE ORDER BY id"
-            ),
+            &format!("SELECT id, amount FROM orders WHERE ({predicate}) IS NOT TRUE ORDER BY id"),
         );
         let unknown = pairs(
             &db,
-            &format!(
-                "SELECT id, amount FROM orders WHERE ({predicate}) IS UNKNOWN ORDER BY id"
-            ),
+            &format!("SELECT id, amount FROM orders WHERE ({predicate}) IS UNKNOWN ORDER BY id"),
         );
         assert_eq!(
             selected,
@@ -256,7 +241,10 @@ fn frozen_positive_and_impossible_goldens_match_full_duckdb_bags_and_portable_do
         let rejected_ids: BTreeSet<_> = not_true.iter().map(|row| row.0).collect();
         assert!(true_ids.is_disjoint(&rejected_ids), "{id}: double counted");
         assert_eq!(
-            true_ids.union(&rejected_ids).copied().collect::<BTreeSet<_>>(),
+            true_ids
+                .union(&rejected_ids)
+                .copied()
+                .collect::<BTreeSet<_>>(),
             source_ids,
             "{id}: incomplete NOT TRUE partition"
         );
@@ -286,19 +274,13 @@ fn frozen_positive_and_impossible_goldens_match_full_duckdb_bags_and_portable_do
                 };
                 let lower = range.lower().expect("inclusive 10");
                 let upper = range.upper().expect("exclusive 20");
-                assert_eq!(
-                    lower.value().value(),
-                    &LiteralValue::Number("10".into())
-                );
+                assert_eq!(lower.value().value(), &LiteralValue::Number("10".into()));
                 assert!(lower.inclusive());
-                assert_eq!(
-                    upper.value().value(),
-                    &LiteralValue::Number("20".into())
-                );
+                assert_eq!(upper.value().value(), &LiteralValue::Number("20".into()));
                 assert!(!upper.inclusive());
             }
-            let mut document: Value = serde_json::from_str(&to_json(&protocol))
-                .expect("canonical JSON emission");
+            let mut document: Value =
+                serde_json::from_str(&to_json(&protocol)).expect("canonical JSON emission");
             assert_eq!(document["inputs"][0]["dialect"], dialect_name);
             document["inputs"][0]["dialect"] = Value::Null;
             if let Some(expected) = &baseline {
