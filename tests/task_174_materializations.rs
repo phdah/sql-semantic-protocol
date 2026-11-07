@@ -287,7 +287,10 @@ fn task_174_frozen_dialect_and_adapter_matrix_is_complete_and_parser_safe() {
     assert_eq!(checked.len(), 5 * DIALECTS.len());
     assert_eq!(
         parser_boundaries,
-        BTreeSet::from(["87-C174-P-inline-hive".to_string()]),
+        BTreeSet::from([
+            "87-C174-P-inline-ansi".to_string(),
+            "87-C174-P-inline-hive".to_string(),
+        ]),
         "every frozen parser-specific limitation must be individually classified"
     );
 
