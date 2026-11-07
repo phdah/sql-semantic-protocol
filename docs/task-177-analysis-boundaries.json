@@ -1,0 +1,1921 @@
+{
+  "schema_version": 1,
+  "owner": "TASK-177",
+  "source_snapshot": "docs/task-177-parser-snapshot.json",
+  "classification": "Public API returned Protocol with at least one Unsupported statement. Does not imply unsupported native SQL or impossibility.",
+  "cell_count": 116,
+  "affected_sample_count": 10,
+  "cells": [
+    {
+      "id": "88-C177-S180-ansi",
+      "case_id": "88-C177-S180",
+      "feature_id": "types.structural",
+      "variant": "enum",
+      "dialect": "ansi",
+      "sql": "CREATE TYPE mood AS ENUM ('happy','sad')",
+      "classification": "canonical_explicit_unsupported",
+      "reason": "CREATE TYPE ENUM parses but is emitted as explicit UnsupportedStatement; no derived type/schema effect is attested.",
+      "owner": [
+        "TASK-79"
+      ],
+      "required_evidence": "typed domain, whole-bag source and terminal or explicit reviewed conditional proof",
+      "release_disposition": "blocking_not_approved_residual",
+      "vendor_runtime": "not_certified"
+    },
+    {
+      "id": "88-C177-S180-bigquery",
+      "case_id": "88-C177-S180",
+      "feature_id": "types.structural",
+      "variant": "enum",
+      "dialect": "bigquery",
+      "sql": "CREATE TYPE mood AS ENUM ('happy','sad')",
+      "classification": "canonical_explicit_unsupported",
+      "reason": "CREATE TYPE ENUM parses but is emitted as explicit UnsupportedStatement; no derived type/schema effect is attested.",
+      "owner": [
+        "TASK-79"
+      ],
+      "required_evidence": "typed domain, whole-bag source and terminal or explicit reviewed conditional proof",
+      "release_disposition": "blocking_not_approved_residual",
+      "vendor_runtime": "not_certified"
+    },
+    {
+      "id": "88-C177-S180-clickhouse",
+      "case_id": "88-C177-S180",
+      "feature_id": "types.structural",
+      "variant": "enum",
+      "dialect": "clickhouse",
+      "sql": "CREATE TYPE mood AS ENUM ('happy','sad')",
+      "classification": "canonical_explicit_unsupported",
+      "reason": "CREATE TYPE ENUM parses but is emitted as explicit UnsupportedStatement; no derived type/schema effect is attested.",
+      "owner": [
+        "TASK-79"
+      ],
+      "required_evidence": "typed domain, whole-bag source and terminal or explicit reviewed conditional proof",
+      "release_disposition": "blocking_not_approved_residual",
+      "vendor_runtime": "not_certified"
+    },
+    {
+      "id": "88-C177-S180-databricks",
+      "case_id": "88-C177-S180",
+      "feature_id": "types.structural",
+      "variant": "enum",
+      "dialect": "databricks",
+      "sql": "CREATE TYPE mood AS ENUM ('happy','sad')",
+      "classification": "canonical_explicit_unsupported",
+      "reason": "CREATE TYPE ENUM parses but is emitted as explicit UnsupportedStatement; no derived type/schema effect is attested.",
+      "owner": [
+        "TASK-79"
+      ],
+      "required_evidence": "typed domain, whole-bag source and terminal or explicit reviewed conditional proof",
+      "release_disposition": "blocking_not_approved_residual",
+      "vendor_runtime": "not_certified"
+    },
+    {
+      "id": "88-C177-S180-duckdb",
+      "case_id": "88-C177-S180",
+      "feature_id": "types.structural",
+      "variant": "enum",
+      "dialect": "duckdb",
+      "sql": "CREATE TYPE mood AS ENUM ('happy','sad')",
+      "classification": "canonical_explicit_unsupported",
+      "reason": "CREATE TYPE ENUM parses but is emitted as explicit UnsupportedStatement; no derived type/schema effect is attested.",
+      "owner": [
+        "TASK-79"
+      ],
+      "required_evidence": "typed domain, whole-bag source and terminal or explicit reviewed conditional proof",
+      "release_disposition": "blocking_not_approved_residual",
+      "vendor_runtime": "not_certified"
+    },
+    {
+      "id": "88-C177-S180-generic",
+      "case_id": "88-C177-S180",
+      "feature_id": "types.structural",
+      "variant": "enum",
+      "dialect": "generic",
+      "sql": "CREATE TYPE mood AS ENUM ('happy','sad')",
+      "classification": "canonical_explicit_unsupported",
+      "reason": "CREATE TYPE ENUM parses but is emitted as explicit UnsupportedStatement; no derived type/schema effect is attested.",
+      "owner": [
+        "TASK-79"
+      ],
+      "required_evidence": "typed domain, whole-bag source and terminal or explicit reviewed conditional proof",
+      "release_disposition": "blocking_not_approved_residual",
+      "vendor_runtime": "not_certified"
+    },
+    {
+      "id": "88-C177-S180-hive",
+      "case_id": "88-C177-S180",
+      "feature_id": "types.structural",
+      "variant": "enum",
+      "dialect": "hive",
+      "sql": "CREATE TYPE mood AS ENUM ('happy','sad')",
+      "classification": "canonical_explicit_unsupported",
+      "reason": "CREATE TYPE ENUM parses but is emitted as explicit UnsupportedStatement; no derived type/schema effect is attested.",
+      "owner": [
+        "TASK-79"
+      ],
+      "required_evidence": "typed domain, whole-bag source and terminal or explicit reviewed conditional proof",
+      "release_disposition": "blocking_not_approved_residual",
+      "vendor_runtime": "not_certified"
+    },
+    {
+      "id": "88-C177-S180-mssql",
+      "case_id": "88-C177-S180",
+      "feature_id": "types.structural",
+      "variant": "enum",
+      "dialect": "mssql",
+      "sql": "CREATE TYPE mood AS ENUM ('happy','sad')",
+      "classification": "canonical_explicit_unsupported",
+      "reason": "CREATE TYPE ENUM parses but is emitted as explicit UnsupportedStatement; no derived type/schema effect is attested.",
+      "owner": [
+        "TASK-79"
+      ],
+      "required_evidence": "typed domain, whole-bag source and terminal or explicit reviewed conditional proof",
+      "release_disposition": "blocking_not_approved_residual",
+      "vendor_runtime": "not_certified"
+    },
+    {
+      "id": "88-C177-S180-mysql",
+      "case_id": "88-C177-S180",
+      "feature_id": "types.structural",
+      "variant": "enum",
+      "dialect": "mysql",
+      "sql": "CREATE TYPE mood AS ENUM ('happy','sad')",
+      "classification": "canonical_explicit_unsupported",
+      "reason": "CREATE TYPE ENUM parses but is emitted as explicit UnsupportedStatement; no derived type/schema effect is attested.",
+      "owner": [
+        "TASK-79"
+      ],
+      "required_evidence": "typed domain, whole-bag source and terminal or explicit reviewed conditional proof",
+      "release_disposition": "blocking_not_approved_residual",
+      "vendor_runtime": "not_certified"
+    },
+    {
+      "id": "88-C177-S180-postgresql",
+      "case_id": "88-C177-S180",
+      "feature_id": "types.structural",
+      "variant": "enum",
+      "dialect": "postgresql",
+      "sql": "CREATE TYPE mood AS ENUM ('happy','sad')",
+      "classification": "canonical_explicit_unsupported",
+      "reason": "CREATE TYPE ENUM parses but is emitted as explicit UnsupportedStatement; no derived type/schema effect is attested.",
+      "owner": [
+        "TASK-79"
+      ],
+      "required_evidence": "typed domain, whole-bag source and terminal or explicit reviewed conditional proof",
+      "release_disposition": "blocking_not_approved_residual",
+      "vendor_runtime": "not_certified"
+    },
+    {
+      "id": "88-C177-S180-redshift",
+      "case_id": "88-C177-S180",
+      "feature_id": "types.structural",
+      "variant": "enum",
+      "dialect": "redshift",
+      "sql": "CREATE TYPE mood AS ENUM ('happy','sad')",
+      "classification": "canonical_explicit_unsupported",
+      "reason": "CREATE TYPE ENUM parses but is emitted as explicit UnsupportedStatement; no derived type/schema effect is attested.",
+      "owner": [
+        "TASK-79"
+      ],
+      "required_evidence": "typed domain, whole-bag source and terminal or explicit reviewed conditional proof",
+      "release_disposition": "blocking_not_approved_residual",
+      "vendor_runtime": "not_certified"
+    },
+    {
+      "id": "88-C177-S180-snowflake",
+      "case_id": "88-C177-S180",
+      "feature_id": "types.structural",
+      "variant": "enum",
+      "dialect": "snowflake",
+      "sql": "CREATE TYPE mood AS ENUM ('happy','sad')",
+      "classification": "canonical_explicit_unsupported",
+      "reason": "CREATE TYPE ENUM parses but is emitted as explicit UnsupportedStatement; no derived type/schema effect is attested.",
+      "owner": [
+        "TASK-79"
+      ],
+      "required_evidence": "typed domain, whole-bag source and terminal or explicit reviewed conditional proof",
+      "release_disposition": "blocking_not_approved_residual",
+      "vendor_runtime": "not_certified"
+    },
+    {
+      "id": "88-C177-S180-sqlite",
+      "case_id": "88-C177-S180",
+      "feature_id": "types.structural",
+      "variant": "enum",
+      "dialect": "sqlite",
+      "sql": "CREATE TYPE mood AS ENUM ('happy','sad')",
+      "classification": "canonical_explicit_unsupported",
+      "reason": "CREATE TYPE ENUM parses but is emitted as explicit UnsupportedStatement; no derived type/schema effect is attested.",
+      "owner": [
+        "TASK-79"
+      ],
+      "required_evidence": "typed domain, whole-bag source and terminal or explicit reviewed conditional proof",
+      "release_disposition": "blocking_not_approved_residual",
+      "vendor_runtime": "not_certified"
+    },
+    {
+      "id": "88-C177-S199-generic",
+      "case_id": "88-C177-S199",
+      "feature_id": "dml.insert_conflicts",
+      "variant": "REPLACE INTO",
+      "dialect": "generic",
+      "sql": "REPLACE INTO orders (id) VALUES (1)",
+      "classification": "canonical_explicit_unsupported",
+      "reason": "REPLACE INTO parses in these dialects but no canonical conflict/replacement write effect is certified.",
+      "owner": [
+        "TASK-80",
+        "TASK-82"
+      ],
+      "required_evidence": "typed domain, whole-bag source and terminal or explicit reviewed conditional proof",
+      "release_disposition": "blocking_not_approved_residual",
+      "vendor_runtime": "not_certified"
+    },
+    {
+      "id": "88-C177-S199-mysql",
+      "case_id": "88-C177-S199",
+      "feature_id": "dml.insert_conflicts",
+      "variant": "REPLACE INTO",
+      "dialect": "mysql",
+      "sql": "REPLACE INTO orders (id) VALUES (1)",
+      "classification": "canonical_explicit_unsupported",
+      "reason": "REPLACE INTO parses in these dialects but no canonical conflict/replacement write effect is certified.",
+      "owner": [
+        "TASK-80",
+        "TASK-82"
+      ],
+      "required_evidence": "typed domain, whole-bag source and terminal or explicit reviewed conditional proof",
+      "release_disposition": "blocking_not_approved_residual",
+      "vendor_runtime": "not_certified"
+    },
+    {
+      "id": "88-C177-S199-sqlite",
+      "case_id": "88-C177-S199",
+      "feature_id": "dml.insert_conflicts",
+      "variant": "REPLACE INTO",
+      "dialect": "sqlite",
+      "sql": "REPLACE INTO orders (id) VALUES (1)",
+      "classification": "canonical_explicit_unsupported",
+      "reason": "REPLACE INTO parses in these dialects but no canonical conflict/replacement write effect is certified.",
+      "owner": [
+        "TASK-80",
+        "TASK-82"
+      ],
+      "required_evidence": "typed domain, whole-bag source and terminal or explicit reviewed conditional proof",
+      "release_disposition": "blocking_not_approved_residual",
+      "vendor_runtime": "not_certified"
+    },
+    {
+      "id": "88-C177-S200-ansi",
+      "case_id": "88-C177-S200",
+      "feature_id": "dml.insert_conflicts",
+      "variant": "INSERT OVERWRITE",
+      "dialect": "ansi",
+      "sql": "INSERT OVERWRITE TABLE orders SELECT * FROM customers",
+      "classification": "canonical_explicit_unsupported",
+      "reason": "INSERT OVERWRITE parses but the canonical overwrite target/state effect remains unsupported in the public analyzer.",
+      "owner": [
+        "TASK-80",
+        "TASK-82"
+      ],
+      "required_evidence": "typed domain, whole-bag source and terminal or explicit reviewed conditional proof",
+      "release_disposition": "blocking_not_approved_residual",
+      "vendor_runtime": "not_certified"
+    },
+    {
+      "id": "88-C177-S200-bigquery",
+      "case_id": "88-C177-S200",
+      "feature_id": "dml.insert_conflicts",
+      "variant": "INSERT OVERWRITE",
+      "dialect": "bigquery",
+      "sql": "INSERT OVERWRITE TABLE orders SELECT * FROM customers",
+      "classification": "canonical_explicit_unsupported",
+      "reason": "INSERT OVERWRITE parses but the canonical overwrite target/state effect remains unsupported in the public analyzer.",
+      "owner": [
+        "TASK-80",
+        "TASK-82"
+      ],
+      "required_evidence": "typed domain, whole-bag source and terminal or explicit reviewed conditional proof",
+      "release_disposition": "blocking_not_approved_residual",
+      "vendor_runtime": "not_certified"
+    },
+    {
+      "id": "88-C177-S200-clickhouse",
+      "case_id": "88-C177-S200",
+      "feature_id": "dml.insert_conflicts",
+      "variant": "INSERT OVERWRITE",
+      "dialect": "clickhouse",
+      "sql": "INSERT OVERWRITE TABLE orders SELECT * FROM customers",
+      "classification": "canonical_explicit_unsupported",
+      "reason": "INSERT OVERWRITE parses but the canonical overwrite target/state effect remains unsupported in the public analyzer.",
+      "owner": [
+        "TASK-80",
+        "TASK-82"
+      ],
+      "required_evidence": "typed domain, whole-bag source and terminal or explicit reviewed conditional proof",
+      "release_disposition": "blocking_not_approved_residual",
+      "vendor_runtime": "not_certified"
+    },
+    {
+      "id": "88-C177-S200-databricks",
+      "case_id": "88-C177-S200",
+      "feature_id": "dml.insert_conflicts",
+      "variant": "INSERT OVERWRITE",
+      "dialect": "databricks",
+      "sql": "INSERT OVERWRITE TABLE orders SELECT * FROM customers",
+      "classification": "canonical_explicit_unsupported",
+      "reason": "INSERT OVERWRITE parses but the canonical overwrite target/state effect remains unsupported in the public analyzer.",
+      "owner": [
+        "TASK-80",
+        "TASK-82"
+      ],
+      "required_evidence": "typed domain, whole-bag source and terminal or explicit reviewed conditional proof",
+      "release_disposition": "blocking_not_approved_residual",
+      "vendor_runtime": "not_certified"
+    },
+    {
+      "id": "88-C177-S200-duckdb",
+      "case_id": "88-C177-S200",
+      "feature_id": "dml.insert_conflicts",
+      "variant": "INSERT OVERWRITE",
+      "dialect": "duckdb",
+      "sql": "INSERT OVERWRITE TABLE orders SELECT * FROM customers",
+      "classification": "canonical_explicit_unsupported",
+      "reason": "INSERT OVERWRITE parses but the canonical overwrite target/state effect remains unsupported in the public analyzer.",
+      "owner": [
+        "TASK-80",
+        "TASK-82"
+      ],
+      "required_evidence": "typed domain, whole-bag source and terminal or explicit reviewed conditional proof",
+      "release_disposition": "blocking_not_approved_residual",
+      "vendor_runtime": "not_certified"
+    },
+    {
+      "id": "88-C177-S200-generic",
+      "case_id": "88-C177-S200",
+      "feature_id": "dml.insert_conflicts",
+      "variant": "INSERT OVERWRITE",
+      "dialect": "generic",
+      "sql": "INSERT OVERWRITE TABLE orders SELECT * FROM customers",
+      "classification": "canonical_explicit_unsupported",
+      "reason": "INSERT OVERWRITE parses but the canonical overwrite target/state effect remains unsupported in the public analyzer.",
+      "owner": [
+        "TASK-80",
+        "TASK-82"
+      ],
+      "required_evidence": "typed domain, whole-bag source and terminal or explicit reviewed conditional proof",
+      "release_disposition": "blocking_not_approved_residual",
+      "vendor_runtime": "not_certified"
+    },
+    {
+      "id": "88-C177-S200-hive",
+      "case_id": "88-C177-S200",
+      "feature_id": "dml.insert_conflicts",
+      "variant": "INSERT OVERWRITE",
+      "dialect": "hive",
+      "sql": "INSERT OVERWRITE TABLE orders SELECT * FROM customers",
+      "classification": "canonical_explicit_unsupported",
+      "reason": "INSERT OVERWRITE parses but the canonical overwrite target/state effect remains unsupported in the public analyzer.",
+      "owner": [
+        "TASK-80",
+        "TASK-82"
+      ],
+      "required_evidence": "typed domain, whole-bag source and terminal or explicit reviewed conditional proof",
+      "release_disposition": "blocking_not_approved_residual",
+      "vendor_runtime": "not_certified"
+    },
+    {
+      "id": "88-C177-S200-mssql",
+      "case_id": "88-C177-S200",
+      "feature_id": "dml.insert_conflicts",
+      "variant": "INSERT OVERWRITE",
+      "dialect": "mssql",
+      "sql": "INSERT OVERWRITE TABLE orders SELECT * FROM customers",
+      "classification": "canonical_explicit_unsupported",
+      "reason": "INSERT OVERWRITE parses but the canonical overwrite target/state effect remains unsupported in the public analyzer.",
+      "owner": [
+        "TASK-80",
+        "TASK-82"
+      ],
+      "required_evidence": "typed domain, whole-bag source and terminal or explicit reviewed conditional proof",
+      "release_disposition": "blocking_not_approved_residual",
+      "vendor_runtime": "not_certified"
+    },
+    {
+      "id": "88-C177-S200-mysql",
+      "case_id": "88-C177-S200",
+      "feature_id": "dml.insert_conflicts",
+      "variant": "INSERT OVERWRITE",
+      "dialect": "mysql",
+      "sql": "INSERT OVERWRITE TABLE orders SELECT * FROM customers",
+      "classification": "canonical_explicit_unsupported",
+      "reason": "INSERT OVERWRITE parses but the canonical overwrite target/state effect remains unsupported in the public analyzer.",
+      "owner": [
+        "TASK-80",
+        "TASK-82"
+      ],
+      "required_evidence": "typed domain, whole-bag source and terminal or explicit reviewed conditional proof",
+      "release_disposition": "blocking_not_approved_residual",
+      "vendor_runtime": "not_certified"
+    },
+    {
+      "id": "88-C177-S200-postgresql",
+      "case_id": "88-C177-S200",
+      "feature_id": "dml.insert_conflicts",
+      "variant": "INSERT OVERWRITE",
+      "dialect": "postgresql",
+      "sql": "INSERT OVERWRITE TABLE orders SELECT * FROM customers",
+      "classification": "canonical_explicit_unsupported",
+      "reason": "INSERT OVERWRITE parses but the canonical overwrite target/state effect remains unsupported in the public analyzer.",
+      "owner": [
+        "TASK-80",
+        "TASK-82"
+      ],
+      "required_evidence": "typed domain, whole-bag source and terminal or explicit reviewed conditional proof",
+      "release_disposition": "blocking_not_approved_residual",
+      "vendor_runtime": "not_certified"
+    },
+    {
+      "id": "88-C177-S200-redshift",
+      "case_id": "88-C177-S200",
+      "feature_id": "dml.insert_conflicts",
+      "variant": "INSERT OVERWRITE",
+      "dialect": "redshift",
+      "sql": "INSERT OVERWRITE TABLE orders SELECT * FROM customers",
+      "classification": "canonical_explicit_unsupported",
+      "reason": "INSERT OVERWRITE parses but the canonical overwrite target/state effect remains unsupported in the public analyzer.",
+      "owner": [
+        "TASK-80",
+        "TASK-82"
+      ],
+      "required_evidence": "typed domain, whole-bag source and terminal or explicit reviewed conditional proof",
+      "release_disposition": "blocking_not_approved_residual",
+      "vendor_runtime": "not_certified"
+    },
+    {
+      "id": "88-C177-S200-snowflake",
+      "case_id": "88-C177-S200",
+      "feature_id": "dml.insert_conflicts",
+      "variant": "INSERT OVERWRITE",
+      "dialect": "snowflake",
+      "sql": "INSERT OVERWRITE TABLE orders SELECT * FROM customers",
+      "classification": "canonical_explicit_unsupported",
+      "reason": "INSERT OVERWRITE parses but the canonical overwrite target/state effect remains unsupported in the public analyzer.",
+      "owner": [
+        "TASK-80",
+        "TASK-82"
+      ],
+      "required_evidence": "typed domain, whole-bag source and terminal or explicit reviewed conditional proof",
+      "release_disposition": "blocking_not_approved_residual",
+      "vendor_runtime": "not_certified"
+    },
+    {
+      "id": "88-C177-S200-sqlite",
+      "case_id": "88-C177-S200",
+      "feature_id": "dml.insert_conflicts",
+      "variant": "INSERT OVERWRITE",
+      "dialect": "sqlite",
+      "sql": "INSERT OVERWRITE TABLE orders SELECT * FROM customers",
+      "classification": "canonical_explicit_unsupported",
+      "reason": "INSERT OVERWRITE parses but the canonical overwrite target/state effect remains unsupported in the public analyzer.",
+      "owner": [
+        "TASK-80",
+        "TASK-82"
+      ],
+      "required_evidence": "typed domain, whole-bag source and terminal or explicit reviewed conditional proof",
+      "release_disposition": "blocking_not_approved_residual",
+      "vendor_runtime": "not_certified"
+    },
+    {
+      "id": "88-C177-S203-ansi",
+      "case_id": "88-C177-S203",
+      "feature_id": "dml.update",
+      "variant": "correlated predicates",
+      "dialect": "ansi",
+      "sql": "UPDATE orders SET amount = 1 WHERE id IN (SELECT id FROM customers)",
+      "classification": "canonical_explicit_unsupported",
+      "reason": "UPDATE with nested IN predicate parses but this specific write/predicate combination is explicitly unsupported.",
+      "owner": [
+        "TASK-81"
+      ],
+      "required_evidence": "typed domain, whole-bag source and terminal or explicit reviewed conditional proof",
+      "release_disposition": "blocking_not_approved_residual",
+      "vendor_runtime": "not_certified"
+    },
+    {
+      "id": "88-C177-S203-bigquery",
+      "case_id": "88-C177-S203",
+      "feature_id": "dml.update",
+      "variant": "correlated predicates",
+      "dialect": "bigquery",
+      "sql": "UPDATE orders SET amount = 1 WHERE id IN (SELECT id FROM customers)",
+      "classification": "canonical_explicit_unsupported",
+      "reason": "UPDATE with nested IN predicate parses but this specific write/predicate combination is explicitly unsupported.",
+      "owner": [
+        "TASK-81"
+      ],
+      "required_evidence": "typed domain, whole-bag source and terminal or explicit reviewed conditional proof",
+      "release_disposition": "blocking_not_approved_residual",
+      "vendor_runtime": "not_certified"
+    },
+    {
+      "id": "88-C177-S203-clickhouse",
+      "case_id": "88-C177-S203",
+      "feature_id": "dml.update",
+      "variant": "correlated predicates",
+      "dialect": "clickhouse",
+      "sql": "UPDATE orders SET amount = 1 WHERE id IN (SELECT id FROM customers)",
+      "classification": "canonical_explicit_unsupported",
+      "reason": "UPDATE with nested IN predicate parses but this specific write/predicate combination is explicitly unsupported.",
+      "owner": [
+        "TASK-81"
+      ],
+      "required_evidence": "typed domain, whole-bag source and terminal or explicit reviewed conditional proof",
+      "release_disposition": "blocking_not_approved_residual",
+      "vendor_runtime": "not_certified"
+    },
+    {
+      "id": "88-C177-S203-databricks",
+      "case_id": "88-C177-S203",
+      "feature_id": "dml.update",
+      "variant": "correlated predicates",
+      "dialect": "databricks",
+      "sql": "UPDATE orders SET amount = 1 WHERE id IN (SELECT id FROM customers)",
+      "classification": "canonical_explicit_unsupported",
+      "reason": "UPDATE with nested IN predicate parses but this specific write/predicate combination is explicitly unsupported.",
+      "owner": [
+        "TASK-81"
+      ],
+      "required_evidence": "typed domain, whole-bag source and terminal or explicit reviewed conditional proof",
+      "release_disposition": "blocking_not_approved_residual",
+      "vendor_runtime": "not_certified"
+    },
+    {
+      "id": "88-C177-S203-duckdb",
+      "case_id": "88-C177-S203",
+      "feature_id": "dml.update",
+      "variant": "correlated predicates",
+      "dialect": "duckdb",
+      "sql": "UPDATE orders SET amount = 1 WHERE id IN (SELECT id FROM customers)",
+      "classification": "canonical_explicit_unsupported",
+      "reason": "UPDATE with nested IN predicate parses but this specific write/predicate combination is explicitly unsupported.",
+      "owner": [
+        "TASK-81"
+      ],
+      "required_evidence": "typed domain, whole-bag source and terminal or explicit reviewed conditional proof",
+      "release_disposition": "blocking_not_approved_residual",
+      "vendor_runtime": "not_certified"
+    },
+    {
+      "id": "88-C177-S203-generic",
+      "case_id": "88-C177-S203",
+      "feature_id": "dml.update",
+      "variant": "correlated predicates",
+      "dialect": "generic",
+      "sql": "UPDATE orders SET amount = 1 WHERE id IN (SELECT id FROM customers)",
+      "classification": "canonical_explicit_unsupported",
+      "reason": "UPDATE with nested IN predicate parses but this specific write/predicate combination is explicitly unsupported.",
+      "owner": [
+        "TASK-81"
+      ],
+      "required_evidence": "typed domain, whole-bag source and terminal or explicit reviewed conditional proof",
+      "release_disposition": "blocking_not_approved_residual",
+      "vendor_runtime": "not_certified"
+    },
+    {
+      "id": "88-C177-S203-hive",
+      "case_id": "88-C177-S203",
+      "feature_id": "dml.update",
+      "variant": "correlated predicates",
+      "dialect": "hive",
+      "sql": "UPDATE orders SET amount = 1 WHERE id IN (SELECT id FROM customers)",
+      "classification": "canonical_explicit_unsupported",
+      "reason": "UPDATE with nested IN predicate parses but this specific write/predicate combination is explicitly unsupported.",
+      "owner": [
+        "TASK-81"
+      ],
+      "required_evidence": "typed domain, whole-bag source and terminal or explicit reviewed conditional proof",
+      "release_disposition": "blocking_not_approved_residual",
+      "vendor_runtime": "not_certified"
+    },
+    {
+      "id": "88-C177-S203-mssql",
+      "case_id": "88-C177-S203",
+      "feature_id": "dml.update",
+      "variant": "correlated predicates",
+      "dialect": "mssql",
+      "sql": "UPDATE orders SET amount = 1 WHERE id IN (SELECT id FROM customers)",
+      "classification": "canonical_explicit_unsupported",
+      "reason": "UPDATE with nested IN predicate parses but this specific write/predicate combination is explicitly unsupported.",
+      "owner": [
+        "TASK-81"
+      ],
+      "required_evidence": "typed domain, whole-bag source and terminal or explicit reviewed conditional proof",
+      "release_disposition": "blocking_not_approved_residual",
+      "vendor_runtime": "not_certified"
+    },
+    {
+      "id": "88-C177-S203-mysql",
+      "case_id": "88-C177-S203",
+      "feature_id": "dml.update",
+      "variant": "correlated predicates",
+      "dialect": "mysql",
+      "sql": "UPDATE orders SET amount = 1 WHERE id IN (SELECT id FROM customers)",
+      "classification": "canonical_explicit_unsupported",
+      "reason": "UPDATE with nested IN predicate parses but this specific write/predicate combination is explicitly unsupported.",
+      "owner": [
+        "TASK-81"
+      ],
+      "required_evidence": "typed domain, whole-bag source and terminal or explicit reviewed conditional proof",
+      "release_disposition": "blocking_not_approved_residual",
+      "vendor_runtime": "not_certified"
+    },
+    {
+      "id": "88-C177-S203-postgresql",
+      "case_id": "88-C177-S203",
+      "feature_id": "dml.update",
+      "variant": "correlated predicates",
+      "dialect": "postgresql",
+      "sql": "UPDATE orders SET amount = 1 WHERE id IN (SELECT id FROM customers)",
+      "classification": "canonical_explicit_unsupported",
+      "reason": "UPDATE with nested IN predicate parses but this specific write/predicate combination is explicitly unsupported.",
+      "owner": [
+        "TASK-81"
+      ],
+      "required_evidence": "typed domain, whole-bag source and terminal or explicit reviewed conditional proof",
+      "release_disposition": "blocking_not_approved_residual",
+      "vendor_runtime": "not_certified"
+    },
+    {
+      "id": "88-C177-S203-redshift",
+      "case_id": "88-C177-S203",
+      "feature_id": "dml.update",
+      "variant": "correlated predicates",
+      "dialect": "redshift",
+      "sql": "UPDATE orders SET amount = 1 WHERE id IN (SELECT id FROM customers)",
+      "classification": "canonical_explicit_unsupported",
+      "reason": "UPDATE with nested IN predicate parses but this specific write/predicate combination is explicitly unsupported.",
+      "owner": [
+        "TASK-81"
+      ],
+      "required_evidence": "typed domain, whole-bag source and terminal or explicit reviewed conditional proof",
+      "release_disposition": "blocking_not_approved_residual",
+      "vendor_runtime": "not_certified"
+    },
+    {
+      "id": "88-C177-S203-snowflake",
+      "case_id": "88-C177-S203",
+      "feature_id": "dml.update",
+      "variant": "correlated predicates",
+      "dialect": "snowflake",
+      "sql": "UPDATE orders SET amount = 1 WHERE id IN (SELECT id FROM customers)",
+      "classification": "canonical_explicit_unsupported",
+      "reason": "UPDATE with nested IN predicate parses but this specific write/predicate combination is explicitly unsupported.",
+      "owner": [
+        "TASK-81"
+      ],
+      "required_evidence": "typed domain, whole-bag source and terminal or explicit reviewed conditional proof",
+      "release_disposition": "blocking_not_approved_residual",
+      "vendor_runtime": "not_certified"
+    },
+    {
+      "id": "88-C177-S203-sqlite",
+      "case_id": "88-C177-S203",
+      "feature_id": "dml.update",
+      "variant": "correlated predicates",
+      "dialect": "sqlite",
+      "sql": "UPDATE orders SET amount = 1 WHERE id IN (SELECT id FROM customers)",
+      "classification": "canonical_explicit_unsupported",
+      "reason": "UPDATE with nested IN predicate parses but this specific write/predicate combination is explicitly unsupported.",
+      "owner": [
+        "TASK-81"
+      ],
+      "required_evidence": "typed domain, whole-bag source and terminal or explicit reviewed conditional proof",
+      "release_disposition": "blocking_not_approved_residual",
+      "vendor_runtime": "not_certified"
+    },
+    {
+      "id": "88-C177-S206-ansi",
+      "case_id": "88-C177-S206",
+      "feature_id": "dml.delete",
+      "variant": "subquery",
+      "dialect": "ansi",
+      "sql": "DELETE FROM orders WHERE id IN (SELECT id FROM customers)",
+      "classification": "canonical_explicit_unsupported",
+      "reason": "DELETE with nested IN predicate parses but this specific write/predicate combination is explicitly unsupported.",
+      "owner": [
+        "TASK-81"
+      ],
+      "required_evidence": "typed domain, whole-bag source and terminal or explicit reviewed conditional proof",
+      "release_disposition": "blocking_not_approved_residual",
+      "vendor_runtime": "not_certified"
+    },
+    {
+      "id": "88-C177-S206-bigquery",
+      "case_id": "88-C177-S206",
+      "feature_id": "dml.delete",
+      "variant": "subquery",
+      "dialect": "bigquery",
+      "sql": "DELETE FROM orders WHERE id IN (SELECT id FROM customers)",
+      "classification": "canonical_explicit_unsupported",
+      "reason": "DELETE with nested IN predicate parses but this specific write/predicate combination is explicitly unsupported.",
+      "owner": [
+        "TASK-81"
+      ],
+      "required_evidence": "typed domain, whole-bag source and terminal or explicit reviewed conditional proof",
+      "release_disposition": "blocking_not_approved_residual",
+      "vendor_runtime": "not_certified"
+    },
+    {
+      "id": "88-C177-S206-clickhouse",
+      "case_id": "88-C177-S206",
+      "feature_id": "dml.delete",
+      "variant": "subquery",
+      "dialect": "clickhouse",
+      "sql": "DELETE FROM orders WHERE id IN (SELECT id FROM customers)",
+      "classification": "canonical_explicit_unsupported",
+      "reason": "DELETE with nested IN predicate parses but this specific write/predicate combination is explicitly unsupported.",
+      "owner": [
+        "TASK-81"
+      ],
+      "required_evidence": "typed domain, whole-bag source and terminal or explicit reviewed conditional proof",
+      "release_disposition": "blocking_not_approved_residual",
+      "vendor_runtime": "not_certified"
+    },
+    {
+      "id": "88-C177-S206-databricks",
+      "case_id": "88-C177-S206",
+      "feature_id": "dml.delete",
+      "variant": "subquery",
+      "dialect": "databricks",
+      "sql": "DELETE FROM orders WHERE id IN (SELECT id FROM customers)",
+      "classification": "canonical_explicit_unsupported",
+      "reason": "DELETE with nested IN predicate parses but this specific write/predicate combination is explicitly unsupported.",
+      "owner": [
+        "TASK-81"
+      ],
+      "required_evidence": "typed domain, whole-bag source and terminal or explicit reviewed conditional proof",
+      "release_disposition": "blocking_not_approved_residual",
+      "vendor_runtime": "not_certified"
+    },
+    {
+      "id": "88-C177-S206-duckdb",
+      "case_id": "88-C177-S206",
+      "feature_id": "dml.delete",
+      "variant": "subquery",
+      "dialect": "duckdb",
+      "sql": "DELETE FROM orders WHERE id IN (SELECT id FROM customers)",
+      "classification": "canonical_explicit_unsupported",
+      "reason": "DELETE with nested IN predicate parses but this specific write/predicate combination is explicitly unsupported.",
+      "owner": [
+        "TASK-81"
+      ],
+      "required_evidence": "typed domain, whole-bag source and terminal or explicit reviewed conditional proof",
+      "release_disposition": "blocking_not_approved_residual",
+      "vendor_runtime": "not_certified"
+    },
+    {
+      "id": "88-C177-S206-generic",
+      "case_id": "88-C177-S206",
+      "feature_id": "dml.delete",
+      "variant": "subquery",
+      "dialect": "generic",
+      "sql": "DELETE FROM orders WHERE id IN (SELECT id FROM customers)",
+      "classification": "canonical_explicit_unsupported",
+      "reason": "DELETE with nested IN predicate parses but this specific write/predicate combination is explicitly unsupported.",
+      "owner": [
+        "TASK-81"
+      ],
+      "required_evidence": "typed domain, whole-bag source and terminal or explicit reviewed conditional proof",
+      "release_disposition": "blocking_not_approved_residual",
+      "vendor_runtime": "not_certified"
+    },
+    {
+      "id": "88-C177-S206-hive",
+      "case_id": "88-C177-S206",
+      "feature_id": "dml.delete",
+      "variant": "subquery",
+      "dialect": "hive",
+      "sql": "DELETE FROM orders WHERE id IN (SELECT id FROM customers)",
+      "classification": "canonical_explicit_unsupported",
+      "reason": "DELETE with nested IN predicate parses but this specific write/predicate combination is explicitly unsupported.",
+      "owner": [
+        "TASK-81"
+      ],
+      "required_evidence": "typed domain, whole-bag source and terminal or explicit reviewed conditional proof",
+      "release_disposition": "blocking_not_approved_residual",
+      "vendor_runtime": "not_certified"
+    },
+    {
+      "id": "88-C177-S206-mssql",
+      "case_id": "88-C177-S206",
+      "feature_id": "dml.delete",
+      "variant": "subquery",
+      "dialect": "mssql",
+      "sql": "DELETE FROM orders WHERE id IN (SELECT id FROM customers)",
+      "classification": "canonical_explicit_unsupported",
+      "reason": "DELETE with nested IN predicate parses but this specific write/predicate combination is explicitly unsupported.",
+      "owner": [
+        "TASK-81"
+      ],
+      "required_evidence": "typed domain, whole-bag source and terminal or explicit reviewed conditional proof",
+      "release_disposition": "blocking_not_approved_residual",
+      "vendor_runtime": "not_certified"
+    },
+    {
+      "id": "88-C177-S206-mysql",
+      "case_id": "88-C177-S206",
+      "feature_id": "dml.delete",
+      "variant": "subquery",
+      "dialect": "mysql",
+      "sql": "DELETE FROM orders WHERE id IN (SELECT id FROM customers)",
+      "classification": "canonical_explicit_unsupported",
+      "reason": "DELETE with nested IN predicate parses but this specific write/predicate combination is explicitly unsupported.",
+      "owner": [
+        "TASK-81"
+      ],
+      "required_evidence": "typed domain, whole-bag source and terminal or explicit reviewed conditional proof",
+      "release_disposition": "blocking_not_approved_residual",
+      "vendor_runtime": "not_certified"
+    },
+    {
+      "id": "88-C177-S206-postgresql",
+      "case_id": "88-C177-S206",
+      "feature_id": "dml.delete",
+      "variant": "subquery",
+      "dialect": "postgresql",
+      "sql": "DELETE FROM orders WHERE id IN (SELECT id FROM customers)",
+      "classification": "canonical_explicit_unsupported",
+      "reason": "DELETE with nested IN predicate parses but this specific write/predicate combination is explicitly unsupported.",
+      "owner": [
+        "TASK-81"
+      ],
+      "required_evidence": "typed domain, whole-bag source and terminal or explicit reviewed conditional proof",
+      "release_disposition": "blocking_not_approved_residual",
+      "vendor_runtime": "not_certified"
+    },
+    {
+      "id": "88-C177-S206-redshift",
+      "case_id": "88-C177-S206",
+      "feature_id": "dml.delete",
+      "variant": "subquery",
+      "dialect": "redshift",
+      "sql": "DELETE FROM orders WHERE id IN (SELECT id FROM customers)",
+      "classification": "canonical_explicit_unsupported",
+      "reason": "DELETE with nested IN predicate parses but this specific write/predicate combination is explicitly unsupported.",
+      "owner": [
+        "TASK-81"
+      ],
+      "required_evidence": "typed domain, whole-bag source and terminal or explicit reviewed conditional proof",
+      "release_disposition": "blocking_not_approved_residual",
+      "vendor_runtime": "not_certified"
+    },
+    {
+      "id": "88-C177-S206-snowflake",
+      "case_id": "88-C177-S206",
+      "feature_id": "dml.delete",
+      "variant": "subquery",
+      "dialect": "snowflake",
+      "sql": "DELETE FROM orders WHERE id IN (SELECT id FROM customers)",
+      "classification": "canonical_explicit_unsupported",
+      "reason": "DELETE with nested IN predicate parses but this specific write/predicate combination is explicitly unsupported.",
+      "owner": [
+        "TASK-81"
+      ],
+      "required_evidence": "typed domain, whole-bag source and terminal or explicit reviewed conditional proof",
+      "release_disposition": "blocking_not_approved_residual",
+      "vendor_runtime": "not_certified"
+    },
+    {
+      "id": "88-C177-S206-sqlite",
+      "case_id": "88-C177-S206",
+      "feature_id": "dml.delete",
+      "variant": "subquery",
+      "dialect": "sqlite",
+      "sql": "DELETE FROM orders WHERE id IN (SELECT id FROM customers)",
+      "classification": "canonical_explicit_unsupported",
+      "reason": "DELETE with nested IN predicate parses but this specific write/predicate combination is explicitly unsupported.",
+      "owner": [
+        "TASK-81"
+      ],
+      "required_evidence": "typed domain, whole-bag source and terminal or explicit reviewed conditional proof",
+      "release_disposition": "blocking_not_approved_residual",
+      "vendor_runtime": "not_certified"
+    },
+    {
+      "id": "88-C177-S220-ansi",
+      "case_id": "88-C177-S220",
+      "feature_id": "ddl.schema_lifecycle",
+      "variant": "defaults/constraints",
+      "dialect": "ansi",
+      "sql": "ALTER TABLE orders ALTER COLUMN amount SET DEFAULT 0",
+      "classification": "canonical_explicit_unsupported",
+      "reason": "ALTER column SET DEFAULT parses but the standalone canonical DDL transition is explicitly unsupported in this path.",
+      "owner": [
+        "TASK-83",
+        "TASK-79"
+      ],
+      "required_evidence": "typed domain, whole-bag source and terminal or explicit reviewed conditional proof",
+      "release_disposition": "blocking_not_approved_residual",
+      "vendor_runtime": "not_certified"
+    },
+    {
+      "id": "88-C177-S220-bigquery",
+      "case_id": "88-C177-S220",
+      "feature_id": "ddl.schema_lifecycle",
+      "variant": "defaults/constraints",
+      "dialect": "bigquery",
+      "sql": "ALTER TABLE orders ALTER COLUMN amount SET DEFAULT 0",
+      "classification": "canonical_explicit_unsupported",
+      "reason": "ALTER column SET DEFAULT parses but the standalone canonical DDL transition is explicitly unsupported in this path.",
+      "owner": [
+        "TASK-83",
+        "TASK-79"
+      ],
+      "required_evidence": "typed domain, whole-bag source and terminal or explicit reviewed conditional proof",
+      "release_disposition": "blocking_not_approved_residual",
+      "vendor_runtime": "not_certified"
+    },
+    {
+      "id": "88-C177-S220-clickhouse",
+      "case_id": "88-C177-S220",
+      "feature_id": "ddl.schema_lifecycle",
+      "variant": "defaults/constraints",
+      "dialect": "clickhouse",
+      "sql": "ALTER TABLE orders ALTER COLUMN amount SET DEFAULT 0",
+      "classification": "canonical_explicit_unsupported",
+      "reason": "ALTER column SET DEFAULT parses but the standalone canonical DDL transition is explicitly unsupported in this path.",
+      "owner": [
+        "TASK-83",
+        "TASK-79"
+      ],
+      "required_evidence": "typed domain, whole-bag source and terminal or explicit reviewed conditional proof",
+      "release_disposition": "blocking_not_approved_residual",
+      "vendor_runtime": "not_certified"
+    },
+    {
+      "id": "88-C177-S220-databricks",
+      "case_id": "88-C177-S220",
+      "feature_id": "ddl.schema_lifecycle",
+      "variant": "defaults/constraints",
+      "dialect": "databricks",
+      "sql": "ALTER TABLE orders ALTER COLUMN amount SET DEFAULT 0",
+      "classification": "canonical_explicit_unsupported",
+      "reason": "ALTER column SET DEFAULT parses but the standalone canonical DDL transition is explicitly unsupported in this path.",
+      "owner": [
+        "TASK-83",
+        "TASK-79"
+      ],
+      "required_evidence": "typed domain, whole-bag source and terminal or explicit reviewed conditional proof",
+      "release_disposition": "blocking_not_approved_residual",
+      "vendor_runtime": "not_certified"
+    },
+    {
+      "id": "88-C177-S220-duckdb",
+      "case_id": "88-C177-S220",
+      "feature_id": "ddl.schema_lifecycle",
+      "variant": "defaults/constraints",
+      "dialect": "duckdb",
+      "sql": "ALTER TABLE orders ALTER COLUMN amount SET DEFAULT 0",
+      "classification": "canonical_explicit_unsupported",
+      "reason": "ALTER column SET DEFAULT parses but the standalone canonical DDL transition is explicitly unsupported in this path.",
+      "owner": [
+        "TASK-83",
+        "TASK-79"
+      ],
+      "required_evidence": "typed domain, whole-bag source and terminal or explicit reviewed conditional proof",
+      "release_disposition": "blocking_not_approved_residual",
+      "vendor_runtime": "not_certified"
+    },
+    {
+      "id": "88-C177-S220-generic",
+      "case_id": "88-C177-S220",
+      "feature_id": "ddl.schema_lifecycle",
+      "variant": "defaults/constraints",
+      "dialect": "generic",
+      "sql": "ALTER TABLE orders ALTER COLUMN amount SET DEFAULT 0",
+      "classification": "canonical_explicit_unsupported",
+      "reason": "ALTER column SET DEFAULT parses but the standalone canonical DDL transition is explicitly unsupported in this path.",
+      "owner": [
+        "TASK-83",
+        "TASK-79"
+      ],
+      "required_evidence": "typed domain, whole-bag source and terminal or explicit reviewed conditional proof",
+      "release_disposition": "blocking_not_approved_residual",
+      "vendor_runtime": "not_certified"
+    },
+    {
+      "id": "88-C177-S220-hive",
+      "case_id": "88-C177-S220",
+      "feature_id": "ddl.schema_lifecycle",
+      "variant": "defaults/constraints",
+      "dialect": "hive",
+      "sql": "ALTER TABLE orders ALTER COLUMN amount SET DEFAULT 0",
+      "classification": "canonical_explicit_unsupported",
+      "reason": "ALTER column SET DEFAULT parses but the standalone canonical DDL transition is explicitly unsupported in this path.",
+      "owner": [
+        "TASK-83",
+        "TASK-79"
+      ],
+      "required_evidence": "typed domain, whole-bag source and terminal or explicit reviewed conditional proof",
+      "release_disposition": "blocking_not_approved_residual",
+      "vendor_runtime": "not_certified"
+    },
+    {
+      "id": "88-C177-S220-mssql",
+      "case_id": "88-C177-S220",
+      "feature_id": "ddl.schema_lifecycle",
+      "variant": "defaults/constraints",
+      "dialect": "mssql",
+      "sql": "ALTER TABLE orders ALTER COLUMN amount SET DEFAULT 0",
+      "classification": "canonical_explicit_unsupported",
+      "reason": "ALTER column SET DEFAULT parses but the standalone canonical DDL transition is explicitly unsupported in this path.",
+      "owner": [
+        "TASK-83",
+        "TASK-79"
+      ],
+      "required_evidence": "typed domain, whole-bag source and terminal or explicit reviewed conditional proof",
+      "release_disposition": "blocking_not_approved_residual",
+      "vendor_runtime": "not_certified"
+    },
+    {
+      "id": "88-C177-S220-mysql",
+      "case_id": "88-C177-S220",
+      "feature_id": "ddl.schema_lifecycle",
+      "variant": "defaults/constraints",
+      "dialect": "mysql",
+      "sql": "ALTER TABLE orders ALTER COLUMN amount SET DEFAULT 0",
+      "classification": "canonical_explicit_unsupported",
+      "reason": "ALTER column SET DEFAULT parses but the standalone canonical DDL transition is explicitly unsupported in this path.",
+      "owner": [
+        "TASK-83",
+        "TASK-79"
+      ],
+      "required_evidence": "typed domain, whole-bag source and terminal or explicit reviewed conditional proof",
+      "release_disposition": "blocking_not_approved_residual",
+      "vendor_runtime": "not_certified"
+    },
+    {
+      "id": "88-C177-S220-postgresql",
+      "case_id": "88-C177-S220",
+      "feature_id": "ddl.schema_lifecycle",
+      "variant": "defaults/constraints",
+      "dialect": "postgresql",
+      "sql": "ALTER TABLE orders ALTER COLUMN amount SET DEFAULT 0",
+      "classification": "canonical_explicit_unsupported",
+      "reason": "ALTER column SET DEFAULT parses but the standalone canonical DDL transition is explicitly unsupported in this path.",
+      "owner": [
+        "TASK-83",
+        "TASK-79"
+      ],
+      "required_evidence": "typed domain, whole-bag source and terminal or explicit reviewed conditional proof",
+      "release_disposition": "blocking_not_approved_residual",
+      "vendor_runtime": "not_certified"
+    },
+    {
+      "id": "88-C177-S220-redshift",
+      "case_id": "88-C177-S220",
+      "feature_id": "ddl.schema_lifecycle",
+      "variant": "defaults/constraints",
+      "dialect": "redshift",
+      "sql": "ALTER TABLE orders ALTER COLUMN amount SET DEFAULT 0",
+      "classification": "canonical_explicit_unsupported",
+      "reason": "ALTER column SET DEFAULT parses but the standalone canonical DDL transition is explicitly unsupported in this path.",
+      "owner": [
+        "TASK-83",
+        "TASK-79"
+      ],
+      "required_evidence": "typed domain, whole-bag source and terminal or explicit reviewed conditional proof",
+      "release_disposition": "blocking_not_approved_residual",
+      "vendor_runtime": "not_certified"
+    },
+    {
+      "id": "88-C177-S220-snowflake",
+      "case_id": "88-C177-S220",
+      "feature_id": "ddl.schema_lifecycle",
+      "variant": "defaults/constraints",
+      "dialect": "snowflake",
+      "sql": "ALTER TABLE orders ALTER COLUMN amount SET DEFAULT 0",
+      "classification": "canonical_explicit_unsupported",
+      "reason": "ALTER column SET DEFAULT parses but the standalone canonical DDL transition is explicitly unsupported in this path.",
+      "owner": [
+        "TASK-83",
+        "TASK-79"
+      ],
+      "required_evidence": "typed domain, whole-bag source and terminal or explicit reviewed conditional proof",
+      "release_disposition": "blocking_not_approved_residual",
+      "vendor_runtime": "not_certified"
+    },
+    {
+      "id": "88-C177-S220-sqlite",
+      "case_id": "88-C177-S220",
+      "feature_id": "ddl.schema_lifecycle",
+      "variant": "defaults/constraints",
+      "dialect": "sqlite",
+      "sql": "ALTER TABLE orders ALTER COLUMN amount SET DEFAULT 0",
+      "classification": "canonical_explicit_unsupported",
+      "reason": "ALTER column SET DEFAULT parses but the standalone canonical DDL transition is explicitly unsupported in this path.",
+      "owner": [
+        "TASK-83",
+        "TASK-79"
+      ],
+      "required_evidence": "typed domain, whole-bag source and terminal or explicit reviewed conditional proof",
+      "release_disposition": "blocking_not_approved_residual",
+      "vendor_runtime": "not_certified"
+    },
+    {
+      "id": "88-C177-S222-ansi",
+      "case_id": "88-C177-S222",
+      "feature_id": "transactions.ordered_effects",
+      "variant": "snapshot visibility",
+      "dialect": "ansi",
+      "sql": "BEGIN; INSERT INTO orders VALUES (1); SELECT id FROM orders; COMMIT",
+      "classification": "canonical_explicit_unsupported",
+      "reason": "BEGIN/INSERT/SELECT/COMMIT parses yet analysis emits an unsupported transaction-control path; vendor/session evidence is not implied.",
+      "owner": [
+        "TASK-84"
+      ],
+      "required_evidence": "typed domain, whole-bag source and terminal or explicit reviewed conditional proof",
+      "release_disposition": "blocking_not_approved_residual",
+      "vendor_runtime": "not_certified"
+    },
+    {
+      "id": "88-C177-S222-clickhouse",
+      "case_id": "88-C177-S222",
+      "feature_id": "transactions.ordered_effects",
+      "variant": "snapshot visibility",
+      "dialect": "clickhouse",
+      "sql": "BEGIN; INSERT INTO orders VALUES (1); SELECT id FROM orders; COMMIT",
+      "classification": "canonical_explicit_unsupported",
+      "reason": "BEGIN/INSERT/SELECT/COMMIT parses yet analysis emits an unsupported transaction-control path; vendor/session evidence is not implied.",
+      "owner": [
+        "TASK-84"
+      ],
+      "required_evidence": "typed domain, whole-bag source and terminal or explicit reviewed conditional proof",
+      "release_disposition": "blocking_not_approved_residual",
+      "vendor_runtime": "not_certified"
+    },
+    {
+      "id": "88-C177-S222-databricks",
+      "case_id": "88-C177-S222",
+      "feature_id": "transactions.ordered_effects",
+      "variant": "snapshot visibility",
+      "dialect": "databricks",
+      "sql": "BEGIN; INSERT INTO orders VALUES (1); SELECT id FROM orders; COMMIT",
+      "classification": "canonical_explicit_unsupported",
+      "reason": "BEGIN/INSERT/SELECT/COMMIT parses yet analysis emits an unsupported transaction-control path; vendor/session evidence is not implied.",
+      "owner": [
+        "TASK-84"
+      ],
+      "required_evidence": "typed domain, whole-bag source and terminal or explicit reviewed conditional proof",
+      "release_disposition": "blocking_not_approved_residual",
+      "vendor_runtime": "not_certified"
+    },
+    {
+      "id": "88-C177-S222-duckdb",
+      "case_id": "88-C177-S222",
+      "feature_id": "transactions.ordered_effects",
+      "variant": "snapshot visibility",
+      "dialect": "duckdb",
+      "sql": "BEGIN; INSERT INTO orders VALUES (1); SELECT id FROM orders; COMMIT",
+      "classification": "canonical_explicit_unsupported",
+      "reason": "BEGIN/INSERT/SELECT/COMMIT parses yet analysis emits an unsupported transaction-control path; vendor/session evidence is not implied.",
+      "owner": [
+        "TASK-84"
+      ],
+      "required_evidence": "typed domain, whole-bag source and terminal or explicit reviewed conditional proof",
+      "release_disposition": "blocking_not_approved_residual",
+      "vendor_runtime": "not_certified"
+    },
+    {
+      "id": "88-C177-S222-generic",
+      "case_id": "88-C177-S222",
+      "feature_id": "transactions.ordered_effects",
+      "variant": "snapshot visibility",
+      "dialect": "generic",
+      "sql": "BEGIN; INSERT INTO orders VALUES (1); SELECT id FROM orders; COMMIT",
+      "classification": "canonical_explicit_unsupported",
+      "reason": "BEGIN/INSERT/SELECT/COMMIT parses yet analysis emits an unsupported transaction-control path; vendor/session evidence is not implied.",
+      "owner": [
+        "TASK-84"
+      ],
+      "required_evidence": "typed domain, whole-bag source and terminal or explicit reviewed conditional proof",
+      "release_disposition": "blocking_not_approved_residual",
+      "vendor_runtime": "not_certified"
+    },
+    {
+      "id": "88-C177-S222-hive",
+      "case_id": "88-C177-S222",
+      "feature_id": "transactions.ordered_effects",
+      "variant": "snapshot visibility",
+      "dialect": "hive",
+      "sql": "BEGIN; INSERT INTO orders VALUES (1); SELECT id FROM orders; COMMIT",
+      "classification": "canonical_explicit_unsupported",
+      "reason": "BEGIN/INSERT/SELECT/COMMIT parses yet analysis emits an unsupported transaction-control path; vendor/session evidence is not implied.",
+      "owner": [
+        "TASK-84"
+      ],
+      "required_evidence": "typed domain, whole-bag source and terminal or explicit reviewed conditional proof",
+      "release_disposition": "blocking_not_approved_residual",
+      "vendor_runtime": "not_certified"
+    },
+    {
+      "id": "88-C177-S222-mssql",
+      "case_id": "88-C177-S222",
+      "feature_id": "transactions.ordered_effects",
+      "variant": "snapshot visibility",
+      "dialect": "mssql",
+      "sql": "BEGIN; INSERT INTO orders VALUES (1); SELECT id FROM orders; COMMIT",
+      "classification": "canonical_explicit_unsupported",
+      "reason": "BEGIN/INSERT/SELECT/COMMIT parses yet analysis emits an unsupported transaction-control path; vendor/session evidence is not implied.",
+      "owner": [
+        "TASK-84"
+      ],
+      "required_evidence": "typed domain, whole-bag source and terminal or explicit reviewed conditional proof",
+      "release_disposition": "blocking_not_approved_residual",
+      "vendor_runtime": "not_certified"
+    },
+    {
+      "id": "88-C177-S222-mysql",
+      "case_id": "88-C177-S222",
+      "feature_id": "transactions.ordered_effects",
+      "variant": "snapshot visibility",
+      "dialect": "mysql",
+      "sql": "BEGIN; INSERT INTO orders VALUES (1); SELECT id FROM orders; COMMIT",
+      "classification": "canonical_explicit_unsupported",
+      "reason": "BEGIN/INSERT/SELECT/COMMIT parses yet analysis emits an unsupported transaction-control path; vendor/session evidence is not implied.",
+      "owner": [
+        "TASK-84"
+      ],
+      "required_evidence": "typed domain, whole-bag source and terminal or explicit reviewed conditional proof",
+      "release_disposition": "blocking_not_approved_residual",
+      "vendor_runtime": "not_certified"
+    },
+    {
+      "id": "88-C177-S222-postgresql",
+      "case_id": "88-C177-S222",
+      "feature_id": "transactions.ordered_effects",
+      "variant": "snapshot visibility",
+      "dialect": "postgresql",
+      "sql": "BEGIN; INSERT INTO orders VALUES (1); SELECT id FROM orders; COMMIT",
+      "classification": "canonical_explicit_unsupported",
+      "reason": "BEGIN/INSERT/SELECT/COMMIT parses yet analysis emits an unsupported transaction-control path; vendor/session evidence is not implied.",
+      "owner": [
+        "TASK-84"
+      ],
+      "required_evidence": "typed domain, whole-bag source and terminal or explicit reviewed conditional proof",
+      "release_disposition": "blocking_not_approved_residual",
+      "vendor_runtime": "not_certified"
+    },
+    {
+      "id": "88-C177-S222-redshift",
+      "case_id": "88-C177-S222",
+      "feature_id": "transactions.ordered_effects",
+      "variant": "snapshot visibility",
+      "dialect": "redshift",
+      "sql": "BEGIN; INSERT INTO orders VALUES (1); SELECT id FROM orders; COMMIT",
+      "classification": "canonical_explicit_unsupported",
+      "reason": "BEGIN/INSERT/SELECT/COMMIT parses yet analysis emits an unsupported transaction-control path; vendor/session evidence is not implied.",
+      "owner": [
+        "TASK-84"
+      ],
+      "required_evidence": "typed domain, whole-bag source and terminal or explicit reviewed conditional proof",
+      "release_disposition": "blocking_not_approved_residual",
+      "vendor_runtime": "not_certified"
+    },
+    {
+      "id": "88-C177-S222-sqlite",
+      "case_id": "88-C177-S222",
+      "feature_id": "transactions.ordered_effects",
+      "variant": "snapshot visibility",
+      "dialect": "sqlite",
+      "sql": "BEGIN; INSERT INTO orders VALUES (1); SELECT id FROM orders; COMMIT",
+      "classification": "canonical_explicit_unsupported",
+      "reason": "BEGIN/INSERT/SELECT/COMMIT parses yet analysis emits an unsupported transaction-control path; vendor/session evidence is not implied.",
+      "owner": [
+        "TASK-84"
+      ],
+      "required_evidence": "typed domain, whole-bag source and terminal or explicit reviewed conditional proof",
+      "release_disposition": "blocking_not_approved_residual",
+      "vendor_runtime": "not_certified"
+    },
+    {
+      "id": "88-C177-S224-ansi",
+      "case_id": "88-C177-S224",
+      "feature_id": "transactions.ordered_effects",
+      "variant": "rollback",
+      "dialect": "ansi",
+      "sql": "BEGIN; UPDATE orders SET id = 2; ROLLBACK",
+      "classification": "canonical_explicit_unsupported",
+      "reason": "BEGIN/UPDATE/ROLLBACK parses yet analysis emits an unsupported transaction-control path; rollback must be checked via the dedicated stateful API.",
+      "owner": [
+        "TASK-84"
+      ],
+      "required_evidence": "typed domain, whole-bag source and terminal or explicit reviewed conditional proof",
+      "release_disposition": "blocking_not_approved_residual",
+      "vendor_runtime": "not_certified"
+    },
+    {
+      "id": "88-C177-S224-clickhouse",
+      "case_id": "88-C177-S224",
+      "feature_id": "transactions.ordered_effects",
+      "variant": "rollback",
+      "dialect": "clickhouse",
+      "sql": "BEGIN; UPDATE orders SET id = 2; ROLLBACK",
+      "classification": "canonical_explicit_unsupported",
+      "reason": "BEGIN/UPDATE/ROLLBACK parses yet analysis emits an unsupported transaction-control path; rollback must be checked via the dedicated stateful API.",
+      "owner": [
+        "TASK-84"
+      ],
+      "required_evidence": "typed domain, whole-bag source and terminal or explicit reviewed conditional proof",
+      "release_disposition": "blocking_not_approved_residual",
+      "vendor_runtime": "not_certified"
+    },
+    {
+      "id": "88-C177-S224-databricks",
+      "case_id": "88-C177-S224",
+      "feature_id": "transactions.ordered_effects",
+      "variant": "rollback",
+      "dialect": "databricks",
+      "sql": "BEGIN; UPDATE orders SET id = 2; ROLLBACK",
+      "classification": "canonical_explicit_unsupported",
+      "reason": "BEGIN/UPDATE/ROLLBACK parses yet analysis emits an unsupported transaction-control path; rollback must be checked via the dedicated stateful API.",
+      "owner": [
+        "TASK-84"
+      ],
+      "required_evidence": "typed domain, whole-bag source and terminal or explicit reviewed conditional proof",
+      "release_disposition": "blocking_not_approved_residual",
+      "vendor_runtime": "not_certified"
+    },
+    {
+      "id": "88-C177-S224-duckdb",
+      "case_id": "88-C177-S224",
+      "feature_id": "transactions.ordered_effects",
+      "variant": "rollback",
+      "dialect": "duckdb",
+      "sql": "BEGIN; UPDATE orders SET id = 2; ROLLBACK",
+      "classification": "canonical_explicit_unsupported",
+      "reason": "BEGIN/UPDATE/ROLLBACK parses yet analysis emits an unsupported transaction-control path; rollback must be checked via the dedicated stateful API.",
+      "owner": [
+        "TASK-84"
+      ],
+      "required_evidence": "typed domain, whole-bag source and terminal or explicit reviewed conditional proof",
+      "release_disposition": "blocking_not_approved_residual",
+      "vendor_runtime": "not_certified"
+    },
+    {
+      "id": "88-C177-S224-generic",
+      "case_id": "88-C177-S224",
+      "feature_id": "transactions.ordered_effects",
+      "variant": "rollback",
+      "dialect": "generic",
+      "sql": "BEGIN; UPDATE orders SET id = 2; ROLLBACK",
+      "classification": "canonical_explicit_unsupported",
+      "reason": "BEGIN/UPDATE/ROLLBACK parses yet analysis emits an unsupported transaction-control path; rollback must be checked via the dedicated stateful API.",
+      "owner": [
+        "TASK-84"
+      ],
+      "required_evidence": "typed domain, whole-bag source and terminal or explicit reviewed conditional proof",
+      "release_disposition": "blocking_not_approved_residual",
+      "vendor_runtime": "not_certified"
+    },
+    {
+      "id": "88-C177-S224-hive",
+      "case_id": "88-C177-S224",
+      "feature_id": "transactions.ordered_effects",
+      "variant": "rollback",
+      "dialect": "hive",
+      "sql": "BEGIN; UPDATE orders SET id = 2; ROLLBACK",
+      "classification": "canonical_explicit_unsupported",
+      "reason": "BEGIN/UPDATE/ROLLBACK parses yet analysis emits an unsupported transaction-control path; rollback must be checked via the dedicated stateful API.",
+      "owner": [
+        "TASK-84"
+      ],
+      "required_evidence": "typed domain, whole-bag source and terminal or explicit reviewed conditional proof",
+      "release_disposition": "blocking_not_approved_residual",
+      "vendor_runtime": "not_certified"
+    },
+    {
+      "id": "88-C177-S224-mssql",
+      "case_id": "88-C177-S224",
+      "feature_id": "transactions.ordered_effects",
+      "variant": "rollback",
+      "dialect": "mssql",
+      "sql": "BEGIN; UPDATE orders SET id = 2; ROLLBACK",
+      "classification": "canonical_explicit_unsupported",
+      "reason": "BEGIN/UPDATE/ROLLBACK parses yet analysis emits an unsupported transaction-control path; rollback must be checked via the dedicated stateful API.",
+      "owner": [
+        "TASK-84"
+      ],
+      "required_evidence": "typed domain, whole-bag source and terminal or explicit reviewed conditional proof",
+      "release_disposition": "blocking_not_approved_residual",
+      "vendor_runtime": "not_certified"
+    },
+    {
+      "id": "88-C177-S224-mysql",
+      "case_id": "88-C177-S224",
+      "feature_id": "transactions.ordered_effects",
+      "variant": "rollback",
+      "dialect": "mysql",
+      "sql": "BEGIN; UPDATE orders SET id = 2; ROLLBACK",
+      "classification": "canonical_explicit_unsupported",
+      "reason": "BEGIN/UPDATE/ROLLBACK parses yet analysis emits an unsupported transaction-control path; rollback must be checked via the dedicated stateful API.",
+      "owner": [
+        "TASK-84"
+      ],
+      "required_evidence": "typed domain, whole-bag source and terminal or explicit reviewed conditional proof",
+      "release_disposition": "blocking_not_approved_residual",
+      "vendor_runtime": "not_certified"
+    },
+    {
+      "id": "88-C177-S224-postgresql",
+      "case_id": "88-C177-S224",
+      "feature_id": "transactions.ordered_effects",
+      "variant": "rollback",
+      "dialect": "postgresql",
+      "sql": "BEGIN; UPDATE orders SET id = 2; ROLLBACK",
+      "classification": "canonical_explicit_unsupported",
+      "reason": "BEGIN/UPDATE/ROLLBACK parses yet analysis emits an unsupported transaction-control path; rollback must be checked via the dedicated stateful API.",
+      "owner": [
+        "TASK-84"
+      ],
+      "required_evidence": "typed domain, whole-bag source and terminal or explicit reviewed conditional proof",
+      "release_disposition": "blocking_not_approved_residual",
+      "vendor_runtime": "not_certified"
+    },
+    {
+      "id": "88-C177-S224-redshift",
+      "case_id": "88-C177-S224",
+      "feature_id": "transactions.ordered_effects",
+      "variant": "rollback",
+      "dialect": "redshift",
+      "sql": "BEGIN; UPDATE orders SET id = 2; ROLLBACK",
+      "classification": "canonical_explicit_unsupported",
+      "reason": "BEGIN/UPDATE/ROLLBACK parses yet analysis emits an unsupported transaction-control path; rollback must be checked via the dedicated stateful API.",
+      "owner": [
+        "TASK-84"
+      ],
+      "required_evidence": "typed domain, whole-bag source and terminal or explicit reviewed conditional proof",
+      "release_disposition": "blocking_not_approved_residual",
+      "vendor_runtime": "not_certified"
+    },
+    {
+      "id": "88-C177-S224-sqlite",
+      "case_id": "88-C177-S224",
+      "feature_id": "transactions.ordered_effects",
+      "variant": "rollback",
+      "dialect": "sqlite",
+      "sql": "BEGIN; UPDATE orders SET id = 2; ROLLBACK",
+      "classification": "canonical_explicit_unsupported",
+      "reason": "BEGIN/UPDATE/ROLLBACK parses yet analysis emits an unsupported transaction-control path; rollback must be checked via the dedicated stateful API.",
+      "owner": [
+        "TASK-84"
+      ],
+      "required_evidence": "typed domain, whole-bag source and terminal or explicit reviewed conditional proof",
+      "release_disposition": "blocking_not_approved_residual",
+      "vendor_runtime": "not_certified"
+    },
+    {
+      "id": "88-C177-S241-ansi",
+      "case_id": "88-C177-S241",
+      "feature_id": "execution.dialect_equivalence",
+      "variant": "session state",
+      "dialect": "ansi",
+      "sql": "SET TIME ZONE 'UTC'",
+      "classification": "canonical_explicit_unsupported",
+      "reason": "SET TIME ZONE parses but session state effects and time-zone laws are explicitly unsupported.",
+      "owner": [
+        "TASK-88",
+        "TASK-89"
+      ],
+      "required_evidence": "typed domain, whole-bag source and terminal or explicit reviewed conditional proof",
+      "release_disposition": "blocking_not_approved_residual",
+      "vendor_runtime": "not_certified"
+    },
+    {
+      "id": "88-C177-S241-bigquery",
+      "case_id": "88-C177-S241",
+      "feature_id": "execution.dialect_equivalence",
+      "variant": "session state",
+      "dialect": "bigquery",
+      "sql": "SET TIME ZONE 'UTC'",
+      "classification": "canonical_explicit_unsupported",
+      "reason": "SET TIME ZONE parses but session state effects and time-zone laws are explicitly unsupported.",
+      "owner": [
+        "TASK-88",
+        "TASK-89"
+      ],
+      "required_evidence": "typed domain, whole-bag source and terminal or explicit reviewed conditional proof",
+      "release_disposition": "blocking_not_approved_residual",
+      "vendor_runtime": "not_certified"
+    },
+    {
+      "id": "88-C177-S241-clickhouse",
+      "case_id": "88-C177-S241",
+      "feature_id": "execution.dialect_equivalence",
+      "variant": "session state",
+      "dialect": "clickhouse",
+      "sql": "SET TIME ZONE 'UTC'",
+      "classification": "canonical_explicit_unsupported",
+      "reason": "SET TIME ZONE parses but session state effects and time-zone laws are explicitly unsupported.",
+      "owner": [
+        "TASK-88",
+        "TASK-89"
+      ],
+      "required_evidence": "typed domain, whole-bag source and terminal or explicit reviewed conditional proof",
+      "release_disposition": "blocking_not_approved_residual",
+      "vendor_runtime": "not_certified"
+    },
+    {
+      "id": "88-C177-S241-databricks",
+      "case_id": "88-C177-S241",
+      "feature_id": "execution.dialect_equivalence",
+      "variant": "session state",
+      "dialect": "databricks",
+      "sql": "SET TIME ZONE 'UTC'",
+      "classification": "canonical_explicit_unsupported",
+      "reason": "SET TIME ZONE parses but session state effects and time-zone laws are explicitly unsupported.",
+      "owner": [
+        "TASK-88",
+        "TASK-89"
+      ],
+      "required_evidence": "typed domain, whole-bag source and terminal or explicit reviewed conditional proof",
+      "release_disposition": "blocking_not_approved_residual",
+      "vendor_runtime": "not_certified"
+    },
+    {
+      "id": "88-C177-S241-duckdb",
+      "case_id": "88-C177-S241",
+      "feature_id": "execution.dialect_equivalence",
+      "variant": "session state",
+      "dialect": "duckdb",
+      "sql": "SET TIME ZONE 'UTC'",
+      "classification": "canonical_explicit_unsupported",
+      "reason": "SET TIME ZONE parses but session state effects and time-zone laws are explicitly unsupported.",
+      "owner": [
+        "TASK-88",
+        "TASK-89"
+      ],
+      "required_evidence": "typed domain, whole-bag source and terminal or explicit reviewed conditional proof",
+      "release_disposition": "blocking_not_approved_residual",
+      "vendor_runtime": "not_certified"
+    },
+    {
+      "id": "88-C177-S241-generic",
+      "case_id": "88-C177-S241",
+      "feature_id": "execution.dialect_equivalence",
+      "variant": "session state",
+      "dialect": "generic",
+      "sql": "SET TIME ZONE 'UTC'",
+      "classification": "canonical_explicit_unsupported",
+      "reason": "SET TIME ZONE parses but session state effects and time-zone laws are explicitly unsupported.",
+      "owner": [
+        "TASK-88",
+        "TASK-89"
+      ],
+      "required_evidence": "typed domain, whole-bag source and terminal or explicit reviewed conditional proof",
+      "release_disposition": "blocking_not_approved_residual",
+      "vendor_runtime": "not_certified"
+    },
+    {
+      "id": "88-C177-S241-hive",
+      "case_id": "88-C177-S241",
+      "feature_id": "execution.dialect_equivalence",
+      "variant": "session state",
+      "dialect": "hive",
+      "sql": "SET TIME ZONE 'UTC'",
+      "classification": "canonical_explicit_unsupported",
+      "reason": "SET TIME ZONE parses but session state effects and time-zone laws are explicitly unsupported.",
+      "owner": [
+        "TASK-88",
+        "TASK-89"
+      ],
+      "required_evidence": "typed domain, whole-bag source and terminal or explicit reviewed conditional proof",
+      "release_disposition": "blocking_not_approved_residual",
+      "vendor_runtime": "not_certified"
+    },
+    {
+      "id": "88-C177-S241-mssql",
+      "case_id": "88-C177-S241",
+      "feature_id": "execution.dialect_equivalence",
+      "variant": "session state",
+      "dialect": "mssql",
+      "sql": "SET TIME ZONE 'UTC'",
+      "classification": "canonical_explicit_unsupported",
+      "reason": "SET TIME ZONE parses but session state effects and time-zone laws are explicitly unsupported.",
+      "owner": [
+        "TASK-88",
+        "TASK-89"
+      ],
+      "required_evidence": "typed domain, whole-bag source and terminal or explicit reviewed conditional proof",
+      "release_disposition": "blocking_not_approved_residual",
+      "vendor_runtime": "not_certified"
+    },
+    {
+      "id": "88-C177-S241-mysql",
+      "case_id": "88-C177-S241",
+      "feature_id": "execution.dialect_equivalence",
+      "variant": "session state",
+      "dialect": "mysql",
+      "sql": "SET TIME ZONE 'UTC'",
+      "classification": "canonical_explicit_unsupported",
+      "reason": "SET TIME ZONE parses but session state effects and time-zone laws are explicitly unsupported.",
+      "owner": [
+        "TASK-88",
+        "TASK-89"
+      ],
+      "required_evidence": "typed domain, whole-bag source and terminal or explicit reviewed conditional proof",
+      "release_disposition": "blocking_not_approved_residual",
+      "vendor_runtime": "not_certified"
+    },
+    {
+      "id": "88-C177-S241-postgresql",
+      "case_id": "88-C177-S241",
+      "feature_id": "execution.dialect_equivalence",
+      "variant": "session state",
+      "dialect": "postgresql",
+      "sql": "SET TIME ZONE 'UTC'",
+      "classification": "canonical_explicit_unsupported",
+      "reason": "SET TIME ZONE parses but session state effects and time-zone laws are explicitly unsupported.",
+      "owner": [
+        "TASK-88",
+        "TASK-89"
+      ],
+      "required_evidence": "typed domain, whole-bag source and terminal or explicit reviewed conditional proof",
+      "release_disposition": "blocking_not_approved_residual",
+      "vendor_runtime": "not_certified"
+    },
+    {
+      "id": "88-C177-S241-redshift",
+      "case_id": "88-C177-S241",
+      "feature_id": "execution.dialect_equivalence",
+      "variant": "session state",
+      "dialect": "redshift",
+      "sql": "SET TIME ZONE 'UTC'",
+      "classification": "canonical_explicit_unsupported",
+      "reason": "SET TIME ZONE parses but session state effects and time-zone laws are explicitly unsupported.",
+      "owner": [
+        "TASK-88",
+        "TASK-89"
+      ],
+      "required_evidence": "typed domain, whole-bag source and terminal or explicit reviewed conditional proof",
+      "release_disposition": "blocking_not_approved_residual",
+      "vendor_runtime": "not_certified"
+    },
+    {
+      "id": "88-C177-S241-snowflake",
+      "case_id": "88-C177-S241",
+      "feature_id": "execution.dialect_equivalence",
+      "variant": "session state",
+      "dialect": "snowflake",
+      "sql": "SET TIME ZONE 'UTC'",
+      "classification": "canonical_explicit_unsupported",
+      "reason": "SET TIME ZONE parses but session state effects and time-zone laws are explicitly unsupported.",
+      "owner": [
+        "TASK-88",
+        "TASK-89"
+      ],
+      "required_evidence": "typed domain, whole-bag source and terminal or explicit reviewed conditional proof",
+      "release_disposition": "blocking_not_approved_residual",
+      "vendor_runtime": "not_certified"
+    },
+    {
+      "id": "88-C177-S241-sqlite",
+      "case_id": "88-C177-S241",
+      "feature_id": "execution.dialect_equivalence",
+      "variant": "session state",
+      "dialect": "sqlite",
+      "sql": "SET TIME ZONE 'UTC'",
+      "classification": "canonical_explicit_unsupported",
+      "reason": "SET TIME ZONE parses but session state effects and time-zone laws are explicitly unsupported.",
+      "owner": [
+        "TASK-88",
+        "TASK-89"
+      ],
+      "required_evidence": "typed domain, whole-bag source and terminal or explicit reviewed conditional proof",
+      "release_disposition": "blocking_not_approved_residual",
+      "vendor_runtime": "not_certified"
+    },
+    {
+      "id": "88-C177-S242-ansi",
+      "case_id": "88-C177-S242",
+      "feature_id": "execution.dialect_equivalence",
+      "variant": "runtime plan",
+      "dialect": "ansi",
+      "sql": "EXPLAIN SELECT * FROM orders",
+      "classification": "canonical_explicit_unsupported",
+      "reason": "EXPLAIN parses but runtime query plans are not part of the canonical SQL outcome model.",
+      "owner": [
+        "TASK-88",
+        "TASK-89"
+      ],
+      "required_evidence": "typed domain, whole-bag source and terminal or explicit reviewed conditional proof",
+      "release_disposition": "blocking_not_approved_residual",
+      "vendor_runtime": "not_certified"
+    },
+    {
+      "id": "88-C177-S242-bigquery",
+      "case_id": "88-C177-S242",
+      "feature_id": "execution.dialect_equivalence",
+      "variant": "runtime plan",
+      "dialect": "bigquery",
+      "sql": "EXPLAIN SELECT * FROM orders",
+      "classification": "canonical_explicit_unsupported",
+      "reason": "EXPLAIN parses but runtime query plans are not part of the canonical SQL outcome model.",
+      "owner": [
+        "TASK-88",
+        "TASK-89"
+      ],
+      "required_evidence": "typed domain, whole-bag source and terminal or explicit reviewed conditional proof",
+      "release_disposition": "blocking_not_approved_residual",
+      "vendor_runtime": "not_certified"
+    },
+    {
+      "id": "88-C177-S242-clickhouse",
+      "case_id": "88-C177-S242",
+      "feature_id": "execution.dialect_equivalence",
+      "variant": "runtime plan",
+      "dialect": "clickhouse",
+      "sql": "EXPLAIN SELECT * FROM orders",
+      "classification": "canonical_explicit_unsupported",
+      "reason": "EXPLAIN parses but runtime query plans are not part of the canonical SQL outcome model.",
+      "owner": [
+        "TASK-88",
+        "TASK-89"
+      ],
+      "required_evidence": "typed domain, whole-bag source and terminal or explicit reviewed conditional proof",
+      "release_disposition": "blocking_not_approved_residual",
+      "vendor_runtime": "not_certified"
+    },
+    {
+      "id": "88-C177-S242-databricks",
+      "case_id": "88-C177-S242",
+      "feature_id": "execution.dialect_equivalence",
+      "variant": "runtime plan",
+      "dialect": "databricks",
+      "sql": "EXPLAIN SELECT * FROM orders",
+      "classification": "canonical_explicit_unsupported",
+      "reason": "EXPLAIN parses but runtime query plans are not part of the canonical SQL outcome model.",
+      "owner": [
+        "TASK-88",
+        "TASK-89"
+      ],
+      "required_evidence": "typed domain, whole-bag source and terminal or explicit reviewed conditional proof",
+      "release_disposition": "blocking_not_approved_residual",
+      "vendor_runtime": "not_certified"
+    },
+    {
+      "id": "88-C177-S242-duckdb",
+      "case_id": "88-C177-S242",
+      "feature_id": "execution.dialect_equivalence",
+      "variant": "runtime plan",
+      "dialect": "duckdb",
+      "sql": "EXPLAIN SELECT * FROM orders",
+      "classification": "canonical_explicit_unsupported",
+      "reason": "EXPLAIN parses but runtime query plans are not part of the canonical SQL outcome model.",
+      "owner": [
+        "TASK-88",
+        "TASK-89"
+      ],
+      "required_evidence": "typed domain, whole-bag source and terminal or explicit reviewed conditional proof",
+      "release_disposition": "blocking_not_approved_residual",
+      "vendor_runtime": "not_certified"
+    },
+    {
+      "id": "88-C177-S242-generic",
+      "case_id": "88-C177-S242",
+      "feature_id": "execution.dialect_equivalence",
+      "variant": "runtime plan",
+      "dialect": "generic",
+      "sql": "EXPLAIN SELECT * FROM orders",
+      "classification": "canonical_explicit_unsupported",
+      "reason": "EXPLAIN parses but runtime query plans are not part of the canonical SQL outcome model.",
+      "owner": [
+        "TASK-88",
+        "TASK-89"
+      ],
+      "required_evidence": "typed domain, whole-bag source and terminal or explicit reviewed conditional proof",
+      "release_disposition": "blocking_not_approved_residual",
+      "vendor_runtime": "not_certified"
+    },
+    {
+      "id": "88-C177-S242-hive",
+      "case_id": "88-C177-S242",
+      "feature_id": "execution.dialect_equivalence",
+      "variant": "runtime plan",
+      "dialect": "hive",
+      "sql": "EXPLAIN SELECT * FROM orders",
+      "classification": "canonical_explicit_unsupported",
+      "reason": "EXPLAIN parses but runtime query plans are not part of the canonical SQL outcome model.",
+      "owner": [
+        "TASK-88",
+        "TASK-89"
+      ],
+      "required_evidence": "typed domain, whole-bag source and terminal or explicit reviewed conditional proof",
+      "release_disposition": "blocking_not_approved_residual",
+      "vendor_runtime": "not_certified"
+    },
+    {
+      "id": "88-C177-S242-mssql",
+      "case_id": "88-C177-S242",
+      "feature_id": "execution.dialect_equivalence",
+      "variant": "runtime plan",
+      "dialect": "mssql",
+      "sql": "EXPLAIN SELECT * FROM orders",
+      "classification": "canonical_explicit_unsupported",
+      "reason": "EXPLAIN parses but runtime query plans are not part of the canonical SQL outcome model.",
+      "owner": [
+        "TASK-88",
+        "TASK-89"
+      ],
+      "required_evidence": "typed domain, whole-bag source and terminal or explicit reviewed conditional proof",
+      "release_disposition": "blocking_not_approved_residual",
+      "vendor_runtime": "not_certified"
+    },
+    {
+      "id": "88-C177-S242-mysql",
+      "case_id": "88-C177-S242",
+      "feature_id": "execution.dialect_equivalence",
+      "variant": "runtime plan",
+      "dialect": "mysql",
+      "sql": "EXPLAIN SELECT * FROM orders",
+      "classification": "canonical_explicit_unsupported",
+      "reason": "EXPLAIN parses but runtime query plans are not part of the canonical SQL outcome model.",
+      "owner": [
+        "TASK-88",
+        "TASK-89"
+      ],
+      "required_evidence": "typed domain, whole-bag source and terminal or explicit reviewed conditional proof",
+      "release_disposition": "blocking_not_approved_residual",
+      "vendor_runtime": "not_certified"
+    },
+    {
+      "id": "88-C177-S242-postgresql",
+      "case_id": "88-C177-S242",
+      "feature_id": "execution.dialect_equivalence",
+      "variant": "runtime plan",
+      "dialect": "postgresql",
+      "sql": "EXPLAIN SELECT * FROM orders",
+      "classification": "canonical_explicit_unsupported",
+      "reason": "EXPLAIN parses but runtime query plans are not part of the canonical SQL outcome model.",
+      "owner": [
+        "TASK-88",
+        "TASK-89"
+      ],
+      "required_evidence": "typed domain, whole-bag source and terminal or explicit reviewed conditional proof",
+      "release_disposition": "blocking_not_approved_residual",
+      "vendor_runtime": "not_certified"
+    },
+    {
+      "id": "88-C177-S242-redshift",
+      "case_id": "88-C177-S242",
+      "feature_id": "execution.dialect_equivalence",
+      "variant": "runtime plan",
+      "dialect": "redshift",
+      "sql": "EXPLAIN SELECT * FROM orders",
+      "classification": "canonical_explicit_unsupported",
+      "reason": "EXPLAIN parses but runtime query plans are not part of the canonical SQL outcome model.",
+      "owner": [
+        "TASK-88",
+        "TASK-89"
+      ],
+      "required_evidence": "typed domain, whole-bag source and terminal or explicit reviewed conditional proof",
+      "release_disposition": "blocking_not_approved_residual",
+      "vendor_runtime": "not_certified"
+    },
+    {
+      "id": "88-C177-S242-snowflake",
+      "case_id": "88-C177-S242",
+      "feature_id": "execution.dialect_equivalence",
+      "variant": "runtime plan",
+      "dialect": "snowflake",
+      "sql": "EXPLAIN SELECT * FROM orders",
+      "classification": "canonical_explicit_unsupported",
+      "reason": "EXPLAIN parses but runtime query plans are not part of the canonical SQL outcome model.",
+      "owner": [
+        "TASK-88",
+        "TASK-89"
+      ],
+      "required_evidence": "typed domain, whole-bag source and terminal or explicit reviewed conditional proof",
+      "release_disposition": "blocking_not_approved_residual",
+      "vendor_runtime": "not_certified"
+    },
+    {
+      "id": "88-C177-S242-sqlite",
+      "case_id": "88-C177-S242",
+      "feature_id": "execution.dialect_equivalence",
+      "variant": "runtime plan",
+      "dialect": "sqlite",
+      "sql": "EXPLAIN SELECT * FROM orders",
+      "classification": "canonical_explicit_unsupported",
+      "reason": "EXPLAIN parses but runtime query plans are not part of the canonical SQL outcome model.",
+      "owner": [
+        "TASK-88",
+        "TASK-89"
+      ],
+      "required_evidence": "typed domain, whole-bag source and terminal or explicit reviewed conditional proof",
+      "release_disposition": "blocking_not_approved_residual",
+      "vendor_runtime": "not_certified"
+    }
+  ]
+}
