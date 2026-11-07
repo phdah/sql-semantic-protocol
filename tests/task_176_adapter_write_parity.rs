@@ -127,7 +127,7 @@ fn read_proof(
     )
     .unwrap();
     let PhysicalOrderedLifecycleProof::Exact(exact) =
-        physical_ordered_lifecycle_plan(&analyzed, &[source.clone()])
+        physical_ordered_lifecycle_plan(&analyzed, std::slice::from_ref(&source))
     else {
         panic!("complete read source must produce Exact physical proof");
     };
