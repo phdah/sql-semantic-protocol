@@ -185,7 +185,11 @@ fn frozen_matrix_identifies_all_adapter_and_dialect_obligations() {
         .unwrap()
         .contains("write oracle"));
     assert_eq!(freeze["owner"], "TASK-176");
-    assert_eq!(freeze["frozen_before_implementation"], true);
+    let original: Value =
+        serde_json::from_str(include_str!("../docs/task-176-acceptance-freeze-v1.json")).unwrap();
+    assert_eq!(original["frozen_before_implementation"], true);
+    assert_eq!(freeze["frozen_before_implementation"], false);
+    assert_eq!(original["cases"].as_array().unwrap().len(), freeze["cases"].as_array().unwrap().len());
     assert_eq!(freeze["fixture_ids"], json!(["87-C176-P", "87-C176-N"]));
     assert_eq!(freeze["cases"].as_array().unwrap().len(), 8);
     assert_eq!(
