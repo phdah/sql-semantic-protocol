@@ -1,10 +1,10 @@
 ---
 id: TASK-176
 title: Certify SQL dbt ODCS paired canonical parity across writes
-status: To Do
+status: In Progress
 assignee: []
 created_date: '2026-10-17'
-updated_date: '2026-10-17'
+updated_date: '2026-11-07'
 labels: []
 milestone: m-3
 dependencies:
@@ -21,6 +21,11 @@ type: feature
 <!-- SECTION:DESCRIPTION:BEGIN -->
 **TASK-87 child 4/4.** Certify SQL dbt ODCS paired canonical parity across writes. Implement this scope in its own PR against `main` after dependencies merge. Preserve original TASK-87 AC for separate parent signoff. Never create parent-child dependency cycles.
 <!-- SECTION:DESCRIPTION:END -->
+
+## Implementation (2026-11-07)
+
+- Freeze v1 registered in `docs/task-176-acceptance-freeze.json` and `docs/coverage-manifest.json` before code changes.
+- TASK-87 parent and TASK-91 release gates remain open; child AC and verification gates are not preapproved.
 
 ## Bounded planning scope
 

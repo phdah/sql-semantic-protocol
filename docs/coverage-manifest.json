@@ -1,4 +1,42 @@
 {
+  "task_176_paired_adapter_write_acceptance": {
+    "owner": "TASK-176",
+    "parent": "TASK-87",
+    "status": "in_progress",
+    "freeze": "docs/task-176-acceptance-freeze.json",
+    "freeze_version": 1,
+    "fixture_ids": [
+      "87-C176-P",
+      "87-C176-N"
+    ],
+    "mandatory_cases": 7,
+    "conditional_cases": 1,
+    "parser_cells": 65,
+    "adapter_cells": 15,
+    "public_api_oracles": [
+      "tests/task_176_adapter_write_parity.rs"
+    ],
+    "mandatory_verified": false,
+    "independent_review_verified": false,
+    "full_ci_verified": false,
+    "parent_closed": false,
+    "release_approved": false,
+    "original_child_ac": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "original_parent_ac": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+    ]
+  },
   "task_175_schema_fk_acceptance": {
     "owner": "TASK-175",
     "parent": "TASK-87",
