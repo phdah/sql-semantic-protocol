@@ -1,9 +1,9 @@
 {
-  "version": 1,
+  "version": 2,
   "owner": "TASK-176",
   "parent": "TASK-87",
   "created": "2026-11-07",
-  "frozen_before_implementation": true,
+  "frozen_before_implementation": false,
   "upstream": "TASK-175 Done; PR #194 merged into main",
   "fixture_ids": [
     "87-C176-P",
@@ -350,38 +350,99 @@
       "expected": "one complete typed source/target prestate; same MERGE/DELETE/read effects regardless of schema adapter",
       "requirement": "mandatory",
       "oracle": {
-        "source": [
-          1,
-          1,
-          null,
-          0
-        ],
+        "source": {
+          "relation": "t",
+          "rows": [
+            [
+              1,
+              10
+            ],
+            [
+              2,
+              null
+            ],
+            [
+              3,
+              99
+            ],
+            [
+              4,
+              10
+            ],
+            [
+              5,
+              null
+            ]
+          ],
+          "source_occurrences": [
+            "t#0",
+            "t#1",
+            "t#2",
+            "t#3",
+            "t#4"
+          ]
+        },
+        "additional_source": {
+          "relation": "s",
+          "rows": [
+            [
+              1,
+              30
+            ]
+          ],
+          "source_occurrences": [
+            "s#0"
+          ]
+        },
         "terminal": [
-          1,
-          1
+          [
+            1,
+            30
+          ],
+          [
+            3,
+            99
+          ]
         ],
-        "true": [
+        "positive": [
           0,
           1
         ],
-        "false": [
-          3
-        ],
-        "unknown": [
+        "rejected_false": [
           2
         ],
+        "rejected_unknown": [
+          3
+        ],
         "domain": {
+          "column": "v",
           "kind": "signed_integer",
-          "lower": 1,
+          "lower": 20,
           "lower_inclusive": true,
           "upper": null,
           "nullable": false
         },
-        "source_occurrences": [
-          "raw.orders#0",
-          "raw.orders#1",
-          "raw.orders#2",
-          "raw.orders#3"
+        "write_affected": {
+          "updated": 1,
+          "deleted": 1
+        },
+        "final_target": [
+          [
+            1,
+            30
+          ],
+          [
+            3,
+            99
+          ],
+          [
+            4,
+            10
+          ],
+          [
+            5,
+            null
+          ]
         ]
       }
     },
@@ -1204,6 +1265,15 @@
     "independent_review_verified": false,
     "pinned_consumer_verified": false,
     "parent_closed": false,
-    "release_approved": false
-  }
+    "release_approved": false,
+    "freeze_v2_correction_reviewed": false
+  },
+  "archive": "docs/task-176-acceptance-freeze-v1.json",
+  "process_deviation": "v1 frozen before code but incorrectly reused the filter oracle for a distinct DML case; v2 corrects only the write oracle after implementation. Original v1 archived; this is a reviewed retrospective correction, not claimed as pre-frozen compliance.",
+  "v2_additions_only": [
+    "write-case-specific physical oracle",
+    "explicit process-deviation disclosure",
+    "case-specific verification mapping"
+  ],
+  "review_of_additions": "needs two-axis review and final-head CI before signoff"
 }
