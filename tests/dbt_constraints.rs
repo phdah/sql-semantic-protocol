@@ -616,11 +616,20 @@ fn dbt_foreign_key_with_unresolved_target_reports_diagnostic() {
 
     let json = serde_json::to_string(&manifest).expect("manifest should serialize");
     let parsed = parse_dbt_manifest(&json).expect("unresolved FK must be diagnostic");
-    let metadata = parsed.relation_constraints().iter()
+    let metadata = parsed
+        .relation_constraints()
+        .iter()
         .find(|set| set.relation() == "warehouse.analytics.stg_orders")
         .expect("relation-scoped diagnostic");
-    assert!(metadata.constraints().iter().all(|item| !matches!(item, RelationConstraint::ForeignKey(_))));
-    assert!(metadata.diagnostics().iter().any(|item| item.code() == "unresolved_foreign_key_target" && item.message().contains("ref('missing_orders')")));
+    assert!(metadata
+        .constraints()
+        .iter()
+        .all(|item| !matches!(item, RelationConstraint::ForeignKey(_))));
+    assert!(metadata
+        .diagnostics()
+        .iter()
+        .any(|item| item.code() == "unresolved_foreign_key_target"
+            && item.message().contains("ref('missing_orders')")));
 }
 
 #[test]
@@ -653,11 +662,20 @@ fn dbt_relationships_with_unresolved_target_reports_diagnostic() {
 
     let json = serde_json::to_string(&manifest).expect("manifest should serialize");
     let parsed = parse_dbt_manifest(&json).expect("unresolved test target must be diagnostic");
-    let metadata = parsed.relation_constraints().iter()
+    let metadata = parsed
+        .relation_constraints()
+        .iter()
         .find(|set| set.relation() == "warehouse.analytics.stg_orders")
         .expect("relation-scoped diagnostic");
-    assert!(metadata.constraints().iter().all(|item| !matches!(item, RelationConstraint::ForeignKey(_))));
-    assert!(metadata.diagnostics().iter().any(|item| item.code() == "unresolved_relationship_target" && item.message().contains("ref('missing_orders')")));
+    assert!(metadata
+        .constraints()
+        .iter()
+        .all(|item| !matches!(item, RelationConstraint::ForeignKey(_))));
+    assert!(metadata
+        .diagnostics()
+        .iter()
+        .any(|item| item.code() == "unresolved_relationship_target"
+            && item.message().contains("ref('missing_orders')")));
 }
 
 #[test]
