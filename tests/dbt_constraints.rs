@@ -282,11 +282,21 @@ fn dbt_source_relationships_with_extra_dependencies_reject_multiple_referenced_c
     ]);
 
     let json = serde_json::to_string(&manifest).expect("manifest should serialize");
-    let error = parse_dbt_manifest(&json)
-        .expect_err("a third dependency leaves more than one referenced candidate");
-    assert!(error
-        .to_string()
-        .contains("multiple candidate referenced relations"));
+    let parsed = parse_dbt_manifest(&json)
+        .expect("ambiguous test target should produce a scoped diagnostic");
+    let metadata = parsed
+        .relation_constraints()
+        .iter()
+        .find(|set| set.relation() == "warehouse.target.order_items")
+        .expect("tested relation metadata");
+    assert!(metadata
+        .constraints()
+        .iter()
+        .all(|item| !matches!(item, RelationConstraint::ForeignKey(_))));
+    assert!(metadata
+        .diagnostics()
+        .iter()
+        .any(|item| item.code() == "ambiguous_relationship_target"));
 }
 
 #[test]
