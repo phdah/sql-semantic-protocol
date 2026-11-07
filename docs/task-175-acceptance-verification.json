@@ -12,16 +12,15 @@
   "code_head": "91ab73aadaf7f804ab2c8d0379b37e81a07cbc5c",
   "ci_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/42376329382",
   "ci_jobs_expected": 9,
-  "ci_jobs_passed": "pending_final_job",
+  "ci_jobs_passed": "9/9",
   "original_ac_verified": [
     1,
     2,
     3,
-    4
-  ],
-  "original_ac_pending": [
+    4,
     5
   ],
+  "original_ac_pending": [],
   "mapped_parent_ac_reviewed": [
     1,
     2,
@@ -1011,11 +1010,15 @@
   "all_13_parser_dialects_verified": true,
   "pinned_consumer_disposition": "not_applicable_to_unreleased_dbt_adapter_only_change; sql-tdg Cargo.toml pins published 2.0.3 with default-features=false; external v3 acceptance remains TASK-91",
   "active_schema_or_golden_contract": "no new protocol root/schema variants; exercised by full Rust test suite",
-  "full_ci_verified": false,
-  "two_axis_same_account_review_verified": false,
+  "full_ci_verified": true,
+  "two_axis_same_account_review_verified": true,
   "independent_review_verified": false,
   "owner_directed_review_process_exception": true,
-  "child_signed_off": false,
+  "child_signed_off": true,
   "parent_closed": false,
-  "release_approved": false
+  "release_approved": false,
+  "same_account_review_url": "https://github.com/phdah/sql-semantic-protocol/pull/194#pullrequestreview-5812435290",
+  "technical_signoff": "bounded acceptance complete under explicitly disclosed owner-directed same-account review-process exception",
+  "pinned_consumer_test_executed": false,
+  "pinned_consumer_test_reason": "Consumer pins published 2.0.3 without default-features, not the unreleased PR; changed code is dbt adapter metadata-only and external v3 upgrade is TASK-91"
 }
