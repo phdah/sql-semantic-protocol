@@ -682,6 +682,24 @@ fn write_proof(
         read.output.rows(),
         &[write_row(1, Some(30)), write_row(3, Some(99))]
     );
+    assert_eq!(read.surviving_source_ordinals, [0, 1]);
+    assert_eq!(read.rejected_source_ordinals, [2, 3]);
+    let ComposedSemantics::Resolved(terminal) = bundles[2].layers()[0].composed_semantics()
+    else {
+        panic!("write terminal must expose canonical resolved output bounds");
+    };
+    let ValueDomain::Ranges(ranges) = terminal.output().columns()[1].domain() else {
+        panic!("terminal v must retain the filter's typed output domain");
+    };
+    let [interval] = ranges.ranges() else {
+        panic!("expected exactly one terminal range");
+    };
+    assert_eq!(
+        interval.lower().unwrap().value().value(),
+        &LiteralValue::Number("20".to_string())
+    );
+    assert!(interval.lower().unwrap().inclusive());
+    assert!(interval.upper().is_none());
     let final_t = exact
         .final_catalog
         .states
