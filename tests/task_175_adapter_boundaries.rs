@@ -18,9 +18,9 @@ const DIALECTS: &[&str] = &[
     "mssql", "clickhouse", "bigquery", "ansi", "duckdb", "databricks",
 ];
 
-const FILTER: &str = "SELECT k FROM warehouse.raw.orders WHERE k >= 1";
-const ORDERS: &str = "warehouse.raw.orders";
-const PARENTS: &str = "warehouse.raw.parents";
+const FILTER: &str = "SELECT k FROM raw.orders WHERE k >= 1";
+const ORDERS: &str = "raw.orders";
+const PARENTS: &str = "raw.parents";
 
 fn manifest_json() -> Value {
     json!({
@@ -36,7 +36,7 @@ fn manifest_json() -> Value {
                 "name": "filtered",
                 "language": "sql",
                 "config": {"materialized": "view"},
-                "relation_name": "warehouse.analytics.filtered",
+                "relation_name": "analytics.filtered",
                 "compiled_code": FILTER,
                 "depends_on": {"nodes": ["source.task175.raw.orders"]}
             }
@@ -231,16 +231,16 @@ fn all_exposed_dialects_preserve_portable_typed_filter_bound() {
 #[test]
 fn full_duckdb_source_and_terminal_bags_match_canonical_positive_and_not_true() {
     let conn = duckdb::Connection::open_in_memory().unwrap();
-    conn.execute_batch("CREATE SCHEMA warehouse; CREATE SCHEMA warehouse.raw; CREATE TABLE warehouse.raw.orders(k INTEGER); INSERT INTO warehouse.raw.orders VALUES (1),(1),(NULL),(0);").unwrap();
+    conn.execute_batch("CREATE SCHEMA raw; CREATE TABLE raw.orders(k INTEGER); INSERT INTO raw.orders VALUES (1),(1),(NULL),(0);").unwrap();
     let values = |sql: &str| {
         let mut stmt = conn.prepare(sql).unwrap();
         stmt.query_map([], |row| row.get::<_, Option<i32>>(0)).unwrap()
             .collect::<Result<Vec<_>, _>>().unwrap()
     };
-    assert_eq!(values("SELECT k FROM warehouse.raw.orders ORDER BY k NULLS LAST"), vec![Some(0), Some(1), Some(1), None]);
-    assert_eq!(values("SELECT k FROM warehouse.raw.orders WHERE k >= 1 ORDER BY k"), vec![Some(1), Some(1)]);
-    assert_eq!(values("SELECT k FROM warehouse.raw.orders WHERE NOT (k >= 1)"), vec![Some(0)]);
-    assert_eq!(values("SELECT k FROM warehouse.raw.orders WHERE (k >= 1) IS NULL"), vec![None]);
+    assert_eq!(values("SELECT k FROM raw.orders ORDER BY k NULLS LAST"), vec![Some(0), Some(1), Some(1), None]);
+    assert_eq!(values("SELECT k FROM raw.orders WHERE k >= 1 ORDER BY k"), vec![Some(1), Some(1)]);
+    assert_eq!(values("SELECT k FROM raw.orders WHERE NOT (k >= 1)"), vec![Some(0)]);
+    assert_eq!(values("SELECT k FROM raw.orders WHERE (k >= 1) IS NULL"), vec![None]);
 
     let manifest = parsed(&manifest_json());
     let dialect = dialect_from_name("duckdb").unwrap();
@@ -271,7 +271,7 @@ fn direct_dbt_and_odcs_metadata_produce_one_canonical_typed_filter_domain() {
     let dbt_catalog = RelationCatalog::from_schemas(dbt.source_schemas()).unwrap();
 
     let odcs = parse_odcs_yaml(
-        "apiVersion: v3.2.0\nkind: DataContract\nid: task175\nname: TASK-175\nversion: 1.0.0\nstatus: active\nschema:\n  - name: orders\n    physicalName: warehouse.raw.orders\n    properties:\n      - name: k\n        physicalType: INTEGER\n",
+        "apiVersion: v3.2.0\nkind: DataContract\nid: task175\nname: TASK-175\nversion: 1.0.0\nstatus: active\nschema:\n  - name: orders\n    physicalName: raw.orders\n    properties:\n      - name: k\n        physicalType: INTEGER\n",
         "duckdb",
         &RelationCatalog::new(&[ORDERS]).unwrap()
     ).unwrap();
@@ -279,7 +279,7 @@ fn direct_dbt_and_odcs_metadata_produce_one_canonical_typed_filter_domain() {
     assert_eq!(odcs.source_schemas()[0].columns()[0].data_type(), &DataType::SignedInteger { bits: Some(32) });
     let odcs_catalog = RelationCatalog::from_schemas(odcs.source_schemas()).unwrap();
 
-    let ddl = sql_semantic_protocol::analyze_inputs(&[SqlInput::inline("CREATE TABLE warehouse.raw.orders (k INTEGER)")], "duckdb", dialect.as_ref()).unwrap();
+    let ddl = sql_semantic_protocol::analyze_inputs(&[SqlInput::inline("CREATE TABLE raw.orders (k INTEGER)")], "duckdb", dialect.as_ref()).unwrap();
     let direct_catalog = RelationCatalog::from_schemas(ddl.source_schemas()).unwrap();
     let expected = filtered_domain(&direct_catalog, "duckdb", FILTER);
     assert_eq!(filtered_domain(&dbt_catalog, "duckdb", FILTER), expected);
