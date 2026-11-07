@@ -247,10 +247,12 @@ fn frozen_matrix_identifies_all_adapter_and_dialect_obligations() {
             let canonical: Value = serde_json::from_str(&to_bundle_json(&parsed)).unwrap();
             let expected: Value = serde_json::from_str(&to_bundle_json(&reference)).unwrap();
             let expected_write = &expected["inputs"][0]["statements"][0]["write"];
-            assert!(expected_write.is_object(), "{id}: reference must emit a real write");
+            assert!(
+                expected_write.is_object(),
+                "{id}: reference must emit a real write"
+            );
             assert_eq!(
-                canonical["inputs"][0]["statements"][0]["write"],
-                *expected_write,
+                canonical["inputs"][0]["statements"][0]["write"], *expected_write,
                 "{id}: shared MERGE must preserve the canonical write contract"
             );
         }
