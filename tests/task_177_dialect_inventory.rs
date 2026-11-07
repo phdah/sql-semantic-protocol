@@ -37,7 +37,10 @@ fn every_task_66_variant_has_thirteen_explicit_parser_evidence_cells() {
     let manifest = parse(COVERAGE);
     assert_eq!(freeze["schema_version"], 1);
     assert_eq!(freeze["task_id"], "TASK-177");
-    assert_eq!(freeze["fixture_ids"], serde_json::json!(["88-C177-P", "88-C177-N"]));
+    assert_eq!(
+        freeze["fixture_ids"],
+        serde_json::json!(["88-C177-P", "88-C177-N"])
+    );
     assert_eq!(freeze["variant_count"], 251);
     assert_eq!(freeze["dialect_cell_count"], 3263);
     assert_eq!(freeze["completion"]["child_done"], false);
@@ -67,13 +70,19 @@ fn every_task_66_variant_has_thirteen_explicit_parser_evidence_cells() {
     for row in inventory {
         let feature_id = text(row, "feature_id");
         let variant = text(row, "variant");
-        assert!(visited.insert((feature_id, variant)), "duplicate {feature_id}/{variant}");
+        assert!(
+            visited.insert((feature_id, variant)),
+            "duplicate {feature_id}/{variant}"
+        );
         assert!(ids.insert(text(row, "id")), "duplicate fixture ID");
         let feature = array(&manifest, "features")
             .iter()
             .find(|feature| feature["id"] == feature_id)
             .unwrap_or_else(|| panic!("unknown feature {feature_id}"));
-        assert!(array(feature, "variants").contains(&Value::from(variant)));
+        assert!(
+            array(feature, "variants").contains(&Value::from(variant)),
+            "invalid frozen variant"
+        );
         assert_eq!(row["scope"], feature["scope"]);
         assert_eq!(row["protocol_owners"], feature["protocol_tasks"]);
         assert_eq!(row["consumer_owners"], feature["tdg_tasks"]);
@@ -86,12 +95,12 @@ fn every_task_66_variant_has_thirteen_explicit_parser_evidence_cells() {
 
         for dialect in &expected_dialects {
             count += 1;
-            let cell = &row["dialect_cells"][dialect];
+            let cell = &row["dialect_cells"][*dialect];
             assert_eq!(
                 text(cell, "id"),
                 format!("{}-{dialect}", text(row, "id"))
             );
-            let explicit = &feature["variant_overrides"][variant][dialect];
+            let explicit = &feature["variant_overrides"][variant][*dialect];
             let expected_status = explicit["parse"].as_str().unwrap_or("unverified");
             assert_eq!(
                 text(cell, "parser_evidence"),
@@ -107,7 +116,7 @@ fn every_task_66_variant_has_thirteen_explicit_parser_evidence_cells() {
             let expected_ids = explicit["fixture_ids"].as_array();
             let references = array(cell, "fixture_ids");
             match expected_ids {
-                Some(expected) => assert_eq!(references, expected),
+                Some(expected) => assert_eq!(references, expected.as_slice()),
                 None => assert!(references.is_empty(), "unverified fixture references"),
             }
             assert_eq!(cell["canonical_certified"], false);
@@ -117,7 +126,10 @@ fn every_task_66_variant_has_thirteen_explicit_parser_evidence_cells() {
 
             if expected_status == "unverified" {
                 assert!(references.is_empty(), "invented parser evidence");
-                assert!(array(cell, "sql_samples").is_empty(), "unverified SQL must not be invented");
+                assert!(
+                    array(cell, "sql_samples").is_empty(),
+                    "unverified SQL must not be invented"
+                );
             } else {
                 assert!(!references.is_empty(), "missing evidence fixture");
                 let samples = array(cell, "sql_samples");
@@ -129,8 +141,12 @@ fn every_task_66_variant_has_thirteen_explicit_parser_evidence_cells() {
                         .unwrap_or_else(|| panic!("missing manifest fixture {id}"));
                     assert_eq!(fixture["feature"], feature_id);
                     assert_eq!(fixture["variant_status"], expected_status);
-                    assert!(array(fixture, "covered_variants").contains(&Value::from(variant)));
-                    assert!(array(fixture, "dialects").contains(&Value::from(*dialect)));
+                    assert!(
+                        array(fixture, "covered_variants").contains(&Value::from(variant))
+                    );
+                    assert!(
+                        array(fixture, "dialects").contains(&Value::from(*dialect))
+                    );
                     assert_eq!(fixture["sql"], samples[index]);
                 }
             }
@@ -152,7 +168,7 @@ fn every_task_66_variant_has_thirteen_explicit_parser_evidence_cells() {
     assert_eq!(count, expected.len() * expected_dialects.len());
     assert_eq!(inventory.len(), 251);
     for (status, count) in statuses {
-        assert_eq!(freeze["parser_evidence_counts"][&status], count);
+        assert_eq!(freeze["parser_evidence_counts"][status.as_str()], count);
     }
     assert_eq!(
         manifest["task_177_dialect_parser_acceptance"]["freeze"],
@@ -197,7 +213,11 @@ fn frozen_positive_and_impossible_goldens_match_full_duckdb_bags_and_portable_do
             .expect("closed physical input fixture");
 
         let source = pairs(&db, "SELECT id, amount FROM orders ORDER BY id");
-        assert_eq!(source, expected_pairs(case, "source_rows"), "{id}: source");
+        assert_eq!(
+            source,
+            expected_pairs(case, "source_rows"),
+            "{id}: source"
+        );
         let predicate = sql
             .split_once(" WHERE ")
             .unwrap_or_else(|| panic!("{id}: expected WHERE"))
@@ -215,9 +235,21 @@ fn frozen_positive_and_impossible_goldens_match_full_duckdb_bags_and_portable_do
                 "SELECT id, amount FROM orders WHERE ({predicate}) IS UNKNOWN ORDER BY id"
             ),
         );
-        assert_eq!(selected, expected_pairs(case, "selected_rows"), "{id}: TRUE");
-        assert_eq!(not_true, expected_pairs(case, "not_true_rows"), "{id}: NOT TRUE");
-        assert_eq!(unknown, expected_pairs(case, "unknown_rows"), "{id}: UNKNOWN");
+        assert_eq!(
+            selected,
+            expected_pairs(case, "selected_rows"),
+            "{id}: TRUE"
+        );
+        assert_eq!(
+            not_true,
+            expected_pairs(case, "not_true_rows"),
+            "{id}: NOT TRUE"
+        );
+        assert_eq!(
+            unknown,
+            expected_pairs(case, "unknown_rows"),
+            "{id}: UNKNOWN"
+        );
 
         let source_ids: BTreeSet<_> = source.iter().map(|row| row.0).collect();
         let true_ids: BTreeSet<_> = selected.iter().map(|row| row.0).collect();
@@ -228,7 +260,10 @@ fn frozen_positive_and_impossible_goldens_match_full_duckdb_bags_and_portable_do
             source_ids,
             "{id}: incomplete NOT TRUE partition"
         );
-        assert!(unknown.iter().all(|row| rejected_ids.contains(&row.0)));
+        assert!(
+            unknown.iter().all(|row| rejected_ids.contains(&row.0)),
+            "{id}: SQL UNKNOWN must be included in NOT TRUE"
+        );
 
         // Dialect parsing is a public API seam. This comparison certifies only
         // the two named portable shapes, not vendor runtime or all 3,263 cells.
@@ -251,9 +286,15 @@ fn frozen_positive_and_impossible_goldens_match_full_duckdb_bags_and_portable_do
                 };
                 let lower = range.lower().expect("inclusive 10");
                 let upper = range.upper().expect("exclusive 20");
-                assert_eq!(lower.value().value(), &LiteralValue::Number("10".into()));
+                assert_eq!(
+                    lower.value().value(),
+                    &LiteralValue::Number("10".into())
+                );
                 assert!(lower.inclusive());
-                assert_eq!(upper.value().value(), &LiteralValue::Number("20".into()));
+                assert_eq!(
+                    upper.value().value(),
+                    &LiteralValue::Number("20".into())
+                );
                 assert!(!upper.inclusive());
             }
             let mut document: Value = serde_json::from_str(&to_json(&protocol))
