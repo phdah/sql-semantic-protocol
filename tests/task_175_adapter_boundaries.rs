@@ -114,6 +114,7 @@ fn assert_lower_inclusive_one(domain: &ValueDomain) {
     let lower = range.lower().expect("inclusive lower bound");
     assert!(lower.inclusive());
     assert_eq!(lower.value().value(), &LiteralValue::Number("1".into()));
+    assert!(range.upper().is_none(), "no upper bound was justified");
 }
 
 fn physical_row(k: Option<i64>) -> PhysicalWriteRow {
@@ -283,7 +284,12 @@ fn quoted_schema_qualified_names_do_not_collapse_onto_unquoted_aliases() {
         "postgresql",
         "SELECT k FROM raw.orders WHERE k >= 1",
     ));
-    assert!(catalog.resolve("orders", "postgresql", None).is_ok());
+    // One suffix resolves uniquely, but two physical schemas must not be guessed.
+    assert_eq!(catalog.resolve("orders", "postgresql", None).unwrap(), "raw.orders");
+    let ambiguous = RelationCatalog::new(&["raw.orders", "archive.orders"]).unwrap();
+    let error = ambiguous.resolve("orders", "postgresql", None).unwrap_err();
+    assert_eq!(error.reference(), "orders");
+    assert_eq!(error.candidates(), &["archive.orders", "raw.orders"]);
 }
 
 #[test]
@@ -401,4 +407,129 @@ fn direct_dbt_and_odcs_metadata_produce_one_canonical_typed_filter_domain() {
     let expected = filtered_domain(&direct_catalog, "duckdb", FILTER);
     assert_eq!(filtered_domain(&dbt_catalog, "duckdb", FILTER), expected);
     assert_eq!(filtered_domain(&odcs_catalog, "duckdb", FILTER), expected);
+}
+
+
+#[test]
+fn quoted_dbt_source_identity_is_not_alias_collapsed() {
+    let quoted = "\"Raw\".\"Orders\"";
+    let mut manifest = manifest_json();
+    manifest["sources"]["source.task175.raw.orders"]["relation_name"] = json!(quoted);
+    manifest["nodes"]["model.task175.filtered"]["compiled_code"] =
+        json!("SELECT k FROM \"Raw\".\"Orders\" WHERE k >= 1");
+    let manifest = parsed(&manifest);
+    let dialect = dialect_from_name("postgresql").unwrap();
+    let bundle =
+        analyze_dbt_manifest_with_schemas(&manifest, "postgresql", dialect.as_ref()).unwrap();
+    let catalog = RelationCatalog::from_schemas(bundle.source_schemas()).unwrap();
+    assert_eq!(catalog.resolve(quoted, "postgresql", None).unwrap(), quoted);
+    assert_eq!(catalog.schemas()[0].relation(), quoted);
+    let layer = &bundle.layers()[0];
+    assert_eq!(layer.consumes(), &[quoted.to_string()]);
+    assert_lower_inclusive_one(&filtered_domain(
+        &catalog,
+        "postgresql",
+        "SELECT k FROM \"Raw\".\"Orders\" WHERE k >= 1",
+    ));
+}
+
+#[test]
+fn catalog_is_authoritative_for_fk_only_target_types() {
+    use sql_semantic_protocol::{analyze_dbt_artifacts, parse_dbt_catalog, DataType};
+    let mut manifest_json = manifest_json();
+    manifest_json["nodes"]["test.task175.orders_parents"] =
+        relationship_test("source('raw', 'parents')");
+    manifest_json["sources"]["source.task175.raw.parents"]["columns"]["id"]["data_type"] =
+        json!("BIGINT");
+    let manifest = parsed(&manifest_json);
+    let catalog = json!({
+        "metadata": {
+            "dbt_schema_version": "https://schemas.getdbt.com/dbt/catalog/v1.json",
+            "dbt_version": "1.11.8"
+        },
+        "nodes": {},
+        "sources": {
+            "source.task175.raw.parents": {
+                "unique_id": "source.task175.raw.parents",
+                "columns": {
+                    "id": {"name": "id", "type": "INTEGER", "index": 1}
+                }
+            }
+        }
+    });
+    let catalog = parse_dbt_catalog(&catalog.to_string()).unwrap();
+    let dialect = dialect_from_name("duckdb").unwrap();
+    let bundle = analyze_dbt_artifacts(&manifest, &catalog, "duckdb", dialect.as_ref()).unwrap();
+    let parent = bundle.source_schemas().iter()
+        .find(|schema| schema.relation() == PARENTS)
+        .expect("FK-only catalog target");
+    assert_eq!(parent.source_kind(), Some(SchemaSourceKind::DbtCatalog));
+    assert_eq!(
+        parent.columns()[0].data_type(),
+        &DataType::SignedInteger { bits: Some(32) }
+    );
+    let child = bundle.relation_constraints().iter()
+        .find(|set| set.relation() == ORDERS)
+        .expect("FK relation");
+    assert!(child.constraints().iter().any(|rule| matches!(
+        rule, RelationConstraint::ForeignKey(fk) if fk.referenced_relation() == PARENTS
+    )));
+}
+
+#[test]
+fn canonical_dialect_matrix_exercises_every_frozen_mandatory_case() {
+    use std::collections::BTreeSet;
+    let freeze: Value =
+        serde_json::from_str(include_str!("../docs/task-175-acceptance-freeze.json")).unwrap();
+    let cases = freeze["cases"].as_array().unwrap();
+    let dialects = freeze["dialects"].as_array().unwrap();
+    let catalog = RelationCatalog::from_schemas(&[RelationSchema::new(
+        ORDERS,
+        vec![SchemaColumn::from_sql_type("k", "INTEGER", "duckdb").unwrap()],
+    )
+    .unwrap()])
+    .unwrap();
+    let mut seen = BTreeSet::new();
+    let mut mandatory = 0;
+    for case in cases {
+        if case["requirement"] != "mandatory" { continue; }
+        mandatory += 1;
+        let id = case["id"].as_str().unwrap();
+        let evidence = case["oracle"]["domain"].as_object().unwrap();
+        assert_eq!(evidence["kind"], "signed_integer");
+        assert_eq!(evidence["lower"], 1);
+        assert_eq!(evidence["lower_inclusive"], true);
+        assert!(evidence["upper"].is_null());
+        assert_eq!(evidence["nullable"], false);
+        for dialect in dialects {
+            let dialect = dialect.as_str().unwrap();
+            assert!(seen.insert(format!("{id}/{dialect}")));
+            let domain = filtered_domain(&catalog, dialect, FILTER);
+            assert_lower_inclusive_one(&domain);
+        }
+    }
+    assert_eq!(mandatory, 6);
+    assert_eq!(seen.len(), 78);
+}
+
+#[test]
+fn missing_fk_target_diagnostic_is_emitted_in_protocol_without_fake_fk() {
+    let mut value = manifest_json();
+    value["nodes"]["test.task175.orders_parents"] =
+        relationship_test("source('raw', 'missing')");
+    let manifest = parsed(&value);
+    let dialect = dialect_from_name("duckdb").unwrap();
+    let bundle = analyze_dbt_manifest_with_schemas(&manifest, "duckdb", dialect.as_ref()).unwrap();
+    let serialized: Value = serde_json::from_str(&to_bundle_json(&bundle)).unwrap();
+    let constraints = serialized["relation_constraints"].as_array().unwrap();
+    let set = constraints.iter().find(|set| set["relation"] == ORDERS).unwrap();
+    assert!(set["constraints"].as_array().unwrap().iter().all(|rule| rule["kind"] != "foreign_key"));
+    assert!(set["diagnostics"].as_array().unwrap().iter().any(|diagnostic| {
+        diagnostic["code"] == "unresolved_relationship_target"
+    }));
+    // The unsupported metadata is not a reason to fabricate or discard a valid output.
+    assert_lower_inclusive_one(&filtered_domain(
+        &RelationCatalog::from_schemas(bundle.source_schemas()).unwrap(),
+        "duckdb", FILTER,
+    ));
 }
