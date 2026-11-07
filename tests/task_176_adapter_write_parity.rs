@@ -5,25 +5,38 @@ use std::collections::{BTreeMap, BTreeSet};
 
 use serde_json::{json, Value};
 use sql_semantic_protocol::{
-    analyze_configured_inputs_with_catalog, analyze_dbt_artifacts, analyze_dbt_manifest_with_schemas,
-    analyze_inputs, dialect_from_name, parse_dbt_catalog, parse_dbt_manifest,
-    physical_duckdb_transaction_plan, physical_ordered_lifecycle_plan, to_bundle_json,
-    ComposedSemantics, ConfiguredSqlInput, LiteralValue, PhysicalOrderedLifecycleProof,
-    PhysicalScriptCatalog, PhysicalTransactionScriptProof, PhysicalTransactionStep, PhysicalWriteRow,
-    PhysicalWriteState, ProducerExecution, ProducerMaterialization, RelationCatalog, RelationSchema,
-    SchemaColumn, SqlInput, ValueDomain,
+    analyze_configured_inputs_with_catalog, analyze_dbt_artifacts,
+    analyze_dbt_manifest_with_schemas, analyze_inputs, dialect_from_name, parse_dbt_catalog,
+    parse_dbt_manifest, physical_duckdb_transaction_plan, physical_ordered_lifecycle_plan,
+    to_bundle_json, ComposedSemantics, ConfiguredSqlInput, LiteralValue,
+    PhysicalOrderedLifecycleProof, PhysicalScriptCatalog, PhysicalTransactionScriptProof,
+    PhysicalTransactionStep, PhysicalWriteRow, PhysicalWriteState, ProducerExecution,
+    ProducerMaterialization, RelationCatalog, RelationSchema, SchemaColumn, SqlInput, ValueDomain,
 };
 
 const FILTER: &str = "SELECT k FROM raw.orders WHERE k >= 1";
 const DIALECTS: &[&str] = &[
-    "generic", "mysql", "postgresql", "hive", "sqlite", "snowflake", "redshift",
-    "mssql", "clickhouse", "bigquery", "ansi", "duckdb", "databricks",
+    "generic",
+    "mysql",
+    "postgresql",
+    "hive",
+    "sqlite",
+    "snowflake",
+    "redshift",
+    "mssql",
+    "clickhouse",
+    "bigquery",
+    "ansi",
+    "duckdb",
+    "databricks",
 ];
 
 fn row(k: Option<i64>) -> PhysicalWriteRow {
     PhysicalWriteRow::new(BTreeMap::from([(
         "k".to_string(),
-        k.map_or(LiteralValue::Null, |value| LiteralValue::Number(value.to_string())),
+        k.map_or(LiteralValue::Null, |value| {
+            LiteralValue::Number(value.to_string())
+        }),
     )]))
     .unwrap()
 }
@@ -33,7 +46,9 @@ fn write_row(id: i64, v: Option<i64>) -> PhysicalWriteRow {
         ("id".to_string(), LiteralValue::Number(id.to_string())),
         (
             "v".to_string(),
-            v.map_or(LiteralValue::Null, |value| LiteralValue::Number(value.to_string())),
+            v.map_or(LiteralValue::Null, |value| {
+                LiteralValue::Number(value.to_string())
+            }),
         ),
     ]))
     .unwrap()
@@ -63,11 +78,18 @@ fn dbt_read_manifest(kind: &str, relation: Option<&str>) -> Value {
     })
 }
 
-fn analyze_read(sql: &str, dialect_name: &str, catalog: &RelationCatalog) -> sql_semantic_protocol::AnalysisBundle {
+fn analyze_read(
+    sql: &str,
+    dialect_name: &str,
+    catalog: &RelationCatalog,
+) -> sql_semantic_protocol::AnalysisBundle {
     let dialect = dialect_from_name(dialect_name).unwrap();
     let input = SqlInput::inline(sql);
     let configured = [ConfiguredSqlInput::new(
-        "task176-read", &input, dialect_name, dialect.as_ref(),
+        "task176-read",
+        &input,
+        dialect_name,
+        dialect.as_ref(),
     )];
     analyze_configured_inputs_with_catalog(&configured, catalog).unwrap()
 }
@@ -93,7 +115,9 @@ fn assert_lower_bound(domain: &ValueDomain) {
     assert!(interval.upper().is_none());
 }
 
-fn read_proof(catalog: &RelationCatalog) -> (ValueDomain, Vec<PhysicalWriteRow>, Vec<usize>, Vec<usize>) {
+fn read_proof(
+    catalog: &RelationCatalog,
+) -> (ValueDomain, Vec<PhysicalWriteRow>, Vec<usize>, Vec<usize>) {
     let analyzed = analyze_read(FILTER, "duckdb", catalog);
     let bounded = domain(&analyzed);
     assert_lower_bound(&bounded);
@@ -123,13 +147,17 @@ fn direct_read_catalog() -> RelationCatalog {
     let dialect = dialect_from_name("duckdb").unwrap();
     let ddl = analyze_inputs(
         &[SqlInput::inline("CREATE TABLE raw.orders(k INTEGER)")],
-        "duckdb", dialect.as_ref(),
+        "duckdb",
+        dialect.as_ref(),
     )
     .unwrap();
     RelationCatalog::from_schemas(ddl.source_schemas()).unwrap()
 }
 
-fn dbt_read_catalog(kind: &str, relation: Option<&str>) -> (RelationCatalog, sql_semantic_protocol::AnalysisBundle) {
+fn dbt_read_catalog(
+    kind: &str,
+    relation: Option<&str>,
+) -> (RelationCatalog, sql_semantic_protocol::AnalysisBundle) {
     let manifest = parse_dbt_manifest(&dbt_read_manifest(kind, relation).to_string()).unwrap();
     let dialect = dialect_from_name("duckdb").unwrap();
     let bundle = analyze_dbt_manifest_with_schemas(&manifest, "duckdb", dialect.as_ref()).unwrap();
@@ -155,7 +183,10 @@ fn frozen_matrix_identifies_all_adapter_and_dialect_obligations() {
     assert_eq!(freeze["frozen_before_implementation"], true);
     assert_eq!(freeze["fixture_ids"], json!(["87-C176-P", "87-C176-N"]));
     assert_eq!(freeze["cases"].as_array().unwrap().len(), 8);
-    assert_eq!(freeze["parser_cells"].as_array().unwrap().len(), 5 * DIALECTS.len());
+    assert_eq!(
+        freeze["parser_cells"].as_array().unwrap().len(),
+        5 * DIALECTS.len()
+    );
     assert_eq!(freeze["adapter_cells"].as_array().unwrap().len(), 15);
     assert_eq!(freeze["oracle"]["source"], json!([1, 1, null, 0]));
     assert_eq!(freeze["oracle"]["terminal"], json!([1, 1]));
@@ -175,14 +206,22 @@ fn frozen_matrix_identifies_all_adapter_and_dialect_obligations() {
         let configured = [ConfiguredSqlInput::new(id, &sql, name, parser.as_ref())];
         let is_write = cell["case_id"] == "87-C176-P-write";
         let actual = analyze_configured_inputs_with_catalog(
-            &configured, if is_write { &write_catalog } else { &read_catalog },
+            &configured,
+            if is_write {
+                &write_catalog
+            } else {
+                &read_catalog
+            },
         );
         if !is_write {
             assert_lower_bound(&domain(&actual.unwrap()));
         } else if name == "duckdb" {
             assert!(actual.is_ok(), "native DuckDB MERGE must parse");
         } else if let Err(error) = actual {
-            assert!(!error.to_string().is_empty(), "{id} must expose its parser boundary");
+            assert!(
+                !error.to_string().is_empty(),
+                "{id} must expose its parser boundary"
+            );
         }
     }
     assert_eq!(ids.len(), 65);
@@ -196,14 +235,30 @@ fn table_view_ephemeral_and_incremental_share_exact_read_facts_not_execution_cla
     assert_eq!(direct.3, vec![2, 3]);
 
     let cases = [
-        ("table", Some("filtered"), ProducerMaterialization::PhysicalTable),
-        ("view", Some("filtered"), ProducerMaterialization::LogicalView),
+        (
+            "table",
+            Some("filtered"),
+            ProducerMaterialization::PhysicalTable,
+        ),
+        (
+            "view",
+            Some("filtered"),
+            ProducerMaterialization::LogicalView,
+        ),
         ("ephemeral", None, ProducerMaterialization::Inline),
-        ("incremental", Some("filtered"), ProducerMaterialization::Incremental),
+        (
+            "incremental",
+            Some("filtered"),
+            ProducerMaterialization::Incremental,
+        ),
     ];
     for (kind, relation, expected) in cases {
         let (catalog, bundle) = dbt_read_catalog(kind, relation);
-        assert_eq!(read_proof(&catalog), direct, "{kind}: adapter changed read facts");
+        assert_eq!(
+            read_proof(&catalog),
+            direct,
+            "{kind}: adapter changed read facts"
+        );
         assert_lower_bound(&domain(&bundle));
         let [producer] = bundle.producer_evidence() else {
             panic!("{kind}: one producer expected");
@@ -217,8 +272,12 @@ fn table_view_ephemeral_and_incremental_share_exact_read_facts_not_execution_cla
         assert_eq!(emitted["producer_evidence"][0]["relation"], json!(relation));
         assert!(emitted["graph"]["edges"].is_array());
         match kind {
-            "table" => assert!(emitted["inputs"][0]["statements"][0].to_string().contains("create_table")),
-            "view" => assert!(emitted["inputs"][0]["statements"][0].to_string().contains("create_view")),
+            "table" => assert!(emitted["inputs"][0]["statements"][0]
+                .to_string()
+                .contains("create_table")),
+            "view" => assert!(emitted["inputs"][0]["statements"][0]
+                .to_string()
+                .contains("create_view")),
             "incremental" => {
                 assert!(!emitted.to_string().contains("\"conditional_mutation\""));
                 assert!(!emitted.to_string().contains("\"append\""));
@@ -238,59 +297,96 @@ fn direct_dbt_odcs_prove_identical_complete_read_bag_and_bounds() {
     assert_eq!(read_proof(&odcs_read_catalog()), direct);
 
     let connection = duckdb::Connection::open_in_memory().unwrap();
-    connection.execute_batch(
-        "CREATE SCHEMA raw; CREATE TABLE raw.orders(k INTEGER);
+    connection
+        .execute_batch(
+            "CREATE SCHEMA raw; CREATE TABLE raw.orders(k INTEGER);
          INSERT INTO raw.orders VALUES (1), (1), (NULL), (0);",
-    ).unwrap();
+        )
+        .unwrap();
     let values = |sql: &str| {
         let mut statement = connection.prepare(sql).unwrap();
-        statement.query_map([], |row| row.get::<_, Option<i32>>(0))
-            .unwrap().collect::<Result<Vec<_>, _>>().unwrap()
+        statement
+            .query_map([], |row| row.get::<_, Option<i32>>(0))
+            .unwrap()
+            .collect::<Result<Vec<_>, _>>()
+            .unwrap()
     };
-    assert_eq!(values("SELECT k FROM raw.orders ORDER BY k NULLS LAST"), vec![Some(0), Some(1), Some(1), None]);
-    assert_eq!(values(&format!("{FILTER} ORDER BY k")), vec![Some(1), Some(1)]);
-    assert_eq!(values("SELECT k FROM raw.orders WHERE NOT(k >= 1)"), vec![Some(0)]);
-    assert_eq!(values("SELECT k FROM raw.orders WHERE (k >= 1) IS NULL"), vec![None]);
+    assert_eq!(
+        values("SELECT k FROM raw.orders ORDER BY k NULLS LAST"),
+        vec![Some(0), Some(1), Some(1), None]
+    );
+    assert_eq!(
+        values(&format!("{FILTER} ORDER BY k")),
+        vec![Some(1), Some(1)]
+    );
+    assert_eq!(
+        values("SELECT k FROM raw.orders WHERE NOT(k >= 1)"),
+        vec![Some(0)]
+    );
+    assert_eq!(
+        values("SELECT k FROM raw.orders WHERE (k >= 1) IS NULL"),
+        vec![None]
+    );
 }
 
 fn direct_write_catalog() -> RelationCatalog {
     RelationCatalog::from_schemas(
-        &["t", "s"].into_iter().map(|relation| {
-            RelationSchema::new(
-                relation,
-                ["id", "v"].into_iter()
-                    .map(|column| SchemaColumn::from_sql_type(column, "INTEGER", "duckdb").unwrap())
-                    .collect(),
-            ).unwrap()
-        }).collect::<Vec<_>>(),
-    ).unwrap()
+        &["t", "s"]
+            .into_iter()
+            .map(|relation| {
+                RelationSchema::new(
+                    relation,
+                    ["id", "v"]
+                        .into_iter()
+                        .map(|column| {
+                            SchemaColumn::from_sql_type(column, "INTEGER", "duckdb").unwrap()
+                        })
+                        .collect(),
+                )
+                .unwrap()
+            })
+            .collect::<Vec<_>>(),
+    )
+    .unwrap()
 }
 
 fn dbt_write_catalog() -> RelationCatalog {
-    let sources = ["t", "s"].into_iter().map(|relation| {
-        let id = format!("source.task176.{relation}");
-        (id.clone(), json!({
-            "unique_id": id, "resource_type": "source", "name": relation,
-            "relation_name": relation,
-            "columns": {
-                "id": {"name": "id", "data_type": "INTEGER"},
-                "v": {"name": "v", "data_type": "INTEGER"}
-            }
-        }))
-    }).collect::<serde_json::Map<_, _>>();
-    let catalog_sources = ["t", "s"].into_iter().map(|relation| {
-        let id = format!("source.task176.{relation}");
-        (id.clone(), json!({
-            "unique_id": id, "metadata": {
-                "type": "BASE TABLE", "database": "main", "schema": "main", "name": relation
-            },
-            "columns": {
-                "id": {"name": "id", "type": "INTEGER", "index": 1},
-                "v": {"name": "v", "type": "INTEGER", "index": 2}
-            },
-            "stats": {}
-        }))
-    }).collect::<serde_json::Map<_, _>>();
+    let sources = ["t", "s"]
+        .into_iter()
+        .map(|relation| {
+            let id = format!("source.task176.{relation}");
+            (
+                id.clone(),
+                json!({
+                    "unique_id": id, "resource_type": "source", "name": relation,
+                    "relation_name": relation,
+                    "columns": {
+                        "id": {"name": "id", "data_type": "INTEGER"},
+                        "v": {"name": "v", "data_type": "INTEGER"}
+                    }
+                }),
+            )
+        })
+        .collect::<serde_json::Map<_, _>>();
+    let catalog_sources = ["t", "s"]
+        .into_iter()
+        .map(|relation| {
+            let id = format!("source.task176.{relation}");
+            (
+                id.clone(),
+                json!({
+                    "unique_id": id, "metadata": {
+                        "type": "BASE TABLE", "database": "main", "schema": "main", "name": relation
+                    },
+                    "columns": {
+                        "id": {"name": "id", "type": "INTEGER", "index": 1},
+                        "v": {"name": "v", "type": "INTEGER", "index": 2}
+                    },
+                    "stats": {}
+                }),
+            )
+        })
+        .collect::<serde_json::Map<_, _>>();
     let manifest = json!({
         "metadata": {
             "dbt_schema_version": "https://schemas.getdbt.com/dbt/manifest/v12.json",
@@ -332,62 +428,126 @@ fn dbt_write_catalog() -> RelationCatalog {
 fn odcs_write_catalog() -> RelationCatalog {
     let body = "apiVersion: v3.2.0\nkind: DataContract\nid: task176-write\nname: TASK-176 source parity\nversion: 1.0.0\nstatus: active\nschema:\n  - name: t\n    properties:\n      - name: id\n        physicalType: INTEGER\n      - name: v\n        physicalType: INTEGER\n  - name: s\n    properties:\n      - name: id\n        physicalType: INTEGER\n      - name: v\n        physicalType: INTEGER\n";
     let bundle = sql_semantic_protocol::parse_odcs_yaml(
-        body, "duckdb", &RelationCatalog::new(&["t", "s"]).unwrap(),
-    ).unwrap();
+        body,
+        "duckdb",
+        &RelationCatalog::new(&["t", "s"]).unwrap(),
+    )
+    .unwrap();
     RelationCatalog::from_schemas(bundle.source_schemas()).unwrap()
 }
 
-fn write_proof(catalog: &RelationCatalog) -> (Vec<PhysicalWriteRow>, Vec<PhysicalWriteRow>, usize, String) {
+fn write_proof(
+    catalog: &RelationCatalog,
+) -> (Vec<PhysicalWriteRow>, Vec<PhysicalWriteRow>, usize, String) {
     let dialect = dialect_from_name("duckdb").unwrap();
     let statements = [
         "MERGE INTO t USING s ON t.id = s.id WHEN MATCHED THEN UPDATE SET v = s.v",
         "DELETE FROM t WHERE id = 2",
         "SELECT id, v FROM t WHERE v >= 20",
     ];
-    let sql = statements.iter().map(|statement| SqlInput::inline(*statement)).collect::<Vec<_>>();
+    let sql = statements
+        .iter()
+        .map(|statement| SqlInput::inline(*statement))
+        .collect::<Vec<_>>();
     let ids = ["task176-merge", "task176-delete", "task176-read"];
-    let bundles = sql.iter().zip(ids).map(|(input, id)| {
-        analyze_configured_inputs_with_catalog(
-            &[ConfiguredSqlInput::new(id, input, "duckdb", dialect.as_ref())],
-            catalog,
-        ).unwrap()
-    }).collect::<Vec<_>>();
-    let steps = bundles.iter().map(PhysicalTransactionStep::Sql).collect::<Vec<_>>();
-    let schemas = catalog.schemas().iter()
+    let bundles = sql
+        .iter()
+        .zip(ids)
+        .map(|(input, id)| {
+            analyze_configured_inputs_with_catalog(
+                &[ConfiguredSqlInput::new(
+                    id,
+                    input,
+                    "duckdb",
+                    dialect.as_ref(),
+                )],
+                catalog,
+            )
+            .unwrap()
+        })
+        .collect::<Vec<_>>();
+    let steps = bundles
+        .iter()
+        .map(PhysicalTransactionStep::Sql)
+        .collect::<Vec<_>>();
+    let schemas = catalog
+        .schemas()
+        .iter()
         .filter(|schema| matches!(schema.relation(), "t" | "s"))
-        .cloned().collect::<Vec<_>>();
+        .cloned()
+        .collect::<Vec<_>>();
     assert_eq!(schemas.len(), 2);
-    let states = schemas.iter().map(|schema| {
-        let rows = match schema.relation() {
-            "t" => vec![
-                write_row(1, Some(10)), write_row(2, None), write_row(3, Some(99)),
-                write_row(4, Some(10)), write_row(5, None),
-            ],
-            "s" => vec![write_row(1, Some(30))],
-            other => panic!("unexpected source {other}"),
-        };
-        PhysicalWriteState::new(schema.relation(), rows).unwrap()
-    }).collect();
-    let proof = physical_duckdb_transaction_plan(
-        &steps, &PhysicalScriptCatalog { states, schemas },
-    );
+    let states = schemas
+        .iter()
+        .map(|schema| {
+            let rows = match schema.relation() {
+                "t" => vec![
+                    write_row(1, Some(10)),
+                    write_row(2, None),
+                    write_row(3, Some(99)),
+                    write_row(4, Some(10)),
+                    write_row(5, None),
+                ],
+                "s" => vec![write_row(1, Some(30))],
+                other => panic!("unexpected source {other}"),
+            };
+            PhysicalWriteState::new(schema.relation(), rows).unwrap()
+        })
+        .collect();
+    let proof =
+        physical_duckdb_transaction_plan(&steps, &PhysicalScriptCatalog { states, schemas });
     let PhysicalTransactionScriptProof::Exact(exact) = proof else {
         panic!("same complete typed sources should prove Exact write: {proof:?}");
     };
     assert_eq!(exact.checkpoints.len(), 3);
     assert_eq!(
-        exact.checkpoints[0].statement.as_ref().unwrap().write.as_ref().unwrap().affected().updated(),
+        exact.checkpoints[0]
+            .statement
+            .as_ref()
+            .unwrap()
+            .write
+            .as_ref()
+            .unwrap()
+            .affected()
+            .updated(),
         1,
     );
     assert_eq!(
-        exact.checkpoints[1].statement.as_ref().unwrap().write.as_ref().unwrap().affected().deleted(),
+        exact.checkpoints[1]
+            .statement
+            .as_ref()
+            .unwrap()
+            .write
+            .as_ref()
+            .unwrap()
+            .affected()
+            .deleted(),
         1,
     );
-    let read = exact.checkpoints[2].statement.as_ref().unwrap().read.as_ref().unwrap();
-    assert_eq!(read.output.rows(), &[write_row(1, Some(30)), write_row(3, Some(99))]);
-    let final_t = exact.final_catalog.states.iter().find(|state| state.relation() == "t").unwrap();
+    let read = exact.checkpoints[2]
+        .statement
+        .as_ref()
+        .unwrap()
+        .read
+        .as_ref()
+        .unwrap();
+    assert_eq!(
+        read.output.rows(),
+        &[write_row(1, Some(30)), write_row(3, Some(99))]
+    );
+    let final_t = exact
+        .final_catalog
+        .states
+        .iter()
+        .find(|state| state.relation() == "t")
+        .unwrap();
     let domains = exact.final_catalog.exact_domains().unwrap();
-    assert!(domains.iter().find(|(name, _)| name == "t").unwrap().1.iter()
+    assert!(domains
+        .iter()
+        .find(|(name, _)| name == "t")
+        .unwrap()
+        .1
+        .iter()
         .all(|domain| !domain.values().is_empty()));
     (
         final_t.rows().to_vec(),
@@ -404,12 +564,20 @@ fn compiled_dbt_and_direct_sql_preserve_exact_merges_deletes_and_rejections() {
     assert_eq!(
         direct.0,
         vec![
-            write_row(1, Some(30)), write_row(3, Some(99)),
-            write_row(4, Some(10)), write_row(5, None),
+            write_row(1, Some(30)),
+            write_row(3, Some(99)),
+            write_row(4, Some(10)),
+            write_row(5, None),
         ]
     );
-    assert_eq!(direct.1, vec![write_row(1, Some(30)), write_row(3, Some(99))]);
-    assert_eq!(direct.2, 2, "false and unknown are separately rejected, not dropped");
+    assert_eq!(
+        direct.1,
+        vec![write_row(1, Some(30)), write_row(3, Some(99))]
+    );
+    assert_eq!(
+        direct.2, 2,
+        "false and unknown are separately rejected, not dropped"
+    );
 }
 
 #[cfg(feature = "odcs")]
@@ -420,17 +588,24 @@ fn odcs_and_dbt_catalogs_preserve_the_same_write_and_terminal_proof() {
     assert_eq!(write_proof(&dbt_write_catalog()), direct);
 
     let connection = duckdb::Connection::open_in_memory().unwrap();
-    connection.execute_batch(
-        "CREATE TABLE t(id INTEGER, v INTEGER); CREATE TABLE s(id INTEGER, v INTEGER);
+    connection
+        .execute_batch(
+            "CREATE TABLE t(id INTEGER, v INTEGER); CREATE TABLE s(id INTEGER, v INTEGER);
          INSERT INTO t VALUES (1,10),(2,NULL),(3,99),(4,10),(5,NULL);
          INSERT INTO s VALUES (1,30);
          MERGE INTO t USING s ON t.id = s.id WHEN MATCHED THEN UPDATE SET v = s.v;
          DELETE FROM t WHERE id = 2;",
-    ).unwrap();
+        )
+        .unwrap();
     let pairs = |statement: &str| {
         let mut query = connection.prepare(statement).unwrap();
-        query.query_map([], |row| Ok((row.get::<_, i32>(0)?, row.get::<_, Option<i32>>(1)?)))
-            .unwrap().collect::<Result<Vec<_>, _>>().unwrap()
+        query
+            .query_map([], |row| {
+                Ok((row.get::<_, i32>(0)?, row.get::<_, Option<i32>>(1)?))
+            })
+            .unwrap()
+            .collect::<Result<Vec<_>, _>>()
+            .unwrap()
     };
     assert_eq!(
         pairs("SELECT id,v FROM t ORDER BY id"),
