@@ -13,6 +13,7 @@ use sqlparser::parser::Parser;
 const CASES: &str = include_str!("../docs/task-177-parser-samples.json");
 const COVERAGE: &str = include_str!("../docs/coverage-manifest.json");
 const SNAPSHOT: &str = include_str!("../docs/task-177-parser-snapshot.json");
+const BOUNDARIES: &str = include_str!("../docs/task-177-parser-boundaries.json");
 
 fn parse(source: &str) -> Value {
     serde_json::from_str(source).expect("valid versioned JSON")
@@ -135,4 +136,41 @@ fn parser_dialect_matrix_matches_fixed_non_tautological_snapshot() {
 
     assert_eq!(snapshot["vendor_execution_certified"], false);
     assert_eq!(snapshot["canonical_semantics_certified"], false);
+}
+
+#[test]
+fn every_rejected_sql_sample_has_an_explicit_reviewable_parser_boundary() {
+    let snapshot = parse(SNAPSHOT);
+    let boundaries = parse(BOUNDARIES);
+    assert_eq!(boundaries["owner"], "TASK-177");
+    assert_eq!(boundaries["rejected_cell_count"], 55);
+    assert_eq!(boundaries["rejected_case_count"], 12);
+
+    let dialects = rows(&snapshot, "dialects");
+    let mut rejected = BTreeSet::new();
+    for (case_id, mask) in snapshot["matrix"].as_object().expect("parser snapshot") {
+        let mask = mask.as_str().expect("frozen parser bitmask");
+        for (position, marker) in mask.chars().enumerate() {
+            if marker == 'R' {
+                let dialect = dialects[position].as_str().expect("dialect");
+                rejected.insert(format!("{case_id}-{dialect}"));
+            }
+        }
+    }
+    let mut reviewed = BTreeSet::new();
+    for boundary in rows(&boundaries, "cells") {
+        let id = field(boundary, "id");
+        assert!(reviewed.insert(id.to_owned()), "duplicate parser boundary");
+        assert_eq!(boundary["classification"], "parser_boundary");
+        assert_eq!(boundary["conditional_owner"], "TASK-177");
+        assert_eq!(boundary["dialect_equivalence_followup"], "TASK-178");
+        assert_eq!(boundary["semantic_proof"], "not_certified");
+        assert_eq!(boundary["native_execution"], "not_certified");
+        assert_eq!(
+            boundary["release_disposition"],
+            "review_required_not_approved_deferral"
+        );
+        assert!(!field(boundary, "reason").is_empty());
+    }
+    assert_eq!(reviewed, rejected, "a parser rejection lost its owner");
 }
