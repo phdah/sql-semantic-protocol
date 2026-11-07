@@ -686,7 +686,6 @@ fn canonical_fk_only_primary_key_has_sql_dbt_and_odcs_fact_parity() {
         )));
 }
 
-
 #[test]
 fn each_frozen_variant_has_complete_independent_duckdb_source_and_terminal_oracle() {
     let freeze: Value =
@@ -698,7 +697,8 @@ fn each_frozen_variant_has_complete_independent_duckdb_source_and_terminal_oracl
             "CREATE SCHEMA raw;
              CREATE TABLE raw.orders(k INTEGER);
              INSERT INTO raw.orders VALUES (1),(1),(NULL),(0);",
-        ).unwrap();
+        )
+        .unwrap();
         let values = |sql: &str| {
             let mut stmt = conn.prepare(sql).unwrap();
             stmt.query_map([], |row| row.get::<_, Option<i32>>(0))
