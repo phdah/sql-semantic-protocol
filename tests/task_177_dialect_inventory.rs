@@ -106,13 +106,10 @@ fn every_task_66_variant_has_thirteen_explicit_parser_evidence_cells() {
 
             let expected_ids = explicit["fixture_ids"].as_array();
             let references = array(cell, "fixture_ids");
-            assert_eq!(Some(references), expected_ids.or_else(|| {
-                if references.is_empty() {
-                    Some(references)
-                } else {
-                    None
-                }
-            }));
+            match expected_ids {
+                Some(expected) => assert_eq!(references, expected),
+                None => assert!(references.is_empty(), "unverified fixture references"),
+            }
             assert_eq!(cell["canonical_certified"], false);
             assert_eq!(cell["engine_certified"], false);
             assert_eq!(cell["terminal_oracle_certified"], false);
@@ -120,11 +117,12 @@ fn every_task_66_variant_has_thirteen_explicit_parser_evidence_cells() {
 
             if expected_status == "unverified" {
                 assert!(references.is_empty(), "invented parser evidence");
-                assert!(cell["sample_sql"].is_null(), "unverified SQL must not be invented");
+                assert!(array(cell, "sql_samples").is_empty(), "unverified SQL must not be invented");
             } else {
                 assert!(!references.is_empty(), "missing evidence fixture");
-                let sql = text(cell, "sample_sql");
-                for reference in references {
+                let samples = array(cell, "sql_samples");
+                assert_eq!(samples.len(), references.len());
+                for (index, reference) in references.iter().enumerate() {
                     let id = reference.as_str().expect("fixture id");
                     let fixture = fixture_index
                         .get(id)
@@ -133,7 +131,7 @@ fn every_task_66_variant_has_thirteen_explicit_parser_evidence_cells() {
                     assert_eq!(fixture["variant_status"], expected_status);
                     assert!(array(fixture, "covered_variants").contains(&Value::from(variant)));
                     assert!(array(fixture, "dialects").contains(&Value::from(*dialect)));
-                    assert_eq!(fixture["sql"], sql);
+                    assert_eq!(fixture["sql"], samples[index]);
                 }
             }
         }
