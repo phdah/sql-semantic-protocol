@@ -933,3 +933,28 @@ fn impossible_transition_and_unattested_session_law_remain_distinct() {
         "metadata cannot attest concurrent isolation: {residual:?}"
     );
 }
+
+#[cfg(feature = "odcs")]
+#[test]
+fn emitted_json_outcome_facts_are_canonical_across_all_source_adapters() {
+    fn facts(catalog: &RelationCatalog) -> Value {
+        let bundle = analyze_read(FILTER, "duckdb", catalog);
+        let doc: Value = serde_json::from_str(&to_bundle_json(&bundle)).unwrap();
+        let statement = &doc["inputs"][0]["statements"][0];
+        assert_eq!(statement["kind"], "query");
+        assert!(statement["output"].is_object());
+        assert!(statement["sources"].is_array());
+        assert!(statement["predicates"].is_array());
+        json!({
+            "sources": statement["sources"],
+            "predicates": statement["predicates"],
+            "column_domains": statement["column_domains"],
+            "condition_exactness": statement["condition_exactness"],
+            "output": statement["output"]
+        })
+    }
+    let direct = facts(&direct_read_catalog());
+    let (dbt, _) = dbt_read_catalog("table", Some("filtered"));
+    assert_eq!(facts(&dbt), direct);
+    assert_eq!(facts(&odcs_read_catalog()), direct);
+}
