@@ -14,6 +14,7 @@ use sql_semantic_protocol::{
 };
 
 const FILTER: &str = "SELECT k FROM raw.orders WHERE k >= 1";
+const INLINE_COMPILED: &str = "WITH __dbt__cte__filtered AS (SELECT k FROM raw.orders WHERE k >= 1) SELECT k FROM __dbt__cte__filtered";
 const DIALECTS: &[&str] = &[
     "generic",
     "mysql",
@@ -60,6 +61,22 @@ fn manifest(materialization: &str, relation_name: Option<&str>) -> Value {
             }
         }
     })
+}
+
+fn compiled_consumer_manifest() -> Value {
+    let mut value = manifest("ephemeral", None);
+    value["nodes"]["model.task174.consumer"] = json!({
+        "unique_id": "model.task174.consumer",
+        "resource_type": "model",
+        "name": "consumer",
+        "config": {"materialized": "view"},
+        "relation_name": "consumer",
+        "language": "sql",
+        "raw_code": "SELECT k FROM {{ ref('filtered') }}",
+        "compiled_code": INLINE_COMPILED,
+        "depends_on": {"nodes": ["model.task174.filtered"]}
+    });
+    value
 }
 
 fn analyze(value: &Value) -> sql_semantic_protocol::AnalysisBundle {
@@ -182,18 +199,7 @@ fn dbt_materialization_declares_storage_without_attesting_an_executed_write() {
 
 #[test]
 fn relationless_ephemeral_dependency_is_accepted_only_when_downstream_is_compiled() {
-    let mut value = manifest("ephemeral", None);
-    value["nodes"]["model.task174.consumer"] = json!({
-        "unique_id": "model.task174.consumer",
-        "resource_type": "model",
-        "name": "consumer",
-        "config": {"materialized": "view"},
-        "relation_name": "consumer",
-        "language": "sql",
-        "raw_code": "SELECT k FROM {{ ref('filtered') }}",
-        "compiled_code": "WITH __dbt__cte__filtered AS (SELECT k FROM raw.orders WHERE k >= 1) SELECT k FROM __dbt__cte__filtered",
-        "depends_on": {"nodes": ["model.task174.filtered"]}
-    });
+    let mut value = compiled_consumer_manifest();
     let bundle = analyze(&value);
     assert_eq!(bundle.producer_evidence().len(), 2);
     let consumer = bundle
@@ -206,9 +212,22 @@ fn relationless_ephemeral_dependency_is_accepted_only_when_downstream_is_compile
         InlineDependencyEvidence::Unattested
     );
     assert_eq!(consumer.execution(), ProducerExecution::Unattested);
+    assert_positive_domain(&canonical_filter_domain(&bundle));
     let json = to_bundle_json(&bundle);
     assert!(!json.contains("create_view__dbt__cte__filtered"));
     assert!(json.contains("raw.orders"));
+
+    // Independently execute the compiled CTE as a pure read of the physical
+    // source. No relation with the ephemeral producer's ID is created.
+    let connection = duckdb::Connection::open_in_memory().unwrap();
+    connection.execute_batch(
+        "CREATE SCHEMA raw; CREATE TABLE raw.orders(k INTEGER);
+         INSERT INTO raw.orders VALUES (1), (1), (NULL), (0);"
+    ).unwrap();
+    let mut statement = connection.prepare(INLINE_COMPILED).unwrap();
+    let actual = statement.query_map([], |row| row.get::<_, Option<i32>>(0))
+        .unwrap().collect::<Result<Vec<_>, _>>().unwrap();
+    assert_eq!(actual, vec![Some(1), Some(1)]);
 
     value["nodes"]["model.task174.consumer"]["compiled_code"] = Value::Null;
     let error = parse_dbt_manifest(&value.to_string()).unwrap_err();
@@ -560,6 +579,16 @@ fn all_twenty_adapter_cells_are_classified_and_canonical_filter_proofs_match() {
     )];
     let source_bundle = analyze_configured_inputs_with_catalog(&direct, &physical_catalog).unwrap();
     let direct_domain = canonical_filter_domain(&source_bundle);
+    let inline_sql = SqlInput::inline(INLINE_COMPILED);
+    let inline_direct = [ConfiguredSqlInput::new(
+        "task174-inline",
+        &inline_sql,
+        "duckdb",
+        dialect.as_ref(),
+    )];
+    let inline_source_bundle =
+        analyze_configured_inputs_with_catalog(&inline_direct, &physical_catalog).unwrap();
+    assert_eq!(canonical_filter_domain(&inline_source_bundle), direct_domain);
     let mut reviewed = BTreeSet::new();
 
     for cell in adapter_cells {
@@ -574,9 +603,14 @@ fn all_twenty_adapter_cells_are_classified_and_canonical_filter_proofs_match() {
             "87-C174-N-incremental" => ("incremental", Some("filtered")),
             other => panic!("unrecognized mandatory case: {other}"),
         };
+        let dbt_fixture = if case == "87-C174-P-inline" {
+            compiled_consumer_manifest()
+        } else {
+            manifest(materialization, name)
+        };
         match adapter {
             "dbt_manifest" => {
-                let bundle = analyze(&manifest(materialization, name));
+                let bundle = analyze(&dbt_fixture);
                 assert_eq!(canonical_filter_domain(&bundle), direct_domain, "{id}");
                 assert_eq!(
                     bundle.producer_evidence()[0].execution(),
@@ -584,8 +618,7 @@ fn all_twenty_adapter_cells_are_classified_and_canonical_filter_proofs_match() {
                 );
             }
             "dbt_catalog" => {
-                let manifest =
-                    parse_dbt_manifest(&manifest(materialization, name).to_string()).unwrap();
+                let manifest = parse_dbt_manifest(&dbt_fixture.to_string()).unwrap();
                 let bundle =
                     analyze_dbt_artifacts(&manifest, &catalog, "duckdb", dialect.as_ref()).unwrap();
                 assert_eq!(canonical_filter_domain(&bundle), direct_domain, "{id}");
@@ -597,12 +630,13 @@ fn all_twenty_adapter_cells_are_classified_and_canonical_filter_proofs_match() {
             "direct_sql" | "odcs" => {
                 // Neither source owns dbt materialization tags; each does own the
                 // same typed filter semantics and physical source identity.
-                assert_eq!(
-                    canonical_filter_domain(&source_bundle),
-                    direct_domain,
-                    "{id}"
-                );
-                assert!(source_bundle.producer_evidence().is_empty(), "{id}");
+                let equivalent = if case == "87-C174-P-inline" {
+                    &inline_source_bundle
+                } else {
+                    &source_bundle
+                };
+                assert_eq!(canonical_filter_domain(equivalent), direct_domain, "{id}");
+                assert!(equivalent.producer_evidence().is_empty(), "{id}");
             }
             other => panic!("unsupported adapter cell: {other}"),
         }
