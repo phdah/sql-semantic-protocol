@@ -178,7 +178,9 @@ fn odcs_read_catalog() -> RelationCatalog {
 fn frozen_matrix_identifies_all_adapter_and_dialect_obligations() {
     let freeze: Value =
         serde_json::from_str(include_str!("../docs/task-176-acceptance-freeze.json")).unwrap();
-    assert_eq!(freeze["version"], 1);
+    assert_eq!(freeze["version"], 2);
+    assert_eq!(freeze["archive"], "docs/task-176-acceptance-freeze-v1.json");
+    assert!(freeze["process_deviation"].as_str().unwrap().contains("write oracle"));
     assert_eq!(freeze["owner"], "TASK-176");
     assert_eq!(freeze["frozen_before_implementation"], true);
     assert_eq!(freeze["fixture_ids"], json!(["87-C176-P", "87-C176-N"]));
@@ -215,13 +217,40 @@ fn frozen_matrix_identifies_all_adapter_and_dialect_obligations() {
         );
         if !is_write {
             assert_lower_bound(&domain(&actual.unwrap()));
-        } else if name == "duckdb" {
-            assert!(actual.is_ok(), "native DuckDB MERGE must parse");
-        } else if let Err(error) = actual {
-            assert!(
-                !error.to_string().is_empty(),
-                "{id} must expose its parser boundary"
-            );
+        } else {
+            // AST variants that parse the shared MERGE must preserve the same
+            // canonical write contract. Parser rejection is a named boundary,
+            // not a native vendor execution proof.
+            let duckdb = dialect_from_name("duckdb").unwrap();
+            let reference = analyze_configured_inputs_with_catalog(
+                &[ConfiguredSqlInput::new(
+                    "task176-write-reference",
+                    &sql,
+                    "duckdb",
+                    duckdb.as_ref(),
+                )],
+                &write_catalog,
+            )
+            .unwrap();
+            match actual {
+                Ok(parsed) => {
+                    let canonical: Value =
+                        serde_json::from_str(&to_bundle_json(&parsed)).unwrap();
+                    let expected: Value =
+                        serde_json::from_str(&to_bundle_json(&reference)).unwrap();
+                    assert_eq!(
+                        canonical["inputs"][0]["statements"][0]["write"],
+                        expected["inputs"][0]["statements"][0]["write"],
+                        "{id}: parser-supported MERGE cannot change canonical write semantics"
+                    );
+                }
+                Err(error) => {
+                    assert!(
+                        error.to_string().contains("SQL parse error"),
+                        "{id}: parser boundary must be explicit: {error}"
+                    );
+                }
+            }
         }
     }
     assert_eq!(ids.len(), 65);
