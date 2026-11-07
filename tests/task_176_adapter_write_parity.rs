@@ -944,7 +944,7 @@ fn emitted_json_outcome_facts_are_canonical_across_all_source_adapters() {
         assert_eq!(statement["kind"], "query");
         assert!(statement["output"].is_object());
         assert!(statement["sources"].is_array());
-        assert!(statement["predicates"].is_array());
+        assert!(statement["predicates"].is_object());
         json!({
             "sources": statement["sources"],
             "predicates": statement["predicates"],
