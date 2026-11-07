@@ -97,3 +97,15 @@ Next: [TASK-178](task-178%20-%20certify-canonical-equivalence-for-shared-dialect
   individually and enumerates remaining mandatory semantic, typed physical,
   SQL/dbt/ODCS, native session, consumer and independent-review gates.
   **Do not mark the child Done merely because parser and CI tests pass.**
+
+## Public API analysis classification (2026-11-07)
+
+A CI-observed second fixed snapshot distinguishes parser boundary from the
+protocol library's own interpretation for all 3,263 sample/dialect pairs:
+3,092 protocol document returns, 116 explicit Unsupported statements, 55
+parser rejections, zero analysis errors. The `docs/task-177-analysis-boundaries.json`
+registry assigns those 116 cases to original semantic owners, retains
+unapproved blocking disposition and refuses to promote returned documents
+to certified typed domains or native engine proofs. Original AC remain
+unchecked, pending the independent whole-bag and adapter equivalence
+requirements documented in `docs/task-177-acceptance-audit.md`.
