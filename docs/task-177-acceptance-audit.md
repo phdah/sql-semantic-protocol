@@ -13,9 +13,14 @@ This audit does not approve TASK-177, TASK-88 or the v3 release gate.
 - `docs/task-177-parser-samples.json` attaches an explicit SQL shape to
   each of 251 original variant labels. `tests/task_177_parser_matrix.rs`
   runs each shape through the actual project `sqlparser` dialect parser,
-  comparing all 3,263 accepted/rejected results to a fixed, reviewed
+  comparing all 3,263 accepted/rejected results to a fixed, independently CI-observed
   `docs/task-177-parser-snapshot.json` rather than merely testing that a
   classification was computed.
+- The observed sqlparser 0.58 result is **3,208 parsed** and **55 rejected**
+  across 12 SQL shapes, with rejected sample/dialect pairs, named limitations,
+  owner and still-pending review disposition frozen in
+  `docs/task-177-parser-boundaries.json`. A rejected sample is not proof
+  that an equivalent alternate dialect syntax is impossible.
 - `88-C177-P` and `88-C177-N`, via
   `tests/task_177_dialect_inventory.rs`, execute independent complete
   DuckDB physical source and terminal bags, duplicate rows, SQL NULL,
@@ -36,7 +41,7 @@ This audit does not approve TASK-177, TASK-88 or the v3 release gate.
 | #1 Frozen complete acceptance | All 251 stable variant identities and 3,263 dialect identities; sample SQL per original variant; explicit baseline evidence and owners | Most variants do not have typed result domains, exact physical source/terminal snapshots and independently reviewed P/N/Impossible/Residual oracle classification. A combined label (e.g. EXCEPT/MINUS) also needs its syntactic subvariants before claiming full coverage |
 | #2 Strongest sound semantics | Canonical outcome-domain contract preserved; no production semantic overclaims; two positive/impossible portable goldens | Variant-level exact semantics, multiplicities, cross-source correlation and certified negative witness contracts remain owner-dependent and unverified for most of the exhaustive matrix |
 | #3 Native physical oracle | Two executed DuckDB source/terminal/full-rejection golden fixtures and existing feature-owner CI suites | Need pinned source/terminal execution and independent expected values for every mandatory exact core, not merely parser acceptance, count estimates or sample goldens |
-| #4 Dialect and adapters | Explicit 13-dialect parser sample matrix; two shared canonical/domain goldens; prior adapter tests provide known representable parity | No exhaustive canonical-equivalence oracle across all parse-capable variants; no representable adapter parity matrix for every fact; vendor/session semantics require named independent evidence or reviewed conditional disposition |
+| #4 Dialect and adapters | Fixed 3,263-cell 13-dialect sample snapshot and 55 rejection boundary owners; two shared canonical/domain goldens; prior adapter tests provide known representable parity | No exhaustive canonical-equivalence oracle across all parse-capable variants; no representable adapter parity matrix for every fact; vendor/session semantics require named independent evidence or reviewed conditional disposition |
 | #5 CI, consumer and independent signoff | PR CI covers Rust fmt, strict Clippy, tests/doc/no-default features, dbt E2E, active schema/goldens. Full pass must be linked to final commit | Independent review and candidate-pinned sql-tdg consumer are not attested for the entire mandatory matrix; preserve blocking statuses until verified |
 
 ## Review, version and release boundaries
