@@ -21,6 +21,14 @@ This audit does not approve TASK-177, TASK-88 or the v3 release gate.
   owner and still-pending review disposition frozen in
   `docs/task-177-parser-boundaries.json`. A rejected sample is not proof
   that an equivalent alternate dialect syntax is impossible.
+- A second, independently CI-observed public-library classification of
+  exactly those 3,263 sample/dialect cells records **3,092 returned protocol
+  documents**, **116 explicit Unsupported statement cells**, **55 parser
+  rejections** and **zero public-analysis errors**. Returning a document
+  may still contain Unknown domains or unproved outcome semantics.
+  `docs/task-177-analysis-boundaries.json` enumerates all 116 Unsupported
+  cells with feature-owner attribution and a blocking, unapproved
+  disposition; this cannot be counted as Exact support.
 - `88-C177-P` and `88-C177-N`, via
   `tests/task_177_dialect_inventory.rs`, execute independent complete
   DuckDB physical source and terminal bags, duplicate rows, SQL NULL,
@@ -39,9 +47,12 @@ This audit does not approve TASK-177, TASK-88 or the v3 release gate.
 | AC | Implemented evidence | Unresolved blocker |
 | --- | --- | --- |
 | #1 Frozen complete acceptance | All 251 stable variant identities and 3,263 dialect identities; sample SQL per original variant; explicit baseline evidence and owners | Most variants do not have typed result domains, exact physical source/terminal snapshots and independently reviewed P/N/Impossible/Residual oracle classification. A combined label (e.g. EXCEPT/MINUS) also needs its syntactic subvariants before claiming full coverage |
-| #2 Strongest sound semantics | Canonical outcome-domain contract preserved; no production semantic overclaims; two positive/impossible portable goldens | Variant-level exact semantics, multiplicities, cross-source correlation and certified negative witness contracts remain owner-dependent and unverified for most of the exhaustive matrix |
+| #2 Strongest sound semantics | Canonical outcome-domain contract preserved; 3,092 document-return cells and
+116 explicit unsupported cells frozen without production semantic overclaims; two positive/impossible portable goldens | Variant-level exact semantics, multiplicities, cross-source correlation and certified negative witness contracts remain owner-dependent and unverified for most of the exhaustive matrix |
 | #3 Native physical oracle | Two executed DuckDB source/terminal/full-rejection golden fixtures and existing feature-owner CI suites | Need pinned source/terminal execution and independent expected values for every mandatory exact core, not merely parser acceptance, count estimates or sample goldens |
-| #4 Dialect and adapters | Fixed 3,263-cell 13-dialect sample snapshot and 55 rejection boundary owners; two shared canonical/domain goldens; prior adapter tests provide known representable parity | No exhaustive canonical-equivalence oracle across all parse-capable variants; no representable adapter parity matrix for every fact; vendor/session semantics require named independent evidence or reviewed conditional disposition |
+| #4 Dialect and adapters | Fixed 3,263-cell 13-dialect sample snapshot and 55 rejection boundary owners; two shared canonical/domain goldens; prior adapter tests provide known representable parity | 116 explicit Unsupported statement cells are blocking and cannot be silently
+reclassified as Exact or deferred. No exhaustive canonical-equivalence oracle
+across all parse-capable variants; no representable adapter parity matrix for every fact; vendor/session semantics require named independent evidence or reviewed conditional disposition |
 | #5 CI, consumer and independent signoff | PR CI covers Rust fmt, strict Clippy, tests/doc/no-default features, dbt E2E, active schema/goldens. Full pass must be linked to final commit | Independent review and candidate-pinned sql-tdg consumer are not attested for the entire mandatory matrix; preserve blocking statuses until verified |
 
 ## Review, version and release boundaries
