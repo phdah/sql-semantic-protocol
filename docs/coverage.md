@@ -4,6 +4,23 @@
 
 The authoritative, machine-readable source is [`coverage-manifest.json`](coverage-manifest.json). Each `?` and `unverified` status is an **explicit open release-proof requirement**, not unfinished inventory work or an approved capability claim. [`tests/coverage_manifest.rs`](../tests/coverage_manifest.rs) checks each dialect/feature cell, parser fixtures and DuckDB SQL oracles. Adding or extending a dialect or semantic feature requires updating the manifest and corresponding tests.
 
+## TASK-177 variant/dialect parser freeze (in progress)
+
+The [versioned TASK-177 inventory](task-177-acceptance-freeze.json) records every
+one of the 251 TASK-66 variants against all 13 exposed parsing dialects,
+for 3,263 explicit cells. It preserves **156 fixture-tested**, **105
+representative-only** and **3,002 unverified** cells from exact variant-level
+evidence without inheriting a feature-level sample. The public-API
+[contract test](../tests/task_177_dialect_inventory.rs) guards the complete
+cross-product and compares two named portable SQL fixtures against closed-world
+DuckDB TRUE, NOT TRUE and UNKNOWN bags.
+
+**Not certified:** A named SQL parser sample is not a variant-wide semantic
+proof, an adapter parity result or an external vendor engine attestation. All
+unverified/representative-only cases and missing full typed/domain/terminal
+oracles remain release-blocking. TASK-177 stays In Progress; TASK-88 and the
+3.0.0 gate remain open.
+
 ## TASK-67 canonical witness foundation
 
 PR #89 adds a normalized typed local witness algebra covering Boolean, join,
