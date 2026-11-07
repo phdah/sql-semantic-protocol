@@ -48,10 +48,19 @@ fn every_named_variant_has_a_unique_sql_shape_and_owned_parser_classification() 
         .collect();
     let mut ids = BTreeSet::new();
     let mut actual = BTreeSet::new();
-    for case in rows(&evidence, "cases") {
+    for (index, case) in rows(&evidence, "cases").iter().enumerate() {
         let id = field(case, "id");
         let feature = field(case, "feature_id");
         let variant = field(case, "variant");
+        assert_eq!(id, format!("88-C177-S{:03}", index + 1));
+        let owner = rows(&manifest, "features")
+            .iter()
+            .find(|candidate| candidate["id"] == feature)
+            .expect("source feature must exist");
+        assert_eq!(
+            case["semantic_owner"], owner["protocol_tasks"],
+            "{id}: semantic owner drifted from TASK-66"
+        );
         assert!(ids.insert(id), "duplicate parser fixture {id}");
         assert!(
             actual.insert((feature, variant)),
