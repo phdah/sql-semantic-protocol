@@ -332,16 +332,21 @@ fn direct_dbt_odcs_prove_identical_complete_read_bag_and_bounds() {
 #[test]
 fn native_duckdb_materialized_and_inline_outputs_match_the_complete_read_bag() {
     let connection = duckdb::Connection::open_in_memory().unwrap();
-    connection.execute_batch(
-        "CREATE SCHEMA raw; CREATE TABLE raw.orders(k INTEGER);
+    connection
+        .execute_batch(
+            "CREATE SCHEMA raw; CREATE TABLE raw.orders(k INTEGER);
          INSERT INTO raw.orders VALUES (1), (1), (NULL), (0);
          CREATE TABLE task176_table AS SELECT k FROM raw.orders WHERE k >= 1;
          CREATE VIEW task176_view AS SELECT k FROM raw.orders WHERE k >= 1;",
-    ).unwrap();
+        )
+        .unwrap();
     let values = |sql: &str| {
         let mut statement = connection.prepare(sql).unwrap();
-        statement.query_map([], |row| row.get::<_, Option<i32>>(0))
-            .unwrap().collect::<Result<Vec<_>, _>>().unwrap()
+        statement
+            .query_map([], |row| row.get::<_, Option<i32>>(0))
+            .unwrap()
+            .collect::<Result<Vec<_>, _>>()
+            .unwrap()
     };
     for sql in [
         "SELECT k FROM task176_table ORDER BY k",
@@ -366,7 +371,9 @@ fn canonical_source_constraints_match_without_inventing_adapter_enforcement() {
             SchemaColumn::from_sql_type("id", "INTEGER", "duckdb").unwrap(),
             SchemaColumn::from_sql_type("score", "INTEGER", "duckdb").unwrap(),
         ],
-    ).unwrap()]).unwrap();
+    )
+    .unwrap()])
+    .unwrap();
     let dialect = dialect_from_name("duckdb").unwrap();
     let ddl = analyze_inputs(
         &[SqlInput::inline(
@@ -398,17 +405,24 @@ fn canonical_source_constraints_match_without_inventing_adapter_enforcement() {
     let odcs_set = find(odcs.relation_constraints());
     let dbt_set = find(dbt.relation_constraints());
     let facts = |set: &RelationConstraintSet| {
-        set.constraints().iter().map(|constraint| match constraint {
-            RelationConstraint::PrimaryKey(key) => format!("pk:{}", key.columns().join(",")),
-            RelationConstraint::NotNull(rule) => format!("required:{}", rule.column()),
-            RelationConstraint::AcceptedValues(rule) => {
-                format!("accepted:{}:{:?}", rule.column(), rule.values())
-            }
-            other => format!("unexpected:{other:?}"),
-        }).collect::<BTreeSet<_>>()
+        set.constraints()
+            .iter()
+            .map(|constraint| match constraint {
+                RelationConstraint::PrimaryKey(key) => format!("pk:{}", key.columns().join(",")),
+                RelationConstraint::NotNull(rule) => format!("required:{}", rule.column()),
+                RelationConstraint::AcceptedValues(rule) => {
+                    format!("accepted:{}:{:?}", rule.column(), rule.values())
+                }
+                other => format!("unexpected:{other:?}"),
+            })
+            .collect::<BTreeSet<_>>()
     };
     let canonical = facts(sql_set);
-    assert_eq!(canonical.len(), 3, "all typed constraints should remain canonical");
+    assert_eq!(
+        canonical.len(),
+        3,
+        "all typed constraints should remain canonical"
+    );
     assert_eq!(facts(dbt_set), canonical);
     assert_eq!(facts(odcs_set), canonical);
     for (set, source) in [
