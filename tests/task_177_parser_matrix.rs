@@ -279,7 +279,10 @@ fn every_canonical_unsupported_path_has_a_named_blocking_semantic_owner() {
         let id = field(cell, "id");
         assert!(actual.insert(id.to_owned()), "duplicate unsupported cell");
         assert_eq!(cell["classification"], "canonical_explicit_unsupported");
-        assert_eq!(cell["release_disposition"], "blocking_not_approved_residual");
+        assert_eq!(
+            cell["release_disposition"],
+            "blocking_not_approved_residual"
+        );
         assert_eq!(cell["vendor_runtime"], "not_certified");
         assert!(!field(cell, "reason").is_empty());
         let sample = rows(&examples, "cases")
