@@ -762,3 +762,115 @@ fn odcs_and_dbt_catalogs_preserve_the_same_write_and_terminal_proof() {
         vec![(5, None)],
     );
 }
+
+#[test]
+fn every_frozen_adapter_cell_exercises_canonical_source_and_terminal_facts() {
+    let freeze: Value =
+        serde_json::from_str(include_str!("../docs/task-176-acceptance-freeze.json")).unwrap();
+    let expected_read = read_proof(&direct_read_catalog());
+    let expected_write = write_proof(&direct_write_catalog());
+    let mut checked = BTreeSet::new();
+
+    for cell in freeze["adapter_cells"].as_array().unwrap() {
+        let id = cell["id"].as_str().unwrap();
+        assert!(checked.insert(id), "duplicate adapter case {id}");
+        let case_id = cell["case_id"].as_str().unwrap();
+        let adapter = cell["adapter"].as_str().unwrap();
+        if case_id == "87-C176-P-write" {
+            let actual = match adapter {
+                "direct_sql" => write_proof(&direct_write_catalog()),
+                "dbt_catalog" => write_proof(&dbt_write_catalog()),
+                #[cfg(feature = "odcs")]
+                "odcs" => write_proof(&odcs_write_catalog()),
+                #[cfg(not(feature = "odcs"))]
+                "odcs" => continue,
+                other => panic!("{id}: unsupported frozen write adapter {other}"),
+            };
+            assert_eq!(actual, expected_write, "{id}: write semantics diverged");
+            assert_eq!(actual.0.len(), 4, "{id}: expected four final target rows");
+            assert_eq!(actual.1.len(), 2, "{id}: expected two terminal rows");
+        } else {
+            let (kind, relation) = match case_id {
+                "87-C176-P-table" => ("table", Some("filtered")),
+                "87-C176-P-view" => ("view", Some("filtered")),
+                "87-C176-P-ephemeral" => ("ephemeral", None),
+                "87-C176-P-incremental" => ("incremental", Some("filtered")),
+                other => panic!("{id}: unexpected read family {other}"),
+            };
+            let actual = match adapter {
+                "direct_sql" => read_proof(&direct_read_catalog()),
+                "dbt_manifest" => {
+                    let (catalog, bundle) = dbt_read_catalog(kind, relation);
+                    assert_eq!(bundle.producer_evidence()[0].execution(), ProducerExecution::Unattested);
+                    read_proof(&catalog)
+                }
+                #[cfg(feature = "odcs")]
+                "odcs" => read_proof(&odcs_read_catalog()),
+                #[cfg(not(feature = "odcs"))]
+                "odcs" => continue,
+                other => panic!("{id}: unexpected read adapter {other}"),
+            };
+            assert_eq!(actual, expected_read, "{id}: canonical read diverged");
+            assert_eq!(actual.2, [0, 1], "{id}: positive row occurrence IDs");
+            assert_eq!(actual.3, [2, 3], "{id}: complete NOT TRUE occurrences");
+        }
+    }
+    #[cfg(feature = "odcs")]
+    assert_eq!(checked.len(), 15);
+    #[cfg(not(feature = "odcs"))]
+    assert_eq!(checked.len(), 15, "all disabled ODCS cases are explicitly classified");
+}
+
+#[test]
+fn write_case_uses_the_actual_dml_oracle_not_the_read_filter_oracle() {
+    let freeze: Value =
+        serde_json::from_str(include_str!("../docs/task-176-acceptance-freeze.json")).unwrap();
+    let write = freeze["cases"].as_array().unwrap().iter()
+        .find(|case| case["id"] == "87-C176-P-write").unwrap();
+    let oracle = &write["oracle"];
+    assert_eq!(oracle["source"]["relation"], "t");
+    assert_eq!(oracle["source"]["rows"], json!([[1, 10], [2, null], [3, 99], [4, 10], [5, null]]));
+    assert_eq!(oracle["additional_source"]["rows"], json!([[1, 30]]));
+    assert_eq!(oracle["source"]["source_occurrences"], json!(["t#0", "t#1", "t#2", "t#3", "t#4"]));
+    assert_eq!(oracle["terminal"], json!([[1, 30], [3, 99]]));
+    assert_eq!(oracle["final_target"], json!([[1, 30], [3, 99], [4, 10], [5, null]]));
+    assert_eq!(oracle["rejected_false"], json!([2]));
+    assert_eq!(oracle["rejected_unknown"], json!([3]));
+    assert_eq!(oracle["domain"]["lower"], 20);
+    assert_eq!(oracle["domain"]["lower_inclusive"], true);
+    assert_eq!(oracle["domain"]["nullable"], false);
+    let direct = write_proof(&direct_write_catalog());
+    assert_eq!(direct.0, vec![
+        write_row(1, Some(30)), write_row(3, Some(99)),
+        write_row(4, Some(10)), write_row(5, None),
+    ]);
+    assert_eq!(direct.1, vec![write_row(1, Some(30)), write_row(3, Some(99))]);
+}
+
+#[test]
+fn impossible_transition_and_unattested_session_law_remain_distinct() {
+    use sql_semantic_protocol::{
+        physical_duckdb_transaction_plan_with_laws, PhysicalTransactionSessionLaw,
+    };
+
+    let empty = PhysicalScriptCatalog { states: vec![], schemas: vec![] };
+    let impossible = physical_duckdb_transaction_plan(
+        &[PhysicalTransactionStep::Commit], &empty,
+    );
+    assert!(
+        matches!(impossible, PhysicalTransactionScriptProof::Impossible { step_index: 0, .. }),
+        "a COMMIT without BEGIN must not claim Exact: {impossible:?}"
+    );
+    let connection = duckdb::Connection::open_in_memory().unwrap();
+    assert!(connection.execute_batch("COMMIT").is_err());
+
+    let residual = physical_duckdb_transaction_plan_with_laws(
+        &[PhysicalTransactionStep::Begin, PhysicalTransactionStep::Commit],
+        &empty,
+        &[PhysicalTransactionSessionLaw::ConcurrentIsolation],
+    );
+    assert!(
+        matches!(residual, PhysicalTransactionScriptProof::Residual { step_index: 0, .. }),
+        "metadata cannot attest concurrent isolation: {residual:?}"
+    );
+}
