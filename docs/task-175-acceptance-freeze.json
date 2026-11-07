@@ -1,0 +1,2328 @@
+{
+  "version": 2,
+  "owner": "TASK-175",
+  "parent": "TASK-87",
+  "created": "2026-11-07",
+  "frozen_before_semantic_changes": true,
+  "fixture_ids": [
+    "87-C175-P",
+    "87-C175-N"
+  ],
+  "scope": "Finite schema-qualified quoted relation identities, built-in dbt constraint tests, FK-only sources, unresolved relationship and declared FK targets, absent warehouse metadata, and equivalent SQL/dbt/ODCS typed evidence. No source claims engine execution or test enforcement.",
+  "upstream": "TASK-174 Done and PR #193 merged into main",
+  "authority": {
+    "warehouse_types": "dbt catalog; manifest declaration fallback only when complete",
+    "model_sql": "dbt compiled_code",
+    "dbt_tests_and_keys": "manifest nodes/constraints",
+    "external_contract": "ODCS property physicalType, logicalType fallback",
+    "direct_sql": "parsed DDL",
+    "execution": "unattested unless independently supplied complete native source/terminal bag"
+  },
+  "dialects": [
+    "generic",
+    "mysql",
+    "postgresql",
+    "hive",
+    "sqlite",
+    "snowflake",
+    "redshift",
+    "mssql",
+    "clickhouse",
+    "bigquery",
+    "ansi",
+    "duckdb",
+    "databricks"
+  ],
+  "parser_matrix": {
+    "case_ids": [
+      "87-C175-P-quoted-qualified",
+      "87-C175-P-fk-only",
+      "87-C175-P-tests",
+      "87-C175-P-canonical-parity",
+      "87-C175-N-missing-relationship-target",
+      "87-C175-N-missing-declared-fk-target"
+    ],
+    "dialects": [
+      "generic",
+      "mysql",
+      "postgresql",
+      "hive",
+      "sqlite",
+      "snowflake",
+      "redshift",
+      "mssql",
+      "clickhouse",
+      "bigquery",
+      "ansi",
+      "duckdb",
+      "databricks"
+    ],
+    "rule": "Classify parser support for each dialect and compare canonical outcome on supported syntax; parser acceptance never attests vendor runtime."
+  },
+  "oracle": {
+    "source": [
+      1,
+      1,
+      null,
+      0
+    ],
+    "terminal": [
+      1,
+      1
+    ],
+    "positive": [
+      0,
+      1
+    ],
+    "rejected_false": [
+      3
+    ],
+    "rejected_unknown": [
+      2
+    ],
+    "domain": {
+      "kind": "signed_integer",
+      "lower": 1,
+      "lower_inclusive": true,
+      "upper": null,
+      "nullable": false
+    }
+  },
+  "cases": [
+    {
+      "id": "87-C175-P-quoted-qualified",
+      "fixture": "87-C175-P",
+      "family": "schema_qualified_quoted_identity",
+      "requirement": "mandatory",
+      "sql": "SELECT k FROM \"raw\".\"orders\" WHERE k >= 1",
+      "source_relation": "\"raw\".\"orders\"",
+      "expected": "canonical identity resolves exactly without falling back to a wrong unquoted alias",
+      "oracle": {
+        "source": [
+          1,
+          1,
+          null,
+          0
+        ],
+        "terminal": [
+          1,
+          1
+        ],
+        "positive": [
+          0,
+          1
+        ],
+        "rejected_false": [
+          3
+        ],
+        "rejected_unknown": [
+          2
+        ],
+        "domain": {
+          "kind": "signed_integer",
+          "lower": 1,
+          "lower_inclusive": true,
+          "upper": null,
+          "nullable": false
+        }
+      },
+      "adapters": [
+        "direct_sql",
+        "dbt_manifest"
+      ],
+      "proof": "Exact physical source and terminal bag only when independently supplied; no engine execution from artifact alone"
+    },
+    {
+      "id": "87-C175-P-fk-only",
+      "fixture": "87-C175-P",
+      "family": "fk_only_source_schema",
+      "requirement": "mandatory",
+      "sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "source_relation": "warehouse.archive.orders",
+      "expected": "child relationships test and declared FK emit target schema even without a model SQL dependency; enforcement stays unknown",
+      "oracle": {
+        "source": [
+          1,
+          1,
+          null,
+          0
+        ],
+        "terminal": [
+          1,
+          1
+        ],
+        "positive": [
+          0,
+          1
+        ],
+        "rejected_false": [
+          3
+        ],
+        "rejected_unknown": [
+          2
+        ],
+        "domain": {
+          "kind": "signed_integer",
+          "lower": 1,
+          "lower_inclusive": true,
+          "upper": null,
+          "nullable": false
+        }
+      },
+      "adapters": [
+        "dbt_manifest",
+        "dbt_catalog",
+        "odcs",
+        "direct_sql"
+      ],
+      "proof": "Exact only for independently attested physical source, otherwise declared constraints with unknown enforcement"
+    },
+    {
+      "id": "87-C175-P-tests",
+      "fixture": "87-C175-P",
+      "family": "built_in_dbt_tests",
+      "requirement": "mandatory",
+      "sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "expected": "supported dbt tests map to canonical constraints with dbt_test provenance and no fabricated engine enforcement",
+      "oracle": {
+        "source": [
+          1,
+          1,
+          null,
+          0
+        ],
+        "terminal": [
+          1,
+          1
+        ],
+        "positive": [
+          0,
+          1
+        ],
+        "rejected_false": [
+          3
+        ],
+        "rejected_unknown": [
+          2
+        ],
+        "domain": {
+          "kind": "signed_integer",
+          "lower": 1,
+          "lower_inclusive": true,
+          "upper": null,
+          "nullable": false
+        }
+      },
+      "adapters": [
+        "dbt_manifest",
+        "direct_sql",
+        "odcs"
+      ],
+      "proof": "No physical test execution is attested by manifest"
+    },
+    {
+      "id": "87-C175-P-canonical-parity",
+      "fixture": "87-C175-P",
+      "family": "paired_ddl_odcs_dbt_schema",
+      "requirement": "mandatory",
+      "sql": "CREATE TABLE raw.orders (k INTEGER)",
+      "expected": "schema evidence and compatible declared keys normalize to matching canonical typed facts; source-specific provenance remains distinct",
+      "oracle": {
+        "source": [
+          1,
+          1,
+          null,
+          0
+        ],
+        "terminal": [
+          1,
+          1
+        ],
+        "positive": [
+          0,
+          1
+        ],
+        "rejected_false": [
+          3
+        ],
+        "rejected_unknown": [
+          2
+        ],
+        "domain": {
+          "kind": "signed_integer",
+          "lower": 1,
+          "lower_inclusive": true,
+          "upper": null,
+          "nullable": false
+        }
+      },
+      "adapters": [
+        "direct_sql",
+        "dbt_manifest",
+        "odcs"
+      ],
+      "proof": "The source row bag must be separately attested"
+    },
+    {
+      "id": "87-C175-N-missing-relationship-target",
+      "fixture": "87-C175-N",
+      "family": "unresolved_relationship_target",
+      "requirement": "mandatory",
+      "sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "expected": "unknown or ambiguous dbt relationships test target emits scoped diagnostic, never a foreign key inferred only from depends_on",
+      "oracle": {
+        "source": [
+          1,
+          1,
+          null,
+          0
+        ],
+        "terminal": [
+          1,
+          1
+        ],
+        "positive": [
+          0,
+          1
+        ],
+        "rejected_false": [
+          3
+        ],
+        "rejected_unknown": [
+          2
+        ],
+        "domain": {
+          "kind": "signed_integer",
+          "lower": 1,
+          "lower_inclusive": true,
+          "upper": null,
+          "nullable": false
+        }
+      },
+      "adapters": [
+        "dbt_manifest"
+      ],
+      "proof": "Residual: missing target identity; no FK constraint"
+    },
+    {
+      "id": "87-C175-N-missing-declared-fk-target",
+      "fixture": "87-C175-N",
+      "family": "unresolved_declared_fk_target",
+      "requirement": "mandatory",
+      "sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "expected": "unresolvable dbt declared foreign key target emits diagnostic and withholds constraint, without hiding unrelated valid constraints",
+      "oracle": {
+        "source": [
+          1,
+          1,
+          null,
+          0
+        ],
+        "terminal": [
+          1,
+          1
+        ],
+        "positive": [
+          0,
+          1
+        ],
+        "rejected_false": [
+          3
+        ],
+        "rejected_unknown": [
+          2
+        ],
+        "domain": {
+          "kind": "signed_integer",
+          "lower": 1,
+          "lower_inclusive": true,
+          "upper": null,
+          "nullable": false
+        }
+      },
+      "adapters": [
+        "dbt_manifest"
+      ],
+      "proof": "Residual: missing target identity; no FK constraint"
+    },
+    {
+      "id": "87-C175-N-untyped-fk-source",
+      "fixture": "87-C175-N",
+      "family": "missing_warehouse_metadata",
+      "requirement": "conditional",
+      "sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "expected": "FK-only source lacking referenced typed columns fails with MissingConstraintSchema or MissingDeclaredColumnTypes; never guesses catalog introspection",
+      "oracle": {
+        "source": [
+          1,
+          1,
+          null,
+          0
+        ],
+        "terminal": [
+          1,
+          1
+        ],
+        "positive": [
+          0,
+          1
+        ],
+        "rejected_false": [
+          3
+        ],
+        "rejected_unknown": [
+          2
+        ],
+        "domain": {
+          "kind": "signed_integer",
+          "lower": 1,
+          "lower_inclusive": true,
+          "upper": null,
+          "nullable": false
+        }
+      },
+      "adapters": [
+        "dbt_manifest",
+        "dbt_catalog"
+      ],
+      "proof": "Residual/rejected metadata input, not exact runtime proof",
+      "owner": "TASK-175",
+      "release_disposition": "typed schema evidence required before exactness"
+    },
+    {
+      "id": "87-C175-N-ambiguous-quoted-alias",
+      "fixture": "87-C175-N",
+      "family": "ambiguous_or_unsupported_identifiers",
+      "requirement": "conditional",
+      "sql": "SELECT k FROM \"orders\" WHERE k >= 1",
+      "expected": "ambiguous schema-qualified sources must fail closed rather than select a suffix arbitrarily; vendor unsupported quoting is parser boundary, not execution evidence",
+      "oracle": {
+        "source": [
+          1,
+          1,
+          null,
+          0
+        ],
+        "terminal": [
+          1,
+          1
+        ],
+        "positive": [
+          0,
+          1
+        ],
+        "rejected_false": [
+          3
+        ],
+        "rejected_unknown": [
+          2
+        ],
+        "domain": {
+          "kind": "signed_integer",
+          "lower": 1,
+          "lower_inclusive": true,
+          "upper": null,
+          "nullable": false
+        }
+      },
+      "adapters": [
+        "direct_sql",
+        "dbt_manifest",
+        "odcs"
+      ],
+      "proof": "Residual/parser-specific boundary",
+      "owner": "TASK-175",
+      "release_disposition": "requires explicit qualified identity or dialect evidence"
+    }
+  ],
+  "acceptance_mapping": {
+    "1": [
+      "87-C175-P-quoted-qualified",
+      "87-C175-P-fk-only",
+      "87-C175-P-tests",
+      "87-C175-P-canonical-parity",
+      "87-C175-N-missing-relationship-target",
+      "87-C175-N-missing-declared-fk-target",
+      "87-C175-N-untyped-fk-source",
+      "87-C175-N-ambiguous-quoted-alias"
+    ],
+    "2": [
+      "87-C175-P-quoted-qualified",
+      "87-C175-P-fk-only",
+      "87-C175-P-tests",
+      "87-C175-N-missing-relationship-target",
+      "87-C175-N-missing-declared-fk-target"
+    ],
+    "3": [
+      "87-C175-P-quoted-qualified",
+      "87-C175-P-fk-only",
+      "87-C175-N-missing-relationship-target"
+    ],
+    "4": [
+      "87-C175-P-quoted-qualified",
+      "87-C175-P-fk-only",
+      "87-C175-P-tests",
+      "87-C175-P-canonical-parity",
+      "87-C175-N-missing-relationship-target",
+      "87-C175-N-missing-declared-fk-target",
+      "87-C175-N-untyped-fk-source",
+      "87-C175-N-ambiguous-quoted-alias"
+    ],
+    "5": [
+      "87-C175-P-quoted-qualified",
+      "87-C175-P-fk-only",
+      "87-C175-P-tests",
+      "87-C175-P-canonical-parity",
+      "87-C175-N-missing-relationship-target",
+      "87-C175-N-missing-declared-fk-target",
+      "87-C175-N-untyped-fk-source",
+      "87-C175-N-ambiguous-quoted-alias"
+    ]
+  },
+  "parent_ac": [
+    1,
+    2,
+    4,
+    5,
+    6
+  ],
+  "verification": {
+    "all_mandatory_cells_verified": false,
+    "full_rust_tests": false,
+    "fmt": false,
+    "clippy": false,
+    "docs": false,
+    "no_default_features": false,
+    "dbt_e2e": false,
+    "native_duckdb": false,
+    "adapter_parity": false,
+    "pinned_consumer": false,
+    "two_axis_review": false,
+    "independent_review": false
+  },
+  "no_fabricated_claims": [
+    "No catalog schema from missing metadata",
+    "No enforcement from dbt test declaration",
+    "No FK target inferred from depends_on when to is unresolved",
+    "No qualified identifier guessed after ambiguous resolution",
+    "No native multi-dialect execution claims"
+  ],
+  "release_gate": "TASK-87 parent and TASK-91 remain separate and open",
+  "archive": "docs/task-175-acceptance-freeze-v1.json",
+  "v2_additions_only": true,
+  "review_of_additions": "The frozen v1 eight-case identities, fixture IDs, typed bags and mandatory/conditional boundaries are immutable. V2 pins explicit parser/adapter cells and test paths, added after implementation because v1 lacked complete per-cell evidence; procedural deviation disclosed, not retroactively waived.",
+  "native_duckdb_oracle": {
+    "engine": "duckdb ~1.10506.0",
+    "seed_sql": "CREATE SCHEMA raw; CREATE TABLE raw.orders(k INTEGER); INSERT INTO raw.orders VALUES (1),(1),(NULL),(0);",
+    "source_sql": "SELECT k FROM raw.orders ORDER BY k NULLS LAST",
+    "selected_sql": "SELECT k FROM raw.orders WHERE k >= 1 ORDER BY k",
+    "rejected_false_sql": "SELECT k FROM raw.orders WHERE NOT (k >= 1)",
+    "rejected_unknown_sql": "SELECT k FROM raw.orders WHERE (k >= 1) IS NULL",
+    "source": [
+      0,
+      1,
+      1,
+      null
+    ],
+    "selected": [
+      1,
+      1
+    ],
+    "rejected_false": [
+      0
+    ],
+    "rejected_unknown": [
+      null
+    ],
+    "proof": "Exact finite physical source and filtered terminal only; FK declaration enforcement remains unknown",
+    "evidence": "tests/task_175_adapter_boundaries.rs::full_duckdb_source_and_terminal_bags_match_canonical_positive_and_not_true"
+  },
+  "dialect_cells": [
+    {
+      "id": "87-C175-P-quoted-qualified::generic",
+      "case_id": "87-C175-P-quoted-qualified",
+      "dialect": "generic",
+      "portable_sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "case_specific_sql": "SELECT k FROM \"raw\".\"orders\" WHERE k >= 1",
+      "verified": false,
+      "classification": "portable_filter_parser_and_typed_domain_only",
+      "case_specific_execution": "not_claimed_for_all_dialects",
+      "expected_domain": {
+        "type": "signed_integer",
+        "lower": 1,
+        "lower_inclusive": true,
+        "upper": null
+      },
+      "native_engine": "not_attested",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-P-quoted-qualified::mysql",
+      "case_id": "87-C175-P-quoted-qualified",
+      "dialect": "mysql",
+      "portable_sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "case_specific_sql": "SELECT k FROM \"raw\".\"orders\" WHERE k >= 1",
+      "verified": false,
+      "classification": "portable_filter_parser_and_typed_domain_only",
+      "case_specific_execution": "not_claimed_for_all_dialects",
+      "expected_domain": {
+        "type": "signed_integer",
+        "lower": 1,
+        "lower_inclusive": true,
+        "upper": null
+      },
+      "native_engine": "not_attested",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-P-quoted-qualified::postgresql",
+      "case_id": "87-C175-P-quoted-qualified",
+      "dialect": "postgresql",
+      "portable_sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "case_specific_sql": "SELECT k FROM \"raw\".\"orders\" WHERE k >= 1",
+      "verified": false,
+      "classification": "portable_filter_parser_and_typed_domain_only",
+      "case_specific_execution": "not_claimed_for_all_dialects",
+      "expected_domain": {
+        "type": "signed_integer",
+        "lower": 1,
+        "lower_inclusive": true,
+        "upper": null
+      },
+      "native_engine": "not_attested",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-P-quoted-qualified::hive",
+      "case_id": "87-C175-P-quoted-qualified",
+      "dialect": "hive",
+      "portable_sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "case_specific_sql": "SELECT k FROM \"raw\".\"orders\" WHERE k >= 1",
+      "verified": false,
+      "classification": "portable_filter_parser_and_typed_domain_only",
+      "case_specific_execution": "not_claimed_for_all_dialects",
+      "expected_domain": {
+        "type": "signed_integer",
+        "lower": 1,
+        "lower_inclusive": true,
+        "upper": null
+      },
+      "native_engine": "not_attested",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-P-quoted-qualified::sqlite",
+      "case_id": "87-C175-P-quoted-qualified",
+      "dialect": "sqlite",
+      "portable_sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "case_specific_sql": "SELECT k FROM \"raw\".\"orders\" WHERE k >= 1",
+      "verified": false,
+      "classification": "portable_filter_parser_and_typed_domain_only",
+      "case_specific_execution": "not_claimed_for_all_dialects",
+      "expected_domain": {
+        "type": "signed_integer",
+        "lower": 1,
+        "lower_inclusive": true,
+        "upper": null
+      },
+      "native_engine": "not_attested",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-P-quoted-qualified::snowflake",
+      "case_id": "87-C175-P-quoted-qualified",
+      "dialect": "snowflake",
+      "portable_sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "case_specific_sql": "SELECT k FROM \"raw\".\"orders\" WHERE k >= 1",
+      "verified": false,
+      "classification": "portable_filter_parser_and_typed_domain_only",
+      "case_specific_execution": "not_claimed_for_all_dialects",
+      "expected_domain": {
+        "type": "signed_integer",
+        "lower": 1,
+        "lower_inclusive": true,
+        "upper": null
+      },
+      "native_engine": "not_attested",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-P-quoted-qualified::redshift",
+      "case_id": "87-C175-P-quoted-qualified",
+      "dialect": "redshift",
+      "portable_sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "case_specific_sql": "SELECT k FROM \"raw\".\"orders\" WHERE k >= 1",
+      "verified": false,
+      "classification": "portable_filter_parser_and_typed_domain_only",
+      "case_specific_execution": "not_claimed_for_all_dialects",
+      "expected_domain": {
+        "type": "signed_integer",
+        "lower": 1,
+        "lower_inclusive": true,
+        "upper": null
+      },
+      "native_engine": "not_attested",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-P-quoted-qualified::mssql",
+      "case_id": "87-C175-P-quoted-qualified",
+      "dialect": "mssql",
+      "portable_sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "case_specific_sql": "SELECT k FROM \"raw\".\"orders\" WHERE k >= 1",
+      "verified": false,
+      "classification": "portable_filter_parser_and_typed_domain_only",
+      "case_specific_execution": "not_claimed_for_all_dialects",
+      "expected_domain": {
+        "type": "signed_integer",
+        "lower": 1,
+        "lower_inclusive": true,
+        "upper": null
+      },
+      "native_engine": "not_attested",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-P-quoted-qualified::clickhouse",
+      "case_id": "87-C175-P-quoted-qualified",
+      "dialect": "clickhouse",
+      "portable_sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "case_specific_sql": "SELECT k FROM \"raw\".\"orders\" WHERE k >= 1",
+      "verified": false,
+      "classification": "portable_filter_parser_and_typed_domain_only",
+      "case_specific_execution": "not_claimed_for_all_dialects",
+      "expected_domain": {
+        "type": "signed_integer",
+        "lower": 1,
+        "lower_inclusive": true,
+        "upper": null
+      },
+      "native_engine": "not_attested",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-P-quoted-qualified::bigquery",
+      "case_id": "87-C175-P-quoted-qualified",
+      "dialect": "bigquery",
+      "portable_sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "case_specific_sql": "SELECT k FROM \"raw\".\"orders\" WHERE k >= 1",
+      "verified": false,
+      "classification": "portable_filter_parser_and_typed_domain_only",
+      "case_specific_execution": "not_claimed_for_all_dialects",
+      "expected_domain": {
+        "type": "signed_integer",
+        "lower": 1,
+        "lower_inclusive": true,
+        "upper": null
+      },
+      "native_engine": "not_attested",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-P-quoted-qualified::ansi",
+      "case_id": "87-C175-P-quoted-qualified",
+      "dialect": "ansi",
+      "portable_sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "case_specific_sql": "SELECT k FROM \"raw\".\"orders\" WHERE k >= 1",
+      "verified": false,
+      "classification": "portable_filter_parser_and_typed_domain_only",
+      "case_specific_execution": "not_claimed_for_all_dialects",
+      "expected_domain": {
+        "type": "signed_integer",
+        "lower": 1,
+        "lower_inclusive": true,
+        "upper": null
+      },
+      "native_engine": "not_attested",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-P-quoted-qualified::duckdb",
+      "case_id": "87-C175-P-quoted-qualified",
+      "dialect": "duckdb",
+      "portable_sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "case_specific_sql": "SELECT k FROM \"raw\".\"orders\" WHERE k >= 1",
+      "verified": false,
+      "classification": "portable_filter_parser_and_typed_domain_only",
+      "case_specific_execution": "not_claimed_for_all_dialects",
+      "expected_domain": {
+        "type": "signed_integer",
+        "lower": 1,
+        "lower_inclusive": true,
+        "upper": null
+      },
+      "native_engine": "not_attested",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-P-quoted-qualified::databricks",
+      "case_id": "87-C175-P-quoted-qualified",
+      "dialect": "databricks",
+      "portable_sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "case_specific_sql": "SELECT k FROM \"raw\".\"orders\" WHERE k >= 1",
+      "verified": false,
+      "classification": "portable_filter_parser_and_typed_domain_only",
+      "case_specific_execution": "not_claimed_for_all_dialects",
+      "expected_domain": {
+        "type": "signed_integer",
+        "lower": 1,
+        "lower_inclusive": true,
+        "upper": null
+      },
+      "native_engine": "not_attested",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-P-fk-only::generic",
+      "case_id": "87-C175-P-fk-only",
+      "dialect": "generic",
+      "portable_sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "case_specific_sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "verified": false,
+      "classification": "portable_filter_parser_and_typed_domain_only",
+      "case_specific_execution": "not_claimed_for_all_dialects",
+      "expected_domain": {
+        "type": "signed_integer",
+        "lower": 1,
+        "lower_inclusive": true,
+        "upper": null
+      },
+      "native_engine": "not_attested",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-P-fk-only::mysql",
+      "case_id": "87-C175-P-fk-only",
+      "dialect": "mysql",
+      "portable_sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "case_specific_sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "verified": false,
+      "classification": "portable_filter_parser_and_typed_domain_only",
+      "case_specific_execution": "not_claimed_for_all_dialects",
+      "expected_domain": {
+        "type": "signed_integer",
+        "lower": 1,
+        "lower_inclusive": true,
+        "upper": null
+      },
+      "native_engine": "not_attested",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-P-fk-only::postgresql",
+      "case_id": "87-C175-P-fk-only",
+      "dialect": "postgresql",
+      "portable_sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "case_specific_sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "verified": false,
+      "classification": "portable_filter_parser_and_typed_domain_only",
+      "case_specific_execution": "not_claimed_for_all_dialects",
+      "expected_domain": {
+        "type": "signed_integer",
+        "lower": 1,
+        "lower_inclusive": true,
+        "upper": null
+      },
+      "native_engine": "not_attested",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-P-fk-only::hive",
+      "case_id": "87-C175-P-fk-only",
+      "dialect": "hive",
+      "portable_sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "case_specific_sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "verified": false,
+      "classification": "portable_filter_parser_and_typed_domain_only",
+      "case_specific_execution": "not_claimed_for_all_dialects",
+      "expected_domain": {
+        "type": "signed_integer",
+        "lower": 1,
+        "lower_inclusive": true,
+        "upper": null
+      },
+      "native_engine": "not_attested",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-P-fk-only::sqlite",
+      "case_id": "87-C175-P-fk-only",
+      "dialect": "sqlite",
+      "portable_sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "case_specific_sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "verified": false,
+      "classification": "portable_filter_parser_and_typed_domain_only",
+      "case_specific_execution": "not_claimed_for_all_dialects",
+      "expected_domain": {
+        "type": "signed_integer",
+        "lower": 1,
+        "lower_inclusive": true,
+        "upper": null
+      },
+      "native_engine": "not_attested",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-P-fk-only::snowflake",
+      "case_id": "87-C175-P-fk-only",
+      "dialect": "snowflake",
+      "portable_sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "case_specific_sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "verified": false,
+      "classification": "portable_filter_parser_and_typed_domain_only",
+      "case_specific_execution": "not_claimed_for_all_dialects",
+      "expected_domain": {
+        "type": "signed_integer",
+        "lower": 1,
+        "lower_inclusive": true,
+        "upper": null
+      },
+      "native_engine": "not_attested",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-P-fk-only::redshift",
+      "case_id": "87-C175-P-fk-only",
+      "dialect": "redshift",
+      "portable_sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "case_specific_sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "verified": false,
+      "classification": "portable_filter_parser_and_typed_domain_only",
+      "case_specific_execution": "not_claimed_for_all_dialects",
+      "expected_domain": {
+        "type": "signed_integer",
+        "lower": 1,
+        "lower_inclusive": true,
+        "upper": null
+      },
+      "native_engine": "not_attested",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-P-fk-only::mssql",
+      "case_id": "87-C175-P-fk-only",
+      "dialect": "mssql",
+      "portable_sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "case_specific_sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "verified": false,
+      "classification": "portable_filter_parser_and_typed_domain_only",
+      "case_specific_execution": "not_claimed_for_all_dialects",
+      "expected_domain": {
+        "type": "signed_integer",
+        "lower": 1,
+        "lower_inclusive": true,
+        "upper": null
+      },
+      "native_engine": "not_attested",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-P-fk-only::clickhouse",
+      "case_id": "87-C175-P-fk-only",
+      "dialect": "clickhouse",
+      "portable_sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "case_specific_sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "verified": false,
+      "classification": "portable_filter_parser_and_typed_domain_only",
+      "case_specific_execution": "not_claimed_for_all_dialects",
+      "expected_domain": {
+        "type": "signed_integer",
+        "lower": 1,
+        "lower_inclusive": true,
+        "upper": null
+      },
+      "native_engine": "not_attested",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-P-fk-only::bigquery",
+      "case_id": "87-C175-P-fk-only",
+      "dialect": "bigquery",
+      "portable_sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "case_specific_sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "verified": false,
+      "classification": "portable_filter_parser_and_typed_domain_only",
+      "case_specific_execution": "not_claimed_for_all_dialects",
+      "expected_domain": {
+        "type": "signed_integer",
+        "lower": 1,
+        "lower_inclusive": true,
+        "upper": null
+      },
+      "native_engine": "not_attested",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-P-fk-only::ansi",
+      "case_id": "87-C175-P-fk-only",
+      "dialect": "ansi",
+      "portable_sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "case_specific_sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "verified": false,
+      "classification": "portable_filter_parser_and_typed_domain_only",
+      "case_specific_execution": "not_claimed_for_all_dialects",
+      "expected_domain": {
+        "type": "signed_integer",
+        "lower": 1,
+        "lower_inclusive": true,
+        "upper": null
+      },
+      "native_engine": "not_attested",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-P-fk-only::duckdb",
+      "case_id": "87-C175-P-fk-only",
+      "dialect": "duckdb",
+      "portable_sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "case_specific_sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "verified": false,
+      "classification": "portable_filter_parser_and_typed_domain_only",
+      "case_specific_execution": "not_claimed_for_all_dialects",
+      "expected_domain": {
+        "type": "signed_integer",
+        "lower": 1,
+        "lower_inclusive": true,
+        "upper": null
+      },
+      "native_engine": "not_attested",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-P-fk-only::databricks",
+      "case_id": "87-C175-P-fk-only",
+      "dialect": "databricks",
+      "portable_sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "case_specific_sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "verified": false,
+      "classification": "portable_filter_parser_and_typed_domain_only",
+      "case_specific_execution": "not_claimed_for_all_dialects",
+      "expected_domain": {
+        "type": "signed_integer",
+        "lower": 1,
+        "lower_inclusive": true,
+        "upper": null
+      },
+      "native_engine": "not_attested",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-P-tests::generic",
+      "case_id": "87-C175-P-tests",
+      "dialect": "generic",
+      "portable_sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "case_specific_sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "verified": false,
+      "classification": "portable_filter_parser_and_typed_domain_only",
+      "case_specific_execution": "not_claimed_for_all_dialects",
+      "expected_domain": {
+        "type": "signed_integer",
+        "lower": 1,
+        "lower_inclusive": true,
+        "upper": null
+      },
+      "native_engine": "not_attested",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-P-tests::mysql",
+      "case_id": "87-C175-P-tests",
+      "dialect": "mysql",
+      "portable_sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "case_specific_sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "verified": false,
+      "classification": "portable_filter_parser_and_typed_domain_only",
+      "case_specific_execution": "not_claimed_for_all_dialects",
+      "expected_domain": {
+        "type": "signed_integer",
+        "lower": 1,
+        "lower_inclusive": true,
+        "upper": null
+      },
+      "native_engine": "not_attested",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-P-tests::postgresql",
+      "case_id": "87-C175-P-tests",
+      "dialect": "postgresql",
+      "portable_sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "case_specific_sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "verified": false,
+      "classification": "portable_filter_parser_and_typed_domain_only",
+      "case_specific_execution": "not_claimed_for_all_dialects",
+      "expected_domain": {
+        "type": "signed_integer",
+        "lower": 1,
+        "lower_inclusive": true,
+        "upper": null
+      },
+      "native_engine": "not_attested",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-P-tests::hive",
+      "case_id": "87-C175-P-tests",
+      "dialect": "hive",
+      "portable_sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "case_specific_sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "verified": false,
+      "classification": "portable_filter_parser_and_typed_domain_only",
+      "case_specific_execution": "not_claimed_for_all_dialects",
+      "expected_domain": {
+        "type": "signed_integer",
+        "lower": 1,
+        "lower_inclusive": true,
+        "upper": null
+      },
+      "native_engine": "not_attested",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-P-tests::sqlite",
+      "case_id": "87-C175-P-tests",
+      "dialect": "sqlite",
+      "portable_sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "case_specific_sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "verified": false,
+      "classification": "portable_filter_parser_and_typed_domain_only",
+      "case_specific_execution": "not_claimed_for_all_dialects",
+      "expected_domain": {
+        "type": "signed_integer",
+        "lower": 1,
+        "lower_inclusive": true,
+        "upper": null
+      },
+      "native_engine": "not_attested",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-P-tests::snowflake",
+      "case_id": "87-C175-P-tests",
+      "dialect": "snowflake",
+      "portable_sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "case_specific_sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "verified": false,
+      "classification": "portable_filter_parser_and_typed_domain_only",
+      "case_specific_execution": "not_claimed_for_all_dialects",
+      "expected_domain": {
+        "type": "signed_integer",
+        "lower": 1,
+        "lower_inclusive": true,
+        "upper": null
+      },
+      "native_engine": "not_attested",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-P-tests::redshift",
+      "case_id": "87-C175-P-tests",
+      "dialect": "redshift",
+      "portable_sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "case_specific_sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "verified": false,
+      "classification": "portable_filter_parser_and_typed_domain_only",
+      "case_specific_execution": "not_claimed_for_all_dialects",
+      "expected_domain": {
+        "type": "signed_integer",
+        "lower": 1,
+        "lower_inclusive": true,
+        "upper": null
+      },
+      "native_engine": "not_attested",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-P-tests::mssql",
+      "case_id": "87-C175-P-tests",
+      "dialect": "mssql",
+      "portable_sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "case_specific_sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "verified": false,
+      "classification": "portable_filter_parser_and_typed_domain_only",
+      "case_specific_execution": "not_claimed_for_all_dialects",
+      "expected_domain": {
+        "type": "signed_integer",
+        "lower": 1,
+        "lower_inclusive": true,
+        "upper": null
+      },
+      "native_engine": "not_attested",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-P-tests::clickhouse",
+      "case_id": "87-C175-P-tests",
+      "dialect": "clickhouse",
+      "portable_sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "case_specific_sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "verified": false,
+      "classification": "portable_filter_parser_and_typed_domain_only",
+      "case_specific_execution": "not_claimed_for_all_dialects",
+      "expected_domain": {
+        "type": "signed_integer",
+        "lower": 1,
+        "lower_inclusive": true,
+        "upper": null
+      },
+      "native_engine": "not_attested",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-P-tests::bigquery",
+      "case_id": "87-C175-P-tests",
+      "dialect": "bigquery",
+      "portable_sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "case_specific_sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "verified": false,
+      "classification": "portable_filter_parser_and_typed_domain_only",
+      "case_specific_execution": "not_claimed_for_all_dialects",
+      "expected_domain": {
+        "type": "signed_integer",
+        "lower": 1,
+        "lower_inclusive": true,
+        "upper": null
+      },
+      "native_engine": "not_attested",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-P-tests::ansi",
+      "case_id": "87-C175-P-tests",
+      "dialect": "ansi",
+      "portable_sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "case_specific_sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "verified": false,
+      "classification": "portable_filter_parser_and_typed_domain_only",
+      "case_specific_execution": "not_claimed_for_all_dialects",
+      "expected_domain": {
+        "type": "signed_integer",
+        "lower": 1,
+        "lower_inclusive": true,
+        "upper": null
+      },
+      "native_engine": "not_attested",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-P-tests::duckdb",
+      "case_id": "87-C175-P-tests",
+      "dialect": "duckdb",
+      "portable_sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "case_specific_sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "verified": false,
+      "classification": "portable_filter_parser_and_typed_domain_only",
+      "case_specific_execution": "not_claimed_for_all_dialects",
+      "expected_domain": {
+        "type": "signed_integer",
+        "lower": 1,
+        "lower_inclusive": true,
+        "upper": null
+      },
+      "native_engine": "not_attested",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-P-tests::databricks",
+      "case_id": "87-C175-P-tests",
+      "dialect": "databricks",
+      "portable_sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "case_specific_sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "verified": false,
+      "classification": "portable_filter_parser_and_typed_domain_only",
+      "case_specific_execution": "not_claimed_for_all_dialects",
+      "expected_domain": {
+        "type": "signed_integer",
+        "lower": 1,
+        "lower_inclusive": true,
+        "upper": null
+      },
+      "native_engine": "not_attested",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-P-canonical-parity::generic",
+      "case_id": "87-C175-P-canonical-parity",
+      "dialect": "generic",
+      "portable_sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "case_specific_sql": "CREATE TABLE raw.orders (k INTEGER)",
+      "verified": false,
+      "classification": "portable_filter_parser_and_typed_domain_only",
+      "case_specific_execution": "not_claimed_for_all_dialects",
+      "expected_domain": {
+        "type": "signed_integer",
+        "lower": 1,
+        "lower_inclusive": true,
+        "upper": null
+      },
+      "native_engine": "not_attested",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-P-canonical-parity::mysql",
+      "case_id": "87-C175-P-canonical-parity",
+      "dialect": "mysql",
+      "portable_sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "case_specific_sql": "CREATE TABLE raw.orders (k INTEGER)",
+      "verified": false,
+      "classification": "portable_filter_parser_and_typed_domain_only",
+      "case_specific_execution": "not_claimed_for_all_dialects",
+      "expected_domain": {
+        "type": "signed_integer",
+        "lower": 1,
+        "lower_inclusive": true,
+        "upper": null
+      },
+      "native_engine": "not_attested",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-P-canonical-parity::postgresql",
+      "case_id": "87-C175-P-canonical-parity",
+      "dialect": "postgresql",
+      "portable_sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "case_specific_sql": "CREATE TABLE raw.orders (k INTEGER)",
+      "verified": false,
+      "classification": "portable_filter_parser_and_typed_domain_only",
+      "case_specific_execution": "not_claimed_for_all_dialects",
+      "expected_domain": {
+        "type": "signed_integer",
+        "lower": 1,
+        "lower_inclusive": true,
+        "upper": null
+      },
+      "native_engine": "not_attested",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-P-canonical-parity::hive",
+      "case_id": "87-C175-P-canonical-parity",
+      "dialect": "hive",
+      "portable_sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "case_specific_sql": "CREATE TABLE raw.orders (k INTEGER)",
+      "verified": false,
+      "classification": "portable_filter_parser_and_typed_domain_only",
+      "case_specific_execution": "not_claimed_for_all_dialects",
+      "expected_domain": {
+        "type": "signed_integer",
+        "lower": 1,
+        "lower_inclusive": true,
+        "upper": null
+      },
+      "native_engine": "not_attested",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-P-canonical-parity::sqlite",
+      "case_id": "87-C175-P-canonical-parity",
+      "dialect": "sqlite",
+      "portable_sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "case_specific_sql": "CREATE TABLE raw.orders (k INTEGER)",
+      "verified": false,
+      "classification": "portable_filter_parser_and_typed_domain_only",
+      "case_specific_execution": "not_claimed_for_all_dialects",
+      "expected_domain": {
+        "type": "signed_integer",
+        "lower": 1,
+        "lower_inclusive": true,
+        "upper": null
+      },
+      "native_engine": "not_attested",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-P-canonical-parity::snowflake",
+      "case_id": "87-C175-P-canonical-parity",
+      "dialect": "snowflake",
+      "portable_sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "case_specific_sql": "CREATE TABLE raw.orders (k INTEGER)",
+      "verified": false,
+      "classification": "portable_filter_parser_and_typed_domain_only",
+      "case_specific_execution": "not_claimed_for_all_dialects",
+      "expected_domain": {
+        "type": "signed_integer",
+        "lower": 1,
+        "lower_inclusive": true,
+        "upper": null
+      },
+      "native_engine": "not_attested",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-P-canonical-parity::redshift",
+      "case_id": "87-C175-P-canonical-parity",
+      "dialect": "redshift",
+      "portable_sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "case_specific_sql": "CREATE TABLE raw.orders (k INTEGER)",
+      "verified": false,
+      "classification": "portable_filter_parser_and_typed_domain_only",
+      "case_specific_execution": "not_claimed_for_all_dialects",
+      "expected_domain": {
+        "type": "signed_integer",
+        "lower": 1,
+        "lower_inclusive": true,
+        "upper": null
+      },
+      "native_engine": "not_attested",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-P-canonical-parity::mssql",
+      "case_id": "87-C175-P-canonical-parity",
+      "dialect": "mssql",
+      "portable_sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "case_specific_sql": "CREATE TABLE raw.orders (k INTEGER)",
+      "verified": false,
+      "classification": "portable_filter_parser_and_typed_domain_only",
+      "case_specific_execution": "not_claimed_for_all_dialects",
+      "expected_domain": {
+        "type": "signed_integer",
+        "lower": 1,
+        "lower_inclusive": true,
+        "upper": null
+      },
+      "native_engine": "not_attested",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-P-canonical-parity::clickhouse",
+      "case_id": "87-C175-P-canonical-parity",
+      "dialect": "clickhouse",
+      "portable_sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "case_specific_sql": "CREATE TABLE raw.orders (k INTEGER)",
+      "verified": false,
+      "classification": "portable_filter_parser_and_typed_domain_only",
+      "case_specific_execution": "not_claimed_for_all_dialects",
+      "expected_domain": {
+        "type": "signed_integer",
+        "lower": 1,
+        "lower_inclusive": true,
+        "upper": null
+      },
+      "native_engine": "not_attested",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-P-canonical-parity::bigquery",
+      "case_id": "87-C175-P-canonical-parity",
+      "dialect": "bigquery",
+      "portable_sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "case_specific_sql": "CREATE TABLE raw.orders (k INTEGER)",
+      "verified": false,
+      "classification": "portable_filter_parser_and_typed_domain_only",
+      "case_specific_execution": "not_claimed_for_all_dialects",
+      "expected_domain": {
+        "type": "signed_integer",
+        "lower": 1,
+        "lower_inclusive": true,
+        "upper": null
+      },
+      "native_engine": "not_attested",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-P-canonical-parity::ansi",
+      "case_id": "87-C175-P-canonical-parity",
+      "dialect": "ansi",
+      "portable_sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "case_specific_sql": "CREATE TABLE raw.orders (k INTEGER)",
+      "verified": false,
+      "classification": "portable_filter_parser_and_typed_domain_only",
+      "case_specific_execution": "not_claimed_for_all_dialects",
+      "expected_domain": {
+        "type": "signed_integer",
+        "lower": 1,
+        "lower_inclusive": true,
+        "upper": null
+      },
+      "native_engine": "not_attested",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-P-canonical-parity::duckdb",
+      "case_id": "87-C175-P-canonical-parity",
+      "dialect": "duckdb",
+      "portable_sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "case_specific_sql": "CREATE TABLE raw.orders (k INTEGER)",
+      "verified": false,
+      "classification": "portable_filter_parser_and_typed_domain_only",
+      "case_specific_execution": "not_claimed_for_all_dialects",
+      "expected_domain": {
+        "type": "signed_integer",
+        "lower": 1,
+        "lower_inclusive": true,
+        "upper": null
+      },
+      "native_engine": "not_attested",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-P-canonical-parity::databricks",
+      "case_id": "87-C175-P-canonical-parity",
+      "dialect": "databricks",
+      "portable_sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "case_specific_sql": "CREATE TABLE raw.orders (k INTEGER)",
+      "verified": false,
+      "classification": "portable_filter_parser_and_typed_domain_only",
+      "case_specific_execution": "not_claimed_for_all_dialects",
+      "expected_domain": {
+        "type": "signed_integer",
+        "lower": 1,
+        "lower_inclusive": true,
+        "upper": null
+      },
+      "native_engine": "not_attested",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-N-missing-relationship-target::generic",
+      "case_id": "87-C175-N-missing-relationship-target",
+      "dialect": "generic",
+      "portable_sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "case_specific_sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "verified": false,
+      "classification": "portable_filter_parser_and_typed_domain_only",
+      "case_specific_execution": "not_claimed_for_all_dialects",
+      "expected_domain": {
+        "type": "signed_integer",
+        "lower": 1,
+        "lower_inclusive": true,
+        "upper": null
+      },
+      "native_engine": "not_attested",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-N-missing-relationship-target::mysql",
+      "case_id": "87-C175-N-missing-relationship-target",
+      "dialect": "mysql",
+      "portable_sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "case_specific_sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "verified": false,
+      "classification": "portable_filter_parser_and_typed_domain_only",
+      "case_specific_execution": "not_claimed_for_all_dialects",
+      "expected_domain": {
+        "type": "signed_integer",
+        "lower": 1,
+        "lower_inclusive": true,
+        "upper": null
+      },
+      "native_engine": "not_attested",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-N-missing-relationship-target::postgresql",
+      "case_id": "87-C175-N-missing-relationship-target",
+      "dialect": "postgresql",
+      "portable_sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "case_specific_sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "verified": false,
+      "classification": "portable_filter_parser_and_typed_domain_only",
+      "case_specific_execution": "not_claimed_for_all_dialects",
+      "expected_domain": {
+        "type": "signed_integer",
+        "lower": 1,
+        "lower_inclusive": true,
+        "upper": null
+      },
+      "native_engine": "not_attested",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-N-missing-relationship-target::hive",
+      "case_id": "87-C175-N-missing-relationship-target",
+      "dialect": "hive",
+      "portable_sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "case_specific_sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "verified": false,
+      "classification": "portable_filter_parser_and_typed_domain_only",
+      "case_specific_execution": "not_claimed_for_all_dialects",
+      "expected_domain": {
+        "type": "signed_integer",
+        "lower": 1,
+        "lower_inclusive": true,
+        "upper": null
+      },
+      "native_engine": "not_attested",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-N-missing-relationship-target::sqlite",
+      "case_id": "87-C175-N-missing-relationship-target",
+      "dialect": "sqlite",
+      "portable_sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "case_specific_sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "verified": false,
+      "classification": "portable_filter_parser_and_typed_domain_only",
+      "case_specific_execution": "not_claimed_for_all_dialects",
+      "expected_domain": {
+        "type": "signed_integer",
+        "lower": 1,
+        "lower_inclusive": true,
+        "upper": null
+      },
+      "native_engine": "not_attested",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-N-missing-relationship-target::snowflake",
+      "case_id": "87-C175-N-missing-relationship-target",
+      "dialect": "snowflake",
+      "portable_sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "case_specific_sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "verified": false,
+      "classification": "portable_filter_parser_and_typed_domain_only",
+      "case_specific_execution": "not_claimed_for_all_dialects",
+      "expected_domain": {
+        "type": "signed_integer",
+        "lower": 1,
+        "lower_inclusive": true,
+        "upper": null
+      },
+      "native_engine": "not_attested",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-N-missing-relationship-target::redshift",
+      "case_id": "87-C175-N-missing-relationship-target",
+      "dialect": "redshift",
+      "portable_sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "case_specific_sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "verified": false,
+      "classification": "portable_filter_parser_and_typed_domain_only",
+      "case_specific_execution": "not_claimed_for_all_dialects",
+      "expected_domain": {
+        "type": "signed_integer",
+        "lower": 1,
+        "lower_inclusive": true,
+        "upper": null
+      },
+      "native_engine": "not_attested",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-N-missing-relationship-target::mssql",
+      "case_id": "87-C175-N-missing-relationship-target",
+      "dialect": "mssql",
+      "portable_sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "case_specific_sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "verified": false,
+      "classification": "portable_filter_parser_and_typed_domain_only",
+      "case_specific_execution": "not_claimed_for_all_dialects",
+      "expected_domain": {
+        "type": "signed_integer",
+        "lower": 1,
+        "lower_inclusive": true,
+        "upper": null
+      },
+      "native_engine": "not_attested",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-N-missing-relationship-target::clickhouse",
+      "case_id": "87-C175-N-missing-relationship-target",
+      "dialect": "clickhouse",
+      "portable_sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "case_specific_sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "verified": false,
+      "classification": "portable_filter_parser_and_typed_domain_only",
+      "case_specific_execution": "not_claimed_for_all_dialects",
+      "expected_domain": {
+        "type": "signed_integer",
+        "lower": 1,
+        "lower_inclusive": true,
+        "upper": null
+      },
+      "native_engine": "not_attested",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-N-missing-relationship-target::bigquery",
+      "case_id": "87-C175-N-missing-relationship-target",
+      "dialect": "bigquery",
+      "portable_sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "case_specific_sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "verified": false,
+      "classification": "portable_filter_parser_and_typed_domain_only",
+      "case_specific_execution": "not_claimed_for_all_dialects",
+      "expected_domain": {
+        "type": "signed_integer",
+        "lower": 1,
+        "lower_inclusive": true,
+        "upper": null
+      },
+      "native_engine": "not_attested",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-N-missing-relationship-target::ansi",
+      "case_id": "87-C175-N-missing-relationship-target",
+      "dialect": "ansi",
+      "portable_sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "case_specific_sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "verified": false,
+      "classification": "portable_filter_parser_and_typed_domain_only",
+      "case_specific_execution": "not_claimed_for_all_dialects",
+      "expected_domain": {
+        "type": "signed_integer",
+        "lower": 1,
+        "lower_inclusive": true,
+        "upper": null
+      },
+      "native_engine": "not_attested",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-N-missing-relationship-target::duckdb",
+      "case_id": "87-C175-N-missing-relationship-target",
+      "dialect": "duckdb",
+      "portable_sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "case_specific_sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "verified": false,
+      "classification": "portable_filter_parser_and_typed_domain_only",
+      "case_specific_execution": "not_claimed_for_all_dialects",
+      "expected_domain": {
+        "type": "signed_integer",
+        "lower": 1,
+        "lower_inclusive": true,
+        "upper": null
+      },
+      "native_engine": "not_attested",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-N-missing-relationship-target::databricks",
+      "case_id": "87-C175-N-missing-relationship-target",
+      "dialect": "databricks",
+      "portable_sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "case_specific_sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "verified": false,
+      "classification": "portable_filter_parser_and_typed_domain_only",
+      "case_specific_execution": "not_claimed_for_all_dialects",
+      "expected_domain": {
+        "type": "signed_integer",
+        "lower": 1,
+        "lower_inclusive": true,
+        "upper": null
+      },
+      "native_engine": "not_attested",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-N-missing-declared-fk-target::generic",
+      "case_id": "87-C175-N-missing-declared-fk-target",
+      "dialect": "generic",
+      "portable_sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "case_specific_sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "verified": false,
+      "classification": "portable_filter_parser_and_typed_domain_only",
+      "case_specific_execution": "not_claimed_for_all_dialects",
+      "expected_domain": {
+        "type": "signed_integer",
+        "lower": 1,
+        "lower_inclusive": true,
+        "upper": null
+      },
+      "native_engine": "not_attested",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-N-missing-declared-fk-target::mysql",
+      "case_id": "87-C175-N-missing-declared-fk-target",
+      "dialect": "mysql",
+      "portable_sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "case_specific_sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "verified": false,
+      "classification": "portable_filter_parser_and_typed_domain_only",
+      "case_specific_execution": "not_claimed_for_all_dialects",
+      "expected_domain": {
+        "type": "signed_integer",
+        "lower": 1,
+        "lower_inclusive": true,
+        "upper": null
+      },
+      "native_engine": "not_attested",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-N-missing-declared-fk-target::postgresql",
+      "case_id": "87-C175-N-missing-declared-fk-target",
+      "dialect": "postgresql",
+      "portable_sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "case_specific_sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "verified": false,
+      "classification": "portable_filter_parser_and_typed_domain_only",
+      "case_specific_execution": "not_claimed_for_all_dialects",
+      "expected_domain": {
+        "type": "signed_integer",
+        "lower": 1,
+        "lower_inclusive": true,
+        "upper": null
+      },
+      "native_engine": "not_attested",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-N-missing-declared-fk-target::hive",
+      "case_id": "87-C175-N-missing-declared-fk-target",
+      "dialect": "hive",
+      "portable_sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "case_specific_sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "verified": false,
+      "classification": "portable_filter_parser_and_typed_domain_only",
+      "case_specific_execution": "not_claimed_for_all_dialects",
+      "expected_domain": {
+        "type": "signed_integer",
+        "lower": 1,
+        "lower_inclusive": true,
+        "upper": null
+      },
+      "native_engine": "not_attested",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-N-missing-declared-fk-target::sqlite",
+      "case_id": "87-C175-N-missing-declared-fk-target",
+      "dialect": "sqlite",
+      "portable_sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "case_specific_sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "verified": false,
+      "classification": "portable_filter_parser_and_typed_domain_only",
+      "case_specific_execution": "not_claimed_for_all_dialects",
+      "expected_domain": {
+        "type": "signed_integer",
+        "lower": 1,
+        "lower_inclusive": true,
+        "upper": null
+      },
+      "native_engine": "not_attested",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-N-missing-declared-fk-target::snowflake",
+      "case_id": "87-C175-N-missing-declared-fk-target",
+      "dialect": "snowflake",
+      "portable_sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "case_specific_sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "verified": false,
+      "classification": "portable_filter_parser_and_typed_domain_only",
+      "case_specific_execution": "not_claimed_for_all_dialects",
+      "expected_domain": {
+        "type": "signed_integer",
+        "lower": 1,
+        "lower_inclusive": true,
+        "upper": null
+      },
+      "native_engine": "not_attested",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-N-missing-declared-fk-target::redshift",
+      "case_id": "87-C175-N-missing-declared-fk-target",
+      "dialect": "redshift",
+      "portable_sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "case_specific_sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "verified": false,
+      "classification": "portable_filter_parser_and_typed_domain_only",
+      "case_specific_execution": "not_claimed_for_all_dialects",
+      "expected_domain": {
+        "type": "signed_integer",
+        "lower": 1,
+        "lower_inclusive": true,
+        "upper": null
+      },
+      "native_engine": "not_attested",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-N-missing-declared-fk-target::mssql",
+      "case_id": "87-C175-N-missing-declared-fk-target",
+      "dialect": "mssql",
+      "portable_sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "case_specific_sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "verified": false,
+      "classification": "portable_filter_parser_and_typed_domain_only",
+      "case_specific_execution": "not_claimed_for_all_dialects",
+      "expected_domain": {
+        "type": "signed_integer",
+        "lower": 1,
+        "lower_inclusive": true,
+        "upper": null
+      },
+      "native_engine": "not_attested",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-N-missing-declared-fk-target::clickhouse",
+      "case_id": "87-C175-N-missing-declared-fk-target",
+      "dialect": "clickhouse",
+      "portable_sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "case_specific_sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "verified": false,
+      "classification": "portable_filter_parser_and_typed_domain_only",
+      "case_specific_execution": "not_claimed_for_all_dialects",
+      "expected_domain": {
+        "type": "signed_integer",
+        "lower": 1,
+        "lower_inclusive": true,
+        "upper": null
+      },
+      "native_engine": "not_attested",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-N-missing-declared-fk-target::bigquery",
+      "case_id": "87-C175-N-missing-declared-fk-target",
+      "dialect": "bigquery",
+      "portable_sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "case_specific_sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "verified": false,
+      "classification": "portable_filter_parser_and_typed_domain_only",
+      "case_specific_execution": "not_claimed_for_all_dialects",
+      "expected_domain": {
+        "type": "signed_integer",
+        "lower": 1,
+        "lower_inclusive": true,
+        "upper": null
+      },
+      "native_engine": "not_attested",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-N-missing-declared-fk-target::ansi",
+      "case_id": "87-C175-N-missing-declared-fk-target",
+      "dialect": "ansi",
+      "portable_sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "case_specific_sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "verified": false,
+      "classification": "portable_filter_parser_and_typed_domain_only",
+      "case_specific_execution": "not_claimed_for_all_dialects",
+      "expected_domain": {
+        "type": "signed_integer",
+        "lower": 1,
+        "lower_inclusive": true,
+        "upper": null
+      },
+      "native_engine": "not_attested",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-N-missing-declared-fk-target::duckdb",
+      "case_id": "87-C175-N-missing-declared-fk-target",
+      "dialect": "duckdb",
+      "portable_sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "case_specific_sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "verified": false,
+      "classification": "portable_filter_parser_and_typed_domain_only",
+      "case_specific_execution": "not_claimed_for_all_dialects",
+      "expected_domain": {
+        "type": "signed_integer",
+        "lower": 1,
+        "lower_inclusive": true,
+        "upper": null
+      },
+      "native_engine": "not_attested",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    },
+    {
+      "id": "87-C175-N-missing-declared-fk-target::databricks",
+      "case_id": "87-C175-N-missing-declared-fk-target",
+      "dialect": "databricks",
+      "portable_sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "case_specific_sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "verified": false,
+      "classification": "portable_filter_parser_and_typed_domain_only",
+      "case_specific_execution": "not_claimed_for_all_dialects",
+      "expected_domain": {
+        "type": "signed_integer",
+        "lower": 1,
+        "lower_inclusive": true,
+        "upper": null
+      },
+      "native_engine": "not_attested",
+      "evidence": "tests/task_175_adapter_boundaries.rs::canonical_dialect_matrix_exercises_every_frozen_mandatory_case"
+    }
+  ],
+  "adapter_cells": [
+    {
+      "id": "87-C175-P-quoted-qualified::direct_sql",
+      "case_id": "87-C175-P-quoted-qualified",
+      "adapter": "direct_sql",
+      "verified": false,
+      "fact_source": "parsed_sql_ddl_or_query",
+      "materialization_or_engine_execution": "not_attested",
+      "expected": "canonical identity resolves exactly without falling back to a wrong unquoted alias",
+      "evidence": [
+        {
+          "file": "tests/task_175_adapter_boundaries.rs",
+          "test": "frozen_quoted_sql_uses_the_exact_frozen_case_and_domain"
+        },
+        {
+          "file": "tests/task_175_adapter_boundaries.rs",
+          "test": "quoted_dbt_source_identity_is_not_alias_collapsed"
+        },
+        {
+          "file": "tests/task_175_adapter_boundaries.rs",
+          "test": "quoted_schema_qualified_names_do_not_collapse_onto_unquoted_aliases"
+        }
+      ],
+      "boundary": "exact_facts_where_present_without_engine_enforcement"
+    },
+    {
+      "id": "87-C175-P-quoted-qualified::dbt_manifest",
+      "case_id": "87-C175-P-quoted-qualified",
+      "adapter": "dbt_manifest",
+      "verified": false,
+      "fact_source": "dbt_manifest_declared_metadata",
+      "materialization_or_engine_execution": "not_attested",
+      "expected": "canonical identity resolves exactly without falling back to a wrong unquoted alias",
+      "evidence": [
+        {
+          "file": "tests/task_175_adapter_boundaries.rs",
+          "test": "frozen_quoted_sql_uses_the_exact_frozen_case_and_domain"
+        },
+        {
+          "file": "tests/task_175_adapter_boundaries.rs",
+          "test": "quoted_dbt_source_identity_is_not_alias_collapsed"
+        },
+        {
+          "file": "tests/task_175_adapter_boundaries.rs",
+          "test": "quoted_schema_qualified_names_do_not_collapse_onto_unquoted_aliases"
+        }
+      ],
+      "boundary": "exact_facts_where_present_without_engine_enforcement"
+    },
+    {
+      "id": "87-C175-P-fk-only::dbt_manifest",
+      "case_id": "87-C175-P-fk-only",
+      "adapter": "dbt_manifest",
+      "verified": false,
+      "fact_source": "dbt_manifest_declared_metadata",
+      "materialization_or_engine_execution": "not_attested",
+      "expected": "child relationships test and declared FK emit target schema even without a model SQL dependency; enforcement stays unknown",
+      "evidence": [
+        {
+          "file": "tests/task_175_adapter_boundaries.rs",
+          "test": "resolved_relationship_keeps_unknown_enforcement_and_fk_only_target_schema"
+        },
+        {
+          "file": "tests/task_175_adapter_boundaries.rs",
+          "test": "catalog_is_authoritative_for_fk_only_target_types"
+        },
+        {
+          "file": "tests/dbt_constraint_schemas.rs",
+          "test": "constraint_only_source_relationships_emit_both_typed_physical_schemas"
+        }
+      ],
+      "boundary": "exact_facts_where_present_without_engine_enforcement"
+    },
+    {
+      "id": "87-C175-P-fk-only::dbt_catalog",
+      "case_id": "87-C175-P-fk-only",
+      "adapter": "dbt_catalog",
+      "verified": false,
+      "fact_source": "warehouse_metadata_type_only",
+      "materialization_or_engine_execution": "not_attested",
+      "expected": "child relationships test and declared FK emit target schema even without a model SQL dependency; enforcement stays unknown",
+      "evidence": [
+        {
+          "file": "tests/task_175_adapter_boundaries.rs",
+          "test": "resolved_relationship_keeps_unknown_enforcement_and_fk_only_target_schema"
+        },
+        {
+          "file": "tests/task_175_adapter_boundaries.rs",
+          "test": "catalog_is_authoritative_for_fk_only_target_types"
+        },
+        {
+          "file": "tests/dbt_constraint_schemas.rs",
+          "test": "constraint_only_source_relationships_emit_both_typed_physical_schemas"
+        }
+      ],
+      "boundary": "exact_facts_where_present_without_engine_enforcement"
+    },
+    {
+      "id": "87-C175-P-fk-only::odcs",
+      "case_id": "87-C175-P-fk-only",
+      "adapter": "odcs",
+      "verified": false,
+      "fact_source": "external_metadata_only",
+      "materialization_or_engine_execution": "not_attested",
+      "expected": "child relationships test and declared FK emit target schema even without a model SQL dependency; enforcement stays unknown",
+      "evidence": [
+        {
+          "file": "tests/task_175_adapter_boundaries.rs",
+          "test": "resolved_relationship_keeps_unknown_enforcement_and_fk_only_target_schema"
+        },
+        {
+          "file": "tests/task_175_adapter_boundaries.rs",
+          "test": "catalog_is_authoritative_for_fk_only_target_types"
+        },
+        {
+          "file": "tests/dbt_constraint_schemas.rs",
+          "test": "constraint_only_source_relationships_emit_both_typed_physical_schemas"
+        }
+      ],
+      "boundary": "exact_facts_where_present_without_engine_enforcement"
+    },
+    {
+      "id": "87-C175-P-fk-only::direct_sql",
+      "case_id": "87-C175-P-fk-only",
+      "adapter": "direct_sql",
+      "verified": false,
+      "fact_source": "parsed_sql_ddl_or_query",
+      "materialization_or_engine_execution": "not_attested",
+      "expected": "child relationships test and declared FK emit target schema even without a model SQL dependency; enforcement stays unknown",
+      "evidence": [
+        {
+          "file": "tests/task_175_adapter_boundaries.rs",
+          "test": "resolved_relationship_keeps_unknown_enforcement_and_fk_only_target_schema"
+        },
+        {
+          "file": "tests/task_175_adapter_boundaries.rs",
+          "test": "catalog_is_authoritative_for_fk_only_target_types"
+        },
+        {
+          "file": "tests/dbt_constraint_schemas.rs",
+          "test": "constraint_only_source_relationships_emit_both_typed_physical_schemas"
+        }
+      ],
+      "boundary": "exact_facts_where_present_without_engine_enforcement"
+    },
+    {
+      "id": "87-C175-P-tests::dbt_manifest",
+      "case_id": "87-C175-P-tests",
+      "adapter": "dbt_manifest",
+      "verified": false,
+      "fact_source": "dbt_manifest_declared_metadata",
+      "materialization_or_engine_execution": "not_attested",
+      "expected": "supported dbt tests map to canonical constraints with dbt_test provenance and no fabricated engine enforcement",
+      "evidence": [
+        {
+          "file": "tests/task_175_adapter_boundaries.rs",
+          "test": "resolved_relationship_keeps_unknown_enforcement_and_fk_only_target_schema"
+        },
+        {
+          "file": "tests/task_173_metadata_authority.rs",
+          "test": "dbt_declared_constraints_and_generic_tests_keep_separate_unknown_enforcement"
+        }
+      ],
+      "boundary": "exact_facts_where_present_without_engine_enforcement"
+    },
+    {
+      "id": "87-C175-P-tests::direct_sql",
+      "case_id": "87-C175-P-tests",
+      "adapter": "direct_sql",
+      "verified": false,
+      "fact_source": "parsed_sql_ddl_or_query",
+      "materialization_or_engine_execution": "not_attested",
+      "expected": "supported dbt tests map to canonical constraints with dbt_test provenance and no fabricated engine enforcement",
+      "evidence": [
+        {
+          "file": "tests/task_175_adapter_boundaries.rs",
+          "test": "resolved_relationship_keeps_unknown_enforcement_and_fk_only_target_schema"
+        },
+        {
+          "file": "tests/task_173_metadata_authority.rs",
+          "test": "dbt_declared_constraints_and_generic_tests_keep_separate_unknown_enforcement"
+        }
+      ],
+      "boundary": "exact_facts_where_present_without_engine_enforcement"
+    },
+    {
+      "id": "87-C175-P-tests::odcs",
+      "case_id": "87-C175-P-tests",
+      "adapter": "odcs",
+      "verified": false,
+      "fact_source": "external_metadata_only",
+      "materialization_or_engine_execution": "not_attested",
+      "expected": "supported dbt tests map to canonical constraints with dbt_test provenance and no fabricated engine enforcement",
+      "evidence": [
+        {
+          "file": "tests/task_175_adapter_boundaries.rs",
+          "test": "resolved_relationship_keeps_unknown_enforcement_and_fk_only_target_schema"
+        },
+        {
+          "file": "tests/task_173_metadata_authority.rs",
+          "test": "dbt_declared_constraints_and_generic_tests_keep_separate_unknown_enforcement"
+        }
+      ],
+      "boundary": "exact_facts_where_present_without_engine_enforcement"
+    },
+    {
+      "id": "87-C175-P-canonical-parity::direct_sql",
+      "case_id": "87-C175-P-canonical-parity",
+      "adapter": "direct_sql",
+      "verified": false,
+      "fact_source": "parsed_sql_ddl_or_query",
+      "materialization_or_engine_execution": "not_attested",
+      "expected": "schema evidence and compatible declared keys normalize to matching canonical typed facts; source-specific provenance remains distinct",
+      "evidence": [
+        {
+          "file": "tests/task_175_adapter_boundaries.rs",
+          "test": "direct_dbt_and_odcs_metadata_produce_one_canonical_typed_filter_domain"
+        },
+        {
+          "file": "tests/task_175_adapter_boundaries.rs",
+          "test": "canonical_fk_only_primary_key_has_sql_dbt_and_odcs_fact_parity"
+        }
+      ],
+      "boundary": "exact_facts_where_present_without_engine_enforcement"
+    },
+    {
+      "id": "87-C175-P-canonical-parity::dbt_manifest",
+      "case_id": "87-C175-P-canonical-parity",
+      "adapter": "dbt_manifest",
+      "verified": false,
+      "fact_source": "dbt_manifest_declared_metadata",
+      "materialization_or_engine_execution": "not_attested",
+      "expected": "schema evidence and compatible declared keys normalize to matching canonical typed facts; source-specific provenance remains distinct",
+      "evidence": [
+        {
+          "file": "tests/task_175_adapter_boundaries.rs",
+          "test": "direct_dbt_and_odcs_metadata_produce_one_canonical_typed_filter_domain"
+        },
+        {
+          "file": "tests/task_175_adapter_boundaries.rs",
+          "test": "canonical_fk_only_primary_key_has_sql_dbt_and_odcs_fact_parity"
+        }
+      ],
+      "boundary": "exact_facts_where_present_without_engine_enforcement"
+    },
+    {
+      "id": "87-C175-P-canonical-parity::odcs",
+      "case_id": "87-C175-P-canonical-parity",
+      "adapter": "odcs",
+      "verified": false,
+      "fact_source": "external_metadata_only",
+      "materialization_or_engine_execution": "not_attested",
+      "expected": "schema evidence and compatible declared keys normalize to matching canonical typed facts; source-specific provenance remains distinct",
+      "evidence": [
+        {
+          "file": "tests/task_175_adapter_boundaries.rs",
+          "test": "direct_dbt_and_odcs_metadata_produce_one_canonical_typed_filter_domain"
+        },
+        {
+          "file": "tests/task_175_adapter_boundaries.rs",
+          "test": "canonical_fk_only_primary_key_has_sql_dbt_and_odcs_fact_parity"
+        }
+      ],
+      "boundary": "exact_facts_where_present_without_engine_enforcement"
+    },
+    {
+      "id": "87-C175-N-missing-relationship-target::dbt_manifest",
+      "case_id": "87-C175-N-missing-relationship-target",
+      "adapter": "dbt_manifest",
+      "verified": false,
+      "fact_source": "dbt_manifest_declared_metadata",
+      "materialization_or_engine_execution": "not_attested",
+      "expected": "unknown or ambiguous dbt relationships test target emits scoped diagnostic, never a foreign key inferred only from depends_on",
+      "evidence": [
+        {
+          "file": "tests/task_175_adapter_boundaries.rs",
+          "test": "unknown_relationship_to_does_not_become_fk_from_dependency_alone"
+        },
+        {
+          "file": "tests/task_175_adapter_boundaries.rs",
+          "test": "missing_fk_target_diagnostic_is_emitted_in_protocol_without_fake_fk"
+        }
+      ],
+      "boundary": "exact_facts_where_present_without_engine_enforcement"
+    },
+    {
+      "id": "87-C175-N-missing-declared-fk-target::dbt_manifest",
+      "case_id": "87-C175-N-missing-declared-fk-target",
+      "adapter": "dbt_manifest",
+      "verified": false,
+      "fact_source": "dbt_manifest_declared_metadata",
+      "materialization_or_engine_execution": "not_attested",
+      "expected": "unresolvable dbt declared foreign key target emits diagnostic and withholds constraint, without hiding unrelated valid constraints",
+      "evidence": [
+        {
+          "file": "tests/task_175_adapter_boundaries.rs",
+          "test": "declared_fk_with_unknown_target_is_diagnostic_without_losing_other_constraints"
+        }
+      ],
+      "boundary": "exact_facts_where_present_without_engine_enforcement"
+    },
+    {
+      "id": "87-C175-N-untyped-fk-source::dbt_manifest",
+      "case_id": "87-C175-N-untyped-fk-source",
+      "adapter": "dbt_manifest",
+      "verified": false,
+      "fact_source": "dbt_manifest_declared_metadata",
+      "materialization_or_engine_execution": "not_attested",
+      "expected": "FK-only source lacking referenced typed columns fails with MissingConstraintSchema or MissingDeclaredColumnTypes; never guesses catalog introspection",
+      "evidence": [
+        {
+          "file": "tests/task_175_adapter_boundaries.rs",
+          "test": "missing_fk_only_warehouse_types_are_explicitly_rejected"
+        }
+      ],
+      "boundary": "typed schema evidence required before exactness"
+    },
+    {
+      "id": "87-C175-N-untyped-fk-source::dbt_catalog",
+      "case_id": "87-C175-N-untyped-fk-source",
+      "adapter": "dbt_catalog",
+      "verified": false,
+      "fact_source": "warehouse_metadata_type_only",
+      "materialization_or_engine_execution": "not_attested",
+      "expected": "FK-only source lacking referenced typed columns fails with MissingConstraintSchema or MissingDeclaredColumnTypes; never guesses catalog introspection",
+      "evidence": [
+        {
+          "file": "tests/task_175_adapter_boundaries.rs",
+          "test": "missing_fk_only_warehouse_types_are_explicitly_rejected"
+        }
+      ],
+      "boundary": "typed schema evidence required before exactness"
+    },
+    {
+      "id": "87-C175-N-ambiguous-quoted-alias::direct_sql",
+      "case_id": "87-C175-N-ambiguous-quoted-alias",
+      "adapter": "direct_sql",
+      "verified": false,
+      "fact_source": "parsed_sql_ddl_or_query",
+      "materialization_or_engine_execution": "not_attested",
+      "expected": "ambiguous schema-qualified sources must fail closed rather than select a suffix arbitrarily; vendor unsupported quoting is parser boundary, not execution evidence",
+      "evidence": [
+        {
+          "file": "tests/task_175_adapter_boundaries.rs",
+          "test": "quoted_schema_qualified_names_do_not_collapse_onto_unquoted_aliases"
+        }
+      ],
+      "boundary": "requires explicit qualified identity or dialect evidence"
+    },
+    {
+      "id": "87-C175-N-ambiguous-quoted-alias::dbt_manifest",
+      "case_id": "87-C175-N-ambiguous-quoted-alias",
+      "adapter": "dbt_manifest",
+      "verified": false,
+      "fact_source": "dbt_manifest_declared_metadata",
+      "materialization_or_engine_execution": "not_attested",
+      "expected": "ambiguous schema-qualified sources must fail closed rather than select a suffix arbitrarily; vendor unsupported quoting is parser boundary, not execution evidence",
+      "evidence": [
+        {
+          "file": "tests/task_175_adapter_boundaries.rs",
+          "test": "quoted_schema_qualified_names_do_not_collapse_onto_unquoted_aliases"
+        }
+      ],
+      "boundary": "requires explicit qualified identity or dialect evidence"
+    },
+    {
+      "id": "87-C175-N-ambiguous-quoted-alias::odcs",
+      "case_id": "87-C175-N-ambiguous-quoted-alias",
+      "adapter": "odcs",
+      "verified": false,
+      "fact_source": "external_metadata_only",
+      "materialization_or_engine_execution": "not_attested",
+      "expected": "ambiguous schema-qualified sources must fail closed rather than select a suffix arbitrarily; vendor unsupported quoting is parser boundary, not execution evidence",
+      "evidence": [
+        {
+          "file": "tests/task_175_adapter_boundaries.rs",
+          "test": "quoted_schema_qualified_names_do_not_collapse_onto_unquoted_aliases"
+        }
+      ],
+      "boundary": "requires explicit qualified identity or dialect evidence"
+    }
+  ]
+}

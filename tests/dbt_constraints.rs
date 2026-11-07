@@ -282,11 +282,21 @@ fn dbt_source_relationships_with_extra_dependencies_reject_multiple_referenced_c
     ]);
 
     let json = serde_json::to_string(&manifest).expect("manifest should serialize");
-    let error = parse_dbt_manifest(&json)
-        .expect_err("a third dependency leaves more than one referenced candidate");
-    assert!(error
-        .to_string()
-        .contains("multiple candidate referenced relations"));
+    let parsed = parse_dbt_manifest(&json)
+        .expect("ambiguous test target should produce a scoped diagnostic");
+    let metadata = parsed
+        .relation_constraints()
+        .iter()
+        .find(|set| set.relation() == "warehouse.target.order_items")
+        .expect("tested relation metadata");
+    assert!(metadata
+        .constraints()
+        .iter()
+        .all(|item| !matches!(item, RelationConstraint::ForeignKey(_))));
+    assert!(metadata
+        .diagnostics()
+        .iter()
+        .any(|item| item.code() == "ambiguous_relationship_target"));
 }
 
 #[test]
@@ -604,7 +614,7 @@ fn dbt_foreign_key_source_target_resolves_to_canonical_relation() {
 }
 
 #[test]
-fn dbt_foreign_key_with_unresolved_target_fails_explicitly() {
+fn dbt_foreign_key_with_unresolved_target_reports_diagnostic() {
     let mut manifest: Value = serde_json::from_str(include_str!("fixtures/dbt/manifest-v12.json"))
         .expect("fixture manifest should parse");
     manifest["nodes"]["model.demo.stg_orders"]["constraints"] = json!([{
@@ -615,16 +625,25 @@ fn dbt_foreign_key_with_unresolved_target_fails_explicitly() {
     }]);
 
     let json = serde_json::to_string(&manifest).expect("manifest should serialize");
-    let error = parse_dbt_manifest(&json).expect_err("unresolved target should fail");
-
-    assert!(error
-        .to_string()
-        .contains("does not resolve to a canonical dbt relation"));
-    assert!(error.to_string().contains("ref('missing_orders')"));
+    let parsed = parse_dbt_manifest(&json).expect("unresolved FK must be diagnostic");
+    let metadata = parsed
+        .relation_constraints()
+        .iter()
+        .find(|set| set.relation() == "warehouse.analytics.stg_orders")
+        .expect("relation-scoped diagnostic");
+    assert!(metadata
+        .constraints()
+        .iter()
+        .all(|item| !matches!(item, RelationConstraint::ForeignKey(_))));
+    assert!(metadata
+        .diagnostics()
+        .iter()
+        .any(|item| item.code() == "unresolved_foreign_key_target"
+            && item.message().contains("ref('missing_orders')")));
 }
 
 #[test]
-fn dbt_relationships_with_unresolved_target_fails_explicitly() {
+fn dbt_relationships_with_unresolved_target_reports_diagnostic() {
     let mut manifest: Value = serde_json::from_str(include_str!("fixtures/dbt/manifest-v12.json"))
         .expect("fixture manifest should parse");
     manifest["nodes"]
@@ -652,12 +671,21 @@ fn dbt_relationships_with_unresolved_target_fails_explicitly() {
         );
 
     let json = serde_json::to_string(&manifest).expect("manifest should serialize");
-    let error = parse_dbt_manifest(&json).expect_err("unresolved target should fail");
-
-    assert!(error
-        .to_string()
-        .contains("does not resolve to a canonical dbt relation"));
-    assert!(error.to_string().contains("ref('missing_orders')"));
+    let parsed = parse_dbt_manifest(&json).expect("unresolved test target must be diagnostic");
+    let metadata = parsed
+        .relation_constraints()
+        .iter()
+        .find(|set| set.relation() == "warehouse.analytics.stg_orders")
+        .expect("relation-scoped diagnostic");
+    assert!(metadata
+        .constraints()
+        .iter()
+        .all(|item| !matches!(item, RelationConstraint::ForeignKey(_))));
+    assert!(metadata
+        .diagnostics()
+        .iter()
+        .any(|item| item.code() == "unresolved_relationship_target"
+            && item.message().contains("ref('missing_orders')")));
 }
 
 #[test]

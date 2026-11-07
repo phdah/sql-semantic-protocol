@@ -1,0 +1,511 @@
+{
+  "version": 1,
+  "owner": "TASK-175",
+  "parent": "TASK-87",
+  "created": "2026-11-07",
+  "frozen_before_semantic_changes": true,
+  "fixture_ids": [
+    "87-C175-P",
+    "87-C175-N"
+  ],
+  "scope": "Finite schema-qualified quoted relation identities, built-in dbt constraint tests, FK-only sources, unresolved relationship and declared FK targets, absent warehouse metadata, and equivalent SQL/dbt/ODCS typed evidence. No source claims engine execution or test enforcement.",
+  "upstream": "TASK-174 Done and PR #193 merged into main",
+  "authority": {
+    "warehouse_types": "dbt catalog; manifest declaration fallback only when complete",
+    "model_sql": "dbt compiled_code",
+    "dbt_tests_and_keys": "manifest nodes/constraints",
+    "external_contract": "ODCS property physicalType, logicalType fallback",
+    "direct_sql": "parsed DDL",
+    "execution": "unattested unless independently supplied complete native source/terminal bag"
+  },
+  "dialects": [
+    "generic",
+    "mysql",
+    "postgresql",
+    "hive",
+    "sqlite",
+    "snowflake",
+    "redshift",
+    "mssql",
+    "clickhouse",
+    "bigquery",
+    "ansi",
+    "duckdb",
+    "databricks"
+  ],
+  "parser_matrix": {
+    "case_ids": [
+      "87-C175-P-quoted-qualified",
+      "87-C175-P-fk-only",
+      "87-C175-P-tests",
+      "87-C175-P-canonical-parity",
+      "87-C175-N-missing-relationship-target",
+      "87-C175-N-missing-declared-fk-target"
+    ],
+    "dialects": [
+      "generic",
+      "mysql",
+      "postgresql",
+      "hive",
+      "sqlite",
+      "snowflake",
+      "redshift",
+      "mssql",
+      "clickhouse",
+      "bigquery",
+      "ansi",
+      "duckdb",
+      "databricks"
+    ],
+    "rule": "Classify parser support for each dialect and compare canonical outcome on supported syntax; parser acceptance never attests vendor runtime."
+  },
+  "oracle": {
+    "source": [
+      1,
+      1,
+      null,
+      0
+    ],
+    "terminal": [
+      1,
+      1
+    ],
+    "positive": [
+      0,
+      1
+    ],
+    "rejected_false": [
+      3
+    ],
+    "rejected_unknown": [
+      2
+    ],
+    "domain": {
+      "kind": "signed_integer",
+      "lower": 1,
+      "lower_inclusive": true,
+      "upper": null,
+      "nullable": false
+    }
+  },
+  "cases": [
+    {
+      "id": "87-C175-P-quoted-qualified",
+      "fixture": "87-C175-P",
+      "family": "schema_qualified_quoted_identity",
+      "requirement": "mandatory",
+      "sql": "SELECT k FROM \"raw\".\"orders\" WHERE k >= 1",
+      "source_relation": "\"raw\".\"orders\"",
+      "expected": "canonical identity resolves exactly without falling back to a wrong unquoted alias",
+      "oracle": {
+        "source": [
+          1,
+          1,
+          null,
+          0
+        ],
+        "terminal": [
+          1,
+          1
+        ],
+        "positive": [
+          0,
+          1
+        ],
+        "rejected_false": [
+          3
+        ],
+        "rejected_unknown": [
+          2
+        ],
+        "domain": {
+          "kind": "signed_integer",
+          "lower": 1,
+          "lower_inclusive": true,
+          "upper": null,
+          "nullable": false
+        }
+      },
+      "adapters": [
+        "direct_sql",
+        "dbt_manifest"
+      ],
+      "proof": "Exact physical source and terminal bag only when independently supplied; no engine execution from artifact alone"
+    },
+    {
+      "id": "87-C175-P-fk-only",
+      "fixture": "87-C175-P",
+      "family": "fk_only_source_schema",
+      "requirement": "mandatory",
+      "sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "source_relation": "warehouse.archive.orders",
+      "expected": "child relationships test and declared FK emit target schema even without a model SQL dependency; enforcement stays unknown",
+      "oracle": {
+        "source": [
+          1,
+          1,
+          null,
+          0
+        ],
+        "terminal": [
+          1,
+          1
+        ],
+        "positive": [
+          0,
+          1
+        ],
+        "rejected_false": [
+          3
+        ],
+        "rejected_unknown": [
+          2
+        ],
+        "domain": {
+          "kind": "signed_integer",
+          "lower": 1,
+          "lower_inclusive": true,
+          "upper": null,
+          "nullable": false
+        }
+      },
+      "adapters": [
+        "dbt_manifest",
+        "dbt_catalog",
+        "odcs",
+        "direct_sql"
+      ],
+      "proof": "Exact only for independently attested physical source, otherwise declared constraints with unknown enforcement"
+    },
+    {
+      "id": "87-C175-P-tests",
+      "fixture": "87-C175-P",
+      "family": "built_in_dbt_tests",
+      "requirement": "mandatory",
+      "sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "expected": "supported dbt tests map to canonical constraints with dbt_test provenance and no fabricated engine enforcement",
+      "oracle": {
+        "source": [
+          1,
+          1,
+          null,
+          0
+        ],
+        "terminal": [
+          1,
+          1
+        ],
+        "positive": [
+          0,
+          1
+        ],
+        "rejected_false": [
+          3
+        ],
+        "rejected_unknown": [
+          2
+        ],
+        "domain": {
+          "kind": "signed_integer",
+          "lower": 1,
+          "lower_inclusive": true,
+          "upper": null,
+          "nullable": false
+        }
+      },
+      "adapters": [
+        "dbt_manifest",
+        "direct_sql",
+        "odcs"
+      ],
+      "proof": "No physical test execution is attested by manifest"
+    },
+    {
+      "id": "87-C175-P-canonical-parity",
+      "fixture": "87-C175-P",
+      "family": "paired_ddl_odcs_dbt_schema",
+      "requirement": "mandatory",
+      "sql": "CREATE TABLE raw.orders (k INTEGER)",
+      "expected": "schema evidence and compatible declared keys normalize to matching canonical typed facts; source-specific provenance remains distinct",
+      "oracle": {
+        "source": [
+          1,
+          1,
+          null,
+          0
+        ],
+        "terminal": [
+          1,
+          1
+        ],
+        "positive": [
+          0,
+          1
+        ],
+        "rejected_false": [
+          3
+        ],
+        "rejected_unknown": [
+          2
+        ],
+        "domain": {
+          "kind": "signed_integer",
+          "lower": 1,
+          "lower_inclusive": true,
+          "upper": null,
+          "nullable": false
+        }
+      },
+      "adapters": [
+        "direct_sql",
+        "dbt_manifest",
+        "odcs"
+      ],
+      "proof": "The source row bag must be separately attested"
+    },
+    {
+      "id": "87-C175-N-missing-relationship-target",
+      "fixture": "87-C175-N",
+      "family": "unresolved_relationship_target",
+      "requirement": "mandatory",
+      "sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "expected": "unknown or ambiguous dbt relationships test target emits scoped diagnostic, never a foreign key inferred only from depends_on",
+      "oracle": {
+        "source": [
+          1,
+          1,
+          null,
+          0
+        ],
+        "terminal": [
+          1,
+          1
+        ],
+        "positive": [
+          0,
+          1
+        ],
+        "rejected_false": [
+          3
+        ],
+        "rejected_unknown": [
+          2
+        ],
+        "domain": {
+          "kind": "signed_integer",
+          "lower": 1,
+          "lower_inclusive": true,
+          "upper": null,
+          "nullable": false
+        }
+      },
+      "adapters": [
+        "dbt_manifest"
+      ],
+      "proof": "Residual: missing target identity; no FK constraint"
+    },
+    {
+      "id": "87-C175-N-missing-declared-fk-target",
+      "fixture": "87-C175-N",
+      "family": "unresolved_declared_fk_target",
+      "requirement": "mandatory",
+      "sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "expected": "unresolvable dbt declared foreign key target emits diagnostic and withholds constraint, without hiding unrelated valid constraints",
+      "oracle": {
+        "source": [
+          1,
+          1,
+          null,
+          0
+        ],
+        "terminal": [
+          1,
+          1
+        ],
+        "positive": [
+          0,
+          1
+        ],
+        "rejected_false": [
+          3
+        ],
+        "rejected_unknown": [
+          2
+        ],
+        "domain": {
+          "kind": "signed_integer",
+          "lower": 1,
+          "lower_inclusive": true,
+          "upper": null,
+          "nullable": false
+        }
+      },
+      "adapters": [
+        "dbt_manifest"
+      ],
+      "proof": "Residual: missing target identity; no FK constraint"
+    },
+    {
+      "id": "87-C175-N-untyped-fk-source",
+      "fixture": "87-C175-N",
+      "family": "missing_warehouse_metadata",
+      "requirement": "conditional",
+      "sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "expected": "FK-only source lacking referenced typed columns fails with MissingConstraintSchema or MissingDeclaredColumnTypes; never guesses catalog introspection",
+      "oracle": {
+        "source": [
+          1,
+          1,
+          null,
+          0
+        ],
+        "terminal": [
+          1,
+          1
+        ],
+        "positive": [
+          0,
+          1
+        ],
+        "rejected_false": [
+          3
+        ],
+        "rejected_unknown": [
+          2
+        ],
+        "domain": {
+          "kind": "signed_integer",
+          "lower": 1,
+          "lower_inclusive": true,
+          "upper": null,
+          "nullable": false
+        }
+      },
+      "adapters": [
+        "dbt_manifest",
+        "dbt_catalog"
+      ],
+      "proof": "Residual/rejected metadata input, not exact runtime proof",
+      "owner": "TASK-175",
+      "release_disposition": "typed schema evidence required before exactness"
+    },
+    {
+      "id": "87-C175-N-ambiguous-quoted-alias",
+      "fixture": "87-C175-N",
+      "family": "ambiguous_or_unsupported_identifiers",
+      "requirement": "conditional",
+      "sql": "SELECT k FROM \"orders\" WHERE k >= 1",
+      "expected": "ambiguous schema-qualified sources must fail closed rather than select a suffix arbitrarily; vendor unsupported quoting is parser boundary, not execution evidence",
+      "oracle": {
+        "source": [
+          1,
+          1,
+          null,
+          0
+        ],
+        "terminal": [
+          1,
+          1
+        ],
+        "positive": [
+          0,
+          1
+        ],
+        "rejected_false": [
+          3
+        ],
+        "rejected_unknown": [
+          2
+        ],
+        "domain": {
+          "kind": "signed_integer",
+          "lower": 1,
+          "lower_inclusive": true,
+          "upper": null,
+          "nullable": false
+        }
+      },
+      "adapters": [
+        "direct_sql",
+        "dbt_manifest",
+        "odcs"
+      ],
+      "proof": "Residual/parser-specific boundary",
+      "owner": "TASK-175",
+      "release_disposition": "requires explicit qualified identity or dialect evidence"
+    }
+  ],
+  "acceptance_mapping": {
+    "1": [
+      "87-C175-P-quoted-qualified",
+      "87-C175-P-fk-only",
+      "87-C175-P-tests",
+      "87-C175-P-canonical-parity",
+      "87-C175-N-missing-relationship-target",
+      "87-C175-N-missing-declared-fk-target",
+      "87-C175-N-untyped-fk-source",
+      "87-C175-N-ambiguous-quoted-alias"
+    ],
+    "2": [
+      "87-C175-P-quoted-qualified",
+      "87-C175-P-fk-only",
+      "87-C175-P-tests",
+      "87-C175-N-missing-relationship-target",
+      "87-C175-N-missing-declared-fk-target"
+    ],
+    "3": [
+      "87-C175-P-quoted-qualified",
+      "87-C175-P-fk-only",
+      "87-C175-N-missing-relationship-target"
+    ],
+    "4": [
+      "87-C175-P-quoted-qualified",
+      "87-C175-P-fk-only",
+      "87-C175-P-tests",
+      "87-C175-P-canonical-parity",
+      "87-C175-N-missing-relationship-target",
+      "87-C175-N-missing-declared-fk-target",
+      "87-C175-N-untyped-fk-source",
+      "87-C175-N-ambiguous-quoted-alias"
+    ],
+    "5": [
+      "87-C175-P-quoted-qualified",
+      "87-C175-P-fk-only",
+      "87-C175-P-tests",
+      "87-C175-P-canonical-parity",
+      "87-C175-N-missing-relationship-target",
+      "87-C175-N-missing-declared-fk-target",
+      "87-C175-N-untyped-fk-source",
+      "87-C175-N-ambiguous-quoted-alias"
+    ]
+  },
+  "parent_ac": [
+    1,
+    2,
+    4,
+    5,
+    6
+  ],
+  "verification": {
+    "all_mandatory_cells_verified": false,
+    "full_rust_tests": false,
+    "fmt": false,
+    "clippy": false,
+    "docs": false,
+    "no_default_features": false,
+    "dbt_e2e": false,
+    "native_duckdb": false,
+    "adapter_parity": false,
+    "pinned_consumer": false,
+    "two_axis_review": false,
+    "independent_review": false
+  },
+  "no_fabricated_claims": [
+    "No catalog schema from missing metadata",
+    "No enforcement from dbt test declaration",
+    "No FK target inferred from depends_on when to is unresolved",
+    "No qualified identifier guessed after ambiguous resolution",
+    "No native multi-dialect execution claims"
+  ],
+  "release_gate": "TASK-87 parent and TASK-91 remain separate and open"
+}

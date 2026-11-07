@@ -2092,8 +2092,11 @@ fn parse_manifest_relation_constraints(
                 let declared_target = dbt_constraint_reference(reference, resources);
                 let referenced_relation = match referenced_resources.as_slice() {
                     [relation] => {
-                        if let Some(declared_target) = declared_target.as_deref() {
-                            if declared_target != *relation {
+                        // A dependency edge is not evidence that an opaque `to` reference
+                        // identifies the same relation. Both facts must resolve independently.
+                        match declared_target.as_deref() {
+                            Some(target) if target == *relation => (*relation).to_string(),
+                            Some(target) => {
                                 record_constraint_diagnostic(
                                     &mut result,
                                     &mut unscoped_diagnostics,
@@ -2102,28 +2105,61 @@ fn parse_manifest_relation_constraints(
                                     ConstraintDiagnostic::new(
                                         "inconsistent_relationship_target",
                                         format!(
-                                            "dbt relationships test '{test_id}' declares to '{declared_target}' but depends_on identifies '{relation}'; no foreign key was emitted"
+                                            "dbt relationships test '{test_id}' declares to '{target}' but depends_on identifies '{relation}'; no foreign key was emitted"
+                                        ),
+                                    ),
+                                )?;
+                                continue;
+                            }
+                            None => {
+                                record_constraint_diagnostic(
+                                    &mut result,
+                                    &mut unscoped_diagnostics,
+                                    Some(local_relation),
+                                    test_id,
+                                    ConstraintDiagnostic::new(
+                                        "unresolved_relationship_target",
+                                        format!(
+                                            "dbt relationships test '{test_id}' target '{reference}' cannot be resolved; depends_on candidate '{relation}' is insufficient and no foreign key was emitted"
                                         ),
                                     ),
                                 )?;
                                 continue;
                             }
                         }
-                        (*relation).to_string()
                     }
-                    [] => declared_target.ok_or_else(|| {
-                        invalid_field(
-                            &reference_path,
-                            format!(
-                                "relationships test target '{reference}' does not resolve to a canonical dbt relation"
-                            ),
-                        )
-                    })?,
+                    [] => {
+                        let Some(target) = declared_target else {
+                            record_constraint_diagnostic(
+                                &mut result,
+                                &mut unscoped_diagnostics,
+                                Some(local_relation),
+                                test_id,
+                                ConstraintDiagnostic::new(
+                                    "unresolved_relationship_target",
+                                    format!(
+                                        "dbt relationships test '{test_id}' target '{reference}' does not resolve to a canonical dbt relation; no foreign key was emitted"
+                                    ),
+                                ),
+                            )?;
+                            continue;
+                        };
+                        target
+                    }
                     _ => {
-                        return Err(invalid_field(
-                            format!("{path}.depends_on.nodes"),
-                            "relationships test has multiple candidate referenced relations",
-                        ));
+                        record_constraint_diagnostic(
+                            &mut result,
+                            &mut unscoped_diagnostics,
+                            Some(local_relation),
+                            test_id,
+                            ConstraintDiagnostic::new(
+                                "ambiguous_relationship_target",
+                                format!(
+                                    "dbt relationships test '{test_id}' has multiple candidate target dependencies; no foreign key was emitted"
+                                ),
+                            ),
+                        )?;
+                        continue;
                     }
                 };
                 RelationConstraint::foreign_key(
@@ -2427,20 +2463,21 @@ fn parse_dbt_constraint_array(
             "foreign_key" => {
                 let reference_path = format!("{constraint_path}.to");
                 let reference = required_string(object, "to", &reference_path)?;
-                let referenced_relation =
-                    dbt_constraint_reference(reference, resources).ok_or_else(|| {
-                        invalid_field(
-                            &reference_path,
-                            format!(
-                                "foreign_key target '{reference}' does not resolve to a canonical dbt relation"
-                            ),
-                        )
-                    })?;
                 let referenced_columns = required_string_array(
                     object,
                     "to_columns",
                     &format!("{constraint_path}.to_columns"),
                 )?;
+                let Some(referenced_relation) = dbt_constraint_reference(reference, resources)
+                else {
+                    diagnostics.push(ConstraintDiagnostic::new(
+                        "unresolved_foreign_key_target",
+                        format!(
+                            "dbt foreign_key '{resource_id}:{constraint_path}' target '{reference}' does not resolve to a canonical dbt relation; no foreign key was emitted"
+                        ),
+                    ));
+                    continue;
+                };
                 RelationConstraint::foreign_key(
                     columns,
                     referenced_relation,

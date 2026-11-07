@@ -719,7 +719,11 @@ an explicit diagnostic at the adapter boundary rather than guessing a target. Th
 normalizes foreign-key and `relationships` targets from manifest resource unique IDs, exact
 canonical relation names, and dbt `ref(...)` or `source(...)` references. Self-referencing
 relationships resolve to the attached canonical relation. A target that cannot be mapped to a
-relation present in the manifest is rejected rather than emitted as raw Jinja or unmatched text.
+relation present in the manifest emits a relation-scoped `unresolved_foreign_key_target` or
+`unresolved_relationship_target` diagnostic and no foreign key. A `relationships` test with
+multiple candidate target dependencies emits `ambiguous_relationship_target`; a resolvable `to`
+that disagrees with its dependency emits `inconsistent_relationship_target`. Neither dependency
+edges nor unexecuted tests attest FK target identity or physical enforcement.
 
 Independent accepted-value constraints for the same column and quoting semantics are conjunctive,
 so their canonical value set is the deterministic intersection. An empty intersection remains
