@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "task_id": "TASK-177",
+  "dialects": [
+    "ansi",
+    "bigquery",
+    "clickhouse",
+    "databricks",
+    "duckdb",
+    "generic",
+    "hive",
+    "mssql",
+    "mysql",
+    "postgresql",
+    "redshift",
+    "snowflake",
+    "sqlite"
+  ],
+  "matrix": {},
+  "vendor_execution_certified": false,
+  "canonical_semantics_certified": false
+}
