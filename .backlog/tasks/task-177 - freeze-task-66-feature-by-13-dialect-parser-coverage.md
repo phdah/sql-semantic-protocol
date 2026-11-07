@@ -1,10 +1,10 @@
 ---
 id: TASK-177
 title: Freeze TASK-66 feature-by-13-dialect parser coverage
-status: To Do
+status: In Progress
 assignee: []
 created_date: '2026-10-17'
-updated_date: '2026-10-17'
+updated_date: '2026-11-07'
 labels: []
 milestone: m-3
 dependencies:
@@ -56,3 +56,26 @@ type: feature
 ## Next
 
 Next: [TASK-178](task-178%20-%20certify-canonical-equivalence-for-shared-dialect-ast-variants.md), only after completion and merge.
+
+## Implementation evidence (2026-11-07, not final sign-off)
+
+- `docs/task-177-acceptance-freeze.json` v1 freezes the entire TASK-66
+  251-variant x 13-dialect inventory (3,263 named cells) and explicitly retains
+  the 3,002 unverified, 105 representative-only and 156 fixture-tested parser
+  statuses. Sparse overrides are authoritative; family-level fixture evidence
+  is not inherited by other variants.
+- `tests/task_177_dialect_inventory.rs` checks complete coverage, individual
+  fixture provenance, no invented SQL, no implicit dialect skips and the
+  conservative absence of canonical/native-execution claims. Named
+  `88-C177-P` and `88-C177-N` oracles require complete physical source,
+  selected, NOT TRUE and UNKNOWN bags and compare the same portable SQL
+  through all 13 public analysis dialects.
+- The new machine-readable registry is linked by
+  `docs/coverage-manifest.json.task_177_dialect_parser_acceptance`.
+- This is an **in-progress bounded evidence freeze**, not acceptance sign-off.
+  Missing exact SQL shapes, typed domain/source/terminal outcomes for the
+  remaining variant/dialect cells, direct SQL/dbt/ODCS parity, native
+  vendor/session certification, full CI, independent review and pinned-consumer
+  gates remain blocking. All original AC #1..#5 stay unchecked, TASK-88
+  remains open, and TASK-178 stays dependency-blocked until this child is
+  fully certified, Done and merged.
