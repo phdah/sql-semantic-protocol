@@ -133,6 +133,7 @@ pub fn select_targets(
         relation_constraints: bundle.relation_constraints.clone(),
         constraint_diagnostics: bundle.constraint_diagnostics.clone(),
         comparison_declarations: bundle.comparison_declarations.clone(),
+        producer_evidence: bundle.producer_evidence.clone(),
         outcome_goals: bundle
             .outcome_goals
             .iter()

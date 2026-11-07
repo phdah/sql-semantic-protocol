@@ -1,0 +1,1205 @@
+{
+  "version": 1,
+  "owner": "TASK-174",
+  "parent": "TASK-87",
+  "created": "2026-11-06",
+  "frozen_before_semantic_changes": true,
+  "scope": "dbt ephemeral/view/table/incremental materialization tags, producer identity, compiled SQL and execution evidence distinction, 13 dialect parser boundaries and source-backed DuckDB complete-bag oracles. No materialized state may be inferred from manifest alone.",
+  "fixture_ids": [
+    "87-C174-P",
+    "87-C174-N"
+  ],
+  "upstream": "TASK-173 Done and merged",
+  "canonical_claim": "SQL SELECT outcome is source-independent; producer storage intent and unverified execution are separate canonical facts",
+  "authority": {
+    "sql": "nodes.compiled_code, fallback non-Jinja raw_code",
+    "materialization": "nodes.config.materialized",
+    "identity": "nodes.unique_id and non-ephemeral relation_name",
+    "execution": "unattested without independent engine source/target snapshots"
+  },
+  "test_oracle": {
+    "source": [
+      1,
+      1,
+      null,
+      0
+    ],
+    "terminal": [
+      1,
+      1
+    ],
+    "source_ordinals": [
+      "raw.orders#0",
+      "raw.orders#1",
+      "raw.orders#2",
+      "raw.orders#3"
+    ],
+    "true": [
+      0,
+      1
+    ],
+    "false": [
+      3
+    ],
+    "unknown": [
+      2
+    ],
+    "output_domain": {
+      "type": "signed_integer",
+      "min": 1,
+      "min_inclusive": true,
+      "max": null,
+      "nullable": false
+    }
+  },
+  "variants": [
+    {
+      "id": "87-C174-P-view",
+      "fixture": "87-C174-P",
+      "family": "view",
+      "requirement": "mandatory",
+      "sql": "CREATE VIEW filtered_orders AS SELECT k FROM raw.orders WHERE k >= 1",
+      "oracle": {
+        "source": [
+          1,
+          1,
+          null,
+          0
+        ],
+        "terminal": [
+          1,
+          1
+        ],
+        "source_ordinals": [
+          "raw.orders#0",
+          "raw.orders#1",
+          "raw.orders#2",
+          "raw.orders#3"
+        ],
+        "true": [
+          0,
+          1
+        ],
+        "false": [
+          3
+        ],
+        "unknown": [
+          2
+        ],
+        "output_domain": {
+          "type": "signed_integer",
+          "min": 1,
+          "min_inclusive": true,
+          "max": null,
+          "nullable": false
+        }
+      },
+      "expected": "view definition with named relation, source-backed SELECT; no executed view read asserted",
+      "source_identity": "raw.orders",
+      "adapter_parity": [
+        "direct_sql",
+        "dbt_manifest",
+        "dbt_catalog",
+        "odcs"
+      ],
+      "native_engine": "duckdb ~1.10506.0 only",
+      "proof": {
+        "positive": "Exact only for independently attested complete source bag",
+        "not_true": "FALSE row #3 and UNKNOWN row #2 both absent",
+        "state": "unattested from manifest, incremental must never emit executed write"
+      },
+      "conditional_boundary": null,
+      "verified": false
+    },
+    {
+      "id": "87-C174-P-table",
+      "fixture": "87-C174-P",
+      "family": "table",
+      "requirement": "mandatory",
+      "sql": "CREATE TABLE filtered_orders AS SELECT k FROM raw.orders WHERE k >= 1",
+      "oracle": {
+        "source": [
+          1,
+          1,
+          null,
+          0
+        ],
+        "terminal": [
+          1,
+          1
+        ],
+        "source_ordinals": [
+          "raw.orders#0",
+          "raw.orders#1",
+          "raw.orders#2",
+          "raw.orders#3"
+        ],
+        "true": [
+          0,
+          1
+        ],
+        "false": [
+          3
+        ],
+        "unknown": [
+          2
+        ],
+        "output_domain": {
+          "type": "signed_integer",
+          "min": 1,
+          "min_inclusive": true,
+          "max": null,
+          "nullable": false
+        }
+      },
+      "expected": "named CREATE TABLE AS SELECT is materialization intent, not attested executed state",
+      "source_identity": "raw.orders",
+      "adapter_parity": [
+        "direct_sql",
+        "dbt_manifest",
+        "dbt_catalog",
+        "odcs"
+      ],
+      "native_engine": "duckdb ~1.10506.0 only",
+      "proof": {
+        "positive": "Exact only for independently attested complete source bag",
+        "not_true": "FALSE row #3 and UNKNOWN row #2 both absent",
+        "state": "unattested from manifest, incremental must never emit executed write"
+      },
+      "conditional_boundary": null,
+      "verified": false
+    },
+    {
+      "id": "87-C174-P-ephemeral",
+      "fixture": "87-C174-P",
+      "family": "ephemeral",
+      "requirement": "mandatory",
+      "sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "oracle": {
+        "source": [
+          1,
+          1,
+          null,
+          0
+        ],
+        "terminal": [
+          1,
+          1
+        ],
+        "source_ordinals": [
+          "raw.orders#0",
+          "raw.orders#1",
+          "raw.orders#2",
+          "raw.orders#3"
+        ],
+        "true": [
+          0,
+          1
+        ],
+        "false": [
+          3
+        ],
+        "unknown": [
+          2
+        ],
+        "output_domain": {
+          "type": "signed_integer",
+          "min": 1,
+          "min_inclusive": true,
+          "max": null,
+          "nullable": false
+        }
+      },
+      "expected": "unnamed standalone SELECT; no invented physical relation",
+      "source_identity": "raw.orders",
+      "adapter_parity": [
+        "direct_sql",
+        "dbt_manifest",
+        "dbt_catalog",
+        "odcs"
+      ],
+      "native_engine": "duckdb ~1.10506.0 only",
+      "proof": {
+        "positive": "Exact only for independently attested complete source bag",
+        "not_true": "FALSE row #3 and UNKNOWN row #2 both absent",
+        "state": "unattested from manifest, incremental must never emit executed write"
+      },
+      "conditional_boundary": null,
+      "verified": false
+    },
+    {
+      "id": "87-C174-P-inline",
+      "fixture": "87-C174-P",
+      "family": "ephemeral_dependency",
+      "requirement": "mandatory",
+      "sql": "WITH __dbt__cte__filter AS (SELECT k FROM raw.orders WHERE k >= 1) SELECT k FROM __dbt__cte__filter",
+      "oracle": {
+        "source": [
+          1,
+          1,
+          null,
+          0
+        ],
+        "terminal": [
+          1,
+          1
+        ],
+        "source_ordinals": [
+          "raw.orders#0",
+          "raw.orders#1",
+          "raw.orders#2",
+          "raw.orders#3"
+        ],
+        "true": [
+          0,
+          1
+        ],
+        "false": [
+          3
+        ],
+        "unknown": [
+          2
+        ],
+        "output_domain": {
+          "type": "signed_integer",
+          "min": 1,
+          "min_inclusive": true,
+          "max": null,
+          "nullable": false
+        }
+      },
+      "expected": "compiled downstream SQL carries inline CTE and physical lineage, not fictitious ephemeral table",
+      "source_identity": "raw.orders",
+      "adapter_parity": [
+        "direct_sql",
+        "dbt_manifest",
+        "dbt_catalog",
+        "odcs"
+      ],
+      "native_engine": "duckdb ~1.10506.0 only",
+      "proof": {
+        "positive": "Exact only for independently attested complete source bag",
+        "not_true": "FALSE row #3 and UNKNOWN row #2 both absent",
+        "state": "unattested from manifest, incremental must never emit executed write"
+      },
+      "conditional_boundary": null,
+      "verified": false
+    },
+    {
+      "id": "87-C174-N-incremental",
+      "fixture": "87-C174-N",
+      "family": "incremental",
+      "requirement": "mandatory",
+      "sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "oracle": {
+        "source": [
+          1,
+          1,
+          null,
+          0
+        ],
+        "terminal": [
+          1,
+          1
+        ],
+        "source_ordinals": [
+          "raw.orders#0",
+          "raw.orders#1",
+          "raw.orders#2",
+          "raw.orders#3"
+        ],
+        "true": [
+          0,
+          1
+        ],
+        "false": [
+          3
+        ],
+        "unknown": [
+          2
+        ],
+        "output_domain": {
+          "type": "signed_integer",
+          "min": 1,
+          "min_inclusive": true,
+          "max": null,
+          "nullable": false
+        }
+      },
+      "expected": "compiled SELECT analyzed but target state, incremental strategy and actual writes remain unattested",
+      "source_identity": "raw.orders",
+      "adapter_parity": [
+        "direct_sql",
+        "dbt_manifest",
+        "dbt_catalog",
+        "odcs"
+      ],
+      "native_engine": "duckdb ~1.10506.0 only",
+      "proof": {
+        "positive": "Exact only for independently attested complete source bag",
+        "not_true": "FALSE row #3 and UNKNOWN row #2 both absent",
+        "state": "unattested from manifest, incremental must never emit executed write"
+      },
+      "conditional_boundary": null,
+      "verified": false
+    },
+    {
+      "id": "87-C174-N-unknown",
+      "fixture": "87-C174-N",
+      "family": "unknown_materialization",
+      "requirement": "conditional",
+      "sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "oracle": {
+        "source": [
+          1,
+          1,
+          null,
+          0
+        ],
+        "terminal": [
+          1,
+          1
+        ],
+        "source_ordinals": [
+          "raw.orders#0",
+          "raw.orders#1",
+          "raw.orders#2",
+          "raw.orders#3"
+        ],
+        "true": [
+          0,
+          1
+        ],
+        "false": [
+          3
+        ],
+        "unknown": [
+          2
+        ],
+        "output_domain": {
+          "type": "signed_integer",
+          "min": 1,
+          "min_inclusive": true,
+          "max": null,
+          "nullable": false
+        }
+      },
+      "expected": "unknown materialization must fail closed with resource identity; no guessed materialization",
+      "source_identity": "raw.orders",
+      "adapter_parity": [
+        "direct_sql",
+        "dbt_manifest",
+        "dbt_catalog",
+        "odcs"
+      ],
+      "native_engine": "duckdb ~1.10506.0 only",
+      "proof": {
+        "positive": "Exact only for independently attested complete source bag",
+        "not_true": "FALSE row #3 and UNKNOWN row #2 both absent",
+        "state": "unattested from manifest, incremental must never emit executed write"
+      },
+      "conditional_boundary": {
+        "owner": "TASK-174",
+        "disposition": "explicit fail-closed, independent review required"
+      },
+      "verified": false
+    },
+    {
+      "id": "87-C174-N-uncompiled-inline",
+      "fixture": "87-C174-N",
+      "family": "uncompiled_ephemeral_dependency",
+      "requirement": "conditional",
+      "sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "oracle": {
+        "source": [
+          1,
+          1,
+          null,
+          0
+        ],
+        "terminal": [
+          1,
+          1
+        ],
+        "source_ordinals": [
+          "raw.orders#0",
+          "raw.orders#1",
+          "raw.orders#2",
+          "raw.orders#3"
+        ],
+        "true": [
+          0,
+          1
+        ],
+        "false": [
+          3
+        ],
+        "unknown": [
+          2
+        ],
+        "output_domain": {
+          "type": "signed_integer",
+          "min": 1,
+          "min_inclusive": true,
+          "max": null,
+          "nullable": false
+        }
+      },
+      "expected": "no compiled downstream SQL to witness inline expansion: explicit unsupported dependency",
+      "source_identity": "raw.orders",
+      "adapter_parity": [
+        "direct_sql",
+        "dbt_manifest",
+        "dbt_catalog",
+        "odcs"
+      ],
+      "native_engine": "duckdb ~1.10506.0 only",
+      "proof": {
+        "positive": "Exact only for independently attested complete source bag",
+        "not_true": "FALSE row #3 and UNKNOWN row #2 both absent",
+        "state": "unattested from manifest, incremental must never emit executed write"
+      },
+      "conditional_boundary": {
+        "owner": "TASK-174",
+        "disposition": "explicit fail-closed, independent review required"
+      },
+      "verified": false
+    }
+  ],
+  "dialects": [
+    "generic",
+    "mysql",
+    "postgresql",
+    "hive",
+    "sqlite",
+    "snowflake",
+    "redshift",
+    "mssql",
+    "clickhouse",
+    "bigquery",
+    "ansi",
+    "duckdb",
+    "databricks"
+  ],
+  "parser_equivalence_cells": [
+    {
+      "id": "87-C174-P-view-generic",
+      "case": "87-C174-P-view",
+      "dialect": "generic",
+      "sql": "CREATE VIEW filtered_orders AS SELECT k FROM raw.orders WHERE k >= 1",
+      "expectation": "Canonical SELECT predicate/domain and explicit wrapper parse support or named parser boundary; no vendor runtime claim",
+      "verified": false
+    },
+    {
+      "id": "87-C174-P-view-mysql",
+      "case": "87-C174-P-view",
+      "dialect": "mysql",
+      "sql": "CREATE VIEW filtered_orders AS SELECT k FROM raw.orders WHERE k >= 1",
+      "expectation": "Canonical SELECT predicate/domain and explicit wrapper parse support or named parser boundary; no vendor runtime claim",
+      "verified": false
+    },
+    {
+      "id": "87-C174-P-view-postgresql",
+      "case": "87-C174-P-view",
+      "dialect": "postgresql",
+      "sql": "CREATE VIEW filtered_orders AS SELECT k FROM raw.orders WHERE k >= 1",
+      "expectation": "Canonical SELECT predicate/domain and explicit wrapper parse support or named parser boundary; no vendor runtime claim",
+      "verified": false
+    },
+    {
+      "id": "87-C174-P-view-hive",
+      "case": "87-C174-P-view",
+      "dialect": "hive",
+      "sql": "CREATE VIEW filtered_orders AS SELECT k FROM raw.orders WHERE k >= 1",
+      "expectation": "Canonical SELECT predicate/domain and explicit wrapper parse support or named parser boundary; no vendor runtime claim",
+      "verified": false
+    },
+    {
+      "id": "87-C174-P-view-sqlite",
+      "case": "87-C174-P-view",
+      "dialect": "sqlite",
+      "sql": "CREATE VIEW filtered_orders AS SELECT k FROM raw.orders WHERE k >= 1",
+      "expectation": "Canonical SELECT predicate/domain and explicit wrapper parse support or named parser boundary; no vendor runtime claim",
+      "verified": false
+    },
+    {
+      "id": "87-C174-P-view-snowflake",
+      "case": "87-C174-P-view",
+      "dialect": "snowflake",
+      "sql": "CREATE VIEW filtered_orders AS SELECT k FROM raw.orders WHERE k >= 1",
+      "expectation": "Canonical SELECT predicate/domain and explicit wrapper parse support or named parser boundary; no vendor runtime claim",
+      "verified": false
+    },
+    {
+      "id": "87-C174-P-view-redshift",
+      "case": "87-C174-P-view",
+      "dialect": "redshift",
+      "sql": "CREATE VIEW filtered_orders AS SELECT k FROM raw.orders WHERE k >= 1",
+      "expectation": "Canonical SELECT predicate/domain and explicit wrapper parse support or named parser boundary; no vendor runtime claim",
+      "verified": false
+    },
+    {
+      "id": "87-C174-P-view-mssql",
+      "case": "87-C174-P-view",
+      "dialect": "mssql",
+      "sql": "CREATE VIEW filtered_orders AS SELECT k FROM raw.orders WHERE k >= 1",
+      "expectation": "Canonical SELECT predicate/domain and explicit wrapper parse support or named parser boundary; no vendor runtime claim",
+      "verified": false
+    },
+    {
+      "id": "87-C174-P-view-clickhouse",
+      "case": "87-C174-P-view",
+      "dialect": "clickhouse",
+      "sql": "CREATE VIEW filtered_orders AS SELECT k FROM raw.orders WHERE k >= 1",
+      "expectation": "Canonical SELECT predicate/domain and explicit wrapper parse support or named parser boundary; no vendor runtime claim",
+      "verified": false
+    },
+    {
+      "id": "87-C174-P-view-bigquery",
+      "case": "87-C174-P-view",
+      "dialect": "bigquery",
+      "sql": "CREATE VIEW filtered_orders AS SELECT k FROM raw.orders WHERE k >= 1",
+      "expectation": "Canonical SELECT predicate/domain and explicit wrapper parse support or named parser boundary; no vendor runtime claim",
+      "verified": false
+    },
+    {
+      "id": "87-C174-P-view-ansi",
+      "case": "87-C174-P-view",
+      "dialect": "ansi",
+      "sql": "CREATE VIEW filtered_orders AS SELECT k FROM raw.orders WHERE k >= 1",
+      "expectation": "Canonical SELECT predicate/domain and explicit wrapper parse support or named parser boundary; no vendor runtime claim",
+      "verified": false
+    },
+    {
+      "id": "87-C174-P-view-duckdb",
+      "case": "87-C174-P-view",
+      "dialect": "duckdb",
+      "sql": "CREATE VIEW filtered_orders AS SELECT k FROM raw.orders WHERE k >= 1",
+      "expectation": "Canonical SELECT predicate/domain and explicit wrapper parse support or named parser boundary; no vendor runtime claim",
+      "verified": false
+    },
+    {
+      "id": "87-C174-P-view-databricks",
+      "case": "87-C174-P-view",
+      "dialect": "databricks",
+      "sql": "CREATE VIEW filtered_orders AS SELECT k FROM raw.orders WHERE k >= 1",
+      "expectation": "Canonical SELECT predicate/domain and explicit wrapper parse support or named parser boundary; no vendor runtime claim",
+      "verified": false
+    },
+    {
+      "id": "87-C174-P-table-generic",
+      "case": "87-C174-P-table",
+      "dialect": "generic",
+      "sql": "CREATE TABLE filtered_orders AS SELECT k FROM raw.orders WHERE k >= 1",
+      "expectation": "Canonical SELECT predicate/domain and explicit wrapper parse support or named parser boundary; no vendor runtime claim",
+      "verified": false
+    },
+    {
+      "id": "87-C174-P-table-mysql",
+      "case": "87-C174-P-table",
+      "dialect": "mysql",
+      "sql": "CREATE TABLE filtered_orders AS SELECT k FROM raw.orders WHERE k >= 1",
+      "expectation": "Canonical SELECT predicate/domain and explicit wrapper parse support or named parser boundary; no vendor runtime claim",
+      "verified": false
+    },
+    {
+      "id": "87-C174-P-table-postgresql",
+      "case": "87-C174-P-table",
+      "dialect": "postgresql",
+      "sql": "CREATE TABLE filtered_orders AS SELECT k FROM raw.orders WHERE k >= 1",
+      "expectation": "Canonical SELECT predicate/domain and explicit wrapper parse support or named parser boundary; no vendor runtime claim",
+      "verified": false
+    },
+    {
+      "id": "87-C174-P-table-hive",
+      "case": "87-C174-P-table",
+      "dialect": "hive",
+      "sql": "CREATE TABLE filtered_orders AS SELECT k FROM raw.orders WHERE k >= 1",
+      "expectation": "Canonical SELECT predicate/domain and explicit wrapper parse support or named parser boundary; no vendor runtime claim",
+      "verified": false
+    },
+    {
+      "id": "87-C174-P-table-sqlite",
+      "case": "87-C174-P-table",
+      "dialect": "sqlite",
+      "sql": "CREATE TABLE filtered_orders AS SELECT k FROM raw.orders WHERE k >= 1",
+      "expectation": "Canonical SELECT predicate/domain and explicit wrapper parse support or named parser boundary; no vendor runtime claim",
+      "verified": false
+    },
+    {
+      "id": "87-C174-P-table-snowflake",
+      "case": "87-C174-P-table",
+      "dialect": "snowflake",
+      "sql": "CREATE TABLE filtered_orders AS SELECT k FROM raw.orders WHERE k >= 1",
+      "expectation": "Canonical SELECT predicate/domain and explicit wrapper parse support or named parser boundary; no vendor runtime claim",
+      "verified": false
+    },
+    {
+      "id": "87-C174-P-table-redshift",
+      "case": "87-C174-P-table",
+      "dialect": "redshift",
+      "sql": "CREATE TABLE filtered_orders AS SELECT k FROM raw.orders WHERE k >= 1",
+      "expectation": "Canonical SELECT predicate/domain and explicit wrapper parse support or named parser boundary; no vendor runtime claim",
+      "verified": false
+    },
+    {
+      "id": "87-C174-P-table-mssql",
+      "case": "87-C174-P-table",
+      "dialect": "mssql",
+      "sql": "CREATE TABLE filtered_orders AS SELECT k FROM raw.orders WHERE k >= 1",
+      "expectation": "Canonical SELECT predicate/domain and explicit wrapper parse support or named parser boundary; no vendor runtime claim",
+      "verified": false
+    },
+    {
+      "id": "87-C174-P-table-clickhouse",
+      "case": "87-C174-P-table",
+      "dialect": "clickhouse",
+      "sql": "CREATE TABLE filtered_orders AS SELECT k FROM raw.orders WHERE k >= 1",
+      "expectation": "Canonical SELECT predicate/domain and explicit wrapper parse support or named parser boundary; no vendor runtime claim",
+      "verified": false
+    },
+    {
+      "id": "87-C174-P-table-bigquery",
+      "case": "87-C174-P-table",
+      "dialect": "bigquery",
+      "sql": "CREATE TABLE filtered_orders AS SELECT k FROM raw.orders WHERE k >= 1",
+      "expectation": "Canonical SELECT predicate/domain and explicit wrapper parse support or named parser boundary; no vendor runtime claim",
+      "verified": false
+    },
+    {
+      "id": "87-C174-P-table-ansi",
+      "case": "87-C174-P-table",
+      "dialect": "ansi",
+      "sql": "CREATE TABLE filtered_orders AS SELECT k FROM raw.orders WHERE k >= 1",
+      "expectation": "Canonical SELECT predicate/domain and explicit wrapper parse support or named parser boundary; no vendor runtime claim",
+      "verified": false
+    },
+    {
+      "id": "87-C174-P-table-duckdb",
+      "case": "87-C174-P-table",
+      "dialect": "duckdb",
+      "sql": "CREATE TABLE filtered_orders AS SELECT k FROM raw.orders WHERE k >= 1",
+      "expectation": "Canonical SELECT predicate/domain and explicit wrapper parse support or named parser boundary; no vendor runtime claim",
+      "verified": false
+    },
+    {
+      "id": "87-C174-P-table-databricks",
+      "case": "87-C174-P-table",
+      "dialect": "databricks",
+      "sql": "CREATE TABLE filtered_orders AS SELECT k FROM raw.orders WHERE k >= 1",
+      "expectation": "Canonical SELECT predicate/domain and explicit wrapper parse support or named parser boundary; no vendor runtime claim",
+      "verified": false
+    },
+    {
+      "id": "87-C174-P-ephemeral-generic",
+      "case": "87-C174-P-ephemeral",
+      "dialect": "generic",
+      "sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "expectation": "Canonical SELECT predicate/domain and explicit wrapper parse support or named parser boundary; no vendor runtime claim",
+      "verified": false
+    },
+    {
+      "id": "87-C174-P-ephemeral-mysql",
+      "case": "87-C174-P-ephemeral",
+      "dialect": "mysql",
+      "sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "expectation": "Canonical SELECT predicate/domain and explicit wrapper parse support or named parser boundary; no vendor runtime claim",
+      "verified": false
+    },
+    {
+      "id": "87-C174-P-ephemeral-postgresql",
+      "case": "87-C174-P-ephemeral",
+      "dialect": "postgresql",
+      "sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "expectation": "Canonical SELECT predicate/domain and explicit wrapper parse support or named parser boundary; no vendor runtime claim",
+      "verified": false
+    },
+    {
+      "id": "87-C174-P-ephemeral-hive",
+      "case": "87-C174-P-ephemeral",
+      "dialect": "hive",
+      "sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "expectation": "Canonical SELECT predicate/domain and explicit wrapper parse support or named parser boundary; no vendor runtime claim",
+      "verified": false
+    },
+    {
+      "id": "87-C174-P-ephemeral-sqlite",
+      "case": "87-C174-P-ephemeral",
+      "dialect": "sqlite",
+      "sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "expectation": "Canonical SELECT predicate/domain and explicit wrapper parse support or named parser boundary; no vendor runtime claim",
+      "verified": false
+    },
+    {
+      "id": "87-C174-P-ephemeral-snowflake",
+      "case": "87-C174-P-ephemeral",
+      "dialect": "snowflake",
+      "sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "expectation": "Canonical SELECT predicate/domain and explicit wrapper parse support or named parser boundary; no vendor runtime claim",
+      "verified": false
+    },
+    {
+      "id": "87-C174-P-ephemeral-redshift",
+      "case": "87-C174-P-ephemeral",
+      "dialect": "redshift",
+      "sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "expectation": "Canonical SELECT predicate/domain and explicit wrapper parse support or named parser boundary; no vendor runtime claim",
+      "verified": false
+    },
+    {
+      "id": "87-C174-P-ephemeral-mssql",
+      "case": "87-C174-P-ephemeral",
+      "dialect": "mssql",
+      "sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "expectation": "Canonical SELECT predicate/domain and explicit wrapper parse support or named parser boundary; no vendor runtime claim",
+      "verified": false
+    },
+    {
+      "id": "87-C174-P-ephemeral-clickhouse",
+      "case": "87-C174-P-ephemeral",
+      "dialect": "clickhouse",
+      "sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "expectation": "Canonical SELECT predicate/domain and explicit wrapper parse support or named parser boundary; no vendor runtime claim",
+      "verified": false
+    },
+    {
+      "id": "87-C174-P-ephemeral-bigquery",
+      "case": "87-C174-P-ephemeral",
+      "dialect": "bigquery",
+      "sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "expectation": "Canonical SELECT predicate/domain and explicit wrapper parse support or named parser boundary; no vendor runtime claim",
+      "verified": false
+    },
+    {
+      "id": "87-C174-P-ephemeral-ansi",
+      "case": "87-C174-P-ephemeral",
+      "dialect": "ansi",
+      "sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "expectation": "Canonical SELECT predicate/domain and explicit wrapper parse support or named parser boundary; no vendor runtime claim",
+      "verified": false
+    },
+    {
+      "id": "87-C174-P-ephemeral-duckdb",
+      "case": "87-C174-P-ephemeral",
+      "dialect": "duckdb",
+      "sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "expectation": "Canonical SELECT predicate/domain and explicit wrapper parse support or named parser boundary; no vendor runtime claim",
+      "verified": false
+    },
+    {
+      "id": "87-C174-P-ephemeral-databricks",
+      "case": "87-C174-P-ephemeral",
+      "dialect": "databricks",
+      "sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "expectation": "Canonical SELECT predicate/domain and explicit wrapper parse support or named parser boundary; no vendor runtime claim",
+      "verified": false
+    },
+    {
+      "id": "87-C174-P-inline-generic",
+      "case": "87-C174-P-inline",
+      "dialect": "generic",
+      "sql": "WITH __dbt__cte__filter AS (SELECT k FROM raw.orders WHERE k >= 1) SELECT k FROM __dbt__cte__filter",
+      "expectation": "Canonical SELECT predicate/domain and explicit wrapper parse support or named parser boundary; no vendor runtime claim",
+      "verified": false
+    },
+    {
+      "id": "87-C174-P-inline-mysql",
+      "case": "87-C174-P-inline",
+      "dialect": "mysql",
+      "sql": "WITH __dbt__cte__filter AS (SELECT k FROM raw.orders WHERE k >= 1) SELECT k FROM __dbt__cte__filter",
+      "expectation": "Canonical SELECT predicate/domain and explicit wrapper parse support or named parser boundary; no vendor runtime claim",
+      "verified": false
+    },
+    {
+      "id": "87-C174-P-inline-postgresql",
+      "case": "87-C174-P-inline",
+      "dialect": "postgresql",
+      "sql": "WITH __dbt__cte__filter AS (SELECT k FROM raw.orders WHERE k >= 1) SELECT k FROM __dbt__cte__filter",
+      "expectation": "Canonical SELECT predicate/domain and explicit wrapper parse support or named parser boundary; no vendor runtime claim",
+      "verified": false
+    },
+    {
+      "id": "87-C174-P-inline-hive",
+      "case": "87-C174-P-inline",
+      "dialect": "hive",
+      "sql": "WITH __dbt__cte__filter AS (SELECT k FROM raw.orders WHERE k >= 1) SELECT k FROM __dbt__cte__filter",
+      "expectation": "Canonical SELECT predicate/domain and explicit wrapper parse support or named parser boundary; no vendor runtime claim",
+      "verified": false
+    },
+    {
+      "id": "87-C174-P-inline-sqlite",
+      "case": "87-C174-P-inline",
+      "dialect": "sqlite",
+      "sql": "WITH __dbt__cte__filter AS (SELECT k FROM raw.orders WHERE k >= 1) SELECT k FROM __dbt__cte__filter",
+      "expectation": "Canonical SELECT predicate/domain and explicit wrapper parse support or named parser boundary; no vendor runtime claim",
+      "verified": false
+    },
+    {
+      "id": "87-C174-P-inline-snowflake",
+      "case": "87-C174-P-inline",
+      "dialect": "snowflake",
+      "sql": "WITH __dbt__cte__filter AS (SELECT k FROM raw.orders WHERE k >= 1) SELECT k FROM __dbt__cte__filter",
+      "expectation": "Canonical SELECT predicate/domain and explicit wrapper parse support or named parser boundary; no vendor runtime claim",
+      "verified": false
+    },
+    {
+      "id": "87-C174-P-inline-redshift",
+      "case": "87-C174-P-inline",
+      "dialect": "redshift",
+      "sql": "WITH __dbt__cte__filter AS (SELECT k FROM raw.orders WHERE k >= 1) SELECT k FROM __dbt__cte__filter",
+      "expectation": "Canonical SELECT predicate/domain and explicit wrapper parse support or named parser boundary; no vendor runtime claim",
+      "verified": false
+    },
+    {
+      "id": "87-C174-P-inline-mssql",
+      "case": "87-C174-P-inline",
+      "dialect": "mssql",
+      "sql": "WITH __dbt__cte__filter AS (SELECT k FROM raw.orders WHERE k >= 1) SELECT k FROM __dbt__cte__filter",
+      "expectation": "Canonical SELECT predicate/domain and explicit wrapper parse support or named parser boundary; no vendor runtime claim",
+      "verified": false
+    },
+    {
+      "id": "87-C174-P-inline-clickhouse",
+      "case": "87-C174-P-inline",
+      "dialect": "clickhouse",
+      "sql": "WITH __dbt__cte__filter AS (SELECT k FROM raw.orders WHERE k >= 1) SELECT k FROM __dbt__cte__filter",
+      "expectation": "Canonical SELECT predicate/domain and explicit wrapper parse support or named parser boundary; no vendor runtime claim",
+      "verified": false
+    },
+    {
+      "id": "87-C174-P-inline-bigquery",
+      "case": "87-C174-P-inline",
+      "dialect": "bigquery",
+      "sql": "WITH __dbt__cte__filter AS (SELECT k FROM raw.orders WHERE k >= 1) SELECT k FROM __dbt__cte__filter",
+      "expectation": "Canonical SELECT predicate/domain and explicit wrapper parse support or named parser boundary; no vendor runtime claim",
+      "verified": false
+    },
+    {
+      "id": "87-C174-P-inline-ansi",
+      "case": "87-C174-P-inline",
+      "dialect": "ansi",
+      "sql": "WITH __dbt__cte__filter AS (SELECT k FROM raw.orders WHERE k >= 1) SELECT k FROM __dbt__cte__filter",
+      "expectation": "Canonical SELECT predicate/domain and explicit wrapper parse support or named parser boundary; no vendor runtime claim",
+      "verified": false
+    },
+    {
+      "id": "87-C174-P-inline-duckdb",
+      "case": "87-C174-P-inline",
+      "dialect": "duckdb",
+      "sql": "WITH __dbt__cte__filter AS (SELECT k FROM raw.orders WHERE k >= 1) SELECT k FROM __dbt__cte__filter",
+      "expectation": "Canonical SELECT predicate/domain and explicit wrapper parse support or named parser boundary; no vendor runtime claim",
+      "verified": false
+    },
+    {
+      "id": "87-C174-P-inline-databricks",
+      "case": "87-C174-P-inline",
+      "dialect": "databricks",
+      "sql": "WITH __dbt__cte__filter AS (SELECT k FROM raw.orders WHERE k >= 1) SELECT k FROM __dbt__cte__filter",
+      "expectation": "Canonical SELECT predicate/domain and explicit wrapper parse support or named parser boundary; no vendor runtime claim",
+      "verified": false
+    },
+    {
+      "id": "87-C174-N-incremental-generic",
+      "case": "87-C174-N-incremental",
+      "dialect": "generic",
+      "sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "expectation": "Canonical SELECT predicate/domain and explicit wrapper parse support or named parser boundary; no vendor runtime claim",
+      "verified": false
+    },
+    {
+      "id": "87-C174-N-incremental-mysql",
+      "case": "87-C174-N-incremental",
+      "dialect": "mysql",
+      "sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "expectation": "Canonical SELECT predicate/domain and explicit wrapper parse support or named parser boundary; no vendor runtime claim",
+      "verified": false
+    },
+    {
+      "id": "87-C174-N-incremental-postgresql",
+      "case": "87-C174-N-incremental",
+      "dialect": "postgresql",
+      "sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "expectation": "Canonical SELECT predicate/domain and explicit wrapper parse support or named parser boundary; no vendor runtime claim",
+      "verified": false
+    },
+    {
+      "id": "87-C174-N-incremental-hive",
+      "case": "87-C174-N-incremental",
+      "dialect": "hive",
+      "sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "expectation": "Canonical SELECT predicate/domain and explicit wrapper parse support or named parser boundary; no vendor runtime claim",
+      "verified": false
+    },
+    {
+      "id": "87-C174-N-incremental-sqlite",
+      "case": "87-C174-N-incremental",
+      "dialect": "sqlite",
+      "sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "expectation": "Canonical SELECT predicate/domain and explicit wrapper parse support or named parser boundary; no vendor runtime claim",
+      "verified": false
+    },
+    {
+      "id": "87-C174-N-incremental-snowflake",
+      "case": "87-C174-N-incremental",
+      "dialect": "snowflake",
+      "sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "expectation": "Canonical SELECT predicate/domain and explicit wrapper parse support or named parser boundary; no vendor runtime claim",
+      "verified": false
+    },
+    {
+      "id": "87-C174-N-incremental-redshift",
+      "case": "87-C174-N-incremental",
+      "dialect": "redshift",
+      "sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "expectation": "Canonical SELECT predicate/domain and explicit wrapper parse support or named parser boundary; no vendor runtime claim",
+      "verified": false
+    },
+    {
+      "id": "87-C174-N-incremental-mssql",
+      "case": "87-C174-N-incremental",
+      "dialect": "mssql",
+      "sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "expectation": "Canonical SELECT predicate/domain and explicit wrapper parse support or named parser boundary; no vendor runtime claim",
+      "verified": false
+    },
+    {
+      "id": "87-C174-N-incremental-clickhouse",
+      "case": "87-C174-N-incremental",
+      "dialect": "clickhouse",
+      "sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "expectation": "Canonical SELECT predicate/domain and explicit wrapper parse support or named parser boundary; no vendor runtime claim",
+      "verified": false
+    },
+    {
+      "id": "87-C174-N-incremental-bigquery",
+      "case": "87-C174-N-incremental",
+      "dialect": "bigquery",
+      "sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "expectation": "Canonical SELECT predicate/domain and explicit wrapper parse support or named parser boundary; no vendor runtime claim",
+      "verified": false
+    },
+    {
+      "id": "87-C174-N-incremental-ansi",
+      "case": "87-C174-N-incremental",
+      "dialect": "ansi",
+      "sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "expectation": "Canonical SELECT predicate/domain and explicit wrapper parse support or named parser boundary; no vendor runtime claim",
+      "verified": false
+    },
+    {
+      "id": "87-C174-N-incremental-duckdb",
+      "case": "87-C174-N-incremental",
+      "dialect": "duckdb",
+      "sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "expectation": "Canonical SELECT predicate/domain and explicit wrapper parse support or named parser boundary; no vendor runtime claim",
+      "verified": false
+    },
+    {
+      "id": "87-C174-N-incremental-databricks",
+      "case": "87-C174-N-incremental",
+      "dialect": "databricks",
+      "sql": "SELECT k FROM raw.orders WHERE k >= 1",
+      "expectation": "Canonical SELECT predicate/domain and explicit wrapper parse support or named parser boundary; no vendor runtime claim",
+      "verified": false
+    }
+  ],
+  "adapter_cells": [
+    {
+      "id": "87-C174-P-view-direct_sql",
+      "adapter": "direct_sql",
+      "case": "87-C174-P-view",
+      "expected": "canonical source-domain and lineage parity where adapter owns facts, materialization tag manifest-only",
+      "verified": false
+    },
+    {
+      "id": "87-C174-P-view-dbt_manifest",
+      "adapter": "dbt_manifest",
+      "case": "87-C174-P-view",
+      "expected": "canonical source-domain and lineage parity where adapter owns facts, materialization tag manifest-only",
+      "verified": false
+    },
+    {
+      "id": "87-C174-P-view-dbt_catalog",
+      "adapter": "dbt_catalog",
+      "case": "87-C174-P-view",
+      "expected": "canonical source-domain and lineage parity where adapter owns facts, materialization tag manifest-only",
+      "verified": false
+    },
+    {
+      "id": "87-C174-P-view-odcs",
+      "adapter": "odcs",
+      "case": "87-C174-P-view",
+      "expected": "canonical source-domain and lineage parity where adapter owns facts, materialization tag manifest-only",
+      "verified": false
+    },
+    {
+      "id": "87-C174-P-table-direct_sql",
+      "adapter": "direct_sql",
+      "case": "87-C174-P-table",
+      "expected": "canonical source-domain and lineage parity where adapter owns facts, materialization tag manifest-only",
+      "verified": false
+    },
+    {
+      "id": "87-C174-P-table-dbt_manifest",
+      "adapter": "dbt_manifest",
+      "case": "87-C174-P-table",
+      "expected": "canonical source-domain and lineage parity where adapter owns facts, materialization tag manifest-only",
+      "verified": false
+    },
+    {
+      "id": "87-C174-P-table-dbt_catalog",
+      "adapter": "dbt_catalog",
+      "case": "87-C174-P-table",
+      "expected": "canonical source-domain and lineage parity where adapter owns facts, materialization tag manifest-only",
+      "verified": false
+    },
+    {
+      "id": "87-C174-P-table-odcs",
+      "adapter": "odcs",
+      "case": "87-C174-P-table",
+      "expected": "canonical source-domain and lineage parity where adapter owns facts, materialization tag manifest-only",
+      "verified": false
+    },
+    {
+      "id": "87-C174-P-ephemeral-direct_sql",
+      "adapter": "direct_sql",
+      "case": "87-C174-P-ephemeral",
+      "expected": "canonical source-domain and lineage parity where adapter owns facts, materialization tag manifest-only",
+      "verified": false
+    },
+    {
+      "id": "87-C174-P-ephemeral-dbt_manifest",
+      "adapter": "dbt_manifest",
+      "case": "87-C174-P-ephemeral",
+      "expected": "canonical source-domain and lineage parity where adapter owns facts, materialization tag manifest-only",
+      "verified": false
+    },
+    {
+      "id": "87-C174-P-ephemeral-dbt_catalog",
+      "adapter": "dbt_catalog",
+      "case": "87-C174-P-ephemeral",
+      "expected": "canonical source-domain and lineage parity where adapter owns facts, materialization tag manifest-only",
+      "verified": false
+    },
+    {
+      "id": "87-C174-P-ephemeral-odcs",
+      "adapter": "odcs",
+      "case": "87-C174-P-ephemeral",
+      "expected": "canonical source-domain and lineage parity where adapter owns facts, materialization tag manifest-only",
+      "verified": false
+    },
+    {
+      "id": "87-C174-P-inline-direct_sql",
+      "adapter": "direct_sql",
+      "case": "87-C174-P-inline",
+      "expected": "canonical source-domain and lineage parity where adapter owns facts, materialization tag manifest-only",
+      "verified": false
+    },
+    {
+      "id": "87-C174-P-inline-dbt_manifest",
+      "adapter": "dbt_manifest",
+      "case": "87-C174-P-inline",
+      "expected": "canonical source-domain and lineage parity where adapter owns facts, materialization tag manifest-only",
+      "verified": false
+    },
+    {
+      "id": "87-C174-P-inline-dbt_catalog",
+      "adapter": "dbt_catalog",
+      "case": "87-C174-P-inline",
+      "expected": "canonical source-domain and lineage parity where adapter owns facts, materialization tag manifest-only",
+      "verified": false
+    },
+    {
+      "id": "87-C174-P-inline-odcs",
+      "adapter": "odcs",
+      "case": "87-C174-P-inline",
+      "expected": "canonical source-domain and lineage parity where adapter owns facts, materialization tag manifest-only",
+      "verified": false
+    },
+    {
+      "id": "87-C174-N-incremental-direct_sql",
+      "adapter": "direct_sql",
+      "case": "87-C174-N-incremental",
+      "expected": "canonical source-domain and lineage parity where adapter owns facts, materialization tag manifest-only",
+      "verified": false
+    },
+    {
+      "id": "87-C174-N-incremental-dbt_manifest",
+      "adapter": "dbt_manifest",
+      "case": "87-C174-N-incremental",
+      "expected": "canonical source-domain and lineage parity where adapter owns facts, materialization tag manifest-only",
+      "verified": false
+    },
+    {
+      "id": "87-C174-N-incremental-dbt_catalog",
+      "adapter": "dbt_catalog",
+      "case": "87-C174-N-incremental",
+      "expected": "canonical source-domain and lineage parity where adapter owns facts, materialization tag manifest-only",
+      "verified": false
+    },
+    {
+      "id": "87-C174-N-incremental-odcs",
+      "adapter": "odcs",
+      "case": "87-C174-N-incremental",
+      "expected": "canonical source-domain and lineage parity where adapter owns facts, materialization tag manifest-only",
+      "verified": false
+    }
+  ],
+  "original_child_ac_mapping": {
+    "1": [
+      "87-C174-P-view",
+      "87-C174-P-table",
+      "87-C174-P-ephemeral",
+      "87-C174-P-inline",
+      "87-C174-N-incremental",
+      "87-C174-N-unknown",
+      "87-C174-N-uncompiled-inline"
+    ],
+    "2": [
+      "87-C174-P-view",
+      "87-C174-P-table",
+      "87-C174-P-ephemeral",
+      "87-C174-P-inline",
+      "87-C174-N-incremental"
+    ],
+    "3": [
+      "87-C174-P-view",
+      "87-C174-P-table",
+      "87-C174-P-ephemeral",
+      "87-C174-N-incremental"
+    ],
+    "4": [
+      "87-C174-P-view",
+      "87-C174-P-table",
+      "87-C174-P-ephemeral",
+      "87-C174-P-inline",
+      "87-C174-N-incremental",
+      "87-C174-N-unknown",
+      "87-C174-N-uncompiled-inline"
+    ],
+    "5": [
+      "87-C174-P-view",
+      "87-C174-P-table",
+      "87-C174-P-ephemeral",
+      "87-C174-P-inline",
+      "87-C174-N-incremental",
+      "87-C174-N-unknown",
+      "87-C174-N-uncompiled-inline"
+    ]
+  },
+  "parent_ac_mapping": [
+    1,
+    2,
+    3,
+    5,
+    6
+  ],
+  "mandatory_verified": false,
+  "all_13_parser_dialects_verified": false,
+  "adapter_parity_verified": false,
+  "native_duckdb_verified": false,
+  "full_ci_verified": false,
+  "independent_review_verified": false,
+  "parent_closed": false,
+  "release_approved": false
+}

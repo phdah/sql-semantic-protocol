@@ -169,10 +169,22 @@ missing-schema errors as `analyze_dbt_artifacts` with an empty catalog. With a c
 use `analyze_dbt_artifacts`. Both typed paths require complete schema evidence for all
 physical dependencies and preserve `source_kind: dbt_manifest` on manifest-only sources.
 
-Model identity comes from dbt `unique_id`, and produced dataset identity comes from
-`relation_name`; filenames are retained only as source metadata. Model analysis uses compiled SQL from `compiled_code`; uncompiled Jinja is not valid SQL input. Python models,
-relation-less models such as ephemerals, missing dependency relations, dependency cycles, and
-uncompiled Jinja fail explicitly rather than being guessed or silently omitted.
+Model identity comes from dbt `unique_id`. Named table, view and incremental models use
+`relation_name`, while an ephemeral model remains an anonymous query. Filenames are source
+metadata, not identities. Analysis uses compiled SQL from `compiled_code` where available;
+uncompiled Jinja, unknown materializations and unrepresentable dependencies fail explicitly.
+
+`config.materialized` is an **intent**, not evidence of an executed model. A table is analyzed
+as a named CTAS definition, a view as a logical view, an ephemeral model as an unnamed SELECT,
+and an incremental model as a logical read-only surrogate for its compiled SELECT outcome.
+In particular, a dbt incremental SELECT **never proves INSERT/MERGE/DELETE target state**.
+The optional canonical `producer_evidence` records materialization intent, stable input and
+target identities, `execution: unattested`, and the unproved expansion status of dependencies
+on inline ephemerals. Ephemeral downstream consumers require compiled SQL; that SQL's actual
+physical source graph is analyzed, but manifest dependency metadata alone does not certify
+macro expansion equivalence. Consumers need independently executed complete input and target
+bags to promote any stateful execution claim. SQL/dbt/ODCS retain the same underlying SELECT
+value domains and constraint provenance where each source supplies equivalent facts.
 
 dbt `depends_on.nodes` provides deterministic model ordering and is mapped to canonical relation
 identities from the manifest. The adapter verifies that every declared dependency is also present
@@ -312,3 +324,10 @@ portable primitive literals can be certified; missing source populations,
 generated expressions, vendor coercions and string collation laws remain
 typed residuals. No consumer should infer physical feasibility from the
 presence of a parsed type or column default alone.
+
+The active root schema for this new optional field is documented in
+[the protocol contract](protocol.md). It is an additive representation for the
+planned 3.0.0 release; the published 2.0.3 consumer contract has not yet
+been updated. A sql-tdg consumer pinned to 2.0.3 cannot validate new 3.x
+JSON against its historical strict root schema; release integration belongs
+to TASK-90/91 and sql-tdg TASK-43.

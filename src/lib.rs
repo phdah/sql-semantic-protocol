@@ -4,6 +4,7 @@
 //! - analyze_inputs analyzes SQL input units, links them, and composes transitive semantics.
 //! - analyze_configured_inputs_with_catalog adds optional catalog/schema-aware relation resolution and typed source schemas.
 //! - parse_dbt_manifest, parse_dbt_catalog, analyze_dbt_artifacts, and analyze_dbt_manifest_with_schemas adapt dbt artifacts, including canonical key and column constraints, into the same core analysis path.
+//! - ProducerEvidence preserves declared dbt materialization and explicitly unattested execution without inventing physical state.
 //! - With the `odcs` feature, parse_odcs_yaml and parse_odcs_documents adapt ODCS v3.2 YAML contracts into canonical schema and constraint evidence.
 //! - canonical constraint types expose primary, unique, foreign-key, not-null, and accepted-values metadata with provenance.
 //! - ColumnValueSource models exact defaults and opaque generated/identity declarations without invented values.
@@ -94,6 +95,7 @@ mod emission;
 mod group_witness;
 mod join_witness;
 mod manifest;
+mod materialization;
 #[cfg(feature = "odcs")]
 mod odcs;
 mod openlineage;
@@ -173,6 +175,9 @@ pub use join_witness::{
 pub use manifest::{
     parse_analysis_manifest, AnalysisManifest, ManifestError, ManifestInput, ManifestInputSource,
     ManifestOutputScope, ManifestRelationContext, ANALYSIS_MANIFEST_VERSION,
+};
+pub use materialization::{
+    InlineDependencyEvidence, ProducerEvidence, ProducerExecution, ProducerMaterialization,
 };
 #[cfg(feature = "odcs")]
 pub use odcs::{

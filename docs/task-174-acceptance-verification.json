@@ -1,0 +1,740 @@
+{
+  "owner": "TASK-174",
+  "parent": "TASK-87",
+  "freeze": "docs/task-174-acceptance-freeze.json",
+  "freeze_version": 1,
+  "immutable_preimplementation_freeze": true,
+  "verification_source": "tests/task_174_materializations.rs",
+  "code_head": "9b33de4c17abca831416ca84dd3fd5e90e7fce64",
+  "ci_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/42370737926",
+  "ci_jobs_passed": "9/9",
+  "original_ac_verified": [
+    1,
+    2,
+    3,
+    4,
+    5
+  ],
+  "mapped_parent_ac_reviewed": [
+    1,
+    2,
+    3,
+    5,
+    6
+  ],
+  "mandatory_cases": [
+    {
+      "id": "87-C174-P-view",
+      "verified": true,
+      "source_bag_verified": true,
+      "terminal_bag_verified": true,
+      "typed_domain_verified": true,
+      "intended_write_verified": true,
+      "execution_attested": false,
+      "proof": "source-backed exact SELECT where independently attested; storage intention separate",
+      "tests": "tests/task_174_materializations.rs"
+    },
+    {
+      "id": "87-C174-P-table",
+      "verified": true,
+      "source_bag_verified": true,
+      "terminal_bag_verified": true,
+      "typed_domain_verified": true,
+      "intended_write_verified": true,
+      "execution_attested": false,
+      "proof": "source-backed exact SELECT where independently attested; storage intention separate",
+      "tests": "tests/task_174_materializations.rs"
+    },
+    {
+      "id": "87-C174-P-ephemeral",
+      "verified": true,
+      "source_bag_verified": true,
+      "terminal_bag_verified": true,
+      "typed_domain_verified": true,
+      "intended_write_verified": false,
+      "execution_attested": false,
+      "proof": "source-backed exact SELECT where independently attested; storage intention separate",
+      "tests": "tests/task_174_materializations.rs"
+    },
+    {
+      "id": "87-C174-P-inline",
+      "verified": true,
+      "source_bag_verified": true,
+      "terminal_bag_verified": true,
+      "typed_domain_verified": true,
+      "intended_write_verified": false,
+      "execution_attested": false,
+      "proof": "source-backed exact SELECT where independently attested; storage intention separate",
+      "tests": "tests/task_174_materializations.rs"
+    },
+    {
+      "id": "87-C174-N-incremental",
+      "verified": true,
+      "source_bag_verified": true,
+      "terminal_bag_verified": true,
+      "typed_domain_verified": true,
+      "intended_write_verified": false,
+      "execution_attested": false,
+      "proof": "unattested target with canonical SELECT domain",
+      "tests": "tests/task_174_materializations.rs"
+    }
+  ],
+  "conditional_cases": [
+    {
+      "id": "87-C174-N-unknown",
+      "verified": true,
+      "classification": "explicit_unsupported",
+      "native_execution": "not_claimed",
+      "review_disposition": "fail closed; no custom materialization mapping without authoritative evidence",
+      "owner": "TASK-174"
+    },
+    {
+      "id": "87-C174-N-uncompiled-inline",
+      "verified": true,
+      "classification": "explicit_unsupported",
+      "native_execution": "not_claimed",
+      "review_disposition": "fail closed; compiled SQL required to verify inlined dependency",
+      "owner": "TASK-174"
+    }
+  ],
+  "dialect_cells": [
+    {
+      "id": "87-C174-P-view-generic",
+      "verified": true,
+      "classification": "canonical_typed_domain",
+      "native_engine": "not_attested",
+      "evidence": "tests/task_174_materializations.rs::task_174_frozen_dialect_and_adapter_matrix_is_complete_and_parser_safe"
+    },
+    {
+      "id": "87-C174-P-view-mysql",
+      "verified": true,
+      "classification": "canonical_typed_domain",
+      "native_engine": "not_attested",
+      "evidence": "tests/task_174_materializations.rs::task_174_frozen_dialect_and_adapter_matrix_is_complete_and_parser_safe"
+    },
+    {
+      "id": "87-C174-P-view-postgresql",
+      "verified": true,
+      "classification": "canonical_typed_domain",
+      "native_engine": "not_attested",
+      "evidence": "tests/task_174_materializations.rs::task_174_frozen_dialect_and_adapter_matrix_is_complete_and_parser_safe"
+    },
+    {
+      "id": "87-C174-P-view-hive",
+      "verified": true,
+      "classification": "canonical_typed_domain",
+      "native_engine": "not_attested",
+      "evidence": "tests/task_174_materializations.rs::task_174_frozen_dialect_and_adapter_matrix_is_complete_and_parser_safe"
+    },
+    {
+      "id": "87-C174-P-view-sqlite",
+      "verified": true,
+      "classification": "canonical_typed_domain",
+      "native_engine": "not_attested",
+      "evidence": "tests/task_174_materializations.rs::task_174_frozen_dialect_and_adapter_matrix_is_complete_and_parser_safe"
+    },
+    {
+      "id": "87-C174-P-view-snowflake",
+      "verified": true,
+      "classification": "canonical_typed_domain",
+      "native_engine": "not_attested",
+      "evidence": "tests/task_174_materializations.rs::task_174_frozen_dialect_and_adapter_matrix_is_complete_and_parser_safe"
+    },
+    {
+      "id": "87-C174-P-view-redshift",
+      "verified": true,
+      "classification": "canonical_typed_domain",
+      "native_engine": "not_attested",
+      "evidence": "tests/task_174_materializations.rs::task_174_frozen_dialect_and_adapter_matrix_is_complete_and_parser_safe"
+    },
+    {
+      "id": "87-C174-P-view-mssql",
+      "verified": true,
+      "classification": "canonical_typed_domain",
+      "native_engine": "not_attested",
+      "evidence": "tests/task_174_materializations.rs::task_174_frozen_dialect_and_adapter_matrix_is_complete_and_parser_safe"
+    },
+    {
+      "id": "87-C174-P-view-clickhouse",
+      "verified": true,
+      "classification": "canonical_typed_domain",
+      "native_engine": "not_attested",
+      "evidence": "tests/task_174_materializations.rs::task_174_frozen_dialect_and_adapter_matrix_is_complete_and_parser_safe"
+    },
+    {
+      "id": "87-C174-P-view-bigquery",
+      "verified": true,
+      "classification": "canonical_typed_domain",
+      "native_engine": "not_attested",
+      "evidence": "tests/task_174_materializations.rs::task_174_frozen_dialect_and_adapter_matrix_is_complete_and_parser_safe"
+    },
+    {
+      "id": "87-C174-P-view-ansi",
+      "verified": true,
+      "classification": "canonical_typed_domain",
+      "native_engine": "not_attested",
+      "evidence": "tests/task_174_materializations.rs::task_174_frozen_dialect_and_adapter_matrix_is_complete_and_parser_safe"
+    },
+    {
+      "id": "87-C174-P-view-duckdb",
+      "verified": true,
+      "classification": "canonical_typed_domain",
+      "native_engine": "not_attested",
+      "evidence": "tests/task_174_materializations.rs::task_174_frozen_dialect_and_adapter_matrix_is_complete_and_parser_safe"
+    },
+    {
+      "id": "87-C174-P-view-databricks",
+      "verified": true,
+      "classification": "canonical_typed_domain",
+      "native_engine": "not_attested",
+      "evidence": "tests/task_174_materializations.rs::task_174_frozen_dialect_and_adapter_matrix_is_complete_and_parser_safe"
+    },
+    {
+      "id": "87-C174-P-table-generic",
+      "verified": true,
+      "classification": "canonical_typed_domain",
+      "native_engine": "not_attested",
+      "evidence": "tests/task_174_materializations.rs::task_174_frozen_dialect_and_adapter_matrix_is_complete_and_parser_safe"
+    },
+    {
+      "id": "87-C174-P-table-mysql",
+      "verified": true,
+      "classification": "canonical_typed_domain",
+      "native_engine": "not_attested",
+      "evidence": "tests/task_174_materializations.rs::task_174_frozen_dialect_and_adapter_matrix_is_complete_and_parser_safe"
+    },
+    {
+      "id": "87-C174-P-table-postgresql",
+      "verified": true,
+      "classification": "canonical_typed_domain",
+      "native_engine": "not_attested",
+      "evidence": "tests/task_174_materializations.rs::task_174_frozen_dialect_and_adapter_matrix_is_complete_and_parser_safe"
+    },
+    {
+      "id": "87-C174-P-table-hive",
+      "verified": true,
+      "classification": "canonical_typed_domain",
+      "native_engine": "not_attested",
+      "evidence": "tests/task_174_materializations.rs::task_174_frozen_dialect_and_adapter_matrix_is_complete_and_parser_safe"
+    },
+    {
+      "id": "87-C174-P-table-sqlite",
+      "verified": true,
+      "classification": "canonical_typed_domain",
+      "native_engine": "not_attested",
+      "evidence": "tests/task_174_materializations.rs::task_174_frozen_dialect_and_adapter_matrix_is_complete_and_parser_safe"
+    },
+    {
+      "id": "87-C174-P-table-snowflake",
+      "verified": true,
+      "classification": "canonical_typed_domain",
+      "native_engine": "not_attested",
+      "evidence": "tests/task_174_materializations.rs::task_174_frozen_dialect_and_adapter_matrix_is_complete_and_parser_safe"
+    },
+    {
+      "id": "87-C174-P-table-redshift",
+      "verified": true,
+      "classification": "canonical_typed_domain",
+      "native_engine": "not_attested",
+      "evidence": "tests/task_174_materializations.rs::task_174_frozen_dialect_and_adapter_matrix_is_complete_and_parser_safe"
+    },
+    {
+      "id": "87-C174-P-table-mssql",
+      "verified": true,
+      "classification": "canonical_typed_domain",
+      "native_engine": "not_attested",
+      "evidence": "tests/task_174_materializations.rs::task_174_frozen_dialect_and_adapter_matrix_is_complete_and_parser_safe"
+    },
+    {
+      "id": "87-C174-P-table-clickhouse",
+      "verified": true,
+      "classification": "canonical_typed_domain",
+      "native_engine": "not_attested",
+      "evidence": "tests/task_174_materializations.rs::task_174_frozen_dialect_and_adapter_matrix_is_complete_and_parser_safe"
+    },
+    {
+      "id": "87-C174-P-table-bigquery",
+      "verified": true,
+      "classification": "canonical_typed_domain",
+      "native_engine": "not_attested",
+      "evidence": "tests/task_174_materializations.rs::task_174_frozen_dialect_and_adapter_matrix_is_complete_and_parser_safe"
+    },
+    {
+      "id": "87-C174-P-table-ansi",
+      "verified": true,
+      "classification": "canonical_typed_domain",
+      "native_engine": "not_attested",
+      "evidence": "tests/task_174_materializations.rs::task_174_frozen_dialect_and_adapter_matrix_is_complete_and_parser_safe"
+    },
+    {
+      "id": "87-C174-P-table-duckdb",
+      "verified": true,
+      "classification": "canonical_typed_domain",
+      "native_engine": "not_attested",
+      "evidence": "tests/task_174_materializations.rs::task_174_frozen_dialect_and_adapter_matrix_is_complete_and_parser_safe"
+    },
+    {
+      "id": "87-C174-P-table-databricks",
+      "verified": true,
+      "classification": "canonical_typed_domain",
+      "native_engine": "not_attested",
+      "evidence": "tests/task_174_materializations.rs::task_174_frozen_dialect_and_adapter_matrix_is_complete_and_parser_safe"
+    },
+    {
+      "id": "87-C174-P-ephemeral-generic",
+      "verified": true,
+      "classification": "canonical_typed_domain",
+      "native_engine": "not_attested",
+      "evidence": "tests/task_174_materializations.rs::task_174_frozen_dialect_and_adapter_matrix_is_complete_and_parser_safe"
+    },
+    {
+      "id": "87-C174-P-ephemeral-mysql",
+      "verified": true,
+      "classification": "canonical_typed_domain",
+      "native_engine": "not_attested",
+      "evidence": "tests/task_174_materializations.rs::task_174_frozen_dialect_and_adapter_matrix_is_complete_and_parser_safe"
+    },
+    {
+      "id": "87-C174-P-ephemeral-postgresql",
+      "verified": true,
+      "classification": "canonical_typed_domain",
+      "native_engine": "not_attested",
+      "evidence": "tests/task_174_materializations.rs::task_174_frozen_dialect_and_adapter_matrix_is_complete_and_parser_safe"
+    },
+    {
+      "id": "87-C174-P-ephemeral-hive",
+      "verified": true,
+      "classification": "canonical_typed_domain",
+      "native_engine": "not_attested",
+      "evidence": "tests/task_174_materializations.rs::task_174_frozen_dialect_and_adapter_matrix_is_complete_and_parser_safe"
+    },
+    {
+      "id": "87-C174-P-ephemeral-sqlite",
+      "verified": true,
+      "classification": "canonical_typed_domain",
+      "native_engine": "not_attested",
+      "evidence": "tests/task_174_materializations.rs::task_174_frozen_dialect_and_adapter_matrix_is_complete_and_parser_safe"
+    },
+    {
+      "id": "87-C174-P-ephemeral-snowflake",
+      "verified": true,
+      "classification": "canonical_typed_domain",
+      "native_engine": "not_attested",
+      "evidence": "tests/task_174_materializations.rs::task_174_frozen_dialect_and_adapter_matrix_is_complete_and_parser_safe"
+    },
+    {
+      "id": "87-C174-P-ephemeral-redshift",
+      "verified": true,
+      "classification": "canonical_typed_domain",
+      "native_engine": "not_attested",
+      "evidence": "tests/task_174_materializations.rs::task_174_frozen_dialect_and_adapter_matrix_is_complete_and_parser_safe"
+    },
+    {
+      "id": "87-C174-P-ephemeral-mssql",
+      "verified": true,
+      "classification": "canonical_typed_domain",
+      "native_engine": "not_attested",
+      "evidence": "tests/task_174_materializations.rs::task_174_frozen_dialect_and_adapter_matrix_is_complete_and_parser_safe"
+    },
+    {
+      "id": "87-C174-P-ephemeral-clickhouse",
+      "verified": true,
+      "classification": "canonical_typed_domain",
+      "native_engine": "not_attested",
+      "evidence": "tests/task_174_materializations.rs::task_174_frozen_dialect_and_adapter_matrix_is_complete_and_parser_safe"
+    },
+    {
+      "id": "87-C174-P-ephemeral-bigquery",
+      "verified": true,
+      "classification": "canonical_typed_domain",
+      "native_engine": "not_attested",
+      "evidence": "tests/task_174_materializations.rs::task_174_frozen_dialect_and_adapter_matrix_is_complete_and_parser_safe"
+    },
+    {
+      "id": "87-C174-P-ephemeral-ansi",
+      "verified": true,
+      "classification": "canonical_typed_domain",
+      "native_engine": "not_attested",
+      "evidence": "tests/task_174_materializations.rs::task_174_frozen_dialect_and_adapter_matrix_is_complete_and_parser_safe"
+    },
+    {
+      "id": "87-C174-P-ephemeral-duckdb",
+      "verified": true,
+      "classification": "canonical_typed_domain",
+      "native_engine": "not_attested",
+      "evidence": "tests/task_174_materializations.rs::task_174_frozen_dialect_and_adapter_matrix_is_complete_and_parser_safe"
+    },
+    {
+      "id": "87-C174-P-ephemeral-databricks",
+      "verified": true,
+      "classification": "canonical_typed_domain",
+      "native_engine": "not_attested",
+      "evidence": "tests/task_174_materializations.rs::task_174_frozen_dialect_and_adapter_matrix_is_complete_and_parser_safe"
+    },
+    {
+      "id": "87-C174-P-inline-generic",
+      "verified": true,
+      "classification": "canonical_typed_domain",
+      "native_engine": "not_attested",
+      "evidence": "tests/task_174_materializations.rs::task_174_frozen_dialect_and_adapter_matrix_is_complete_and_parser_safe"
+    },
+    {
+      "id": "87-C174-P-inline-mysql",
+      "verified": true,
+      "classification": "canonical_typed_domain",
+      "native_engine": "not_attested",
+      "evidence": "tests/task_174_materializations.rs::task_174_frozen_dialect_and_adapter_matrix_is_complete_and_parser_safe"
+    },
+    {
+      "id": "87-C174-P-inline-postgresql",
+      "verified": true,
+      "classification": "canonical_typed_domain",
+      "native_engine": "not_attested",
+      "evidence": "tests/task_174_materializations.rs::task_174_frozen_dialect_and_adapter_matrix_is_complete_and_parser_safe"
+    },
+    {
+      "id": "87-C174-P-inline-hive",
+      "verified": true,
+      "classification": "explicit_parser_boundary",
+      "native_engine": "not_attested",
+      "evidence": "tests/task_174_materializations.rs::task_174_frozen_dialect_and_adapter_matrix_is_complete_and_parser_safe",
+      "reason": "dbt-style generated CTE identifier beginning with underscores is rejected by sqlparser for this dialect; no native runtime claim"
+    },
+    {
+      "id": "87-C174-P-inline-sqlite",
+      "verified": true,
+      "classification": "canonical_typed_domain",
+      "native_engine": "not_attested",
+      "evidence": "tests/task_174_materializations.rs::task_174_frozen_dialect_and_adapter_matrix_is_complete_and_parser_safe"
+    },
+    {
+      "id": "87-C174-P-inline-snowflake",
+      "verified": true,
+      "classification": "canonical_typed_domain",
+      "native_engine": "not_attested",
+      "evidence": "tests/task_174_materializations.rs::task_174_frozen_dialect_and_adapter_matrix_is_complete_and_parser_safe"
+    },
+    {
+      "id": "87-C174-P-inline-redshift",
+      "verified": true,
+      "classification": "canonical_typed_domain",
+      "native_engine": "not_attested",
+      "evidence": "tests/task_174_materializations.rs::task_174_frozen_dialect_and_adapter_matrix_is_complete_and_parser_safe"
+    },
+    {
+      "id": "87-C174-P-inline-mssql",
+      "verified": true,
+      "classification": "canonical_typed_domain",
+      "native_engine": "not_attested",
+      "evidence": "tests/task_174_materializations.rs::task_174_frozen_dialect_and_adapter_matrix_is_complete_and_parser_safe"
+    },
+    {
+      "id": "87-C174-P-inline-clickhouse",
+      "verified": true,
+      "classification": "canonical_typed_domain",
+      "native_engine": "not_attested",
+      "evidence": "tests/task_174_materializations.rs::task_174_frozen_dialect_and_adapter_matrix_is_complete_and_parser_safe"
+    },
+    {
+      "id": "87-C174-P-inline-bigquery",
+      "verified": true,
+      "classification": "canonical_typed_domain",
+      "native_engine": "not_attested",
+      "evidence": "tests/task_174_materializations.rs::task_174_frozen_dialect_and_adapter_matrix_is_complete_and_parser_safe"
+    },
+    {
+      "id": "87-C174-P-inline-ansi",
+      "verified": true,
+      "classification": "explicit_parser_boundary",
+      "native_engine": "not_attested",
+      "evidence": "tests/task_174_materializations.rs::task_174_frozen_dialect_and_adapter_matrix_is_complete_and_parser_safe",
+      "reason": "dbt-style generated CTE identifier beginning with underscores is rejected by sqlparser for this dialect; no native runtime claim"
+    },
+    {
+      "id": "87-C174-P-inline-duckdb",
+      "verified": true,
+      "classification": "canonical_typed_domain",
+      "native_engine": "not_attested",
+      "evidence": "tests/task_174_materializations.rs::task_174_frozen_dialect_and_adapter_matrix_is_complete_and_parser_safe"
+    },
+    {
+      "id": "87-C174-P-inline-databricks",
+      "verified": true,
+      "classification": "canonical_typed_domain",
+      "native_engine": "not_attested",
+      "evidence": "tests/task_174_materializations.rs::task_174_frozen_dialect_and_adapter_matrix_is_complete_and_parser_safe"
+    },
+    {
+      "id": "87-C174-N-incremental-generic",
+      "verified": true,
+      "classification": "canonical_typed_domain",
+      "native_engine": "not_attested",
+      "evidence": "tests/task_174_materializations.rs::task_174_frozen_dialect_and_adapter_matrix_is_complete_and_parser_safe"
+    },
+    {
+      "id": "87-C174-N-incremental-mysql",
+      "verified": true,
+      "classification": "canonical_typed_domain",
+      "native_engine": "not_attested",
+      "evidence": "tests/task_174_materializations.rs::task_174_frozen_dialect_and_adapter_matrix_is_complete_and_parser_safe"
+    },
+    {
+      "id": "87-C174-N-incremental-postgresql",
+      "verified": true,
+      "classification": "canonical_typed_domain",
+      "native_engine": "not_attested",
+      "evidence": "tests/task_174_materializations.rs::task_174_frozen_dialect_and_adapter_matrix_is_complete_and_parser_safe"
+    },
+    {
+      "id": "87-C174-N-incremental-hive",
+      "verified": true,
+      "classification": "canonical_typed_domain",
+      "native_engine": "not_attested",
+      "evidence": "tests/task_174_materializations.rs::task_174_frozen_dialect_and_adapter_matrix_is_complete_and_parser_safe"
+    },
+    {
+      "id": "87-C174-N-incremental-sqlite",
+      "verified": true,
+      "classification": "canonical_typed_domain",
+      "native_engine": "not_attested",
+      "evidence": "tests/task_174_materializations.rs::task_174_frozen_dialect_and_adapter_matrix_is_complete_and_parser_safe"
+    },
+    {
+      "id": "87-C174-N-incremental-snowflake",
+      "verified": true,
+      "classification": "canonical_typed_domain",
+      "native_engine": "not_attested",
+      "evidence": "tests/task_174_materializations.rs::task_174_frozen_dialect_and_adapter_matrix_is_complete_and_parser_safe"
+    },
+    {
+      "id": "87-C174-N-incremental-redshift",
+      "verified": true,
+      "classification": "canonical_typed_domain",
+      "native_engine": "not_attested",
+      "evidence": "tests/task_174_materializations.rs::task_174_frozen_dialect_and_adapter_matrix_is_complete_and_parser_safe"
+    },
+    {
+      "id": "87-C174-N-incremental-mssql",
+      "verified": true,
+      "classification": "canonical_typed_domain",
+      "native_engine": "not_attested",
+      "evidence": "tests/task_174_materializations.rs::task_174_frozen_dialect_and_adapter_matrix_is_complete_and_parser_safe"
+    },
+    {
+      "id": "87-C174-N-incremental-clickhouse",
+      "verified": true,
+      "classification": "canonical_typed_domain",
+      "native_engine": "not_attested",
+      "evidence": "tests/task_174_materializations.rs::task_174_frozen_dialect_and_adapter_matrix_is_complete_and_parser_safe"
+    },
+    {
+      "id": "87-C174-N-incremental-bigquery",
+      "verified": true,
+      "classification": "canonical_typed_domain",
+      "native_engine": "not_attested",
+      "evidence": "tests/task_174_materializations.rs::task_174_frozen_dialect_and_adapter_matrix_is_complete_and_parser_safe"
+    },
+    {
+      "id": "87-C174-N-incremental-ansi",
+      "verified": true,
+      "classification": "canonical_typed_domain",
+      "native_engine": "not_attested",
+      "evidence": "tests/task_174_materializations.rs::task_174_frozen_dialect_and_adapter_matrix_is_complete_and_parser_safe"
+    },
+    {
+      "id": "87-C174-N-incremental-duckdb",
+      "verified": true,
+      "classification": "canonical_typed_domain",
+      "native_engine": "not_attested",
+      "evidence": "tests/task_174_materializations.rs::task_174_frozen_dialect_and_adapter_matrix_is_complete_and_parser_safe"
+    },
+    {
+      "id": "87-C174-N-incremental-databricks",
+      "verified": true,
+      "classification": "canonical_typed_domain",
+      "native_engine": "not_attested",
+      "evidence": "tests/task_174_materializations.rs::task_174_frozen_dialect_and_adapter_matrix_is_complete_and_parser_safe"
+    }
+  ],
+  "adapter_cells": [
+    {
+      "id": "87-C174-P-view-direct_sql",
+      "verified": true,
+      "classification": "typed_filter_parity_only_no_dbt_materialization_evidence",
+      "evidence": "tests/task_174_materializations.rs::all_twenty_adapter_cells_are_classified_and_canonical_filter_proofs_match"
+    },
+    {
+      "id": "87-C174-P-view-dbt_manifest",
+      "verified": true,
+      "classification": "compiled_sql_and_declared_materialization",
+      "evidence": "tests/task_174_materializations.rs::all_twenty_adapter_cells_are_classified_and_canonical_filter_proofs_match"
+    },
+    {
+      "id": "87-C174-P-view-dbt_catalog",
+      "verified": true,
+      "classification": "catalog_backed_source_schema_and_manifest_intent",
+      "evidence": "tests/task_174_materializations.rs::all_twenty_adapter_cells_are_classified_and_canonical_filter_proofs_match"
+    },
+    {
+      "id": "87-C174-P-view-odcs",
+      "verified": true,
+      "classification": "typed_filter_parity_only_no_dbt_materialization_evidence",
+      "evidence": "tests/task_174_materializations.rs::all_twenty_adapter_cells_are_classified_and_canonical_filter_proofs_match"
+    },
+    {
+      "id": "87-C174-P-table-direct_sql",
+      "verified": true,
+      "classification": "typed_filter_parity_only_no_dbt_materialization_evidence",
+      "evidence": "tests/task_174_materializations.rs::all_twenty_adapter_cells_are_classified_and_canonical_filter_proofs_match"
+    },
+    {
+      "id": "87-C174-P-table-dbt_manifest",
+      "verified": true,
+      "classification": "compiled_sql_and_declared_materialization",
+      "evidence": "tests/task_174_materializations.rs::all_twenty_adapter_cells_are_classified_and_canonical_filter_proofs_match"
+    },
+    {
+      "id": "87-C174-P-table-dbt_catalog",
+      "verified": true,
+      "classification": "catalog_backed_source_schema_and_manifest_intent",
+      "evidence": "tests/task_174_materializations.rs::all_twenty_adapter_cells_are_classified_and_canonical_filter_proofs_match"
+    },
+    {
+      "id": "87-C174-P-table-odcs",
+      "verified": true,
+      "classification": "typed_filter_parity_only_no_dbt_materialization_evidence",
+      "evidence": "tests/task_174_materializations.rs::all_twenty_adapter_cells_are_classified_and_canonical_filter_proofs_match"
+    },
+    {
+      "id": "87-C174-P-ephemeral-direct_sql",
+      "verified": true,
+      "classification": "typed_filter_parity_only_no_dbt_materialization_evidence",
+      "evidence": "tests/task_174_materializations.rs::all_twenty_adapter_cells_are_classified_and_canonical_filter_proofs_match"
+    },
+    {
+      "id": "87-C174-P-ephemeral-dbt_manifest",
+      "verified": true,
+      "classification": "compiled_sql_and_declared_materialization",
+      "evidence": "tests/task_174_materializations.rs::all_twenty_adapter_cells_are_classified_and_canonical_filter_proofs_match"
+    },
+    {
+      "id": "87-C174-P-ephemeral-dbt_catalog",
+      "verified": true,
+      "classification": "catalog_backed_source_schema_and_manifest_intent",
+      "evidence": "tests/task_174_materializations.rs::all_twenty_adapter_cells_are_classified_and_canonical_filter_proofs_match"
+    },
+    {
+      "id": "87-C174-P-ephemeral-odcs",
+      "verified": true,
+      "classification": "typed_filter_parity_only_no_dbt_materialization_evidence",
+      "evidence": "tests/task_174_materializations.rs::all_twenty_adapter_cells_are_classified_and_canonical_filter_proofs_match"
+    },
+    {
+      "id": "87-C174-P-inline-direct_sql",
+      "verified": true,
+      "classification": "typed_filter_parity_only_no_dbt_materialization_evidence",
+      "evidence": "tests/task_174_materializations.rs::all_twenty_adapter_cells_are_classified_and_canonical_filter_proofs_match"
+    },
+    {
+      "id": "87-C174-P-inline-dbt_manifest",
+      "verified": true,
+      "classification": "compiled_sql_and_declared_materialization",
+      "evidence": "tests/task_174_materializations.rs::all_twenty_adapter_cells_are_classified_and_canonical_filter_proofs_match"
+    },
+    {
+      "id": "87-C174-P-inline-dbt_catalog",
+      "verified": true,
+      "classification": "catalog_backed_source_schema_and_manifest_intent",
+      "evidence": "tests/task_174_materializations.rs::all_twenty_adapter_cells_are_classified_and_canonical_filter_proofs_match"
+    },
+    {
+      "id": "87-C174-P-inline-odcs",
+      "verified": true,
+      "classification": "typed_filter_parity_only_no_dbt_materialization_evidence",
+      "evidence": "tests/task_174_materializations.rs::all_twenty_adapter_cells_are_classified_and_canonical_filter_proofs_match"
+    },
+    {
+      "id": "87-C174-N-incremental-direct_sql",
+      "verified": true,
+      "classification": "typed_filter_parity_only_no_dbt_materialization_evidence",
+      "evidence": "tests/task_174_materializations.rs::all_twenty_adapter_cells_are_classified_and_canonical_filter_proofs_match"
+    },
+    {
+      "id": "87-C174-N-incremental-dbt_manifest",
+      "verified": true,
+      "classification": "compiled_sql_and_declared_materialization",
+      "evidence": "tests/task_174_materializations.rs::all_twenty_adapter_cells_are_classified_and_canonical_filter_proofs_match"
+    },
+    {
+      "id": "87-C174-N-incremental-dbt_catalog",
+      "verified": true,
+      "classification": "catalog_backed_source_schema_and_manifest_intent",
+      "evidence": "tests/task_174_materializations.rs::all_twenty_adapter_cells_are_classified_and_canonical_filter_proofs_match"
+    },
+    {
+      "id": "87-C174-N-incremental-odcs",
+      "verified": true,
+      "classification": "typed_filter_parity_only_no_dbt_materialization_evidence",
+      "evidence": "tests/task_174_materializations.rs::all_twenty_adapter_cells_are_classified_and_canonical_filter_proofs_match"
+    }
+  ],
+  "native_duckdb_complete_bag_verified": true,
+  "complete_source": [
+    1,
+    1,
+    null,
+    0
+  ],
+  "complete_terminal": [
+    1,
+    1
+  ],
+  "true_ordinals": [
+    0,
+    1
+  ],
+  "false_ordinals": [
+    3
+  ],
+  "unknown_ordinals": [
+    2
+  ],
+  "inclusive_integer_lower_bound": 1,
+  "named_parser_boundaries": [
+    "87-C174-P-inline-ansi",
+    "87-C174-P-inline-hive"
+  ],
+  "full_rust_tests_verified": true,
+  "strict_clippy_verified": true,
+  "fmt_verified": true,
+  "docs_verified": true,
+  "no_default_features_verified": true,
+  "dbt_e2e_verified": true,
+  "active_schema_and_golden_verified": true,
+  "vendor_runtime": {
+    "classification": "Residual",
+    "owner": "TASK-174",
+    "release_disposition": "only DuckDB full-bag native engine verified; pin vendor version/session and supply complete before/after source and target evidence before claiming execution"
+  },
+  "incremental_target": {
+    "classification": "Residual",
+    "owner": "TASK-174",
+    "release_disposition": "manifest compiled SELECT does not attest incremental target or MERGE/INSERT; explicit unattested evidence retained"
+  },
+  "pinned_sql_tdg_tests": {
+    "status": "separate_release_integration_gate",
+    "basis": "sql-tdg Cargo.toml pins published sql-semantic-protocol 2.0.3 (default-features=false); its last main CI passed, but a consumer test against this unreleased candidate was not run",
+    "owner": "sql-tdg TASK-43 and protocol TASK-90/TASK-91",
+    "release_disposition": "must not claim candidate consumer compatibility or approve release"
+  },
+  "review": {
+    "standards": "pass",
+    "spec": "pass",
+    "independent_second_person": false,
+    "owner_directed_same_account_exception": true,
+    "second_axis_reviewed": true
+  },
+  "child_signed_off": true,
+  "parent_closed": false,
+  "release_approved": false
+}

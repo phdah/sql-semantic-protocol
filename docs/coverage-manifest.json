@@ -1,4 +1,54 @@
 {
+  "task_174_dbt_materialization_acceptance": {
+    "owner": "TASK-174",
+    "parent": "TASK-87",
+    "status": "done_bounded_owner_directed_review_exception",
+    "freeze": "docs/task-174-acceptance-freeze.json",
+    "freeze_version": 1,
+    "fixture_ids": [
+      "87-C174-P",
+      "87-C174-N"
+    ],
+    "mandatory_cases": 5,
+    "conditional_cases": 2,
+    "dialects_expected": 13,
+    "parser_cells": 65,
+    "adapter_cells": 20,
+    "mandatory_verified": true,
+    "independent_review_verified": false,
+    "parent_closed": false,
+    "release_approved": false,
+    "original_child_ac": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "original_parent_ac": [
+      1,
+      2,
+      3,
+      5,
+      6
+    ],
+    "public_api_oracles": [
+      "tests/task_174_materializations.rs"
+    ],
+    "full_ci_verified": true,
+    "two_axis_same_account_review_verified": true,
+    "owner_directed_review_process_exception": true,
+    "child_signed_off": true,
+    "all_13_parser_dialects_verified": true,
+    "adapter_parity_verified": true,
+    "native_duckdb_verified": true,
+    "acceptance_verification": "docs/task-174-acceptance-verification.json",
+    "acceptance_audit": "docs/task-174-acceptance-audit.md",
+    "code_head": "9b33de4c17abca831416ca84dd3fd5e90e7fce64",
+    "implementation_ci_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/42370737926",
+    "implementation_ci_jobs_passed": "9/9",
+    "pinned_consumer_disposition": "separate_unreleased_candidate_release_gate"
+  },
   "task_164_mixed_script_acceptance": {
     "owner": "TASK-164",
     "parent": "TASK-84",
