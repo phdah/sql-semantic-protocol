@@ -285,7 +285,10 @@ fn quoted_schema_qualified_names_do_not_collapse_onto_unquoted_aliases() {
         "SELECT k FROM raw.orders WHERE k >= 1",
     ));
     // One suffix resolves uniquely, but two physical schemas must not be guessed.
-    assert_eq!(catalog.resolve("orders", "postgresql", None).unwrap(), "raw.orders");
+    assert_eq!(
+        catalog.resolve("orders", "postgresql", None).unwrap(),
+        "raw.orders"
+    );
     let ambiguous = RelationCatalog::new(&["raw.orders", "archive.orders"]).unwrap();
     let error = ambiguous.resolve("orders", "postgresql", None).unwrap_err();
     assert_eq!(error.reference(), "orders");
@@ -409,7 +412,6 @@ fn direct_dbt_and_odcs_metadata_produce_one_canonical_typed_filter_domain() {
     assert_eq!(filtered_domain(&odcs_catalog, "duckdb", FILTER), expected);
 }
 
-
 #[test]
 fn quoted_dbt_source_identity_is_not_alias_collapsed() {
     let quoted = "\"Raw\".\"Orders\"";
@@ -460,7 +462,9 @@ fn catalog_is_authoritative_for_fk_only_target_types() {
     let catalog = parse_dbt_catalog(&catalog.to_string()).unwrap();
     let dialect = dialect_from_name("duckdb").unwrap();
     let bundle = analyze_dbt_artifacts(&manifest, &catalog, "duckdb", dialect.as_ref()).unwrap();
-    let parent = bundle.source_schemas().iter()
+    let parent = bundle
+        .source_schemas()
+        .iter()
         .find(|schema| schema.relation() == PARENTS)
         .expect("FK-only catalog target");
     assert_eq!(parent.source_kind(), Some(SchemaSourceKind::DbtCatalog));
@@ -468,7 +472,9 @@ fn catalog_is_authoritative_for_fk_only_target_types() {
         parent.columns()[0].data_type(),
         &DataType::SignedInteger { bits: Some(32) }
     );
-    let child = bundle.relation_constraints().iter()
+    let child = bundle
+        .relation_constraints()
+        .iter()
         .find(|set| set.relation() == ORDERS)
         .expect("FK relation");
     assert!(child.constraints().iter().any(|rule| matches!(
@@ -492,7 +498,9 @@ fn canonical_dialect_matrix_exercises_every_frozen_mandatory_case() {
     let mut seen = BTreeSet::new();
     let mut mandatory = 0;
     for case in cases {
-        if case["requirement"] != "mandatory" { continue; }
+        if case["requirement"] != "mandatory" {
+            continue;
+        }
         mandatory += 1;
         let id = case["id"].as_str().unwrap();
         let evidence = case["oracle"]["domain"].as_object().unwrap();
@@ -515,21 +523,30 @@ fn canonical_dialect_matrix_exercises_every_frozen_mandatory_case() {
 #[test]
 fn missing_fk_target_diagnostic_is_emitted_in_protocol_without_fake_fk() {
     let mut value = manifest_json();
-    value["nodes"]["test.task175.orders_parents"] =
-        relationship_test("source('raw', 'missing')");
+    value["nodes"]["test.task175.orders_parents"] = relationship_test("source('raw', 'missing')");
     let manifest = parsed(&value);
     let dialect = dialect_from_name("duckdb").unwrap();
     let bundle = analyze_dbt_manifest_with_schemas(&manifest, "duckdb", dialect.as_ref()).unwrap();
     let serialized: Value = serde_json::from_str(&to_bundle_json(&bundle)).unwrap();
     let constraints = serialized["relation_constraints"].as_array().unwrap();
-    let set = constraints.iter().find(|set| set["relation"] == ORDERS).unwrap();
-    assert!(set["constraints"].as_array().unwrap().iter().all(|rule| rule["kind"] != "foreign_key"));
-    assert!(set["diagnostics"].as_array().unwrap().iter().any(|diagnostic| {
-        diagnostic["code"] == "unresolved_relationship_target"
-    }));
+    let set = constraints
+        .iter()
+        .find(|set| set["relation"] == ORDERS)
+        .unwrap();
+    assert!(set["constraints"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .all(|rule| rule["kind"] != "foreign_key"));
+    assert!(set["diagnostics"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .any(|diagnostic| { diagnostic["code"] == "unresolved_relationship_target" }));
     // The unsupported metadata is not a reason to fabricate or discard a valid output.
     assert_lower_inclusive_one(&filtered_domain(
         &RelationCatalog::from_schemas(bundle.source_schemas()).unwrap(),
-        "duckdb", FILTER,
+        "duckdb",
+        FILTER,
     ));
 }
