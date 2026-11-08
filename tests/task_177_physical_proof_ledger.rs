@@ -119,7 +119,10 @@ fn all_task_177_native_and_typed_proof_gaps_are_explicitly_accounted_for() {
                 cell["native_exact_syntax"],
                 "duckdb_rejected_frozen_fetch_with_ties"
             );
-            assert!(!proved, "{id}: a fixture-specific LIMIT alternative is not the original");
+            assert!(
+                !proved,
+                "{id}: a fixture-specific LIMIT alternative is not the original"
+            );
         }
         if id == "88-C177-S083" {
             assert_eq!(
