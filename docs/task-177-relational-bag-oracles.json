@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "owner": "TASK-177",
-  "scope": "Exact registered SQL with complete independently pinned native DuckDB source/terminal bags; LEFT SEMI/ANTI forms are tracked as native syntax rejections (separate tests). BY NAME native output is valid but protocol domain/column composition remains explicitly unsupported. No 13-vendor/session or adapter certification.",
+  "scope": "Original TASK-66 exact SQL run against complete independently pinned NULL/duplicate DuckDB source and terminal bags. Native executable 99 cases, with two additional LEFT SEMI/ANTI exact-syntax rejections and equivalent native witnesses. BY NAME canonical composition is explicitly unsupported; typed-domain, vendor/session, and adapter proof remain separate unapproved gates.",
   "source_setup": "CREATE TABLE orders(id INTEGER, amount INTEGER); INSERT INTO orders VALUES (1,10),(1,10),(2,20),(3,NULL),(NULL,10),(4,-5); CREATE TABLE customers(id INTEGER, amount INTEGER); INSERT INTO customers VALUES (1,10),(1,10),(2,100),(5,-5),(NULL,10); CREATE TABLE products(id INTEGER); INSERT INTO products VALUES (1),(2),(3);",
   "source_bags": {
     "orders": [
@@ -64,7 +64,7 @@
       ]
     ]
   },
-  "case_count": 49,
+  "case_count": 99,
   "groups": {
     "joins": [
       "88-C177-S043",
@@ -120,6 +120,68 @@
       "88-C177-S096",
       "88-C177-S098",
       "88-C177-S099"
+    ],
+    "supergroups": [
+      "88-C177-S100",
+      "88-C177-S101",
+      "88-C177-S102",
+      "88-C177-S103",
+      "88-C177-S104"
+    ],
+    "windows": [
+      "88-C177-S106",
+      "88-C177-S107",
+      "88-C177-S108",
+      "88-C177-S109",
+      "88-C177-S110",
+      "88-C177-S111",
+      "88-C177-S112",
+      "88-C177-S113",
+      "88-C177-S121",
+      "88-C177-S122",
+      "88-C177-S123",
+      "88-C177-S124"
+    ],
+    "subqueries": [
+      "88-C177-S125",
+      "88-C177-S126",
+      "88-C177-S127",
+      "88-C177-S128",
+      "88-C177-S129",
+      "88-C177-S130",
+      "88-C177-S131",
+      "88-C177-S132",
+      "88-C177-S133",
+      "88-C177-S134",
+      "88-C177-S135",
+      "88-C177-S136",
+      "88-C177-S137",
+      "88-C177-S138",
+      "88-C177-S139"
+    ],
+    "scopes": [
+      "88-C177-S141",
+      "88-C177-S142",
+      "88-C177-S143",
+      "88-C177-S144",
+      "88-C177-S145",
+      "88-C177-S146",
+      "88-C177-S148",
+      "88-C177-S149",
+      "88-C177-S150",
+      "88-C177-S151",
+      "88-C177-S153"
+    ],
+    "pagination": [
+      "88-C177-S159",
+      "88-C177-S160",
+      "88-C177-S162"
+    ],
+    "table_sources": [
+      "88-C177-S168",
+      "88-C177-S170",
+      "88-C177-S171",
+      "88-C177-S172"
     ]
   },
   "cases": [
@@ -1395,6 +1457,1093 @@
       "expected_terminal_bag": [
         [
           5
+        ]
+      ],
+      "columns": 1
+    },
+    {
+      "id": "88-C177-S100",
+      "feature_id": "grouping.supergroups",
+      "variant": "ROLLUP",
+      "sql": "SELECT id, COUNT(*) FROM orders GROUP BY ROLLUP(id)",
+      "expected_terminal_bag": [
+        [
+          null,
+          1
+        ],
+        [
+          null,
+          6
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          2,
+          1
+        ],
+        [
+          3,
+          1
+        ],
+        [
+          4,
+          1
+        ]
+      ],
+      "columns": 2
+    },
+    {
+      "id": "88-C177-S101",
+      "feature_id": "grouping.supergroups",
+      "variant": "CUBE",
+      "sql": "SELECT id, COUNT(*) FROM orders GROUP BY CUBE(id)",
+      "expected_terminal_bag": [
+        [
+          null,
+          1
+        ],
+        [
+          null,
+          6
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          2,
+          1
+        ],
+        [
+          3,
+          1
+        ],
+        [
+          4,
+          1
+        ]
+      ],
+      "columns": 2
+    },
+    {
+      "id": "88-C177-S102",
+      "feature_id": "grouping.supergroups",
+      "variant": "GROUPING SETS",
+      "sql": "SELECT id, COUNT(*) FROM orders GROUP BY GROUPING SETS ((id), ())",
+      "expected_terminal_bag": [
+        [
+          null,
+          1
+        ],
+        [
+          null,
+          6
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          2,
+          1
+        ],
+        [
+          3,
+          1
+        ],
+        [
+          4,
+          1
+        ]
+      ],
+      "columns": 2
+    },
+    {
+      "id": "88-C177-S103",
+      "feature_id": "grouping.supergroups",
+      "variant": "GROUP BY ALL",
+      "sql": "SELECT id, COUNT(*) FROM orders GROUP BY ALL",
+      "expected_terminal_bag": [
+        [
+          null,
+          1
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          2,
+          1
+        ],
+        [
+          3,
+          1
+        ],
+        [
+          4,
+          1
+        ]
+      ],
+      "columns": 2
+    },
+    {
+      "id": "88-C177-S104",
+      "feature_id": "grouping.supergroups",
+      "variant": "GROUPING()",
+      "sql": "SELECT GROUPING(id), COUNT(*) FROM orders GROUP BY ROLLUP(id)",
+      "expected_terminal_bag": [
+        [
+          0,
+          1
+        ],
+        [
+          0,
+          1
+        ],
+        [
+          0,
+          1
+        ],
+        [
+          0,
+          1
+        ],
+        [
+          0,
+          2
+        ],
+        [
+          1,
+          6
+        ]
+      ],
+      "columns": 2
+    },
+    {
+      "id": "88-C177-S106",
+      "feature_id": "windows.row_number",
+      "variant": "ROW_NUMBER",
+      "sql": "SELECT ROW_NUMBER() OVER (ORDER BY id) FROM orders",
+      "expected_terminal_bag": [
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          3
+        ],
+        [
+          4
+        ],
+        [
+          5
+        ],
+        [
+          6
+        ]
+      ],
+      "columns": 1
+    },
+    {
+      "id": "88-C177-S107",
+      "feature_id": "windows.row_number",
+      "variant": "partitioned ordering",
+      "sql": "SELECT ROW_NUMBER() OVER (PARTITION BY id ORDER BY amount) FROM orders",
+      "expected_terminal_bag": [
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ]
+      ],
+      "columns": 1
+    },
+    {
+      "id": "88-C177-S108",
+      "feature_id": "windows.row_number",
+      "variant": "peers",
+      "sql": "SELECT ROW_NUMBER() OVER (ORDER BY amount) FROM orders",
+      "expected_terminal_bag": [
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          3
+        ],
+        [
+          4
+        ],
+        [
+          5
+        ],
+        [
+          6
+        ]
+      ],
+      "columns": 1
+    },
+    {
+      "id": "88-C177-S109",
+      "feature_id": "windows.row_number",
+      "variant": "stable ties",
+      "sql": "SELECT ROW_NUMBER() OVER (ORDER BY amount, id) FROM orders",
+      "expected_terminal_bag": [
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          3
+        ],
+        [
+          4
+        ],
+        [
+          5
+        ],
+        [
+          6
+        ]
+      ],
+      "columns": 1
+    },
+    {
+      "id": "88-C177-S110",
+      "feature_id": "windows.row_number",
+      "variant": "NULL ordering",
+      "sql": "SELECT ROW_NUMBER() OVER (ORDER BY amount NULLS LAST) FROM orders",
+      "expected_terminal_bag": [
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          3
+        ],
+        [
+          4
+        ],
+        [
+          5
+        ],
+        [
+          6
+        ]
+      ],
+      "columns": 1
+    },
+    {
+      "id": "88-C177-S111",
+      "feature_id": "windows.ranking",
+      "variant": "RANK",
+      "sql": "SELECT RANK() OVER (ORDER BY amount) FROM orders",
+      "expected_terminal_bag": [
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          2
+        ],
+        [
+          2
+        ],
+        [
+          5
+        ],
+        [
+          6
+        ]
+      ],
+      "columns": 1
+    },
+    {
+      "id": "88-C177-S112",
+      "feature_id": "windows.ranking",
+      "variant": "DENSE_RANK",
+      "sql": "SELECT DENSE_RANK() OVER (ORDER BY amount) FROM orders",
+      "expected_terminal_bag": [
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          2
+        ],
+        [
+          2
+        ],
+        [
+          3
+        ],
+        [
+          4
+        ]
+      ],
+      "columns": 1
+    },
+    {
+      "id": "88-C177-S113",
+      "feature_id": "windows.ranking",
+      "variant": "NTILE",
+      "sql": "SELECT NTILE(3) OVER (ORDER BY amount) FROM orders",
+      "expected_terminal_bag": [
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          2
+        ],
+        [
+          3
+        ],
+        [
+          3
+        ]
+      ],
+      "columns": 1
+    },
+    {
+      "id": "88-C177-S121",
+      "feature_id": "windows.qualify",
+      "variant": "QUALIFY aliases",
+      "sql": "SELECT ROW_NUMBER() OVER (ORDER BY id) AS rn FROM orders QUALIFY rn = 1",
+      "expected_terminal_bag": [
+        [
+          1
+        ]
+      ],
+      "columns": 1
+    },
+    {
+      "id": "88-C177-S122",
+      "feature_id": "windows.qualify",
+      "variant": "multiple predicates",
+      "sql": "SELECT ROW_NUMBER() OVER (ORDER BY id) AS rn FROM orders QUALIFY rn = 1 AND id > 0",
+      "expected_terminal_bag": [
+        [
+          1
+        ]
+      ],
+      "columns": 1
+    },
+    {
+      "id": "88-C177-S123",
+      "feature_id": "windows.qualify",
+      "variant": "grouped/window joins",
+      "sql": "SELECT o.id, COUNT(*) OVER (PARTITION BY c.id) AS n FROM orders o JOIN customers c ON o.id = c.id QUALIFY n > 1",
+      "expected_terminal_bag": [
+        [
+          1,
+          4
+        ],
+        [
+          1,
+          4
+        ],
+        [
+          1,
+          4
+        ],
+        [
+          1,
+          4
+        ]
+      ],
+      "columns": 2
+    },
+    {
+      "id": "88-C177-S124",
+      "feature_id": "windows.qualify",
+      "variant": "negative membership",
+      "sql": "SELECT ROW_NUMBER() OVER (ORDER BY id) AS rn FROM orders QUALIFY rn > 1",
+      "expected_terminal_bag": [
+        [
+          2
+        ],
+        [
+          3
+        ],
+        [
+          4
+        ],
+        [
+          5
+        ],
+        [
+          6
+        ]
+      ],
+      "columns": 1
+    },
+    {
+      "id": "88-C177-S125",
+      "feature_id": "subqueries.exists",
+      "variant": "EXISTS",
+      "sql": "SELECT id FROM orders WHERE EXISTS (SELECT 1 FROM customers)",
+      "expected_terminal_bag": [
+        [
+          null
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          3
+        ],
+        [
+          4
+        ]
+      ],
+      "columns": 1
+    },
+    {
+      "id": "88-C177-S126",
+      "feature_id": "subqueries.exists",
+      "variant": "NOT EXISTS",
+      "sql": "SELECT id FROM orders WHERE NOT EXISTS (SELECT 1 FROM customers)",
+      "expected_terminal_bag": [],
+      "columns": 1
+    },
+    {
+      "id": "88-C177-S127",
+      "feature_id": "subqueries.exists",
+      "variant": "correlated",
+      "sql": "SELECT o.id FROM orders o WHERE EXISTS (SELECT 1 FROM customers c WHERE c.id = o.id)",
+      "expected_terminal_bag": [
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ]
+      ],
+      "columns": 1
+    },
+    {
+      "id": "88-C177-S128",
+      "feature_id": "subqueries.exists",
+      "variant": "uncorrelated",
+      "sql": "SELECT id FROM orders WHERE EXISTS (SELECT 1 FROM customers)",
+      "expected_terminal_bag": [
+        [
+          null
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          3
+        ],
+        [
+          4
+        ]
+      ],
+      "columns": 1
+    },
+    {
+      "id": "88-C177-S129",
+      "feature_id": "subqueries.exists",
+      "variant": "nested",
+      "sql": "SELECT o.id FROM orders o WHERE EXISTS (SELECT 1 FROM customers c WHERE EXISTS (SELECT 1 FROM products p WHERE p.id = c.id))",
+      "expected_terminal_bag": [
+        [
+          null
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          3
+        ],
+        [
+          4
+        ]
+      ],
+      "columns": 1
+    },
+    {
+      "id": "88-C177-S130",
+      "feature_id": "subqueries.exists",
+      "variant": "zero rows",
+      "sql": "SELECT id FROM orders WHERE EXISTS (SELECT 1 FROM customers WHERE 1 = 0)",
+      "expected_terminal_bag": [],
+      "columns": 1
+    },
+    {
+      "id": "88-C177-S131",
+      "feature_id": "subqueries.in",
+      "variant": "IN",
+      "sql": "SELECT id FROM orders WHERE id IN (SELECT id FROM customers)",
+      "expected_terminal_bag": [
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ]
+      ],
+      "columns": 1
+    },
+    {
+      "id": "88-C177-S132",
+      "feature_id": "subqueries.in",
+      "variant": "NOT IN",
+      "sql": "SELECT id FROM orders WHERE id NOT IN (SELECT id FROM customers)",
+      "expected_terminal_bag": [],
+      "columns": 1
+    },
+    {
+      "id": "88-C177-S133",
+      "feature_id": "subqueries.in",
+      "variant": "nullable sets",
+      "sql": "SELECT id FROM orders WHERE id IN (1, NULL)",
+      "expected_terminal_bag": [
+        [
+          1
+        ],
+        [
+          1
+        ]
+      ],
+      "columns": 1
+    },
+    {
+      "id": "88-C177-S134",
+      "feature_id": "subqueries.in",
+      "variant": "duplicate keys",
+      "sql": "SELECT id FROM orders WHERE id IN (1,1,2)",
+      "expected_terminal_bag": [
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ]
+      ],
+      "columns": 1
+    },
+    {
+      "id": "88-C177-S135",
+      "feature_id": "subqueries.in",
+      "variant": "tuple IN",
+      "sql": "SELECT id FROM orders WHERE (id, amount) IN (SELECT id, amount FROM customers)",
+      "expected_terminal_bag": [
+        [
+          1
+        ],
+        [
+          1
+        ]
+      ],
+      "columns": 1
+    },
+    {
+      "id": "88-C177-S136",
+      "feature_id": "subqueries.scalar_quantified",
+      "variant": "scalar",
+      "sql": "SELECT (SELECT MAX(amount) FROM customers) AS scalar_value FROM orders",
+      "expected_terminal_bag": [
+        [
+          100
+        ],
+        [
+          100
+        ],
+        [
+          100
+        ],
+        [
+          100
+        ],
+        [
+          100
+        ],
+        [
+          100
+        ]
+      ],
+      "columns": 1
+    },
+    {
+      "id": "88-C177-S137",
+      "feature_id": "subqueries.scalar_quantified",
+      "variant": "ANY/ALL/SOME",
+      "sql": "SELECT id FROM orders WHERE amount > ANY (SELECT amount FROM customers)",
+      "expected_terminal_bag": [
+        [
+          null
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ]
+      ],
+      "columns": 1
+    },
+    {
+      "id": "88-C177-S138",
+      "feature_id": "subqueries.scalar_quantified",
+      "variant": "comparisons",
+      "sql": "SELECT id FROM orders WHERE amount < ALL (SELECT amount FROM customers)",
+      "expected_terminal_bag": [],
+      "columns": 1
+    },
+    {
+      "id": "88-C177-S139",
+      "feature_id": "subqueries.scalar_quantified",
+      "variant": "correlations",
+      "sql": "SELECT o.id FROM orders o WHERE o.amount > (SELECT MAX(c.amount) FROM customers c WHERE c.id = o.id)",
+      "expected_terminal_bag": [],
+      "columns": 1
+    },
+    {
+      "id": "88-C177-S141",
+      "feature_id": "scopes.cte",
+      "variant": "WITH",
+      "sql": "WITH x AS (SELECT id FROM orders) SELECT id FROM x",
+      "expected_terminal_bag": [
+        [
+          null
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          3
+        ],
+        [
+          4
+        ]
+      ],
+      "columns": 1
+    },
+    {
+      "id": "88-C177-S142",
+      "feature_id": "scopes.cte",
+      "variant": "chained CTE",
+      "sql": "WITH x AS (SELECT id FROM orders), y AS (SELECT id FROM x) SELECT id FROM y",
+      "expected_terminal_bag": [
+        [
+          null
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          3
+        ],
+        [
+          4
+        ]
+      ],
+      "columns": 1
+    },
+    {
+      "id": "88-C177-S143",
+      "feature_id": "scopes.cte",
+      "variant": "shadowing",
+      "sql": "WITH x AS (SELECT id FROM orders) SELECT * FROM (WITH x AS (SELECT id FROM customers) SELECT id FROM x) y",
+      "expected_terminal_bag": [
+        [
+          null
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          5
+        ]
+      ],
+      "columns": 1
+    },
+    {
+      "id": "88-C177-S144",
+      "feature_id": "scopes.cte",
+      "variant": "repeated references",
+      "sql": "WITH x AS (SELECT id FROM orders) SELECT a.id FROM x a JOIN x b ON a.id = b.id",
+      "expected_terminal_bag": [
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          3
+        ],
+        [
+          4
+        ]
+      ],
+      "columns": 1
+    },
+    {
+      "id": "88-C177-S145",
+      "feature_id": "scopes.cte",
+      "variant": "producer dependencies",
+      "sql": "WITH x AS (SELECT id FROM orders), y AS (SELECT id FROM x) SELECT id FROM y",
+      "expected_terminal_bag": [
+        [
+          null
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          3
+        ],
+        [
+          4
+        ]
+      ],
+      "columns": 1
+    },
+    {
+      "id": "88-C177-S146",
+      "feature_id": "scopes.recursive_cte",
+      "variant": "WITH RECURSIVE",
+      "sql": "WITH RECURSIVE t(n) AS (SELECT 1 UNION ALL SELECT n + 1 FROM t WHERE n < 3) SELECT n FROM t",
+      "expected_terminal_bag": [
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          3
+        ]
+      ],
+      "columns": 1
+    },
+    {
+      "id": "88-C177-S148",
+      "feature_id": "scopes.recursive_cte",
+      "variant": "bounded/unbounded recursion",
+      "sql": "WITH RECURSIVE t(n) AS (SELECT 1 UNION ALL SELECT n + 1 FROM t WHERE n < 3) SELECT n FROM t",
+      "expected_terminal_bag": [
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          3
+        ]
+      ],
+      "columns": 1
+    },
+    {
+      "id": "88-C177-S149",
+      "feature_id": "scopes.recursive_cte",
+      "variant": "termination",
+      "sql": "WITH RECURSIVE t(n) AS (SELECT 1 UNION ALL SELECT n + 1 FROM t WHERE n < 3) SELECT n FROM t",
+      "expected_terminal_bag": [
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          3
+        ]
+      ],
+      "columns": 1
+    },
+    {
+      "id": "88-C177-S150",
+      "feature_id": "scopes.derived_lateral",
+      "variant": "nested derived tables",
+      "sql": "SELECT d.id FROM (SELECT id FROM orders) d",
+      "expected_terminal_bag": [
+        [
+          null
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          3
+        ],
+        [
+          4
+        ]
+      ],
+      "columns": 1
+    },
+    {
+      "id": "88-C177-S151",
+      "feature_id": "scopes.derived_lateral",
+      "variant": "LATERAL",
+      "sql": "SELECT o.id FROM orders o, LATERAL (SELECT o.id) l",
+      "expected_terminal_bag": [
+        [
+          null
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          3
+        ],
+        [
+          4
+        ]
+      ],
+      "columns": 1
+    },
+    {
+      "id": "88-C177-S153",
+      "feature_id": "scopes.derived_lateral",
+      "variant": "alias scopes",
+      "sql": "SELECT d.id FROM (SELECT id FROM orders) d",
+      "expected_terminal_bag": [
+        [
+          null
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          3
+        ],
+        [
+          4
+        ]
+      ],
+      "columns": 1
+    },
+    {
+      "id": "88-C177-S159",
+      "feature_id": "ordering.pagination",
+      "variant": "LIMIT/OFFSET",
+      "sql": "SELECT id FROM orders ORDER BY id LIMIT 2 OFFSET 1",
+      "expected_terminal_bag": [
+        [
+          1
+        ],
+        [
+          2
+        ]
+      ],
+      "columns": 1
+    },
+    {
+      "id": "88-C177-S160",
+      "feature_id": "ordering.pagination",
+      "variant": "FETCH FIRST/WITH TIES",
+      "sql": "SELECT id FROM orders ORDER BY id FETCH FIRST 2 ROWS WITH TIES",
+      "expected_terminal_bag": [
+        [
+          1
+        ],
+        [
+          1
+        ]
+      ],
+      "columns": 1
+    },
+    {
+      "id": "88-C177-S162",
+      "feature_id": "ordering.pagination",
+      "variant": "row ordering stability",
+      "sql": "SELECT id FROM orders ORDER BY amount LIMIT 2",
+      "expected_terminal_bag": [
+        [
+          1
+        ],
+        [
+          4
+        ]
+      ],
+      "columns": 1
+    },
+    {
+      "id": "88-C177-S168",
+      "feature_id": "relations.advanced_sources",
+      "variant": "UNNEST",
+      "sql": "SELECT * FROM UNNEST(ARRAY[1, 2]) AS u(x)",
+      "expected_terminal_bag": [
+        [
+          1
+        ],
+        [
+          2
+        ]
+      ],
+      "columns": 1
+    },
+    {
+      "id": "88-C177-S170",
+      "feature_id": "relations.advanced_sources",
+      "variant": "table functions",
+      "sql": "SELECT * FROM GENERATE_SERIES(1, 3)",
+      "expected_terminal_bag": [
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          3
+        ]
+      ],
+      "columns": 1
+    },
+    {
+      "id": "88-C177-S171",
+      "feature_id": "relations.advanced_sources",
+      "variant": "generators",
+      "sql": "SELECT * FROM GENERATE_SERIES(1, 3)",
+      "expected_terminal_bag": [
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          3
+        ]
+      ],
+      "columns": 1
+    },
+    {
+      "id": "88-C177-S172",
+      "feature_id": "relations.advanced_sources",
+      "variant": "VALUES",
+      "sql": "VALUES (1), (2), (NULL)",
+      "expected_terminal_bag": [
+        [
+          null
+        ],
+        [
+          1
+        ],
+        [
+          2
         ]
       ],
       "columns": 1
