@@ -29,9 +29,8 @@ fn rows(value: &Value, field: &str) -> Vec<Vec<Option<i64>>> {
     serde_json::from_value(value[field].clone()).expect("explicit nullable integer row bag")
 }
 
-fn actual_rows(db: &Connection, sql: &str) -> Vec<Vec<Option<i64>>> {
+fn actual_rows(db: &Connection, sql: &str, columns: usize) -> Vec<Vec<Option<i64>>> {
     let mut statement = db.prepare(sql).expect("DuckDB statement");
-    let columns = statement.column_count();
     let rows = statement
         .query_map([], |row| {
             (0..columns)
@@ -122,11 +121,11 @@ fn pinned_predicate_variants_match_complete_duckdb_bags_and_null_partitions() {
         .execute_batch(text(&fixture, "source_setup"))
         .expect("explicit complete physical input bags");
     assert_eq!(
-        actual_rows(&connection, "SELECT id, amount FROM orders"),
+        actual_rows(&connection, "SELECT id, amount FROM orders", 2),
         expected_rows(&fixture, "orders_source_rows")
     );
     assert_eq!(
-        actual_rows(&connection, "SELECT id, amount FROM customers"),
+        actual_rows(&connection, "SELECT id, amount FROM customers", 2),
         expected_rows(&fixture, "customers_source_rows")
     );
 
@@ -148,7 +147,7 @@ fn pinned_predicate_variants_match_complete_duckdb_bags_and_null_partitions() {
         assert_eq!(case["sql"], sample["sql"], "{id}: source SQL drift");
         let sql = text(case, "sql");
         assert_eq!(
-            actual_rows(&connection, sql),
+            actual_rows(&connection, sql, 1),
             expected_rows(case, "expected_terminal_bag"),
             "{id}: original SQL whole-bag terminal oracle"
         );
@@ -163,7 +162,7 @@ fn pinned_predicate_variants_match_complete_duckdb_bags_and_null_partitions() {
             let instrumented =
                 format!("SELECT id, amount FROM {relation} WHERE ({predicate}) {kind}");
             assert_eq!(
-                actual_rows(&connection, &instrumented),
+                actual_rows(&connection, &instrumented, 2),
                 expected_rows(case, field),
                 "{id}: complete physical {kind} occurrence bag"
             );
@@ -173,7 +172,7 @@ fn pinned_predicate_variants_match_complete_duckdb_bags_and_null_partitions() {
         excluded.extend(expected_rows(case, "expected_unknown_rows"));
         excluded.sort();
         assert_eq!(
-            actual_rows(&connection, &not_true),
+            actual_rows(&connection, &not_true, 2),
             excluded,
             "{id}: FALSE and UNKNOWN must both be excluded"
         );
