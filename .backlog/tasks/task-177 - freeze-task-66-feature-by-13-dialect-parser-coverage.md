@@ -127,3 +127,26 @@ requirements documented in `docs/task-177-acceptance-audit.md`.
   semantic and physical oracles are absent for other variants, 55 parser
   and 116 explicitly Unsupported cells lack approved dispositions,
   and pinned consumer plus independent per-cell signoff remain pending.
+
+## Complete public canonical dialect differential and native drift oracles (2026-11-08)
+
+- The versioned `docs/task-177-equivalence-snapshot.json` fixes all 251
+  first-party samples across the 13 project dialect parsers, using complete
+  public canonical JSON (minus the explicit input dialect metadata). There
+  are 3,069 identical document cells, 23 different cells, 116 explicit
+  Unsupported cells, 55 parser-rejected cells, and zero analysis errors.
+- `docs/task-177-canonical-drift-boundaries.json` owns all 23 actual
+  complete-public-protocol differences across ROLLUP, CUBE, GROUPING(),
+  correlated LATERAL and STRUCT CAST. Exact first differing JSON paths,
+  source task owners and unapproved review dispositions are pinned.
+- `tests/task_177_cross_dialect_native_oracles.rs` executes original SQL
+  in DuckDB against complete nullable, duplicate source bags, verifying
+  ROLLUP/CUBE subtotal multiplicities, GROUPING source NULL identity,
+  LATERAL identity preservation and STRUCT scalar fields. It provides five
+  native original-SQL oracles in addition to the earlier 27 P/N cases.
+- **Still In Progress:** Cross-dialect structural agreement is not the
+  strongest exact typed-domain or physical outcome proof. The full mandatory
+  cell matrix, vendor/session laws, remaining representable adapter facts,
+  candidate-pinned sql-tdg verification and independent acceptance/release
+  reviewer remain outstanding. AC #1..#5 remain unchecked, TASK-88 open and
+  TASK-178 blocked pending separately reviewed child completion.
