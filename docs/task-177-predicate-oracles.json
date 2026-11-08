@@ -164,13 +164,9 @@
         ]
       ],
       "expected_projected_domain": {
-        "lower": [
-          10,
-          true
-        ],
-        "upper": [
-          10,
-          true
+        "kind": "set_include",
+        "values": [
+          10
         ]
       }
     },
@@ -370,7 +366,8 @@
         "upper": [
           10,
           false
-        ]
+        ],
+        "kind": "range"
       }
     },
     {
@@ -474,7 +471,8 @@
         "upper": [
           10,
           true
-        ]
+        ],
+        "kind": "range"
       }
     },
     {
@@ -566,7 +564,8 @@
           10,
           false
         ],
-        "upper": null
+        "upper": null,
+        "kind": "range"
       }
     },
     {
@@ -664,7 +663,8 @@
           10,
           true
         ],
-        "upper": null
+        "upper": null,
+        "kind": "range"
       }
     },
     {
@@ -762,7 +762,8 @@
         "upper": [
           10,
           true
-        ]
+        ],
+        "kind": "range"
       }
     },
     {
