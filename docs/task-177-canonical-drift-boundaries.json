@@ -23,7 +23,8 @@
       "owner": "TASK-177",
       "next_dialect_equivalence_owner": "TASK-178",
       "release_disposition": "blocking_not_approved_residual",
-      "native_vendor_execution": "not_certified"
+      "native_vendor_execution": "not_certified",
+      "first_difference_path": "$.graph.physical_source_plans[0].zero_output.cases"
     },
     {
       "id": "88-C177-S100-clickhouse",
@@ -42,7 +43,8 @@
       "owner": "TASK-177",
       "next_dialect_equivalence_owner": "TASK-178",
       "release_disposition": "blocking_not_approved_residual",
-      "native_vendor_execution": "not_certified"
+      "native_vendor_execution": "not_certified",
+      "first_difference_path": "$.graph.physical_source_plans[0].zero_output.cases"
     },
     {
       "id": "88-C177-S100-databricks",
@@ -61,7 +63,8 @@
       "owner": "TASK-177",
       "next_dialect_equivalence_owner": "TASK-178",
       "release_disposition": "blocking_not_approved_residual",
-      "native_vendor_execution": "not_certified"
+      "native_vendor_execution": "not_certified",
+      "first_difference_path": "$.graph.physical_source_plans[0].zero_output.cases"
     },
     {
       "id": "88-C177-S100-duckdb",
@@ -80,7 +83,8 @@
       "owner": "TASK-177",
       "next_dialect_equivalence_owner": "TASK-178",
       "release_disposition": "blocking_not_approved_residual",
-      "native_vendor_execution": "not_certified"
+      "native_vendor_execution": "not_certified",
+      "first_difference_path": "$.graph.physical_source_plans[0].zero_output.cases"
     },
     {
       "id": "88-C177-S100-generic",
@@ -99,7 +103,8 @@
       "owner": "TASK-177",
       "next_dialect_equivalence_owner": "TASK-178",
       "release_disposition": "blocking_not_approved_residual",
-      "native_vendor_execution": "not_certified"
+      "native_vendor_execution": "not_certified",
+      "first_difference_path": "$.graph.physical_source_plans[0].zero_output.cases"
     },
     {
       "id": "88-C177-S100-postgresql",
@@ -118,7 +123,8 @@
       "owner": "TASK-177",
       "next_dialect_equivalence_owner": "TASK-178",
       "release_disposition": "blocking_not_approved_residual",
-      "native_vendor_execution": "not_certified"
+      "native_vendor_execution": "not_certified",
+      "first_difference_path": "$.graph.physical_source_plans[0].zero_output.cases"
     },
     {
       "id": "88-C177-S100-snowflake",
@@ -137,7 +143,8 @@
       "owner": "TASK-177",
       "next_dialect_equivalence_owner": "TASK-178",
       "release_disposition": "blocking_not_approved_residual",
-      "native_vendor_execution": "not_certified"
+      "native_vendor_execution": "not_certified",
+      "first_difference_path": "$.graph.physical_source_plans[0].zero_output.cases"
     },
     {
       "id": "88-C177-S101-bigquery",
@@ -156,7 +163,8 @@
       "owner": "TASK-177",
       "next_dialect_equivalence_owner": "TASK-178",
       "release_disposition": "blocking_not_approved_residual",
-      "native_vendor_execution": "not_certified"
+      "native_vendor_execution": "not_certified",
+      "first_difference_path": "$.graph.physical_source_plans[0].zero_output.cases"
     },
     {
       "id": "88-C177-S101-clickhouse",
@@ -175,7 +183,8 @@
       "owner": "TASK-177",
       "next_dialect_equivalence_owner": "TASK-178",
       "release_disposition": "blocking_not_approved_residual",
-      "native_vendor_execution": "not_certified"
+      "native_vendor_execution": "not_certified",
+      "first_difference_path": "$.graph.physical_source_plans[0].zero_output.cases"
     },
     {
       "id": "88-C177-S101-databricks",
@@ -194,7 +203,8 @@
       "owner": "TASK-177",
       "next_dialect_equivalence_owner": "TASK-178",
       "release_disposition": "blocking_not_approved_residual",
-      "native_vendor_execution": "not_certified"
+      "native_vendor_execution": "not_certified",
+      "first_difference_path": "$.graph.physical_source_plans[0].zero_output.cases"
     },
     {
       "id": "88-C177-S101-duckdb",
@@ -213,7 +223,8 @@
       "owner": "TASK-177",
       "next_dialect_equivalence_owner": "TASK-178",
       "release_disposition": "blocking_not_approved_residual",
-      "native_vendor_execution": "not_certified"
+      "native_vendor_execution": "not_certified",
+      "first_difference_path": "$.graph.physical_source_plans[0].zero_output.cases"
     },
     {
       "id": "88-C177-S101-generic",
@@ -232,7 +243,8 @@
       "owner": "TASK-177",
       "next_dialect_equivalence_owner": "TASK-178",
       "release_disposition": "blocking_not_approved_residual",
-      "native_vendor_execution": "not_certified"
+      "native_vendor_execution": "not_certified",
+      "first_difference_path": "$.graph.physical_source_plans[0].zero_output.cases"
     },
     {
       "id": "88-C177-S101-postgresql",
@@ -251,7 +263,8 @@
       "owner": "TASK-177",
       "next_dialect_equivalence_owner": "TASK-178",
       "release_disposition": "blocking_not_approved_residual",
-      "native_vendor_execution": "not_certified"
+      "native_vendor_execution": "not_certified",
+      "first_difference_path": "$.graph.physical_source_plans[0].zero_output.cases"
     },
     {
       "id": "88-C177-S101-snowflake",
@@ -270,7 +283,8 @@
       "owner": "TASK-177",
       "next_dialect_equivalence_owner": "TASK-178",
       "release_disposition": "blocking_not_approved_residual",
-      "native_vendor_execution": "not_certified"
+      "native_vendor_execution": "not_certified",
+      "first_difference_path": "$.graph.physical_source_plans[0].zero_output.cases"
     },
     {
       "id": "88-C177-S104-bigquery",
@@ -289,7 +303,8 @@
       "owner": "TASK-177",
       "next_dialect_equivalence_owner": "TASK-178",
       "release_disposition": "blocking_not_approved_residual",
-      "native_vendor_execution": "not_certified"
+      "native_vendor_execution": "not_certified",
+      "first_difference_path": "$.graph.physical_source_plans[0].zero_output.cases"
     },
     {
       "id": "88-C177-S104-clickhouse",
@@ -308,7 +323,8 @@
       "owner": "TASK-177",
       "next_dialect_equivalence_owner": "TASK-178",
       "release_disposition": "blocking_not_approved_residual",
-      "native_vendor_execution": "not_certified"
+      "native_vendor_execution": "not_certified",
+      "first_difference_path": "$.graph.physical_source_plans[0].zero_output.cases"
     },
     {
       "id": "88-C177-S104-databricks",
@@ -327,7 +343,8 @@
       "owner": "TASK-177",
       "next_dialect_equivalence_owner": "TASK-178",
       "release_disposition": "blocking_not_approved_residual",
-      "native_vendor_execution": "not_certified"
+      "native_vendor_execution": "not_certified",
+      "first_difference_path": "$.graph.physical_source_plans[0].zero_output.cases"
     },
     {
       "id": "88-C177-S104-duckdb",
@@ -346,7 +363,8 @@
       "owner": "TASK-177",
       "next_dialect_equivalence_owner": "TASK-178",
       "release_disposition": "blocking_not_approved_residual",
-      "native_vendor_execution": "not_certified"
+      "native_vendor_execution": "not_certified",
+      "first_difference_path": "$.graph.physical_source_plans[0].zero_output.cases"
     },
     {
       "id": "88-C177-S104-generic",
@@ -365,7 +383,8 @@
       "owner": "TASK-177",
       "next_dialect_equivalence_owner": "TASK-178",
       "release_disposition": "blocking_not_approved_residual",
-      "native_vendor_execution": "not_certified"
+      "native_vendor_execution": "not_certified",
+      "first_difference_path": "$.graph.physical_source_plans[0].zero_output.cases"
     },
     {
       "id": "88-C177-S104-postgresql",
@@ -384,7 +403,8 @@
       "owner": "TASK-177",
       "next_dialect_equivalence_owner": "TASK-178",
       "release_disposition": "blocking_not_approved_residual",
-      "native_vendor_execution": "not_certified"
+      "native_vendor_execution": "not_certified",
+      "first_difference_path": "$.graph.physical_source_plans[0].zero_output.cases"
     },
     {
       "id": "88-C177-S104-snowflake",
@@ -403,7 +423,8 @@
       "owner": "TASK-177",
       "next_dialect_equivalence_owner": "TASK-178",
       "release_disposition": "blocking_not_approved_residual",
-      "native_vendor_execution": "not_certified"
+      "native_vendor_execution": "not_certified",
+      "first_difference_path": "$.graph.physical_source_plans[0].zero_output.cases"
     },
     {
       "id": "88-C177-S152-mssql",
@@ -423,7 +444,8 @@
       "owner": "TASK-177",
       "next_dialect_equivalence_owner": "TASK-178",
       "release_disposition": "blocking_not_approved_residual",
-      "native_vendor_execution": "not_certified"
+      "native_vendor_execution": "not_certified",
+      "first_difference_path": "$.graph.physical_nodes[1].operator_witnesses[0].qualifying.reason"
     },
     {
       "id": "88-C177-S179-duckdb",
@@ -442,7 +464,8 @@
       "owner": "TASK-177",
       "next_dialect_equivalence_owner": "TASK-178",
       "release_disposition": "blocking_not_approved_residual",
-      "native_vendor_execution": "not_certified"
+      "native_vendor_execution": "not_certified",
+      "first_difference_path": "$.inputs[0].statements[0].diagnostics[0].message"
     }
   ]
 }
