@@ -196,3 +196,12 @@ The [native DuckDB drift oracle](../tests/task_177_cross_dialect_native_oracles.
 covers grouped subtotal and real NULL groups, duplicate-key LATERAL source
 identities and STRUCT field values on complete pinned inputs. Protocol
 document equality is not native engine or strongest typed outcome proof.
+
+TASK-177 has [an explicit original-SQL physical proof ledger](task-177-physical-proof-ledger.json):
+125 of 251 distinct original SQL examples have first-party complete native DuckDB
+input and terminal bag oracles, and 126 still lack them. Two additional dedicated
+positive/Impossible goldens are separate from those examples. Only six
+portable examples have the narrower strongest typed SQL/dbt/ODCS adapter
+parity check. Three exact syntax forms are DuckDB-native rejections,
+and the name-aligned output case remains canonically unsupported. No
+independent per-cell signoff or vendor-session approval has been granted.
