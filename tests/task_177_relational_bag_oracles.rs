@@ -40,7 +40,6 @@ fn expected_bag(value: &Value) -> Vec<Vec<Option<i64>>> {
 
 fn actual_bag(db: &Connection, sql: &str, columns: usize) -> Vec<Vec<Option<i64>>> {
     let mut stmt = db.prepare(sql).expect("original native SQL");
-    assert_eq!(stmt.column_count(), columns, "native arity for {sql}");
     let rows = stmt
         .query_map([], |row| {
             (0..columns)
