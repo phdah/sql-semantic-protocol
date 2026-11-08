@@ -160,7 +160,10 @@ fn pinned_predicate_variants_match_complete_duckdb_bags_and_null_partitions() {
         let (actual_relation, actual_predicate) = outer_from_where
             .split_once(" WHERE ")
             .expect("outer source and predicate must be explicit");
-        assert_eq!(actual_relation, relation, "{id}: original source identity drift");
+        assert_eq!(
+            actual_relation, relation,
+            "{id}: original source identity drift"
+        );
         assert_eq!(
             actual_predicate, predicate,
             "{id}: diagnostic truth predicate must match original SQL"
