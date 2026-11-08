@@ -1247,7 +1247,7 @@
       "sql": "SELECT o.id FROM orders o WHERE EXISTS (SELECT 1 FROM customers c WHERE c.id = o.id)",
       "projection": "id",
       "source_relation": "orders o",
-      "predicate": "EXISTS (SELECT 1 FROM customers c",
+      "predicate": "EXISTS (SELECT 1 FROM customers c WHERE c.id = o.id)",
       "expected_selected_ids": [
         -1,
         1,
