@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "task_id": "TASK-177",
+  "dialects": [
+    "ansi",
+    "bigquery",
+    "clickhouse",
+    "databricks",
+    "duckdb",
+    "generic",
+    "hive",
+    "mssql",
+    "mysql",
+    "postgresql",
+    "redshift",
+    "snowflake",
+    "sqlite"
+  ],
+  "matrix": {},
+  "native_vendor_execution_certified": false,
+  "exact_typed_outcome_certified_for_every_variant": false,
+  "sql_tdg_candidate_pinned": false,
+  "classification": "C=complete canonical protocol identical to first analyzable dialect after removing dialect metadata; D=different complete canonical protocol; U=explicit unsupported; R=parser rejection; E=analysis error. Equality never certifies native execution or complete typed exactness."
+}
