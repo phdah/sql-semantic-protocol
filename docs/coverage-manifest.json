@@ -38,11 +38,11 @@
       "tests/task_177_parser_matrix.rs"
     ],
     "original_ac_status": {
-      "1": "in_progress:251_sql_samples_3263_fixed_parser_cells_but_typed_oracles_missing",
-      "2": "25_predicate_three_valued_native_bags;6_exact_typed_bounded_claims;remaining_mandatory_families_unverified",
-      "3": "27_native_positive_or_impossible_fixtures_total_in_pr_including_25_new_cases;cross_family_complete_oracles_missing",
-      "4": "13_dialect_parser_and_public_analyzer_snapshot;6_typed_sql_dbt_odcs_parity_cases;remaining_variants_pending",
-      "5": "final_head_CI_pending;no_default_test_download_flake_requires_independent_success"
+      "1": "in_progress:251_sample_sql_cases_and_3263_parser/canonical_cells_fixed;complete_source_terminal_typed_oracles_missing_for_most_variants",
+      "2": "two_earlier_positive/impossible_oracles_plus_25_predicate_and_5_group_lateral_struct_native_oracles;remaining_mandatory_typed_exactness_unverified",
+      "3": "32_native_duckdb_samples_with_5_new_grouping_lateral_struct_original_sql_oracles;no_automatic_vendor_claim",
+      "4": "all_3263_public_parser_and_canonical_comparisons_tested;23_drifts_with_exact_first_path_across_5_cases;55_parser_and_116_unsupported_boundaries_pending_review;sql_dbt_odcs_parity_on_6_typed_cases",
+      "5": "CI_pending_final_head;candidate_pinned_sql_tdg_unverified;independent_per_cell_signoff_missing"
     },
     "parser_observed": {
       "parsed": 3208,
@@ -63,7 +63,22 @@
     "predicate_full_bag_tests": "tests/task_177_predicate_oracles.rs",
     "predicate_typed_bound_cases": 6,
     "predicate_adapter_parity_test": "tests/task_177_predicate_adapter_parity.rs",
-    "adapter_parity_scope": "Six named equality/bound/BETWEEN variants with representable SQL dbt ODCS source metadata; not a universal 251-variant equivalence claim."
+    "adapter_parity_scope": "Six named equality/bound/BETWEEN variants with representable SQL dbt ODCS source metadata; not a universal 251-variant equivalence claim.",
+    "canonical_equivalence_snapshot": "docs/task-177-equivalence-snapshot.json",
+    "canonical_equivalence_test": "tests/task_177_canonical_equivalence.rs",
+    "canonical_equivalence_classifications": {
+      "same_full_protocol": 3069,
+      "full_protocol_drifts": 23,
+      "explicit_unsupported": 116,
+      "parser_rejected": 55,
+      "analysis_error": 0
+    },
+    "canonical_drift_registry": "docs/task-177-canonical-drift-boundaries.json",
+    "canonical_drift_affected_cases": 5,
+    "canonical_drift_path_evidence": "The first unequal public JSON field is pinned per drift; structural equivalence alone is not typed/native exactness.",
+    "cross_dialect_native_oracle_test": "tests/task_177_cross_dialect_native_oracles.rs",
+    "cross_dialect_native_oracle_cases": 5,
+    "native_duckdb_sample_cases_total": 32
   },
   "task_176_paired_adapter_write_acceptance": {
     "owner": "TASK-176",
