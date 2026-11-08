@@ -9,8 +9,8 @@
     "tests/task_177_cross_dialect_native_oracles.rs"
   ],
   "sample_count": 251,
-  "native_duckdb_complete_original_sql_samples": 126,
-  "native_duckdb_not_proven_original_sql_samples": 125,
+  "native_duckdb_complete_original_sql_samples": 125,
+  "native_duckdb_not_proven_original_sql_samples": 126,
   "six_case_sql_dbt_odcs_domain_parity": 6,
   "independent_signed_off_samples": 0,
   "two_additional_explicit_positive_impossible_goldens": "88-C177-P / 88-C177-N",
@@ -21,6 +21,9 @@
     ],
     "native_valid_but_canonical_output_unsupported": [
       "88-C177-S083"
+    ],
+    "exact_fetch_with_ties_syntax": [
+      "88-C177-S160"
     ]
   },
   "cases": [
@@ -1459,9 +1462,9 @@
       "id": "88-C177-S160",
       "feature_id": "ordering.pagination",
       "variant": "FETCH FIRST/WITH TIES",
-      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "native_duckdb_original_sql": "not_proven",
       "canonical_typed_adapter_parity": "not_proven",
-      "native_exact_syntax": "as_in_native_evidence",
+      "native_exact_syntax": "duckdb_rejected_frozen_fetch_with_ties",
       "independent_signoff": "blocked"
     },
     {
