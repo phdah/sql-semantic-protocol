@@ -3,6 +3,13 @@
   "task_id": "TASK-177",
   "source_snapshot": "docs/task-177-equivalence-snapshot.json",
   "boundary_description": "Normalized public protocol structural mismatch for identical SQL sample; classification is not native or semantic correctness. Explicitly unapproved until reviewed.",
+  "native_duckdb_original_sql_oracle_case_ids": [
+    "88-C177-S100",
+    "88-C177-S101",
+    "88-C177-S104",
+    "88-C177-S152",
+    "88-C177-S179"
+  ],
   "drift_cell_count": 23,
   "affected_case_count": 5,
   "cells": [
