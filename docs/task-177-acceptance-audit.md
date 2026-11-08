@@ -44,8 +44,8 @@ This audit does not approve TASK-177, TASK-88 or the v3 release gate.
   source-complete membership partitions. Six cases independently pin
   output equality sets or strict/inclusive interval bounds and compare
   the serialized canonical claims across all 13 portable parser dialects.
-  SQLite independently cross-checked representable three-valued membership
-  expectations; the Rust test executes DuckDB as the native oracle.
+  The Rust test compares independently pinned expected three-valued memberships
+  against actual native DuckDB execution; it does not attest SQLite or vendors.
 - `tests/task_177_predicate_adapter_parity.rs` compares those six
   exact typed-domain expectations from direct DDL-derived SQL metadata,
   dbt compiled manifest-declared source columns, and ODCS v3.2
