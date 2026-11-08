@@ -181,3 +181,18 @@ asserts those six bounded output facts through direct SQL DDL, dbt compiled
 model metadata and representable ODCS physical types. Unexecuted native vendor
 engines, remaining parser variants and arbitrary adapter materializations retain
 their original release-blocking review disposition.
+
+### TASK-177 full canonical dialect equivalence matrix
+
+The [complete 251-case x 13-dialect public comparison](task-177-equivalence-snapshot.json)
+is tested through the
+[public protocol equivalence regression](../tests/task_177_canonical_equivalence.rs).
+Of 3,263 samples, 3,069 produce identical full protocol documents (after
+normalizing the input dialect name), 23 produce differing documents, 116 are
+explicitly Unsupported and 55 are rejected by sqlparser. The
+[23-cell canonical drift register](task-177-canonical-drift-boundaries.json)
+pins first differing public JSON paths for five original variant samples.
+The [native DuckDB drift oracle](../tests/task_177_cross_dialect_native_oracles.rs)
+covers grouped subtotal and real NULL groups, duplicate-key LATERAL source
+identities and STRUCT field values on complete pinned inputs. Protocol
+document equality is not native engine or strongest typed outcome proof.
