@@ -36,6 +36,46 @@ fn normalized_json(protocol: &sql_semantic_protocol::Protocol) -> Value {
     document
 }
 
+// Explain a structural mismatch using the first differing public JSON path.
+// The path is diagnostic only; the full-document equality is still asserted.
+fn first_difference(left: &Value, right: &Value, path: &str) -> Option<String> {
+    if left == right {
+        return None;
+    }
+    match (left, right) {
+        (Value::Object(a), Value::Object(b)) => {
+            let keys: BTreeSet<_> = a.keys().chain(b.keys()).collect();
+            for key in keys {
+                let next = format!("{path}.{key}");
+                match (a.get(key), b.get(key)) {
+                    (Some(lhs), Some(rhs)) => {
+                        if let Some(diff) = first_difference(lhs, rhs, &next) {
+                            return Some(diff);
+                        }
+                    }
+                    _ => return Some(next),
+                }
+            }
+            None
+        }
+        (Value::Array(a), Value::Array(b)) => {
+            for index in 0..a.len().max(b.len()) {
+                let next = format!("{path}[{index}]");
+                match (a.get(index), b.get(index)) {
+                    (Some(lhs), Some(rhs)) => {
+                        if let Some(diff) = first_difference(lhs, rhs, &next) {
+                            return Some(diff);
+                        }
+                    }
+                    _ => return Some(next),
+                }
+            }
+            None
+        }
+        _ => Some(path.to_string()),
+    }
+}
+
 #[test]
 fn every_parsed_variant_has_a_pinned_public_protocol_equivalence_classification() {
     let source = read(SAMPLES);
@@ -95,12 +135,14 @@ fn every_parsed_variant_has_a_pinned_public_protocol_equivalence_classification(
                     result.push('C');
                 } else {
                     result.push('D');
+                    let reference_name = canonical_reference_dialect
+                        .as_deref()
+                        .expect("reference dialect set");
+                    let difference = first_difference(reference, &canonical, "$")
+                        .expect("unequal canonical protocol documents");
                     drift_examples.insert(
                         format!("{id}/{dialect_name}"),
-                        canonical_reference_dialect
-                            .as_deref()
-                            .expect("reference dialect set")
-                            .to_owned(),
+                        format!("{reference_name}: {difference}"),
                     );
                 }
             } else {
@@ -122,6 +164,28 @@ fn every_parsed_variant_has_a_pinned_public_protocol_equivalence_classification(
             serde_json::to_string(&observed).expect("sample classification JSON")
         );
     }
+    let expected_paths = pinned["difference_paths"]
+        .as_object()
+        .expect("versioned evidence records canonical structural drift paths");
+    if expected_paths.is_empty() {
+        panic!(
+            "TASK177_FIRST_DIFFS={}",
+            serde_json::to_string(&drift_examples).expect("deterministic diagnostic paths")
+        );
+    }
+    let pinned_paths: BTreeMap<_, _> = expected_paths
+        .iter()
+        .map(|(id, value)| {
+            (
+                id.to_owned(),
+                value.as_str().expect("first observed public path").to_owned(),
+            )
+        })
+        .collect();
+    assert_eq!(
+        drift_examples, pinned_paths,
+        "canonical SQL/dialect drift location changed; review before updating"
+    );
     let actual_ids: BTreeSet<_> = observed.keys().map(String::as_str).collect();
     let pinned_ids: BTreeSet<_> = expected.keys().map(String::as_str).collect();
     assert_eq!(actual_ids, pinned_ids, "versioned variant ID drift");
