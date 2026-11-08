@@ -1,109 +1,131 @@
-# TASK-177 acceptance-gap audit and scope boundary
+# TASK-177 acceptance audit, bounded evidence and release blockers
 
-**Task:** Freeze TASK-66 feature-by-13-dialect parser coverage, child 1/4 of
-TASK-88. **Implementation PR:** [#196](https://github.com/phdah/sql-semantic-protocol/pull/196).
-This audit does not approve TASK-177, TASK-88 or the v3 release gate.
+**Task:** [TASK-177](../.backlog/tasks/task-177%20-%20freeze-task-66-feature-by-13-dialect-parser-coverage.md), TASK-88 child 1/4.
+**Implementation:** [PR #196](https://github.com/phdah/sql-semantic-protocol/pull/196).
+**Disposition:** **In Progress**. This is not independent acceptance signoff.
 
-## Frozen inventory and independently executable evidence
+## Independent evidence boundaries
 
-- TASK-66 inventories 53 feature families and 251 named variants.
-  The TASK-177 v1 acceptance freeze fixes 3,263 distinct variant/dialect
-  identities with 156 already fixture-tested, 105 representative-only and
-  3,002 unverified **baseline** parser-evidence claims.
-- `docs/task-177-parser-samples.json` attaches an explicit SQL shape to
-  each of 251 original variant labels. `tests/task_177_parser_matrix.rs`
-  runs each shape through the actual project `sqlparser` dialect parser,
-  comparing all 3,263 accepted/rejected results to a fixed, independently CI-observed
-  `docs/task-177-parser-snapshot.json` rather than merely testing that a
-  classification was computed.
-- The observed sqlparser 0.58 result is **3,208 parsed** and **55 rejected**
-  across 12 SQL shapes, with rejected sample/dialect pairs, named limitations,
-  owner and still-pending review disposition frozen in
-  `docs/task-177-parser-boundaries.json`. A rejected sample is not proof
-  that an equivalent alternate dialect syntax is impossible.
-- A second, independently CI-observed public-library classification of
-  exactly those 3,263 sample/dialect cells records **3,092 returned protocol
-  documents**, **116 explicit Unsupported statement cells**, **55 parser
-  rejections** and **zero public-analysis errors**. Returning a document
-  may still contain Unknown domains or unproved outcome semantics.
-  `docs/task-177-analysis-boundaries.json` enumerates all 116 Unsupported
-  cells with feature-owner attribution and a blocking, unapproved
-  disposition; this cannot be counted as Exact support.
-- `88-C177-P` and `88-C177-N`, via
-  `tests/task_177_dialect_inventory.rs`, execute independent complete
-  DuckDB physical source and terminal bags, duplicate rows, SQL NULL,
-  TRUE/NOT TRUE and UNKNOWN, positive bounded inclusive/exclusive
-  output intervals, and impossible selection. These two oracles are
-  **not** a substitute for every unimplemented semantic family.
-- `docs/task-177-predicate-oracles.json` now pins 25 additional
-  original TASK-66 SQL samples (S001..S019, S027..S032) against one
-  complete 11-row integer/NULL DuckDB source plus a duplicate-key
-  7-row customer source. `tests/task_177_predicate_oracles.rs`
-  verifies original terminal bags and full TRUE/FALSE/UNKNOWN/NOT TRUE
-  physical occurrence bags, with explicit source identities and
-  source-complete membership partitions. Six cases independently pin
-  output equality sets or strict/inclusive interval bounds and compare
-  the serialized canonical claims across all 13 portable parser dialects.
-  The Rust test compares independently pinned expected three-valued memberships
-  against actual native DuckDB execution; it does not attest SQLite or vendors.
-- `tests/task_177_predicate_adapter_parity.rs` compares those six
-  exact typed-domain expectations from direct DDL-derived SQL metadata,
-  dbt compiled manifest-declared source columns, and ODCS v3.2
-  physicalType declarations where the `odcs` feature is enabled.
-  dbt producer execution remains `Unattested` rather than inventing
-  materialization evidence. No vendor SQL engine equivalence is inferred.
-- Existing `tests/task_176_adapter_write_parity.rs` and
-  `tests/task_173_metadata_authority.rs` already exercise representable
-  direct SQL, dbt manifest/catalog and ODCS facts against canonical
-  typed source identity, NULL/duplicate, and physical oracles. Their
-  certified source shapes can be reused, but neither test proves every
-  TASK-177 variant or native vendor execution.
+The versioned [TASK-177 acceptance freeze](task-177-acceptance-freeze.json) retains
+all **251** original TASK-66 named variants and **13** exposed dialect names,
+giving **3,263** distinct cells. Baseline fixture attribution remains
+**156 fixture-tested, 105 representative-only, 3,002 unverified**; it cannot
+be silently promoted to semantic proof.
+
+The [SQL sample registry](task-177-parser-samples.json) binds one explicit
+SQL example to each original variant and its original TASK-66 semantic owner.
+The [parser/analyzer snapshot](task-177-parser-snapshot.json), exercised by
+[`task_177_parser_matrix.rs`](../tests/task_177_parser_matrix.rs), records:
+
+| Result of 3,263 examples | Cells |
+| --- | ---: |
+| sqlparser accepts input | 3,208 |
+| sqlparser rejects input | 55 |
+| Public analyzer returns a protocol document | 3,092 |
+| Public analyzer returns an explicit Unsupported statement | 116 |
+| Public analyzer errors after parsing | 0 |
+
+The 55 parser-rejected sample/dialect pairs have named, unapproved
+[syntax boundaries](task-177-parser-boundaries.json). The 116 analyzer
+Unsupported pairs have named semantic owners and blocking
+[analysis boundaries](task-177-analysis-boundaries.json).
+A parser rejection is a limitation of **that exact sample**, not evidence
+that the dialect lacks every alternative feature syntax.
+
+The separate [full canonical protocol comparison](task-177-equivalence-snapshot.json),
+exercised by
+[`task_177_canonical_equivalence.rs`](../tests/task_177_canonical_equivalence.rs),
+compares the emitted public protocol for the **same SQL sample** across all
+13 dialect parsers, ignoring only the explicit input-dialect metadata.
+Its exhaustive cell classification is:
+
+| Complete public protocol comparison | Cells |
+| --- | ---: |
+| Same serialized protocol as the first analyzed dialect | 3,069 |
+| Different serialized protocol | 23 |
+| Explicit Unsupported | 116 |
+| Parser rejected | 55 |
+| Public analysis error | 0 |
+
+The **23** document differences affect **five SQL samples**, including
+ROLLUP, CUBE, GROUPING(), correlated LATERAL and STRUCT CAST. Every pair's
+exact first differing public JSON path, reference dialect, source SQL,
+semantic owner, required review and **unapproved** release disposition are
+pinned in the [drift register](task-177-canonical-drift-boundaries.json).
+The earliest divergences occur in grouped zero-output physical-source cases,
+one LATERAL witness reason and one STRUCT diagnostic. This is field-level
+triage evidence, **not** a reviewed explanation that the dialect laws differ.
+
+## Native physical oracles and adapter facts
+
+- `88-C177-P` and `88-C177-N` remain the original positive and
+  Impossible DuckDB goldens with complete physical source, output, NOT TRUE
+  and UNKNOWN bags and two portable bounded-domain assertions.
+- The [25 additional predicate cases](task-177-predicate-oracles.json),
+  exercised by
+  [`task_177_predicate_oracles.rs`](../tests/task_177_predicate_oracles.rs),
+  pin one complete NULL/duplicate source, seven concrete customer rows,
+  all full original SQL terminal bags and TRUE/FALSE/UNKNOWN/NOT TRUE
+  partitions. Six specified portable samples assert strongest typed
+  singleton or inclusive/exclusive interval domains in the public
+  protocol and across all 13 parser dialects.
+- The [SQL/dbt/ODCS parity test](../tests/task_177_predicate_adapter_parity.rs)
+  verifies those six exact typed metadata facts where the adapters can
+  provide them. dbt view materialization execution remains `Unattested`.
+  Previously reviewed TASK-176 and TASK-173 adapters remain valid only
+  for their own explicitly certified source shapes.
+- The [five canonical drift native oracles](../tests/task_177_cross_dialect_native_oracles.rs)
+  execute the *original* grouping, LATERAL and STRUCT sample SQL against
+  independent, complete DuckDB physical inputs, including nullable group
+  identifiers, duplicate keys, subtotal counts and structural field values.
+  Their **DuckDB** execution does not certify 13 vendor runtimes or the
+  correctness of the other dialect parser branches.
+
+This amounts to **32** task-owned original-or-explicit P/N native DuckDB
+sample cases, not 251 complete typed semantic certifications.
 
 ## Original child acceptance criteria
 
-| AC | Implemented evidence | Unresolved blocker |
+| AC | Executable evidence | Remaining blocker |
 | --- | --- | --- |
-| #1 Frozen complete acceptance | All 251 stable variant identities and 3,263 dialect identities; sample SQL per original variant; explicit baseline evidence and owners | Most variants do not have typed result domains, exact physical source/terminal snapshots and independently reviewed P/N/Impossible/Residual oracle classification. A combined label (e.g. EXCEPT/MINUS) also needs its syntactic subvariants before claiming full coverage |
-| #2 Strongest sound semantics | Canonical outcome-domain contract preserved; 3,092 document-return cells and
-116 explicit unsupported cells frozen without production semantic overclaims; two positive/impossible portable goldens plus 25 three-valued predicate bag oracles and six typed claims | Variant-level exact semantics, multiplicities, cross-source correlation and certified negative witness contracts remain owner-dependent and unverified for most of the exhaustive matrix |
-| #3 Native physical oracle | Two original P/N goldens plus 25 executed complete-source DuckDB predicate differential fixtures, with exact source and full terminal TRUE/FALSE/UNKNOWN/NOT TRUE bags and six independently typed range/set claims | Need independent typed and full-bag oracles for the remaining mandatory families beyond 27 scoped P/N cases; 25 focused predicate cases do not certify the other 226 variants |
-| #4 Dialect and adapters | Fixed 3,263-cell 13-dialect sample snapshot and 55 rejection boundary owners; two shared canonical/domain goldens, six typed output-domain SQL/dbt/ODCS parity cases and 25 native bag fixtures; prior adapter tests provide further known representable parity | 116 explicit Unsupported statement cells are blocking and cannot be silently
-reclassified as Exact or deferred. No exhaustive canonical-equivalence oracle
-across all parse-capable variants; no representable adapter parity matrix for every fact; vendor/session semantics require named independent evidence or reviewed conditional disposition |
-| #5 CI, consumer and independent signoff | PR CI covers Rust fmt, strict Clippy, tests/doc/no-default features, dbt E2E, active schema/goldens. Full pass must be linked to final commit | Independent review and candidate-pinned sql-tdg consumer are not attested for the entire mandatory matrix; preserve blocking statuses until verified |
+| #1 Complete finite freeze | 251 stable sample IDs, 3,263 parser and analyzer cells, full canonical comparison, explicit source tasks and boundaries | Complete independently reviewed typed-domain, full physical source/terminal and P/N/Impossible/Residual evidence is still absent for most mandatory variants, including combined synonyms and alternative syntax forms |
+| #2 Sound outcome semantics | 25 exact NULL/duplicate predicate membership oracles, six typed range/set claims, two original P/N goldens, five native grouping/LATERAL/STRUCT oracles | No independent strongest-domain and cross-source correlation certification for every remaining family or every parsed dialect; matching protocol documents can still contain Unknown or incomplete outcomes |
+| #3 Native differential proof | Complete DuckDB source and terminal bag comparisons for the 32 named cases; three-valued rejection, duplicate amplification, group subtotals and LATERAL identities | Need original complete physical/terminal and output-domain proofs for the other mandatory SQL variants, not parser acceptance, sample count or a cached internal recomputation |
+| #4 Dialects and adapter parity | Full 3,263-cell structural comparison, named 23-drifts/55-syntax/116-Unsupported boundaries, six SQL/dbt/ODCS typed-domain fact equivalences | Cross-dialect semantic divergences need reviewed resolution or explicit approved conditional laws, and representable adapter facts require the remaining family-level parity tests; native vendor/session execution remains unattested |
+| #5 Full verification, pinned consumer and independent signoff | GitHub Actions runs Rust default/no-default tests, fmt, strict Clippy, docs, dependencies and dbt Core E2E on each PR head | A candidate-SHA pinned sql-tdg conformance run and independent per-cell acceptance/release review have not been supplied; do not self-certify completion based on CI alone |
 
-## Review, version and release boundaries
+## Rules for releasing or signing off
 
-- **Parser result** is only a syntax boundary for one specific SQL example.
-  A parser rejection is not proof that the named feature is unsupported by
-  every dialect syntax, and a parser acceptance does not imply a canonical
-  semantic equivalence or valid native engine execution.
-- **Canonical Exact** must have independent typed bounds, NULL/inclusivity,
-  whole-bag source/terminal rows and both qualifying and NOT TRUE
-  membership proofs. Unproved exact variants are blockers, not silently
-  granted Residual approval.
-- **Conditional Residual** needs identified engine/session/metadata
-  assumptions, owner TASK-177/TASK-88/TASK-91 as appropriate, an independent
-  reviewing decision and a release disposition. No hypothetical vendor
-  result is marked Exact.
-- **Parent/child gates:** TASK-178 remains blocked until TASK-177 is fully
-  accepted, marked Done, and the PR is merged. TASK-88 parent and TASK-91
-  release remain independently unapproved.
+1. **Parsing is not proof.** `C` means only matching full public JSON
+   documents for one concrete SQL example. It does not prove exact semantics
+   or native vendor execution.
+2. **Unknown is not Exact.** Preserve conservative value domains,
+   full-source multiplicities and cross-source correlations. Every native
+   proof needs independently expected output, positive and rejected
+   membership and the same complete physical sources.
+3. **Conditional means reviewed.** A Residual/Impossible/vendor/session
+   boundary is not an approved release deferral until a reviewer checks
+   its evidence, owner, assumptions and consequence.
+4. **Source-independent canonical semantics.** SQL, dbt and ODCS must
+   agree for every equally representable fact. An unattested adapter
+   execution cannot be promoted to a completed materialization.
+5. **Parent and consumer remain separate.** TASK-178 is blocked until
+   this child meets its own AC and is merged. TASK-88 and TASK-91 are
+   independent parent/release gates. The protocol repository owns the
+   canonical suite; the sql-tdg **consumer pins this protocol candidate**,
+   never the other way around.
 
-## Two-axis review of implementation scope
+## Author-side standards/spec assessment
 
-**Standards:** Only test and documentation artifacts change; protocol
-serialization, parser dependency versions and canonical production logic
-are unchanged. Explicit ordered dialect and case identities prevent
-nondeterministic enumeration. Existing adapter and physical proof owners
-are reused; new proof is not copied into consumer-specific paths.
+**Standards:** Only tests, fixtures, documentation and bounded CI
+reliability logic change. Public protocol, crates, emitted schema and
+production domain semantics remain unchanged. Exact first-difference
+paths and source-backed expected rows guard against treating parser
+coverage as native semantics. Native engine tests use public library
+entry points and explicit physical inputs.
 
-**Spec:** The parser inventory deficiency is concretely reduced through
-251 SQL samples and executable per-dialect classification. However, the
-original task is much broader than a parser test, and its mandatory
-typed semantic, full physical oracle and parity evidence are **not**
-completed by the added registry. The PR must remain draft and the child
-must remain In Progress pending those requirements.
-
-**Review independence:** This is an author-side standards/spec audit,
-not an independent second reviewer or maintainer release disposition.
+**Spec:** The finite parser and canonical comparison freeze is complete
+as an observation, but independently certified semantic/physical and
+adapter equivalence for all mandatory families is **not**. The remaining
+AC require additional first-party oracle implementations and external
+review. This author-side assessment cannot replace an independent reviewer.
