@@ -39,10 +39,10 @@
     ],
     "original_ac_status": {
       "1": "in_progress:251_sql_samples_3263_fixed_parser_cells_but_typed_oracles_missing",
-      "2": "only_sampled_canonical_return_and_unsupported_classifications;full_typed_semantics_unverified",
-      "3": "two_goldens_verified_but_remaining_oracles_missing",
-      "4": "3263_fixed_parser_and_public_analyzer_cells;116_explicit_unsupported_blocking;55_parser_rejections_review_pending;adapter_exact_matrix_missing",
-      "5": "final_head_ci_and_independent_signoff_pending"
+      "2": "25_predicate_three_valued_native_bags;6_exact_typed_bounded_claims;remaining_mandatory_families_unverified",
+      "3": "27_native_positive_or_impossible_fixtures_total_in_pr_including_25_new_cases;cross_family_complete_oracles_missing",
+      "4": "13_dialect_parser_and_public_analyzer_snapshot;6_typed_sql_dbt_odcs_parity_cases;remaining_variants_pending",
+      "5": "final_head_CI_pending;no_default_test_download_flake_requires_independent_success"
     },
     "parser_observed": {
       "parsed": 3208,
@@ -57,7 +57,13 @@
       "parser_rejected": 55
     },
     "analyzer_status": "fixed_observation_not_semantic_proof",
-    "canonical_unsupported_registry": "docs/task-177-analysis-boundaries.json"
+    "canonical_unsupported_registry": "docs/task-177-analysis-boundaries.json",
+    "predicate_oracles": "docs/task-177-predicate-oracles.json",
+    "predicate_oracle_cases": 25,
+    "predicate_full_bag_tests": "tests/task_177_predicate_oracles.rs",
+    "predicate_typed_bound_cases": 6,
+    "predicate_adapter_parity_test": "tests/task_177_predicate_adapter_parity.rs",
+    "adapter_parity_scope": "Six named equality/bound/BETWEEN variants with representable SQL dbt ODCS source metadata; not a universal 251-variant equivalence claim."
   },
   "task_176_paired_adapter_write_acceptance": {
     "owner": "TASK-176",
