@@ -78,7 +78,12 @@
     "canonical_drift_path_evidence": "The first unequal public JSON field is pinned per drift; structural equivalence alone is not typed/native exactness.",
     "cross_dialect_native_oracle_test": "tests/task_177_cross_dialect_native_oracles.rs",
     "cross_dialect_native_oracle_cases": 5,
-    "native_duckdb_sample_cases_total": 32
+    "native_duckdb_sample_cases_total": 32,
+    "physical_proof_ledger": "docs/task-177-physical-proof-ledger.json",
+    "complete_native_original_sample_count": 125,
+    "missing_native_original_sample_count": 126,
+    "typed_sql_dbt_odcs_domain_parity_sample_count": 6,
+    "independent_signed_off_sample_count": 0
   },
   "task_176_paired_adapter_write_acceptance": {
     "owner": "TASK-176",
