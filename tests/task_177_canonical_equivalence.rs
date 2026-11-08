@@ -14,6 +14,7 @@ use sql_semantic_protocol::{analyze_sql, dialect_from_name, to_json, ProtocolSta
 const SAMPLES: &str = include_str!("../docs/task-177-parser-samples.json");
 const SNAPSHOT: &str = include_str!("../docs/task-177-parser-snapshot.json");
 const EQUIVALENCE: &str = include_str!("../docs/task-177-equivalence-snapshot.json");
+const DRIFT: &str = include_str!("../docs/task-177-canonical-drift-boundaries.json");
 
 fn read(source: &str) -> Value {
     serde_json::from_str(source).expect("versioned task evidence")
@@ -138,4 +139,48 @@ fn every_parsed_variant_has_a_pinned_public_protocol_equivalence_classification(
         false
     );
     assert_eq!(pinned["sql_tdg_candidate_pinned"], false);
+}
+
+#[test]
+fn every_dialect_canonical_mismatch_has_a_named_blocking_case_owner() {
+    let equivalence = read(EQUIVALENCE);
+    let boundaries = read(DRIFT);
+    let samples = read(SAMPLES);
+    assert_eq!(boundaries["task_id"], "TASK-177");
+    assert_eq!(boundaries["drift_cell_count"], 23);
+    assert_eq!(boundaries["affected_case_count"], 5);
+    assert_eq!(equivalence["observed_counts"]["distinct_protocol"], 23);
+
+    let dialects = rows(&equivalence, "dialects");
+    let mut required = BTreeSet::new();
+    for (id, mask) in equivalence["matrix"].as_object().expect("fixed sample scope") {
+        let mask = mask.as_str().expect("canonical equivalence mask");
+        for (index, status) in mask.chars().enumerate() {
+            if status == 'D' {
+                let dialect = dialects[index].as_str().expect("dialect label");
+                required.insert(format!("{id}-{dialect}"));
+            }
+        }
+    }
+
+    let mut described = BTreeSet::new();
+    for cell in rows(&boundaries, "cells") {
+        let id = cell["id"].as_str().expect("stable cell");
+        assert!(described.insert(id.to_owned()), "duplicate divergence");
+        assert_eq!(cell["classification"], "canonical_output_drift");
+        assert_eq!(cell["release_disposition"], "blocking_not_approved_residual");
+        assert_eq!(cell["native_vendor_execution"], "not_certified");
+        assert_eq!(cell["next_dialect_equivalence_owner"], "TASK-178");
+        assert!(!cell["reason"].as_str().expect("review rationale").is_empty());
+        let source_id = cell["case_id"].as_str().expect("source sample");
+        let original = rows(&samples, "cases")
+            .iter()
+            .find(|sample| sample["id"] == source_id)
+            .expect("TASK-66 source evidence");
+        assert_eq!(cell["sql"], original["sql"]);
+        assert_eq!(cell["source_task_owners"], original["semantic_owner"]);
+        assert_eq!(cell["feature_id"], original["feature_id"]);
+        assert_eq!(cell["variant"], original["variant"]);
+    }
+    assert_eq!(described, required, "every canonical divergence requires an owner");
 }
