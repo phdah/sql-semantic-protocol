@@ -57,7 +57,7 @@ fn verify_group(group: &str) {
     let samples = parse(SAMPLES);
     assert_eq!(fixture["schema_version"], 1);
     assert_eq!(fixture["owner"], "TASK-177");
-    assert_eq!(fixture["case_count"], 51);
+    assert_eq!(fixture["case_count"], 49);
     let groups = fixture["groups"]
         .as_object()
         .expect("three finite families");
@@ -66,7 +66,7 @@ fn verify_group(group: &str) {
         .values()
         .map(|ids| ids.as_array().expect("stable sample IDs").len())
         .sum();
-    assert_eq!(counted, 51, "a named native oracle was lost");
+    assert_eq!(counted, 49, "a named native oracle was lost");
 
     let db = Connection::open_in_memory().expect("native DuckDB");
     db.execute_batch(
@@ -122,11 +122,24 @@ fn verify_group(group: &str) {
         let [ProtocolStatement::Query(query)] = protocol.statements() else {
             panic!("{id}: query must have explicit canonical query semantics");
         };
-        assert_eq!(
-            query.output().columns().len(),
-            columns,
-            "{id}: native projection arity and canonical output must agree"
-        );
+        if case["canonical_output_boundary"] == "name_alignment_output_unsupported" {
+            assert_eq!(id, "88-C177-S083");
+            assert_eq!(query.output().columns().len(), 0);
+            let wire: Value = serde_json::from_str(
+                &sql_semantic_protocol::to_json(&protocol),
+            )
+            .expect("public protocol");
+            let diagnostics = wire["inputs"][0]["statements"][0]["diagnostics"]
+                .as_array()
+                .expect("explicit unsupported BY NAME diagnostic");
+            assert!(!diagnostics.is_empty(), "{id}: unsupported name alignment must be explained");
+        } else {
+            assert_eq!(
+                query.output().columns().len(),
+                columns,
+                "{id}: native projection arity and canonical output must agree"
+            );
+        }
     }
 }
 
@@ -143,4 +156,47 @@ fn native_set_operators_preserve_null_and_bag_multiplicity() {
 #[test]
 fn native_grouped_outputs_preserve_null_and_aggregate_multiplicity() {
     verify_group("grouping");
+}
+
+#[test]
+fn rejected_left_semi_and_anti_syntax_has_a_portable_native_equivalence_oracle() {
+    let samples = parse(SAMPLES);
+    let fixture = parse(FIXTURE);
+    let db = Connection::open_in_memory().expect("native DuckDB");
+    db.execute_batch(
+        fixture["source_setup"]
+            .as_str()
+            .expect("complete original physical sources"),
+    )
+    .expect("complete source fixture");
+    for (id, native, expected) in [
+        (
+            "88-C177-S054",
+            "SELECT l.id FROM orders l SEMI JOIN customers r ON l.id = r.id",
+            vec![vec![Some(1)], vec![Some(1)], vec![Some(2)]],
+        ),
+        (
+            "88-C177-S055",
+            "SELECT l.id FROM orders l ANTI JOIN customers r ON l.id = r.id",
+            vec![vec![None], vec![Some(3)], vec![Some(4)]],
+        ),
+    ] {
+        let original = samples["cases"]
+            .as_array()
+            .expect("TASK-66 registry")
+            .iter()
+            .find(|sample| sample["id"] == id)
+            .expect("stable original SQL")["sql"]
+            .as_str()
+            .expect("sample SQL");
+        assert!(
+            db.prepare(original).is_err(),
+            "{id}: LEFT SEMI/ANTI is an exact-syntax DuckDB rejection"
+        );
+        assert_eq!(
+            actual_bag(&db, native, 1),
+            expected,
+            "{id}: independently pinned equivalent native SEMI/ANTI output"
+        );
+    }
 }
