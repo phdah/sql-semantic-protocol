@@ -56,33 +56,48 @@ The earliest divergences occur in grouped zero-output physical-source cases,
 one LATERAL witness reason and one STRUCT diagnostic. This is field-level
 triage evidence, **not** a reviewed explanation that the dialect laws differ.
 
-## Native physical oracles and adapter facts
+## Native physical oracles, adapter facts and evidence ledger
 
-- `88-C177-P` and `88-C177-N` remain the original positive and
-  Impossible DuckDB goldens with complete physical source, output, NOT TRUE
-  and UNKNOWN bags and two portable bounded-domain assertions.
-- The [25 additional predicate cases](task-177-predicate-oracles.json),
-  exercised by
-  [`task_177_predicate_oracles.rs`](../tests/task_177_predicate_oracles.rs),
-  pin one complete NULL/duplicate source, seven concrete customer rows,
-  all full original SQL terminal bags and TRUE/FALSE/UNKNOWN/NOT TRUE
-  partitions. Six specified portable samples assert strongest typed
-  singleton or inclusive/exclusive interval domains in the public
-  protocol and across all 13 parser dialects.
-- The [SQL/dbt/ODCS parity test](../tests/task_177_predicate_adapter_parity.rs)
-  verifies those six exact typed metadata facts where the adapters can
-  provide them. dbt view materialization execution remains `Unattested`.
-  Previously reviewed TASK-176 and TASK-173 adapters remain valid only
-  for their own explicitly certified source shapes.
-- The [five canonical drift native oracles](../tests/task_177_cross_dialect_native_oracles.rs)
-  execute the *original* grouping, LATERAL and STRUCT sample SQL against
-  independent, complete DuckDB physical inputs, including nullable group
-  identifiers, duplicate keys, subtotal counts and structural field values.
-  Their **DuckDB** execution does not certify 13 vendor runtimes or the
-  correctness of the other dialect parser branches.
+The [case-level physical proof ledger](task-177-physical-proof-ledger.json)
+independently reconciles the 251 original TASK-66 sample identities against
+their **actual first-party native and typed-oracle owners**, without promoting
+missing proofs. It records **125 distinct original SQL examples** with a
+complete native DuckDB source and terminal bag, and **126** that still lack one.
+Two separate TASK-177 positive/Impossible goldens are not among the 251 sample
+IDs. The different native suites overlap on three ROLLUP/CUBE/GROUPING cases;
+overlapping executions must not inflate unique proof counts.
 
-This amounts to **32** task-owned original-or-explicit P/N native DuckDB
-sample cases, not 251 complete typed semantic certifications.
+- `88-C177-P` and `88-C177-N` remain the two separate positive and
+  Impossible goldens with full physical input/terminal/NOT TRUE/UNKNOWN bags.
+- The [25 original predicate cases](task-177-predicate-oracles.json)
+  retain complete NULL/duplicate source, truth partitions and terminal bags;
+  six of them have strongest typed interval/set and direct SQL/dbt/ODCS parity
+  checks in [the adapter test](../tests/task_177_predicate_adapter_parity.rs).
+  dbt view execution remains `Unattested`.
+- The [five drift native cases](../tests/task_177_cross_dialect_native_oracles.rs)
+  check actual grouped, LATERAL and STRUCT output shapes and occurrence bags.
+  This **does not** resolve the 23 dialect canonical drifts.
+- The [98 additional native exact-SQL fixture cases](task-177-relational-bag-oracles.json)
+  execute original SQL in DuckDB against literal, complete source bags with
+  nullable identifiers and duplicate occurrences. The
+  [executable tests](../tests/task_177_relational_bag_oracles.rs) cover
+  joins, UNION/INTERSECT/EXCEPT, grouping sets, windows/QUALIFY,
+  subqueries, CTE/derived scopes, pagination and table functions.
+  Three grouping cases overlap the five drift oracles.
+- Three exact SQL samples expose **DuckDB native syntax boundaries**:
+  `88-C177-S054` (LEFT SEMI), `88-C177-S055` (LEFT ANTI), and
+  `88-C177-S160` (FETCH FIRST WITH TIES). Native alternatives have
+  independently pinned outputs for their fixtures, but those alternatives
+  do **not** certify execution of the original syntax or vendor portability.
+  `88-C177-S083` (UNION BY NAME) executes natively but its canonical
+  name-based column alignment remains explicitly unsupported and diagnostic,
+  not an empty two-column semantic proof.
+- [The fail-closed ledger test](../tests/task_177_physical_proof_ledger.rs)
+  ensures 251 unique rows, 125 native original examples, 126 missing
+  examples, six narrower typed adapter cases and **zero** independent signoffs.
+
+These are concrete incremental oracles, **not** 251 fully certified canonical
+typed-domain, rejected-direction, SQL/dbt/ODCS and vendor/session cases.
 
 ## Original child acceptance criteria
 
@@ -90,9 +105,9 @@ sample cases, not 251 complete typed semantic certifications.
 | --- | --- | --- |
 | #1 Complete finite freeze | 251 stable sample IDs, 3,263 parser and analyzer cells, full canonical comparison, explicit source tasks and boundaries | Complete independently reviewed typed-domain, full physical source/terminal and P/N/Impossible/Residual evidence is still absent for most mandatory variants, including combined synonyms and alternative syntax forms |
 | #2 Sound outcome semantics | 25 exact NULL/duplicate predicate membership oracles, six typed range/set claims, two original P/N goldens, five native grouping/LATERAL/STRUCT oracles | No independent strongest-domain and cross-source correlation certification for every remaining family or every parsed dialect; matching protocol documents can still contain Unknown or incomplete outcomes |
-| #3 Native differential proof | Complete DuckDB source and terminal bag comparisons for the 32 named cases; three-valued rejection, duplicate amplification, group subtotals and LATERAL identities | Need original complete physical/terminal and output-domain proofs for the other mandatory SQL variants, not parser acceptance, sample count or a cached internal recomputation |
-| #4 Dialects and adapter parity | Full 3,263-cell structural comparison, named 23-drifts/55-syntax/116-Unsupported boundaries, six SQL/dbt/ODCS typed-domain fact equivalences | Cross-dialect semantic divergences need reviewed resolution or explicit approved conditional laws, and representable adapter facts require the remaining family-level parity tests; native vendor/session execution remains unattested |
-| #5 Full verification, pinned consumer and independent signoff | GitHub Actions runs Rust default/no-default tests, fmt, strict Clippy, docs, dependencies and dbt Core E2E on each PR head | A candidate-SHA pinned sql-tdg conformance run and independent per-cell acceptance/release review have not been supplied; do not self-certify completion based on CI alone |
+| #3 Native differential proof | 125 distinct original SQL sample source/terminal bag oracles plus two separate positive/Impossible goldens; three-valued rejection, duplicate amplification, group subtotals, ranking and subquery identities | 126 original SQL samples lack independent native complete-bag oracle; many executed cases also lack original rejected-direction and strongest canonical typed-domain proofs |
+| #4 Dialects and adapter parity | Full 3,263-cell structural comparison, named 23-drifts/55-syntax/116-Unsupported boundaries, six SQL/dbt/ODCS typed-domain fact equivalences | Cross-dialect semantic divergences need reviewed resolution or explicit approved conditional laws; three new DuckDB exact-syntax rejections are recorded. Remaining representable adapter facts need parity tests and other native vendor/session execution remains unattested |
+| #5 Full verification, pinned consumer and independent signoff | GitHub Actions runs Rust default/no-default tests, fmt, strict Clippy, docs, dependencies and dbt Core E2E on each PR head | The pinned sql-tdg run #335 passed 5/5 against the earlier 90aeea80 candidate, **not this updated PR head**. Re-pin and re-run on final head; independent per-cell acceptance/release review is still missing |
 
 ## Rules for releasing or signing off
 
