@@ -40,10 +40,10 @@ fn all_task_177_native_and_typed_proof_gaps_are_explicitly_accounted_for() {
     let mut verified = sample_ids(&relational, "cases", "id");
     verified.extend(sample_ids(&predicates, "cases", "id"));
     verified.extend(sample_ids(&drifts, "cells", "case_id"));
-    assert_eq!(verified.len(), 126, "a native oracle changed its scope");
+    assert_eq!(verified.len(), 125, "a native oracle changed its scope");
     assert!(verified.is_subset(&ids));
-    assert_eq!(ledger["native_duckdb_complete_original_sql_samples"], 126);
-    assert_eq!(ledger["native_duckdb_not_proven_original_sql_samples"], 125);
+    assert_eq!(ledger["native_duckdb_complete_original_sql_samples"], 125);
+    assert_eq!(ledger["native_duckdb_not_proven_original_sql_samples"], 126);
 
     let typed: BTreeSet<_> = [
         "88-C177-S001",
@@ -108,6 +108,13 @@ fn all_task_177_native_and_typed_proof_gaps_are_explicitly_accounted_for() {
             );
             assert!(!proved, "{id}: equivalent alternate SQL does not prove the original SQL");
         }
+        if id == "88-C177-S160" {
+            assert_eq!(
+                cell["native_exact_syntax"],
+                "duckdb_rejected_frozen_fetch_with_ties"
+            );
+            assert!(!proved, "{id}: a fixture-specific LIMIT alternative is not the original");
+        }
         if id == "88-C177-S083" {
             assert_eq!(
                 cell["native_exact_syntax"],
@@ -116,6 +123,6 @@ fn all_task_177_native_and_typed_proof_gaps_are_explicitly_accounted_for() {
         }
     }
     assert_eq!(observed, ids, "no original SQL variant may be omitted");
-    assert_eq!(native_count, 126);
+    assert_eq!(native_count, 125);
     assert_eq!(typed_count, 6);
 }
