@@ -26,7 +26,10 @@ fn rows<'a>(object: &'a Value, key: &str) -> &'a [Value] {
 fn normalized_json(protocol: &sql_semantic_protocol::Protocol) -> Value {
     let mut document: Value =
         serde_json::from_str(&to_json(protocol)).expect("public protocol serialization");
-    for input in document["inputs"].as_array_mut().expect("one emitted input") {
+    for input in document["inputs"]
+        .as_array_mut()
+        .expect("one emitted input")
+    {
         input["dialect"] = Value::Null;
     }
     document
@@ -109,7 +112,9 @@ fn every_parsed_variant_has_a_pinned_public_protocol_equivalence_classification(
         observed.insert(id.to_owned(), result);
     }
 
-    let expected = pinned["matrix"].as_object().expect("frozen equivalence matrix");
+    let expected = pinned["matrix"]
+        .as_object()
+        .expect("frozen equivalence matrix");
     if expected.is_empty() {
         panic!(
             "TASK177_EQUIVALENCE_MATRIX={}",
@@ -122,10 +127,15 @@ fn every_parsed_variant_has_a_pinned_public_protocol_equivalence_classification(
     for (id, mask) in &observed {
         let expected_mask = expected[id].as_str().expect("pinned row");
         assert_eq!(mask, expected_mask, "{id}: full protocol equivalence drift");
-        assert!(mask.chars().all(|status| matches!(status, 'C' | 'D' | 'E' | 'U' | 'R')));
+        assert!(mask
+            .chars()
+            .all(|status| matches!(status, 'C' | 'D' | 'E' | 'U' | 'R')));
     }
     assert_eq!(observed.len(), 251);
     assert_eq!(pinned["native_vendor_execution_certified"], false);
-    assert_eq!(pinned["exact_typed_outcome_certified_for_every_variant"], false);
+    assert_eq!(
+        pinned["exact_typed_outcome_certified_for_every_variant"],
+        false
+    );
     assert_eq!(pinned["sql_tdg_candidate_pinned"], false);
 }
