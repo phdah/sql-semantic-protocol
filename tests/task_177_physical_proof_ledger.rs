@@ -39,7 +39,19 @@ fn all_task_177_native_and_typed_proof_gaps_are_explicitly_accounted_for() {
 
     let mut verified = sample_ids(&relational, "cases", "id");
     verified.extend(sample_ids(&predicates, "cases", "id"));
-    verified.extend(sample_ids(&drifts, "cells", "case_id"));
+    // Canonical document drift does not imply a native DuckDB execution proof.
+    // The five named oracle IDs are independently checked against the exact SQL
+    // physically executed by tests/task_177_cross_dialect_native_oracles.rs.
+    let drift_oracles: BTreeSet<String> = drifts["native_duckdb_original_sql_oracle_case_ids"]
+        .as_array()
+        .expect("explicit original SQL native proof registry")
+        .iter()
+        .map(|id| id.as_str().expect("case ID").to_string())
+        .collect();
+    let drift_cases = sample_ids(&drifts, "cells", "case_id");
+    assert_eq!(drift_oracles.len(), 5);
+    assert!(drift_oracles.is_subset(&drift_cases));
+    verified.extend(drift_oracles);
     assert_eq!(verified.len(), 125, "a native oracle changed its scope");
     assert!(verified.is_subset(&ids));
     assert_eq!(ledger["native_duckdb_complete_original_sql_samples"], 125);
