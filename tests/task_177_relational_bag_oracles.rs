@@ -57,16 +57,16 @@ fn verify_group(group: &str) {
     let samples = parse(SAMPLES);
     assert_eq!(fixture["schema_version"], 1);
     assert_eq!(fixture["owner"], "TASK-177");
-    assert_eq!(fixture["case_count"], 49);
+    assert_eq!(fixture["case_count"], 99);
     let groups = fixture["groups"]
         .as_object()
-        .expect("three finite families");
-    assert_eq!(groups.len(), 3);
+        .expect("nine finite families");
+    assert_eq!(groups.len(), 9);
     let counted: usize = groups
         .values()
         .map(|ids| ids.as_array().expect("stable sample IDs").len())
         .sum();
-    assert_eq!(counted, 49, "a named native oracle was lost");
+    assert_eq!(counted, 99, "a named native oracle was lost");
 
     let db = Connection::open_in_memory().expect("native DuckDB");
     db.execute_batch(
@@ -200,4 +200,34 @@ fn rejected_left_semi_and_anti_syntax_has_a_portable_native_equivalence_oracle()
             "{id}: independently pinned equivalent native SEMI/ANTI output"
         );
     }
+}
+
+#[test]
+fn native_supergroups_have_exact_null_and_subtotal_bags() {
+    verify_group("supergroups");
+}
+
+#[test]
+fn native_window_and_qualify_outputs_have_exact_bags() {
+    verify_group("windows");
+}
+
+#[test]
+fn native_subqueries_preserve_3vl_and_correlated_membership() {
+    verify_group("subqueries");
+}
+
+#[test]
+fn native_cte_and_derived_scopes_have_exact_terminal_bags() {
+    verify_group("scopes");
+}
+
+#[test]
+fn native_limit_and_fetch_rows_match_complete_sources() {
+    verify_group("pagination");
+}
+
+#[test]
+fn native_unnest_values_and_generators_have_exact_bags() {
+    verify_group("table_sources");
 }
