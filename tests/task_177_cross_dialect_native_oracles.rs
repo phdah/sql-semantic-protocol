@@ -78,8 +78,7 @@ fn native_grouping_lateral_and_struct_cases_have_complete_source_terminal_bag_or
         .collect();
     let executed: BTreeSet<_> = oracle_ids.into_iter().collect();
     assert_eq!(
-        registered,
-        executed,
+        registered, executed,
         "a drift is not native proof unless this test executes its original SQL"
     );
 
