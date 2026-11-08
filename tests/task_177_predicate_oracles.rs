@@ -116,7 +116,7 @@ fn pinned_predicate_variants_match_complete_duckdb_bags_and_null_partitions() {
         expected_rows(&fixture, "customers_source_rows")
     );
 
-    let expected_ids: BTreeSet<i64> = rows(&fixture, "orders_source_rows")
+    let source_ids: BTreeSet<i64> = rows(&fixture, "orders_source_rows")
         .iter()
         .map(|row| row[0].expect("source row ID"))
         .collect();
@@ -176,7 +176,7 @@ fn pinned_predicate_variants_match_complete_duckdb_bags_and_null_partitions() {
             .copied()
             .chain(unknown_ids)
             .collect();
-        assert_eq!(partition, expected_ids, "{id}: physical source partition");
+        assert_eq!(partition, source_ids, "{id}: physical source partition");
 
         let dialect = dialect_from_name("duckdb").expect("DuckDB");
         let protocol = analyze_sql(sql, "duckdb", dialect.as_ref())
