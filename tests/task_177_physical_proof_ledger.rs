@@ -61,9 +61,12 @@ fn all_task_177_native_and_typed_proof_gaps_are_explicitly_accounted_for() {
     let mut observed = BTreeSet::new();
     let mut native_count = 0;
     let mut typed_count = 0;
-    for cell in ledger["cases"].as_array().expect("all 251 case obligations") {
+    for cell in ledger["cases"]
+        .as_array()
+        .expect("all 251 case obligations")
+    {
         let id = cell["id"].as_str().expect("ID");
-        assert!(observed.insert(id), "duplicate ledger cell {id}");
+        assert!(observed.insert(id.to_owned()), "duplicate ledger cell {id}");
         let sample = samples["cases"]
             .as_array()
             .expect("source registry")
@@ -106,7 +109,10 @@ fn all_task_177_native_and_typed_proof_gaps_are_explicitly_accounted_for() {
                 cell["native_exact_syntax"],
                 "duckdb_rejected_alternate_verified"
             );
-            assert!(!proved, "{id}: equivalent alternate SQL does not prove the original SQL");
+            assert!(
+                !proved,
+                "{id}: equivalent alternate SQL does not prove the original SQL"
+            );
         }
         if id == "88-C177-S160" {
             assert_eq!(
