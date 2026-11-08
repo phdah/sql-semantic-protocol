@@ -3,6 +3,8 @@
 //! goldens; dialect equivalence remains blocked until canonical explanations
 //! are reviewed, even when one engine executes the SQL successfully.
 
+use std::collections::BTreeSet;
+
 use duckdb::Connection;
 use serde_json::Value;
 use sql_semantic_protocol::{analyze_sql, dialect_from_name, to_json, ProtocolStatement};
@@ -60,6 +62,26 @@ fn native_grouping_lateral_and_struct_cases_have_complete_source_terminal_bag_or
     assert_eq!(drifts["drift_cell_count"], 23);
     assert_eq!(drifts["affected_case_count"], 5);
 
+    // The proof ledger may count only original SQL that this test executes.
+    let oracle_ids = [
+        "88-C177-S100",
+        "88-C177-S101",
+        "88-C177-S104",
+        "88-C177-S152",
+        "88-C177-S179",
+    ];
+    let registered: BTreeSet<_> = drifts["native_duckdb_original_sql_oracle_case_ids"]
+        .as_array()
+        .expect("recorded native original-SQL oracles")
+        .iter()
+        .map(|item| item.as_str().expect("sample ID"))
+        .collect();
+    assert_eq!(
+        registered,
+        oracle_ids.into_iter().collect(),
+        "a drift is not native proof unless this test executes its original SQL"
+    );
+
     let db = Connection::open_in_memory().expect("native DuckDB");
     db.execute_batch(
         "CREATE TABLE orders (id INTEGER, amount INTEGER);
@@ -107,13 +129,7 @@ fn native_grouping_lateral_and_struct_cases_have_complete_source_terminal_bag_or
     assert_eq!(row.get::<_, String>(1).expect("second STRUCT field"), "a");
     assert!(result.next().expect("exhausted STRUCT result").is_none());
 
-    for id in [
-        "88-C177-S100",
-        "88-C177-S101",
-        "88-C177-S104",
-        "88-C177-S152",
-        "88-C177-S179",
-    ] {
+    for id in oracle_ids {
         let dialect = dialect_from_name("duckdb").expect("public DuckDB dialect");
         let protocol = analyze_sql(original_sql(&samples, id), "duckdb", dialect.as_ref())
             .unwrap_or_else(|error| panic!("{id}: public protocol must parse: {error}"));
