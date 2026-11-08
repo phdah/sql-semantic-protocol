@@ -58,9 +58,7 @@ fn verify_group(group: &str) {
     assert_eq!(fixture["schema_version"], 1);
     assert_eq!(fixture["owner"], "TASK-177");
     assert_eq!(fixture["case_count"], 99);
-    let groups = fixture["groups"]
-        .as_object()
-        .expect("nine finite families");
+    let groups = fixture["groups"].as_object().expect("nine finite families");
     assert_eq!(groups.len(), 9);
     let counted: usize = groups
         .values()
