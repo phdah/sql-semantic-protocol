@@ -7,8 +7,7 @@
 use std::collections::{BTreeMap, BTreeSet};
 
 use serde_json::Value;
-use sql_semantic_protocol::{analyze_sql, dialect_from_name, ProtocolStatement};
-use sqlparser::parser::Parser;
+use sql_semantic_protocol::{analyze_sql, dialect_from_name, Error, ProtocolStatement};
 
 const CASES: &str = include_str!("../docs/task-177-parser-samples.json");
 const COVERAGE: &str = include_str!("../docs/coverage-manifest.json");
@@ -105,11 +104,15 @@ fn parser_dialect_matrix_matches_fixed_non_tautological_snapshot() {
         for dialect_name in dialects {
             let name = dialect_name.as_str().expect("dialect name");
             let dialect = dialect_from_name(name).expect("public dialect");
-            let outcome = Parser::parse_sql(dialect.as_ref(), sql);
-            mask.push(match outcome {
-                Ok(statements) if !statements.is_empty() => 'P',
-                _ => 'R',
-            });
+            // A successful parse can still fail semantic analysis. Match
+            // the public error boundary instead of importing sqlparser
+            // into this integration test.
+            let status = match analyze_sql(sql, name, dialect.as_ref()) {
+                Err(Error::Parse(_)) => 'R',
+                Ok(_) | Err(Error::Analysis(_)) => 'P',
+                Err(_) => panic!("{id}/{name}: unclassified public analysis error"),
+            };
+            mask.push(status);
         }
         observed.insert(id.to_owned(), mask);
     }
