@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "owner": "TASK-177",
-  "scope": "Original TASK-66 SQL variants with independent complete DuckDB terminal bag goldens; no implied strongest domain, vendor equivalence, or adapter certification",
+  "scope": "Exact registered SQL with complete independently pinned native DuckDB source/terminal bags; LEFT SEMI/ANTI forms are tracked as native syntax rejections (separate tests). BY NAME native output is valid but protocol domain/column composition remains explicitly unsupported. No 13-vendor/session or adapter certification.",
   "source_setup": "CREATE TABLE orders(id INTEGER, amount INTEGER); INSERT INTO orders VALUES (1,10),(1,10),(2,20),(3,NULL),(NULL,10),(4,-5); CREATE TABLE customers(id INTEGER, amount INTEGER); INSERT INTO customers VALUES (1,10),(1,10),(2,100),(5,-5),(NULL,10); CREATE TABLE products(id INTEGER); INSERT INTO products VALUES (1),(2),(3);",
   "source_bags": {
     "orders": [
@@ -64,7 +64,7 @@
       ]
     ]
   },
-  "case_count": 51,
+  "case_count": 49,
   "groups": {
     "joins": [
       "88-C177-S043",
@@ -78,8 +78,6 @@
       "88-C177-S051",
       "88-C177-S052",
       "88-C177-S053",
-      "88-C177-S054",
-      "88-C177-S055",
       "88-C177-S056",
       "88-C177-S057",
       "88-C177-S058",
@@ -438,42 +436,6 @@
         ],
         [
           2
-        ],
-        [
-          3
-        ],
-        [
-          4
-        ]
-      ],
-      "columns": 1
-    },
-    {
-      "id": "88-C177-S054",
-      "feature_id": "joins.semi_anti",
-      "variant": "SEMI",
-      "sql": "SELECT l.id FROM orders l LEFT SEMI JOIN customers r ON l.id = r.id",
-      "expected_terminal_bag": [
-        [
-          1
-        ],
-        [
-          1
-        ],
-        [
-          2
-        ]
-      ],
-      "columns": 1
-    },
-    {
-      "id": "88-C177-S055",
-      "feature_id": "joins.semi_anti",
-      "variant": "ANTI",
-      "sql": "SELECT l.id FROM orders l LEFT ANTI JOIN customers r ON l.id = r.id",
-      "expected_terminal_bag": [
-        [
-          null
         ],
         [
           3
@@ -1247,7 +1209,8 @@
           -5
         ]
       ],
-      "columns": 2
+      "columns": 2,
+      "canonical_output_boundary": "name_alignment_output_unsupported"
     },
     {
       "id": "88-C177-S085",
