@@ -150,3 +150,26 @@ requirements documented in `docs/task-177-acceptance-audit.md`.
   candidate-pinned sql-tdg verification and independent acceptance/release
   reviewer remain outstanding. AC #1..#5 remain unchecked, TASK-88 open and
   TASK-178 blocked pending separately reviewed child completion.
+
+## Independent native evidence expansion (2026-11-08, still In Progress)
+
+- The new `docs/task-177-relational-bag-oracles.json` and
+  `tests/task_177_relational_bag_oracles.rs` pin and execute 98 original
+  SQL samples with whole-source NULL/duplicate and full-terminal DuckDB
+  bags. Nine family tests span joins, set operations, grouping, windows,
+  subqueries, scopes, pagination and advanced table sources.
+- Three other frozen example spellings (LEFT SEMI/ANTI and FETCH FIRST
+  WITH TIES) are native DuckDB parser rejections; separately verified
+  fixture-specific alternatives do not promote these examples to native
+  exact SQL. UNION BY NAME executes natively but its canonical output
+  composition is explicitly unsupported with diagnostics.
+- `docs/task-177-physical-proof-ledger.json` and its executable test now
+  enumerate all 251 cases: **125 distinct** original SQL examples have
+  native first-party source/terminal oracles (including earlier predicate
+  and drift evidence), **126 remain missing**, and only **six** have exact
+  typed SQL/dbt/ODCS-domain parity evidence. The two named standalone P/N
+  goldens do not count toward the 251.
+- **Signoff remains blocked:** Full strongest-domain, positive/rejected
+  whole-bag, per-adapter, conditional dialect/vendor/session and independent
+  per-cell reviews remain incomplete. AC #1..#5 are not checked, TASK-178
+  remains dependency-blocked and TASK-88 remains open.
