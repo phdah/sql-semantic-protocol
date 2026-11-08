@@ -79,7 +79,7 @@
       null
     ]
   ],
-  "oracle_provenance": "Manual three-valued truth partitions cross-checked with independent SQLite for all representable predicates, then pinned for DuckDB full physical differential execution. EXISTS and IS UNKNOWN cases have manually reviewed expected partitions.",
+  "oracle_provenance": "Manually authored fixed three-valued truth partitions and complete terminal/source bags, checked against independent native DuckDB execution by the Rust integration suite. No other vendor engine execution is attested.",
   "boundary": "Each test certifies only the named SQL shape over the pinned complete physical inputs, not all 13 native dialect engines.",
   "cases": [
     {
