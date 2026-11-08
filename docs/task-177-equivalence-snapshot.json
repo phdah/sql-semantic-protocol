@@ -281,5 +281,6 @@
     "analysis_error": 0
   },
   "observed_from": "https://github.com/phdah/sql-semantic-protocol/actions/runs/42482111998",
-  "reference_policy": "For each SQL sample, compare full public emitted protocol against the first dialect returning a protocol with no Unsupported statement; null only inputs[].dialect metadata. Equality is structural, not independent physical correctness."
+  "reference_policy": "For each SQL sample, compare full public emitted protocol against the first dialect returning a protocol with no Unsupported statement; null only inputs[].dialect metadata. Equality is structural, not independent physical correctness.",
+  "difference_paths": {}
 }
