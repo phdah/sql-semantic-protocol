@@ -37,12 +37,12 @@ jobs:
           rustup default stable
 
       - name: Run ${{ matrix.check }}
-        if: matrix.check != 'test'
+        if: matrix.check != 'test' && matrix.check != 'lint'
         run: make ${{ matrix.check }}
 
-      - name: Run Rust tests with transient DuckDB bootstrap retry
-        if: matrix.check == 'test'
-        run: bash scripts/retry-duckdb-bootstrap.sh make test
+      - name: Run Rust test or lint with transient DuckDB bootstrap retry
+        if: matrix.check == 'test' || matrix.check == 'lint'
+        run: bash scripts/retry-duckdb-bootstrap.sh make ${{ matrix.check }}
 
   dbt-e2e:
     name: dbt Core E2E
@@ -104,7 +104,7 @@ jobs:
 
       - name: Check without default features
         if: matrix.check == 'lint'
-        run: cargo clippy --all-targets --no-default-features -- -D warnings
+        run: bash scripts/retry-duckdb-bootstrap.sh cargo clippy --all-targets --no-default-features -- -D warnings
 
       - name: Test without default features
         if: matrix.check == 'test'
