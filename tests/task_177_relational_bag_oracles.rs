@@ -57,14 +57,14 @@ fn verify_group(group: &str) {
     let samples = parse(SAMPLES);
     assert_eq!(fixture["schema_version"], 1);
     assert_eq!(fixture["owner"], "TASK-177");
-    assert_eq!(fixture["case_count"], 99);
+    assert_eq!(fixture["case_count"], 98);
     let groups = fixture["groups"].as_object().expect("nine finite families");
     assert_eq!(groups.len(), 9);
     let counted: usize = groups
         .values()
         .map(|ids| ids.as_array().expect("stable sample IDs").len())
         .sum();
-    assert_eq!(counted, 99, "a named native oracle was lost");
+    assert_eq!(counted, 98, "a named native oracle was lost");
 
     let db = Connection::open_in_memory().expect("native DuckDB");
     db.execute_batch(
@@ -228,4 +228,33 @@ fn native_limit_and_fetch_rows_match_complete_sources() {
 #[test]
 fn native_unnest_values_and_generators_have_exact_bags() {
     verify_group("table_sources");
+}
+
+#[test]
+fn fetch_with_ties_is_a_named_native_syntax_boundary() {
+    let fixture = parse(FIXTURE);
+    let samples = parse(SAMPLES);
+    let db = Connection::open_in_memory().expect("DuckDB");
+    db.execute_batch(
+        fixture["source_setup"]
+            .as_str()
+            .expect("complete physical source"),
+    )
+    .expect("source rows");
+    let sample = samples["cases"]
+        .as_array()
+        .expect("source examples")
+        .iter()
+        .find(|sample| sample["id"] == "88-C177-S160")
+        .expect("original FETCH WITH TIES case");
+    let original = sample["sql"].as_str().expect("fixed SQL");
+    assert!(
+        db.prepare(original).is_err(),
+        "DuckDB does not accept the frozen FETCH FIRST WITH TIES spelling"
+    );
+    assert_eq!(
+        actual_bag(&db, "SELECT id FROM orders ORDER BY id LIMIT 2", 1),
+        vec![vec![Some(1)], vec![Some(1)]],
+        "the complete source fixture has exactly two tied first rows"
+    );
 }
