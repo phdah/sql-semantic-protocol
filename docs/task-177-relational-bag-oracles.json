@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "owner": "TASK-177",
-  "scope": "Original TASK-66 exact SQL run against complete independently pinned NULL/duplicate DuckDB source and terminal bags. Native executable 99 cases, with two additional LEFT SEMI/ANTI exact-syntax rejections and equivalent native witnesses. BY NAME canonical composition is explicitly unsupported; typed-domain, vendor/session, and adapter proof remain separate unapproved gates.",
+  "scope": "98 complete source-and-terminal native DuckDB SQL samples across nine families. LEFT SEMI, LEFT ANTI, and FETCH FIRST WITH TIES exact syntax samples are DuckDB parser rejections, with separate native equivalent witness tests. BY NAME native output is valid but canonical alignment stays explicitly unsupported. No independent typed/adapter/vendor/session signoff.",
   "source_setup": "CREATE TABLE orders(id INTEGER, amount INTEGER); INSERT INTO orders VALUES (1,10),(1,10),(2,20),(3,NULL),(NULL,10),(4,-5); CREATE TABLE customers(id INTEGER, amount INTEGER); INSERT INTO customers VALUES (1,10),(1,10),(2,100),(5,-5),(NULL,10); CREATE TABLE products(id INTEGER); INSERT INTO products VALUES (1),(2),(3);",
   "source_bags": {
     "orders": [
@@ -64,7 +64,7 @@
       ]
     ]
   },
-  "case_count": 99,
+  "case_count": 98,
   "groups": {
     "joins": [
       "88-C177-S043",
@@ -174,7 +174,6 @@
     ],
     "pagination": [
       "88-C177-S159",
-      "88-C177-S160",
       "88-C177-S162"
     ],
     "table_sources": [
@@ -2445,21 +2444,6 @@
         ],
         [
           2
-        ]
-      ],
-      "columns": 1
-    },
-    {
-      "id": "88-C177-S160",
-      "feature_id": "ordering.pagination",
-      "variant": "FETCH FIRST/WITH TIES",
-      "sql": "SELECT id FROM orders ORDER BY id FETCH FIRST 2 ROWS WITH TIES",
-      "expected_terminal_bag": [
-        [
-          1
-        ],
-        [
-          1
         ]
       ],
       "columns": 1
