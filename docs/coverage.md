@@ -167,3 +167,17 @@ The canonical constructive IR now emits typed physical closed-world obligations 
 This is **operator-local evidence**, not whole-graph generator certification. The unchanged variant/dialect cells remain release-blocking until TASK-68, TASK-88/89 and the downstream sql-tdg physical-source acceptance tests supply their required evidence. The inventory's `task_69_operator_local_evidence` records the checkpoint without upgrading unsupported variants.
 
 **TASK-79 schema proof checkpoint:** Direct SQL DDL typed schemas, portable default declarations, ODCS scalar defaults, physical integer/decimal/time/UUID guards and a closed-world multi-relation FK/PK feasibility API now have focused Rust and DuckDB tests. Typed Arrow-style nested source populations, conservative typed JSON document witnesses and checked integer generated-column INSERT/UPDATE/MERGE value production have focused proof paths. The typed ordered DML subset also proves scalar filters, canonical attested INSERT default omissions and scalar UPDATE/DELETE without replacing nested Arrow values. Unattested identity/sequence allocation, unproved coercion and vendor-specific enforcement remain explicit residuals. The bounded local TASK-79 physical schema/witness AC are verified against the traceable evidence in `docs/task-79-proof-scope.md`. This does not upgrade any variant/dialect cell or prove full downstream data generation or protocol 3.0.0 release readiness; see `task_79_schema_evidence` in the machine-readable manifest.
+
+
+### TASK-177 predicate and adapter differential scope
+
+The [complete-source predicate cases](task-177-predicate-oracles.json) certify
+25 original TASK-66 SQL samples against fully pinned physical DuckDB source bags.
+The [native regression](../tests/task_177_predicate_oracles.rs) checks complete
+terminal bags, TRUE/FALSE/UNKNOWN and NOT TRUE source occurrence partitions,
+NULL, duplicate values and six strongest typed inclusion-set/interval bounds.
+The [adapter parity regression](../tests/task_177_predicate_adapter_parity.rs)
+asserts those six bounded output facts through direct SQL DDL, dbt compiled
+model metadata and representable ODCS physical types. Unexecuted native vendor
+engines, remaining parser variants and arbitrary adapter materializations retain
+their original release-blocking review disposition.
