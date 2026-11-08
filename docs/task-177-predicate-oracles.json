@@ -1,0 +1,2407 @@
+{
+  "schema_version": 1,
+  "owner": "TASK-177",
+  "case_count": 25,
+  "source_setup": "CREATE TABLE orders(id INTEGER, amount INTEGER); INSERT INTO orders VALUES (-1,-5),(0,0),(1,10),(2,10),(3,19),(4,20),(5,NULL),(6,5),(7,0),(8,1),(9,20); CREATE TABLE customers(id INTEGER, amount INTEGER); INSERT INTO customers VALUES (-1,-5),(1,10),(3,20),(3,20),(8,NULL),(10,25),(11,NULL);",
+  "orders_source_rows": [
+    [
+      -1,
+      -5
+    ],
+    [
+      0,
+      0
+    ],
+    [
+      1,
+      10
+    ],
+    [
+      2,
+      10
+    ],
+    [
+      3,
+      19
+    ],
+    [
+      4,
+      20
+    ],
+    [
+      5,
+      null
+    ],
+    [
+      6,
+      5
+    ],
+    [
+      7,
+      0
+    ],
+    [
+      8,
+      1
+    ],
+    [
+      9,
+      20
+    ]
+  ],
+  "customers_source_rows": [
+    [
+      -1,
+      -5
+    ],
+    [
+      1,
+      10
+    ],
+    [
+      3,
+      20
+    ],
+    [
+      3,
+      20
+    ],
+    [
+      8,
+      null
+    ],
+    [
+      10,
+      25
+    ],
+    [
+      11,
+      null
+    ]
+  ],
+  "oracle_provenance": "Manual three-valued truth partitions cross-checked with independent SQLite for all representable predicates, then pinned for DuckDB full physical differential execution. EXISTS and IS UNKNOWN cases have manually reviewed expected partitions.",
+  "boundary": "Each test certifies only the named SQL shape over the pinned complete physical inputs, not all 13 native dialect engines.",
+  "cases": [
+    {
+      "id": "88-C177-S001",
+      "sql": "SELECT amount FROM orders WHERE amount = 10",
+      "projection": "amount",
+      "source_relation": "orders",
+      "predicate": "amount = 10",
+      "expected_selected_ids": [
+        1,
+        2
+      ],
+      "expected_false_ids": [
+        -1,
+        0,
+        3,
+        4,
+        6,
+        7,
+        8,
+        9
+      ],
+      "expected_unknown_ids": [
+        5
+      ],
+      "expected_selected_rows": [
+        [
+          1,
+          10
+        ],
+        [
+          2,
+          10
+        ]
+      ],
+      "expected_false_rows": [
+        [
+          -1,
+          -5
+        ],
+        [
+          0,
+          0
+        ],
+        [
+          3,
+          19
+        ],
+        [
+          4,
+          20
+        ],
+        [
+          6,
+          5
+        ],
+        [
+          7,
+          0
+        ],
+        [
+          8,
+          1
+        ],
+        [
+          9,
+          20
+        ]
+      ],
+      "expected_unknown_rows": [
+        [
+          5,
+          null
+        ]
+      ],
+      "expected_terminal_bag": [
+        [
+          10
+        ],
+        [
+          10
+        ]
+      ],
+      "expected_projected_domain": {
+        "lower": [
+          10,
+          true
+        ],
+        "upper": [
+          10,
+          true
+        ]
+      }
+    },
+    {
+      "id": "88-C177-S002",
+      "sql": "SELECT amount FROM orders WHERE amount <> 10",
+      "projection": "amount",
+      "source_relation": "orders",
+      "predicate": "amount <> 10",
+      "expected_selected_ids": [
+        -1,
+        0,
+        3,
+        4,
+        6,
+        7,
+        8,
+        9
+      ],
+      "expected_false_ids": [
+        1,
+        2
+      ],
+      "expected_unknown_ids": [
+        5
+      ],
+      "expected_selected_rows": [
+        [
+          -1,
+          -5
+        ],
+        [
+          0,
+          0
+        ],
+        [
+          3,
+          19
+        ],
+        [
+          4,
+          20
+        ],
+        [
+          6,
+          5
+        ],
+        [
+          7,
+          0
+        ],
+        [
+          8,
+          1
+        ],
+        [
+          9,
+          20
+        ]
+      ],
+      "expected_false_rows": [
+        [
+          1,
+          10
+        ],
+        [
+          2,
+          10
+        ]
+      ],
+      "expected_unknown_rows": [
+        [
+          5,
+          null
+        ]
+      ],
+      "expected_terminal_bag": [
+        [
+          -5
+        ],
+        [
+          0
+        ],
+        [
+          19
+        ],
+        [
+          20
+        ],
+        [
+          5
+        ],
+        [
+          0
+        ],
+        [
+          1
+        ],
+        [
+          20
+        ]
+      ],
+      "expected_projected_domain": null
+    },
+    {
+      "id": "88-C177-S003",
+      "sql": "SELECT amount FROM orders WHERE amount < 10",
+      "projection": "amount",
+      "source_relation": "orders",
+      "predicate": "amount < 10",
+      "expected_selected_ids": [
+        -1,
+        0,
+        6,
+        7,
+        8
+      ],
+      "expected_false_ids": [
+        1,
+        2,
+        3,
+        4,
+        9
+      ],
+      "expected_unknown_ids": [
+        5
+      ],
+      "expected_selected_rows": [
+        [
+          -1,
+          -5
+        ],
+        [
+          0,
+          0
+        ],
+        [
+          6,
+          5
+        ],
+        [
+          7,
+          0
+        ],
+        [
+          8,
+          1
+        ]
+      ],
+      "expected_false_rows": [
+        [
+          1,
+          10
+        ],
+        [
+          2,
+          10
+        ],
+        [
+          3,
+          19
+        ],
+        [
+          4,
+          20
+        ],
+        [
+          9,
+          20
+        ]
+      ],
+      "expected_unknown_rows": [
+        [
+          5,
+          null
+        ]
+      ],
+      "expected_terminal_bag": [
+        [
+          -5
+        ],
+        [
+          0
+        ],
+        [
+          5
+        ],
+        [
+          0
+        ],
+        [
+          1
+        ]
+      ],
+      "expected_projected_domain": {
+        "lower": null,
+        "upper": [
+          10,
+          false
+        ]
+      }
+    },
+    {
+      "id": "88-C177-S004",
+      "sql": "SELECT amount FROM orders WHERE amount <= 10",
+      "projection": "amount",
+      "source_relation": "orders",
+      "predicate": "amount <= 10",
+      "expected_selected_ids": [
+        -1,
+        0,
+        1,
+        2,
+        6,
+        7,
+        8
+      ],
+      "expected_false_ids": [
+        3,
+        4,
+        9
+      ],
+      "expected_unknown_ids": [
+        5
+      ],
+      "expected_selected_rows": [
+        [
+          -1,
+          -5
+        ],
+        [
+          0,
+          0
+        ],
+        [
+          1,
+          10
+        ],
+        [
+          2,
+          10
+        ],
+        [
+          6,
+          5
+        ],
+        [
+          7,
+          0
+        ],
+        [
+          8,
+          1
+        ]
+      ],
+      "expected_false_rows": [
+        [
+          3,
+          19
+        ],
+        [
+          4,
+          20
+        ],
+        [
+          9,
+          20
+        ]
+      ],
+      "expected_unknown_rows": [
+        [
+          5,
+          null
+        ]
+      ],
+      "expected_terminal_bag": [
+        [
+          -5
+        ],
+        [
+          0
+        ],
+        [
+          10
+        ],
+        [
+          10
+        ],
+        [
+          5
+        ],
+        [
+          0
+        ],
+        [
+          1
+        ]
+      ],
+      "expected_projected_domain": {
+        "lower": null,
+        "upper": [
+          10,
+          true
+        ]
+      }
+    },
+    {
+      "id": "88-C177-S005",
+      "sql": "SELECT amount FROM orders WHERE amount > 10",
+      "projection": "amount",
+      "source_relation": "orders",
+      "predicate": "amount > 10",
+      "expected_selected_ids": [
+        3,
+        4,
+        9
+      ],
+      "expected_false_ids": [
+        -1,
+        0,
+        1,
+        2,
+        6,
+        7,
+        8
+      ],
+      "expected_unknown_ids": [
+        5
+      ],
+      "expected_selected_rows": [
+        [
+          3,
+          19
+        ],
+        [
+          4,
+          20
+        ],
+        [
+          9,
+          20
+        ]
+      ],
+      "expected_false_rows": [
+        [
+          -1,
+          -5
+        ],
+        [
+          0,
+          0
+        ],
+        [
+          1,
+          10
+        ],
+        [
+          2,
+          10
+        ],
+        [
+          6,
+          5
+        ],
+        [
+          7,
+          0
+        ],
+        [
+          8,
+          1
+        ]
+      ],
+      "expected_unknown_rows": [
+        [
+          5,
+          null
+        ]
+      ],
+      "expected_terminal_bag": [
+        [
+          19
+        ],
+        [
+          20
+        ],
+        [
+          20
+        ]
+      ],
+      "expected_projected_domain": {
+        "lower": [
+          10,
+          false
+        ],
+        "upper": null
+      }
+    },
+    {
+      "id": "88-C177-S006",
+      "sql": "SELECT amount FROM orders WHERE amount >= 10",
+      "projection": "amount",
+      "source_relation": "orders",
+      "predicate": "amount >= 10",
+      "expected_selected_ids": [
+        1,
+        2,
+        3,
+        4,
+        9
+      ],
+      "expected_false_ids": [
+        -1,
+        0,
+        6,
+        7,
+        8
+      ],
+      "expected_unknown_ids": [
+        5
+      ],
+      "expected_selected_rows": [
+        [
+          1,
+          10
+        ],
+        [
+          2,
+          10
+        ],
+        [
+          3,
+          19
+        ],
+        [
+          4,
+          20
+        ],
+        [
+          9,
+          20
+        ]
+      ],
+      "expected_false_rows": [
+        [
+          -1,
+          -5
+        ],
+        [
+          0,
+          0
+        ],
+        [
+          6,
+          5
+        ],
+        [
+          7,
+          0
+        ],
+        [
+          8,
+          1
+        ]
+      ],
+      "expected_unknown_rows": [
+        [
+          5,
+          null
+        ]
+      ],
+      "expected_terminal_bag": [
+        [
+          10
+        ],
+        [
+          10
+        ],
+        [
+          19
+        ],
+        [
+          20
+        ],
+        [
+          20
+        ]
+      ],
+      "expected_projected_domain": {
+        "lower": [
+          10,
+          true
+        ],
+        "upper": null
+      }
+    },
+    {
+      "id": "88-C177-S007",
+      "sql": "SELECT amount FROM orders WHERE amount BETWEEN 1 AND 10",
+      "projection": "amount",
+      "source_relation": "orders",
+      "predicate": "amount BETWEEN 1 AND 10",
+      "expected_selected_ids": [
+        1,
+        2,
+        6,
+        8
+      ],
+      "expected_false_ids": [
+        -1,
+        0,
+        3,
+        4,
+        7,
+        9
+      ],
+      "expected_unknown_ids": [
+        5
+      ],
+      "expected_selected_rows": [
+        [
+          1,
+          10
+        ],
+        [
+          2,
+          10
+        ],
+        [
+          6,
+          5
+        ],
+        [
+          8,
+          1
+        ]
+      ],
+      "expected_false_rows": [
+        [
+          -1,
+          -5
+        ],
+        [
+          0,
+          0
+        ],
+        [
+          3,
+          19
+        ],
+        [
+          4,
+          20
+        ],
+        [
+          7,
+          0
+        ],
+        [
+          9,
+          20
+        ]
+      ],
+      "expected_unknown_rows": [
+        [
+          5,
+          null
+        ]
+      ],
+      "expected_terminal_bag": [
+        [
+          10
+        ],
+        [
+          10
+        ],
+        [
+          5
+        ],
+        [
+          1
+        ]
+      ],
+      "expected_projected_domain": {
+        "lower": [
+          1,
+          true
+        ],
+        "upper": [
+          10,
+          true
+        ]
+      }
+    },
+    {
+      "id": "88-C177-S008",
+      "sql": "SELECT amount FROM orders WHERE amount NOT BETWEEN 1 AND 10",
+      "projection": "amount",
+      "source_relation": "orders",
+      "predicate": "amount NOT BETWEEN 1 AND 10",
+      "expected_selected_ids": [
+        -1,
+        0,
+        3,
+        4,
+        7,
+        9
+      ],
+      "expected_false_ids": [
+        1,
+        2,
+        6,
+        8
+      ],
+      "expected_unknown_ids": [
+        5
+      ],
+      "expected_selected_rows": [
+        [
+          -1,
+          -5
+        ],
+        [
+          0,
+          0
+        ],
+        [
+          3,
+          19
+        ],
+        [
+          4,
+          20
+        ],
+        [
+          7,
+          0
+        ],
+        [
+          9,
+          20
+        ]
+      ],
+      "expected_false_rows": [
+        [
+          1,
+          10
+        ],
+        [
+          2,
+          10
+        ],
+        [
+          6,
+          5
+        ],
+        [
+          8,
+          1
+        ]
+      ],
+      "expected_unknown_rows": [
+        [
+          5,
+          null
+        ]
+      ],
+      "expected_terminal_bag": [
+        [
+          -5
+        ],
+        [
+          0
+        ],
+        [
+          19
+        ],
+        [
+          20
+        ],
+        [
+          0
+        ],
+        [
+          20
+        ]
+      ],
+      "expected_projected_domain": null
+    },
+    {
+      "id": "88-C177-S009",
+      "sql": "SELECT id FROM orders WHERE amount > 1 AND id > 0",
+      "projection": "id",
+      "source_relation": "orders",
+      "predicate": "amount > 1 AND id > 0",
+      "expected_selected_ids": [
+        1,
+        2,
+        3,
+        4,
+        6,
+        9
+      ],
+      "expected_false_ids": [
+        -1,
+        0,
+        7,
+        8
+      ],
+      "expected_unknown_ids": [
+        5
+      ],
+      "expected_selected_rows": [
+        [
+          1,
+          10
+        ],
+        [
+          2,
+          10
+        ],
+        [
+          3,
+          19
+        ],
+        [
+          4,
+          20
+        ],
+        [
+          6,
+          5
+        ],
+        [
+          9,
+          20
+        ]
+      ],
+      "expected_false_rows": [
+        [
+          -1,
+          -5
+        ],
+        [
+          0,
+          0
+        ],
+        [
+          7,
+          0
+        ],
+        [
+          8,
+          1
+        ]
+      ],
+      "expected_unknown_rows": [
+        [
+          5,
+          null
+        ]
+      ],
+      "expected_terminal_bag": [
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          3
+        ],
+        [
+          4
+        ],
+        [
+          6
+        ],
+        [
+          9
+        ]
+      ],
+      "expected_projected_domain": null
+    },
+    {
+      "id": "88-C177-S010",
+      "sql": "SELECT id FROM orders WHERE amount > 1 OR id > 0",
+      "projection": "id",
+      "source_relation": "orders",
+      "predicate": "amount > 1 OR id > 0",
+      "expected_selected_ids": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ],
+      "expected_false_ids": [
+        -1,
+        0
+      ],
+      "expected_unknown_ids": [],
+      "expected_selected_rows": [
+        [
+          1,
+          10
+        ],
+        [
+          2,
+          10
+        ],
+        [
+          3,
+          19
+        ],
+        [
+          4,
+          20
+        ],
+        [
+          5,
+          null
+        ],
+        [
+          6,
+          5
+        ],
+        [
+          7,
+          0
+        ],
+        [
+          8,
+          1
+        ],
+        [
+          9,
+          20
+        ]
+      ],
+      "expected_false_rows": [
+        [
+          -1,
+          -5
+        ],
+        [
+          0,
+          0
+        ]
+      ],
+      "expected_unknown_rows": [],
+      "expected_terminal_bag": [
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          3
+        ],
+        [
+          4
+        ],
+        [
+          5
+        ],
+        [
+          6
+        ],
+        [
+          7
+        ],
+        [
+          8
+        ],
+        [
+          9
+        ]
+      ],
+      "expected_projected_domain": null
+    },
+    {
+      "id": "88-C177-S011",
+      "sql": "SELECT id FROM orders WHERE NOT (amount > 1)",
+      "projection": "id",
+      "source_relation": "orders",
+      "predicate": "NOT (amount > 1)",
+      "expected_selected_ids": [
+        -1,
+        0,
+        7,
+        8
+      ],
+      "expected_false_ids": [
+        1,
+        2,
+        3,
+        4,
+        6,
+        9
+      ],
+      "expected_unknown_ids": [
+        5
+      ],
+      "expected_selected_rows": [
+        [
+          -1,
+          -5
+        ],
+        [
+          0,
+          0
+        ],
+        [
+          7,
+          0
+        ],
+        [
+          8,
+          1
+        ]
+      ],
+      "expected_false_rows": [
+        [
+          1,
+          10
+        ],
+        [
+          2,
+          10
+        ],
+        [
+          3,
+          19
+        ],
+        [
+          4,
+          20
+        ],
+        [
+          6,
+          5
+        ],
+        [
+          9,
+          20
+        ]
+      ],
+      "expected_unknown_rows": [
+        [
+          5,
+          null
+        ]
+      ],
+      "expected_terminal_bag": [
+        [
+          -1
+        ],
+        [
+          0
+        ],
+        [
+          7
+        ],
+        [
+          8
+        ]
+      ],
+      "expected_projected_domain": null
+    },
+    {
+      "id": "88-C177-S012",
+      "sql": "SELECT id FROM orders WHERE (amount > 1 OR amount IS NULL) AND id > 0",
+      "projection": "id",
+      "source_relation": "orders",
+      "predicate": "(amount > 1 OR amount IS NULL) AND id > 0",
+      "expected_selected_ids": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        9
+      ],
+      "expected_false_ids": [
+        -1,
+        0,
+        7,
+        8
+      ],
+      "expected_unknown_ids": [],
+      "expected_selected_rows": [
+        [
+          1,
+          10
+        ],
+        [
+          2,
+          10
+        ],
+        [
+          3,
+          19
+        ],
+        [
+          4,
+          20
+        ],
+        [
+          5,
+          null
+        ],
+        [
+          6,
+          5
+        ],
+        [
+          9,
+          20
+        ]
+      ],
+      "expected_false_rows": [
+        [
+          -1,
+          -5
+        ],
+        [
+          0,
+          0
+        ],
+        [
+          7,
+          0
+        ],
+        [
+          8,
+          1
+        ]
+      ],
+      "expected_unknown_rows": [],
+      "expected_terminal_bag": [
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          3
+        ],
+        [
+          4
+        ],
+        [
+          5
+        ],
+        [
+          6
+        ],
+        [
+          9
+        ]
+      ],
+      "expected_projected_domain": null
+    },
+    {
+      "id": "88-C177-S013",
+      "sql": "SELECT o.id FROM orders o WHERE EXISTS (SELECT 1 FROM customers c WHERE c.id = o.id)",
+      "projection": "id",
+      "source_relation": "orders o",
+      "predicate": "EXISTS (SELECT 1 FROM customers c",
+      "expected_selected_ids": [
+        -1,
+        1,
+        3,
+        8
+      ],
+      "expected_false_ids": [
+        0,
+        2,
+        4,
+        5,
+        6,
+        7,
+        9
+      ],
+      "expected_unknown_ids": [],
+      "expected_selected_rows": [
+        [
+          -1,
+          -5
+        ],
+        [
+          1,
+          10
+        ],
+        [
+          3,
+          19
+        ],
+        [
+          8,
+          1
+        ]
+      ],
+      "expected_false_rows": [
+        [
+          0,
+          0
+        ],
+        [
+          2,
+          10
+        ],
+        [
+          4,
+          20
+        ],
+        [
+          5,
+          null
+        ],
+        [
+          6,
+          5
+        ],
+        [
+          7,
+          0
+        ],
+        [
+          9,
+          20
+        ]
+      ],
+      "expected_unknown_rows": [],
+      "expected_terminal_bag": [
+        [
+          -1
+        ],
+        [
+          1
+        ],
+        [
+          3
+        ],
+        [
+          8
+        ]
+      ],
+      "expected_projected_domain": null
+    },
+    {
+      "id": "88-C177-S014",
+      "sql": "SELECT id FROM orders WHERE amount IS NULL",
+      "projection": "id",
+      "source_relation": "orders",
+      "predicate": "amount IS NULL",
+      "expected_selected_ids": [
+        5
+      ],
+      "expected_false_ids": [
+        -1,
+        0,
+        1,
+        2,
+        3,
+        4,
+        6,
+        7,
+        8,
+        9
+      ],
+      "expected_unknown_ids": [],
+      "expected_selected_rows": [
+        [
+          5,
+          null
+        ]
+      ],
+      "expected_false_rows": [
+        [
+          -1,
+          -5
+        ],
+        [
+          0,
+          0
+        ],
+        [
+          1,
+          10
+        ],
+        [
+          2,
+          10
+        ],
+        [
+          3,
+          19
+        ],
+        [
+          4,
+          20
+        ],
+        [
+          6,
+          5
+        ],
+        [
+          7,
+          0
+        ],
+        [
+          8,
+          1
+        ],
+        [
+          9,
+          20
+        ]
+      ],
+      "expected_unknown_rows": [],
+      "expected_terminal_bag": [
+        [
+          5
+        ]
+      ],
+      "expected_projected_domain": null
+    },
+    {
+      "id": "88-C177-S015",
+      "sql": "SELECT id FROM orders WHERE amount IS NOT NULL",
+      "projection": "id",
+      "source_relation": "orders",
+      "predicate": "amount IS NOT NULL",
+      "expected_selected_ids": [
+        -1,
+        0,
+        1,
+        2,
+        3,
+        4,
+        6,
+        7,
+        8,
+        9
+      ],
+      "expected_false_ids": [
+        5
+      ],
+      "expected_unknown_ids": [],
+      "expected_selected_rows": [
+        [
+          -1,
+          -5
+        ],
+        [
+          0,
+          0
+        ],
+        [
+          1,
+          10
+        ],
+        [
+          2,
+          10
+        ],
+        [
+          3,
+          19
+        ],
+        [
+          4,
+          20
+        ],
+        [
+          6,
+          5
+        ],
+        [
+          7,
+          0
+        ],
+        [
+          8,
+          1
+        ],
+        [
+          9,
+          20
+        ]
+      ],
+      "expected_false_rows": [
+        [
+          5,
+          null
+        ]
+      ],
+      "expected_unknown_rows": [],
+      "expected_terminal_bag": [
+        [
+          -1
+        ],
+        [
+          0
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          3
+        ],
+        [
+          4
+        ],
+        [
+          6
+        ],
+        [
+          7
+        ],
+        [
+          8
+        ],
+        [
+          9
+        ]
+      ],
+      "expected_projected_domain": null
+    },
+    {
+      "id": "88-C177-S016",
+      "sql": "SELECT id FROM orders WHERE amount > 0 IS TRUE",
+      "projection": "id",
+      "source_relation": "orders",
+      "predicate": "amount > 0 IS TRUE",
+      "expected_selected_ids": [
+        1,
+        2,
+        3,
+        4,
+        6,
+        8,
+        9
+      ],
+      "expected_false_ids": [
+        -1,
+        0,
+        5,
+        7
+      ],
+      "expected_unknown_ids": [],
+      "expected_selected_rows": [
+        [
+          1,
+          10
+        ],
+        [
+          2,
+          10
+        ],
+        [
+          3,
+          19
+        ],
+        [
+          4,
+          20
+        ],
+        [
+          6,
+          5
+        ],
+        [
+          8,
+          1
+        ],
+        [
+          9,
+          20
+        ]
+      ],
+      "expected_false_rows": [
+        [
+          -1,
+          -5
+        ],
+        [
+          0,
+          0
+        ],
+        [
+          5,
+          null
+        ],
+        [
+          7,
+          0
+        ]
+      ],
+      "expected_unknown_rows": [],
+      "expected_terminal_bag": [
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          3
+        ],
+        [
+          4
+        ],
+        [
+          6
+        ],
+        [
+          8
+        ],
+        [
+          9
+        ]
+      ],
+      "expected_projected_domain": null
+    },
+    {
+      "id": "88-C177-S017",
+      "sql": "SELECT id FROM orders WHERE amount > 0 IS FALSE",
+      "projection": "id",
+      "source_relation": "orders",
+      "predicate": "amount > 0 IS FALSE",
+      "expected_selected_ids": [
+        -1,
+        0,
+        7
+      ],
+      "expected_false_ids": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        8,
+        9
+      ],
+      "expected_unknown_ids": [],
+      "expected_selected_rows": [
+        [
+          -1,
+          -5
+        ],
+        [
+          0,
+          0
+        ],
+        [
+          7,
+          0
+        ]
+      ],
+      "expected_false_rows": [
+        [
+          1,
+          10
+        ],
+        [
+          2,
+          10
+        ],
+        [
+          3,
+          19
+        ],
+        [
+          4,
+          20
+        ],
+        [
+          5,
+          null
+        ],
+        [
+          6,
+          5
+        ],
+        [
+          8,
+          1
+        ],
+        [
+          9,
+          20
+        ]
+      ],
+      "expected_unknown_rows": [],
+      "expected_terminal_bag": [
+        [
+          -1
+        ],
+        [
+          0
+        ],
+        [
+          7
+        ]
+      ],
+      "expected_projected_domain": null
+    },
+    {
+      "id": "88-C177-S018",
+      "sql": "SELECT id FROM orders WHERE amount > 0 IS UNKNOWN",
+      "projection": "id",
+      "source_relation": "orders",
+      "predicate": "amount > 0 IS UNKNOWN",
+      "expected_selected_ids": [
+        5
+      ],
+      "expected_false_ids": [
+        -1,
+        0,
+        1,
+        2,
+        3,
+        4,
+        6,
+        7,
+        8,
+        9
+      ],
+      "expected_unknown_ids": [],
+      "expected_selected_rows": [
+        [
+          5,
+          null
+        ]
+      ],
+      "expected_false_rows": [
+        [
+          -1,
+          -5
+        ],
+        [
+          0,
+          0
+        ],
+        [
+          1,
+          10
+        ],
+        [
+          2,
+          10
+        ],
+        [
+          3,
+          19
+        ],
+        [
+          4,
+          20
+        ],
+        [
+          6,
+          5
+        ],
+        [
+          7,
+          0
+        ],
+        [
+          8,
+          1
+        ],
+        [
+          9,
+          20
+        ]
+      ],
+      "expected_unknown_rows": [],
+      "expected_terminal_bag": [
+        [
+          5
+        ]
+      ],
+      "expected_projected_domain": null
+    },
+    {
+      "id": "88-C177-S019",
+      "sql": "SELECT id FROM orders WHERE amount IN (1, NULL)",
+      "projection": "id",
+      "source_relation": "orders",
+      "predicate": "amount IN (1, NULL)",
+      "expected_selected_ids": [
+        8
+      ],
+      "expected_false_ids": [],
+      "expected_unknown_ids": [
+        -1,
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        9
+      ],
+      "expected_selected_rows": [
+        [
+          8,
+          1
+        ]
+      ],
+      "expected_false_rows": [],
+      "expected_unknown_rows": [
+        [
+          -1,
+          -5
+        ],
+        [
+          0,
+          0
+        ],
+        [
+          1,
+          10
+        ],
+        [
+          2,
+          10
+        ],
+        [
+          3,
+          19
+        ],
+        [
+          4,
+          20
+        ],
+        [
+          5,
+          null
+        ],
+        [
+          6,
+          5
+        ],
+        [
+          7,
+          0
+        ],
+        [
+          9,
+          20
+        ]
+      ],
+      "expected_terminal_bag": [
+        [
+          8
+        ]
+      ],
+      "expected_projected_domain": null
+    },
+    {
+      "id": "88-C177-S027",
+      "sql": "SELECT id FROM orders WHERE amount + 2 > 10",
+      "projection": "id",
+      "source_relation": "orders",
+      "predicate": "amount + 2 > 10",
+      "expected_selected_ids": [
+        1,
+        2,
+        3,
+        4,
+        9
+      ],
+      "expected_false_ids": [
+        -1,
+        0,
+        6,
+        7,
+        8
+      ],
+      "expected_unknown_ids": [
+        5
+      ],
+      "expected_selected_rows": [
+        [
+          1,
+          10
+        ],
+        [
+          2,
+          10
+        ],
+        [
+          3,
+          19
+        ],
+        [
+          4,
+          20
+        ],
+        [
+          9,
+          20
+        ]
+      ],
+      "expected_false_rows": [
+        [
+          -1,
+          -5
+        ],
+        [
+          0,
+          0
+        ],
+        [
+          6,
+          5
+        ],
+        [
+          7,
+          0
+        ],
+        [
+          8,
+          1
+        ]
+      ],
+      "expected_unknown_rows": [
+        [
+          5,
+          null
+        ]
+      ],
+      "expected_terminal_bag": [
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          3
+        ],
+        [
+          4
+        ],
+        [
+          9
+        ]
+      ],
+      "expected_projected_domain": null
+    },
+    {
+      "id": "88-C177-S028",
+      "sql": "SELECT id FROM orders WHERE CAST(amount AS BIGINT) > 10",
+      "projection": "id",
+      "source_relation": "orders",
+      "predicate": "CAST(amount AS BIGINT) > 10",
+      "expected_selected_ids": [
+        3,
+        4,
+        9
+      ],
+      "expected_false_ids": [
+        -1,
+        0,
+        1,
+        2,
+        6,
+        7,
+        8
+      ],
+      "expected_unknown_ids": [
+        5
+      ],
+      "expected_selected_rows": [
+        [
+          3,
+          19
+        ],
+        [
+          4,
+          20
+        ],
+        [
+          9,
+          20
+        ]
+      ],
+      "expected_false_rows": [
+        [
+          -1,
+          -5
+        ],
+        [
+          0,
+          0
+        ],
+        [
+          1,
+          10
+        ],
+        [
+          2,
+          10
+        ],
+        [
+          6,
+          5
+        ],
+        [
+          7,
+          0
+        ],
+        [
+          8,
+          1
+        ]
+      ],
+      "expected_unknown_rows": [
+        [
+          5,
+          null
+        ]
+      ],
+      "expected_terminal_bag": [
+        [
+          3
+        ],
+        [
+          4
+        ],
+        [
+          9
+        ]
+      ],
+      "expected_projected_domain": null
+    },
+    {
+      "id": "88-C177-S029",
+      "sql": "SELECT id FROM orders WHERE CASE WHEN amount > 5 THEN 1 ELSE 0 END = 1",
+      "projection": "id",
+      "source_relation": "orders",
+      "predicate": "CASE WHEN amount > 5 THEN 1 ELSE 0 END = 1",
+      "expected_selected_ids": [
+        1,
+        2,
+        3,
+        4,
+        9
+      ],
+      "expected_false_ids": [
+        -1,
+        0,
+        5,
+        6,
+        7,
+        8
+      ],
+      "expected_unknown_ids": [],
+      "expected_selected_rows": [
+        [
+          1,
+          10
+        ],
+        [
+          2,
+          10
+        ],
+        [
+          3,
+          19
+        ],
+        [
+          4,
+          20
+        ],
+        [
+          9,
+          20
+        ]
+      ],
+      "expected_false_rows": [
+        [
+          -1,
+          -5
+        ],
+        [
+          0,
+          0
+        ],
+        [
+          5,
+          null
+        ],
+        [
+          6,
+          5
+        ],
+        [
+          7,
+          0
+        ],
+        [
+          8,
+          1
+        ]
+      ],
+      "expected_unknown_rows": [],
+      "expected_terminal_bag": [
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          3
+        ],
+        [
+          4
+        ],
+        [
+          9
+        ]
+      ],
+      "expected_projected_domain": null
+    },
+    {
+      "id": "88-C177-S030",
+      "sql": "SELECT id FROM orders WHERE COALESCE(amount, 0) >= 0",
+      "projection": "id",
+      "source_relation": "orders",
+      "predicate": "COALESCE(amount, 0) >= 0",
+      "expected_selected_ids": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ],
+      "expected_false_ids": [
+        -1
+      ],
+      "expected_unknown_ids": [],
+      "expected_selected_rows": [
+        [
+          0,
+          0
+        ],
+        [
+          1,
+          10
+        ],
+        [
+          2,
+          10
+        ],
+        [
+          3,
+          19
+        ],
+        [
+          4,
+          20
+        ],
+        [
+          5,
+          null
+        ],
+        [
+          6,
+          5
+        ],
+        [
+          7,
+          0
+        ],
+        [
+          8,
+          1
+        ],
+        [
+          9,
+          20
+        ]
+      ],
+      "expected_false_rows": [
+        [
+          -1,
+          -5
+        ]
+      ],
+      "expected_unknown_rows": [],
+      "expected_terminal_bag": [
+        [
+          0
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          3
+        ],
+        [
+          4
+        ],
+        [
+          5
+        ],
+        [
+          6
+        ],
+        [
+          7
+        ],
+        [
+          8
+        ],
+        [
+          9
+        ]
+      ],
+      "expected_projected_domain": null
+    },
+    {
+      "id": "88-C177-S031",
+      "sql": "SELECT id FROM orders WHERE NULLIF(amount, 0) IS NULL",
+      "projection": "id",
+      "source_relation": "orders",
+      "predicate": "NULLIF(amount, 0) IS NULL",
+      "expected_selected_ids": [
+        0,
+        5,
+        7
+      ],
+      "expected_false_ids": [
+        -1,
+        1,
+        2,
+        3,
+        4,
+        6,
+        8,
+        9
+      ],
+      "expected_unknown_ids": [],
+      "expected_selected_rows": [
+        [
+          0,
+          0
+        ],
+        [
+          5,
+          null
+        ],
+        [
+          7,
+          0
+        ]
+      ],
+      "expected_false_rows": [
+        [
+          -1,
+          -5
+        ],
+        [
+          1,
+          10
+        ],
+        [
+          2,
+          10
+        ],
+        [
+          3,
+          19
+        ],
+        [
+          4,
+          20
+        ],
+        [
+          6,
+          5
+        ],
+        [
+          8,
+          1
+        ],
+        [
+          9,
+          20
+        ]
+      ],
+      "expected_unknown_rows": [],
+      "expected_terminal_bag": [
+        [
+          0
+        ],
+        [
+          5
+        ],
+        [
+          7
+        ]
+      ],
+      "expected_projected_domain": null
+    },
+    {
+      "id": "88-C177-S032",
+      "sql": "SELECT id FROM orders WHERE ABS(amount) > 2",
+      "projection": "id",
+      "source_relation": "orders",
+      "predicate": "ABS(amount) > 2",
+      "expected_selected_ids": [
+        -1,
+        1,
+        2,
+        3,
+        4,
+        6,
+        9
+      ],
+      "expected_false_ids": [
+        0,
+        7,
+        8
+      ],
+      "expected_unknown_ids": [
+        5
+      ],
+      "expected_selected_rows": [
+        [
+          -1,
+          -5
+        ],
+        [
+          1,
+          10
+        ],
+        [
+          2,
+          10
+        ],
+        [
+          3,
+          19
+        ],
+        [
+          4,
+          20
+        ],
+        [
+          6,
+          5
+        ],
+        [
+          9,
+          20
+        ]
+      ],
+      "expected_false_rows": [
+        [
+          0,
+          0
+        ],
+        [
+          7,
+          0
+        ],
+        [
+          8,
+          1
+        ]
+      ],
+      "expected_unknown_rows": [
+        [
+          5,
+          null
+        ]
+      ],
+      "expected_terminal_bag": [
+        [
+          -1
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          3
+        ],
+        [
+          4
+        ],
+        [
+          6
+        ],
+        [
+          9
+        ]
+      ],
+      "expected_projected_domain": null
+    }
+  ]
+}
