@@ -109,3 +109,21 @@ unapproved blocking disposition and refuses to promote returned documents
 to certified typed domains or native engine proofs. Original AC remain
 unchecked, pending the independent whole-bag and adapter equivalence
 requirements documented in `docs/task-177-acceptance-audit.md`.
+
+
+## Source-complete predicate and adapter evidence (2026-11-08)
+
+- `docs/task-177-predicate-oracles.json` pins 25 original TASK-66
+  predicate samples (S001..S019, S027..S032) to 11 source identities, a
+  seven-occurrence customer source and expected complete terminal and
+  TRUE/FALSE/UNKNOWN source bags; no source rows are dropped from NOT TRUE.
+- `tests/task_177_predicate_oracles.rs` checks each native DuckDB whole
+  bag and six typed inclusion-set or interval bounds, comparing their
+  canonical emissions across all 13 portable parser dialects.
+- `tests/task_177_predicate_adapter_parity.rs` tests six direct SQL,
+  dbt compiled manifest and representable ODCS typed source facts,
+  preserving `ProducerExecution::Unattested` for dbt.
+- This reduces but does **not close** the remaining original AC: full
+  semantic and physical oracles are absent for other variants, 55 parser
+  and 116 explicitly Unsupported cells lack approved dispositions,
+  and pinned consumer plus independent per-cell signoff remain pending.
