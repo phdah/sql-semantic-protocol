@@ -37,7 +37,12 @@ jobs:
           rustup default stable
 
       - name: Run ${{ matrix.check }}
+        if: matrix.check != 'test'
         run: make ${{ matrix.check }}
+
+      - name: Run Rust tests with transient DuckDB bootstrap retry
+        if: matrix.check == 'test'
+        run: bash scripts/retry-duckdb-bootstrap.sh make test
 
   dbt-e2e:
     name: dbt Core E2E
@@ -103,7 +108,7 @@ jobs:
 
       - name: Test without default features
         if: matrix.check == 'test'
-        run: cargo test --no-default-features
+        run: bash scripts/retry-duckdb-bootstrap.sh cargo test --no-default-features
 
       - name: Document without default features
         if: matrix.check == 'doc'
