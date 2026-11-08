@@ -125,14 +125,15 @@ fn verify_group(group: &str) {
         if case["canonical_output_boundary"] == "name_alignment_output_unsupported" {
             assert_eq!(id, "88-C177-S083");
             assert_eq!(query.output().columns().len(), 0);
-            let wire: Value = serde_json::from_str(
-                &sql_semantic_protocol::to_json(&protocol),
-            )
-            .expect("public protocol");
+            let wire: Value = serde_json::from_str(&sql_semantic_protocol::to_json(&protocol))
+                .expect("public protocol");
             let diagnostics = wire["inputs"][0]["statements"][0]["diagnostics"]
                 .as_array()
                 .expect("explicit unsupported BY NAME diagnostic");
-            assert!(!diagnostics.is_empty(), "{id}: unsupported name alignment must be explained");
+            assert!(
+                !diagnostics.is_empty(),
+                "{id}: unsupported name alignment must be explained"
+            );
         } else {
             assert_eq!(
                 query.output().columns().len(),
