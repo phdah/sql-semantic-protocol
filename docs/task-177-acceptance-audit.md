@@ -35,6 +35,23 @@ This audit does not approve TASK-177, TASK-88 or the v3 release gate.
   TRUE/NOT TRUE and UNKNOWN, positive bounded inclusive/exclusive
   output intervals, and impossible selection. These two oracles are
   **not** a substitute for every unimplemented semantic family.
+- `docs/task-177-predicate-oracles.json` now pins 25 additional
+  original TASK-66 SQL samples (S001..S019, S027..S032) against one
+  complete 11-row integer/NULL DuckDB source plus a duplicate-key
+  7-row customer source. `tests/task_177_predicate_oracles.rs`
+  verifies original terminal bags and full TRUE/FALSE/UNKNOWN/NOT TRUE
+  physical occurrence bags, with explicit source identities and
+  source-complete membership partitions. Six cases independently pin
+  output equality sets or strict/inclusive interval bounds and compare
+  the serialized canonical claims across all 13 portable parser dialects.
+  SQLite independently cross-checked representable three-valued membership
+  expectations; the Rust test executes DuckDB as the native oracle.
+- `tests/task_177_predicate_adapter_parity.rs` compares those six
+  exact typed-domain expectations from direct DDL-derived SQL metadata,
+  dbt compiled manifest-declared source columns, and ODCS v3.2
+  physicalType declarations where the `odcs` feature is enabled.
+  dbt producer execution remains `Unattested` rather than inventing
+  materialization evidence. No vendor SQL engine equivalence is inferred.
 - Existing `tests/task_176_adapter_write_parity.rs` and
   `tests/task_173_metadata_authority.rs` already exercise representable
   direct SQL, dbt manifest/catalog and ODCS facts against canonical
@@ -48,9 +65,9 @@ This audit does not approve TASK-177, TASK-88 or the v3 release gate.
 | --- | --- | --- |
 | #1 Frozen complete acceptance | All 251 stable variant identities and 3,263 dialect identities; sample SQL per original variant; explicit baseline evidence and owners | Most variants do not have typed result domains, exact physical source/terminal snapshots and independently reviewed P/N/Impossible/Residual oracle classification. A combined label (e.g. EXCEPT/MINUS) also needs its syntactic subvariants before claiming full coverage |
 | #2 Strongest sound semantics | Canonical outcome-domain contract preserved; 3,092 document-return cells and
-116 explicit unsupported cells frozen without production semantic overclaims; two positive/impossible portable goldens | Variant-level exact semantics, multiplicities, cross-source correlation and certified negative witness contracts remain owner-dependent and unverified for most of the exhaustive matrix |
-| #3 Native physical oracle | Two executed DuckDB source/terminal/full-rejection golden fixtures and existing feature-owner CI suites | Need pinned source/terminal execution and independent expected values for every mandatory exact core, not merely parser acceptance, count estimates or sample goldens |
-| #4 Dialect and adapters | Fixed 3,263-cell 13-dialect sample snapshot and 55 rejection boundary owners; two shared canonical/domain goldens; prior adapter tests provide known representable parity | 116 explicit Unsupported statement cells are blocking and cannot be silently
+116 explicit unsupported cells frozen without production semantic overclaims; two positive/impossible portable goldens plus 25 three-valued predicate bag oracles and six typed claims | Variant-level exact semantics, multiplicities, cross-source correlation and certified negative witness contracts remain owner-dependent and unverified for most of the exhaustive matrix |
+| #3 Native physical oracle | Two original P/N goldens plus 25 executed complete-source DuckDB predicate differential fixtures, with exact source and full terminal TRUE/FALSE/UNKNOWN/NOT TRUE bags and six independently typed range/set claims | Need independent typed and full-bag oracles for the remaining mandatory families beyond 27 scoped P/N cases; 25 focused predicate cases do not certify the other 226 variants |
+| #4 Dialect and adapters | Fixed 3,263-cell 13-dialect sample snapshot and 55 rejection boundary owners; two shared canonical/domain goldens, six typed output-domain SQL/dbt/ODCS parity cases and 25 native bag fixtures; prior adapter tests provide further known representable parity | 116 explicit Unsupported statement cells are blocking and cannot be silently
 reclassified as Exact or deferred. No exhaustive canonical-equivalence oracle
 across all parse-capable variants; no representable adapter parity matrix for every fact; vendor/session semantics require named independent evidence or reviewed conditional disposition |
 | #5 CI, consumer and independent signoff | PR CI covers Rust fmt, strict Clippy, tests/doc/no-default features, dbt E2E, active schema/goldens. Full pass must be linked to final commit | Independent review and candidate-pinned sql-tdg consumer are not attested for the entire mandatory matrix; preserve blocking statuses until verified |
