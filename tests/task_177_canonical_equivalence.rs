@@ -178,7 +178,10 @@ fn every_parsed_variant_has_a_pinned_public_protocol_equivalence_classification(
         .map(|(id, value)| {
             (
                 id.to_owned(),
-                value.as_str().expect("first observed public path").to_owned(),
+                value
+                    .as_str()
+                    .expect("first observed public path")
+                    .to_owned(),
             )
         })
         .collect();
@@ -217,7 +220,10 @@ fn every_dialect_canonical_mismatch_has_a_named_blocking_case_owner() {
 
     let dialects = rows(&equivalence, "dialects");
     let mut required = BTreeSet::new();
-    for (id, mask) in equivalence["matrix"].as_object().expect("fixed sample scope") {
+    for (id, mask) in equivalence["matrix"]
+        .as_object()
+        .expect("fixed sample scope")
+    {
         let mask = mask.as_str().expect("canonical equivalence mask");
         for (index, status) in mask.chars().enumerate() {
             if status == 'D' {
@@ -232,10 +238,16 @@ fn every_dialect_canonical_mismatch_has_a_named_blocking_case_owner() {
         let id = cell["id"].as_str().expect("stable cell");
         assert!(described.insert(id.to_owned()), "duplicate divergence");
         assert_eq!(cell["classification"], "canonical_output_drift");
-        assert_eq!(cell["release_disposition"], "blocking_not_approved_residual");
+        assert_eq!(
+            cell["release_disposition"],
+            "blocking_not_approved_residual"
+        );
         assert_eq!(cell["native_vendor_execution"], "not_certified");
         assert_eq!(cell["next_dialect_equivalence_owner"], "TASK-178");
-        assert!(!cell["reason"].as_str().expect("review rationale").is_empty());
+        assert!(!cell["reason"]
+            .as_str()
+            .expect("review rationale")
+            .is_empty());
         let source_id = cell["case_id"].as_str().expect("source sample");
         let original = rows(&samples, "cases")
             .iter()
@@ -246,5 +258,8 @@ fn every_dialect_canonical_mismatch_has_a_named_blocking_case_owner() {
         assert_eq!(cell["feature_id"], original["feature_id"]);
         assert_eq!(cell["variant"], original["variant"]);
     }
-    assert_eq!(described, required, "every canonical divergence requires an owner");
+    assert_eq!(
+        described, required,
+        "every canonical divergence requires an owner"
+    );
 }
