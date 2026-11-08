@@ -58,20 +58,32 @@ fn assert_interval(domain: &ValueDomain, case: &Value) {
     let expected = &case["expected_projected_domain"];
     if expected["kind"] == "set_include" {
         let ValueDomain::Set(set) = domain else {
-            panic!("{}: equality must preserve a typed include set: {domain:?}", text(case, "id"));
+            panic!(
+                "{}: equality must preserve a typed include set: {domain:?}",
+                text(case, "id")
+            );
         };
         assert_eq!(set.mode(), SetMode::Include);
         assert_eq!(set.values().len(), 1);
         let value = expected["values"][0].as_i64().expect("equal integer");
-        assert_eq!(set.values()[0].value(), &LiteralValue::Number(value.to_string()));
+        assert_eq!(
+            set.values()[0].value(),
+            &LiteralValue::Number(value.to_string())
+        );
         return;
     }
 
     let ValueDomain::Ranges(ranges) = domain else {
-        panic!("{}: expected constrained interval: {domain:?}", text(case, "id"));
+        panic!(
+            "{}: expected constrained interval: {domain:?}",
+            text(case, "id")
+        );
     };
     let [interval] = ranges.ranges() else {
-        panic!("{}: expected exactly one source-derived interval", text(case, "id"));
+        panic!(
+            "{}: expected exactly one source-derived interval",
+            text(case, "id")
+        );
     };
     for (actual, bound) in [
         (interval.lower(), &expected["lower"]),
@@ -80,7 +92,9 @@ fn assert_interval(domain: &ValueDomain, case: &Value) {
         if bound.is_null() {
             assert!(actual.is_none(), "{}: unexpected bound", text(case, "id"));
         } else {
-            let data = bound.as_array().expect("integer boundary and inclusive flag");
+            let data = bound
+                .as_array()
+                .expect("integer boundary and inclusive flag");
             let actual = actual.expect("typed value bound required");
             assert_eq!(
                 actual.value().value(),
@@ -154,9 +168,7 @@ fn pinned_predicate_variants_match_complete_duckdb_bags_and_null_partitions() {
                 "{id}: complete physical {kind} occurrence bag"
             );
         }
-        let not_true = format!(
-            "SELECT id, amount FROM {relation} WHERE ({predicate}) IS NOT TRUE"
-        );
+        let not_true = format!("SELECT id, amount FROM {relation} WHERE ({predicate}) IS NOT TRUE");
         let mut excluded = expected_rows(case, "expected_false_rows");
         excluded.extend(expected_rows(case, "expected_unknown_rows"));
         excluded.sort();
@@ -169,8 +181,14 @@ fn pinned_predicate_variants_match_complete_duckdb_bags_and_null_partitions() {
         let false_ids = expected_ids(case, "expected_false_ids");
         let unknown_ids = expected_ids(case, "expected_unknown_ids");
         assert!(true_ids.is_disjoint(&false_ids), "{id}: TRUE/FALSE overlap");
-        assert!(true_ids.is_disjoint(&unknown_ids), "{id}: TRUE/UNKNOWN overlap");
-        assert!(false_ids.is_disjoint(&unknown_ids), "{id}: FALSE/UNKNOWN overlap");
+        assert!(
+            true_ids.is_disjoint(&unknown_ids),
+            "{id}: TRUE/UNKNOWN overlap"
+        );
+        assert!(
+            false_ids.is_disjoint(&unknown_ids),
+            "{id}: FALSE/UNKNOWN overlap"
+        );
         let partition: BTreeSet<_> = true_ids
             .union(&false_ids)
             .copied()
@@ -182,7 +200,10 @@ fn pinned_predicate_variants_match_complete_duckdb_bags_and_null_partitions() {
         let protocol = analyze_sql(sql, "duckdb", dialect.as_ref())
             .unwrap_or_else(|error| panic!("{id}: public analysis error {error}"));
         assert!(
-            protocol.statements().iter().all(|statement| matches!(statement, ProtocolStatement::Query(_))),
+            protocol
+                .statements()
+                .iter()
+                .all(|statement| matches!(statement, ProtocolStatement::Query(_))),
             "{id}: the public analyzer must not silently drop a filter"
         );
         let emitted: Value =
@@ -225,7 +246,10 @@ fn pinned_predicate_variants_match_complete_duckdb_bags_and_null_partitions() {
                 let mut wire: Value =
                     serde_json::from_str(&to_json(&next)).expect("canonical protocol document");
                 wire["inputs"][0]["dialect"] = Value::Null;
-                assert_eq!(wire, baseline, "{id}/{name}: portable typed semantics drifted");
+                assert_eq!(
+                    wire, baseline,
+                    "{id}/{name}: portable typed semantics drifted"
+                );
             }
         }
     }
