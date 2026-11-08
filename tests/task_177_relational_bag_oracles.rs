@@ -24,7 +24,13 @@ fn expected_bag(value: &Value) -> Vec<Vec<Option<i64>>> {
             row.as_array()
                 .expect("physical row")
                 .iter()
-                .map(|item| if item.is_null() { None } else { Some(item.as_i64().expect("integer")) })
+                .map(|item| {
+                    if item.is_null() {
+                        None
+                    } else {
+                        Some(item.as_i64().expect("integer"))
+                    }
+                })
                 .collect()
         })
         .collect();
@@ -53,7 +59,9 @@ fn verify_group(group: &str) {
     assert_eq!(fixture["schema_version"], 1);
     assert_eq!(fixture["owner"], "TASK-177");
     assert_eq!(fixture["case_count"], 51);
-    let groups = fixture["groups"].as_object().expect("three finite families");
+    let groups = fixture["groups"]
+        .as_object()
+        .expect("three finite families");
     assert_eq!(groups.len(), 3);
     let counted: usize = groups
         .values()
@@ -62,8 +70,12 @@ fn verify_group(group: &str) {
     assert_eq!(counted, 51, "a named native oracle was lost");
 
     let db = Connection::open_in_memory().expect("native DuckDB");
-    db.execute_batch(fixture["source_setup"].as_str().expect("physical source DDL and rows"))
-        .expect("complete native physical input");
+    db.execute_batch(
+        fixture["source_setup"]
+            .as_str()
+            .expect("physical source DDL and rows"),
+    )
+    .expect("complete native physical input");
     for (relation, columns) in [("orders", 2), ("customers", 2), ("products", 1)] {
         assert_eq!(
             actual_bag(&db, &format!("SELECT * FROM {relation}"), columns),
@@ -74,7 +86,9 @@ fn verify_group(group: &str) {
 
     let dialect = dialect_from_name("duckdb").expect("named parser dialect");
     let cases = fixture["cases"].as_array().expect("fixed oracles");
-    let ids = fixture["groups"][group].as_array().expect("named native family");
+    let ids = fixture["groups"][group]
+        .as_array()
+        .expect("named native family");
     for id in ids {
         let id = id.as_str().expect("stable case ID");
         let case = cases
@@ -87,8 +101,14 @@ fn verify_group(group: &str) {
             .iter()
             .find(|sample| sample["id"] == id)
             .expect("source case exists");
-        assert_eq!(case["sql"], sample["sql"], "{id}: original SQL may not drift");
-        assert_eq!(case["feature_id"], sample["feature_id"], "{id}: feature identity");
+        assert_eq!(
+            case["sql"], sample["sql"],
+            "{id}: original SQL may not drift"
+        );
+        assert_eq!(
+            case["feature_id"], sample["feature_id"],
+            "{id}: feature identity"
+        );
         assert_eq!(case["variant"], sample["variant"], "{id}: variant identity");
         let sql = case["sql"].as_str().expect("original SQL");
         let columns = case["columns"].as_u64().expect("projection arity") as usize;
