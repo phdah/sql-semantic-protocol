@@ -282,5 +282,31 @@
   },
   "observed_from": "https://github.com/phdah/sql-semantic-protocol/actions/runs/42482111998",
   "reference_policy": "For each SQL sample, compare full public emitted protocol against the first dialect returning a protocol with no Unsupported statement; null only inputs[].dialect metadata. Equality is structural, not independent physical correctness.",
-  "difference_paths": {}
+  "difference_paths": {
+    "88-C177-S100/bigquery": "ansi: $.graph.physical_source_plans[0].zero_output.cases",
+    "88-C177-S100/clickhouse": "ansi: $.graph.physical_source_plans[0].zero_output.cases",
+    "88-C177-S100/databricks": "ansi: $.graph.physical_source_plans[0].zero_output.cases",
+    "88-C177-S100/duckdb": "ansi: $.graph.physical_source_plans[0].zero_output.cases",
+    "88-C177-S100/generic": "ansi: $.graph.physical_source_plans[0].zero_output.cases",
+    "88-C177-S100/postgresql": "ansi: $.graph.physical_source_plans[0].zero_output.cases",
+    "88-C177-S100/snowflake": "ansi: $.graph.physical_source_plans[0].zero_output.cases",
+    "88-C177-S101/bigquery": "ansi: $.graph.physical_source_plans[0].zero_output.cases",
+    "88-C177-S101/clickhouse": "ansi: $.graph.physical_source_plans[0].zero_output.cases",
+    "88-C177-S101/databricks": "ansi: $.graph.physical_source_plans[0].zero_output.cases",
+    "88-C177-S101/duckdb": "ansi: $.graph.physical_source_plans[0].zero_output.cases",
+    "88-C177-S101/generic": "ansi: $.graph.physical_source_plans[0].zero_output.cases",
+    "88-C177-S101/postgresql": "ansi: $.graph.physical_source_plans[0].zero_output.cases",
+    "88-C177-S101/snowflake": "ansi: $.graph.physical_source_plans[0].zero_output.cases",
+    "88-C177-S104/bigquery": "ansi: $.graph.physical_source_plans[0].zero_output.cases",
+    "88-C177-S104/clickhouse": "ansi: $.graph.physical_source_plans[0].zero_output.cases",
+    "88-C177-S104/databricks": "ansi: $.graph.physical_source_plans[0].zero_output.cases",
+    "88-C177-S104/duckdb": "ansi: $.graph.physical_source_plans[0].zero_output.cases",
+    "88-C177-S104/generic": "ansi: $.graph.physical_source_plans[0].zero_output.cases",
+    "88-C177-S104/postgresql": "ansi: $.graph.physical_source_plans[0].zero_output.cases",
+    "88-C177-S104/snowflake": "ansi: $.graph.physical_source_plans[0].zero_output.cases",
+    "88-C177-S152/mssql": "ansi: $.graph.physical_nodes[1].operator_witnesses[0].qualifying.reason",
+    "88-C177-S179/duckdb": "ansi: $.inputs[0].statements[0].diagnostics[0].message"
+  },
+  "paths_observed_from": "https://github.com/phdah/sql-semantic-protocol/actions/runs/42482568918",
+  "difference_policy": "The first differing public JSON path is evidence for review triage, not a semantic root-cause determination; comparing one path never replaces full protocol equality."
 }
