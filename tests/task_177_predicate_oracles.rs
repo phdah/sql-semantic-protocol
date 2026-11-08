@@ -154,6 +154,17 @@ fn pinned_predicate_variants_match_complete_duckdb_bags_and_null_partitions() {
 
         let predicate = text(case, "predicate");
         let relation = text(case, "source_relation");
+        let (_, outer_from_where) = sql
+            .split_once(" FROM ")
+            .expect("all pinned SQL has one outer FROM");
+        let (actual_relation, actual_predicate) = outer_from_where
+            .split_once(" WHERE ")
+            .expect("outer source and predicate must be explicit");
+        assert_eq!(actual_relation, relation, "{id}: original source identity drift");
+        assert_eq!(
+            actual_predicate, predicate,
+            "{id}: diagnostic truth predicate must match original SQL"
+        );
         for (kind, field) in [
             ("IS TRUE", "expected_selected_rows"),
             ("IS FALSE", "expected_false_rows"),
