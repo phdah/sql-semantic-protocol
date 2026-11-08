@@ -1,0 +1,1440 @@
+{
+  "schema_version": 1,
+  "owner": "TASK-177",
+  "scope": "Original TASK-66 SQL variants with independent complete DuckDB terminal bag goldens; no implied strongest domain, vendor equivalence, or adapter certification",
+  "source_setup": "CREATE TABLE orders(id INTEGER, amount INTEGER); INSERT INTO orders VALUES (1,10),(1,10),(2,20),(3,NULL),(NULL,10),(4,-5); CREATE TABLE customers(id INTEGER, amount INTEGER); INSERT INTO customers VALUES (1,10),(1,10),(2,100),(5,-5),(NULL,10); CREATE TABLE products(id INTEGER); INSERT INTO products VALUES (1),(2),(3);",
+  "source_bags": {
+    "orders": [
+      [
+        null,
+        10
+      ],
+      [
+        1,
+        10
+      ],
+      [
+        1,
+        10
+      ],
+      [
+        2,
+        20
+      ],
+      [
+        3,
+        null
+      ],
+      [
+        4,
+        -5
+      ]
+    ],
+    "customers": [
+      [
+        null,
+        10
+      ],
+      [
+        1,
+        10
+      ],
+      [
+        1,
+        10
+      ],
+      [
+        2,
+        100
+      ],
+      [
+        5,
+        -5
+      ]
+    ],
+    "products": [
+      [
+        1
+      ],
+      [
+        2
+      ],
+      [
+        3
+      ]
+    ]
+  },
+  "case_count": 51,
+  "groups": {
+    "joins": [
+      "88-C177-S043",
+      "88-C177-S044",
+      "88-C177-S045",
+      "88-C177-S046",
+      "88-C177-S047",
+      "88-C177-S048",
+      "88-C177-S049",
+      "88-C177-S050",
+      "88-C177-S051",
+      "88-C177-S052",
+      "88-C177-S053",
+      "88-C177-S054",
+      "88-C177-S055",
+      "88-C177-S056",
+      "88-C177-S057",
+      "88-C177-S058",
+      "88-C177-S059",
+      "88-C177-S060",
+      "88-C177-S061",
+      "88-C177-S062",
+      "88-C177-S063",
+      "88-C177-S064",
+      "88-C177-S065"
+    ],
+    "sets": [
+      "88-C177-S066",
+      "88-C177-S067",
+      "88-C177-S068",
+      "88-C177-S069",
+      "88-C177-S070",
+      "88-C177-S071",
+      "88-C177-S072",
+      "88-C177-S073",
+      "88-C177-S074",
+      "88-C177-S075",
+      "88-C177-S076",
+      "88-C177-S077",
+      "88-C177-S078",
+      "88-C177-S079",
+      "88-C177-S080",
+      "88-C177-S081",
+      "88-C177-S082",
+      "88-C177-S083",
+      "88-C177-S085"
+    ],
+    "grouping": [
+      "88-C177-S088",
+      "88-C177-S089",
+      "88-C177-S091",
+      "88-C177-S092",
+      "88-C177-S094",
+      "88-C177-S095",
+      "88-C177-S096",
+      "88-C177-S098",
+      "88-C177-S099"
+    ]
+  },
+  "cases": [
+    {
+      "id": "88-C177-S043",
+      "feature_id": "joins.inner",
+      "variant": "ON equality",
+      "sql": "SELECT l.id FROM orders l INNER JOIN customers r ON l.id = r.id",
+      "expected_terminal_bag": [
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ]
+      ],
+      "columns": 1
+    },
+    {
+      "id": "88-C177-S044",
+      "feature_id": "joins.inner",
+      "variant": "USING",
+      "sql": "SELECT id FROM orders INNER JOIN customers USING (id)",
+      "expected_terminal_bag": [
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ]
+      ],
+      "columns": 1
+    },
+    {
+      "id": "88-C177-S045",
+      "feature_id": "joins.inner",
+      "variant": "NATURAL",
+      "sql": "SELECT id FROM orders NATURAL JOIN customers",
+      "expected_terminal_bag": [
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ]
+      ],
+      "columns": 1
+    },
+    {
+      "id": "88-C177-S046",
+      "feature_id": "joins.inner",
+      "variant": "composite keys",
+      "sql": "SELECT l.id FROM orders l INNER JOIN customers r ON l.id = r.id AND l.amount = r.amount",
+      "expected_terminal_bag": [
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ]
+      ],
+      "columns": 1
+    },
+    {
+      "id": "88-C177-S047",
+      "feature_id": "joins.inner",
+      "variant": "typed NULL equality",
+      "sql": "SELECT l.id FROM orders l INNER JOIN customers r ON l.amount IS NOT DISTINCT FROM r.amount",
+      "expected_terminal_bag": [
+        [
+          null
+        ],
+        [
+          null
+        ],
+        [
+          null
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          4
+        ]
+      ],
+      "columns": 1
+    },
+    {
+      "id": "88-C177-S048",
+      "feature_id": "joins.outer",
+      "variant": "LEFT",
+      "sql": "SELECT l.id FROM orders l LEFT JOIN customers r ON l.id = r.id",
+      "expected_terminal_bag": [
+        [
+          null
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          3
+        ],
+        [
+          4
+        ]
+      ],
+      "columns": 1
+    },
+    {
+      "id": "88-C177-S049",
+      "feature_id": "joins.outer",
+      "variant": "RIGHT",
+      "sql": "SELECT l.id FROM orders l RIGHT JOIN customers r ON l.id = r.id",
+      "expected_terminal_bag": [
+        [
+          null
+        ],
+        [
+          null
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ]
+      ],
+      "columns": 1
+    },
+    {
+      "id": "88-C177-S050",
+      "feature_id": "joins.outer",
+      "variant": "FULL",
+      "sql": "SELECT l.id FROM orders l FULL OUTER JOIN customers r ON l.id = r.id",
+      "expected_terminal_bag": [
+        [
+          null
+        ],
+        [
+          null
+        ],
+        [
+          null
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          3
+        ],
+        [
+          4
+        ]
+      ],
+      "columns": 1
+    },
+    {
+      "id": "88-C177-S051",
+      "feature_id": "joins.outer",
+      "variant": "preserved side",
+      "sql": "SELECT l.id FROM orders l LEFT JOIN customers r ON l.id = r.id WHERE r.id IS NULL",
+      "expected_terminal_bag": [
+        [
+          null
+        ],
+        [
+          3
+        ],
+        [
+          4
+        ]
+      ],
+      "columns": 1
+    },
+    {
+      "id": "88-C177-S052",
+      "feature_id": "joins.outer",
+      "variant": "NULL-extension",
+      "sql": "SELECT l.id, r.id FROM orders l LEFT JOIN customers r ON l.id = r.id",
+      "expected_terminal_bag": [
+        [
+          null,
+          null
+        ],
+        [
+          1,
+          1
+        ],
+        [
+          1,
+          1
+        ],
+        [
+          1,
+          1
+        ],
+        [
+          1,
+          1
+        ],
+        [
+          2,
+          2
+        ],
+        [
+          3,
+          null
+        ],
+        [
+          4,
+          null
+        ]
+      ],
+      "columns": 2
+    },
+    {
+      "id": "88-C177-S053",
+      "feature_id": "joins.outer",
+      "variant": "multiple matches",
+      "sql": "SELECT l.id FROM orders l LEFT JOIN customers r ON l.id = r.id",
+      "expected_terminal_bag": [
+        [
+          null
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          3
+        ],
+        [
+          4
+        ]
+      ],
+      "columns": 1
+    },
+    {
+      "id": "88-C177-S054",
+      "feature_id": "joins.semi_anti",
+      "variant": "SEMI",
+      "sql": "SELECT l.id FROM orders l LEFT SEMI JOIN customers r ON l.id = r.id",
+      "expected_terminal_bag": [
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ]
+      ],
+      "columns": 1
+    },
+    {
+      "id": "88-C177-S055",
+      "feature_id": "joins.semi_anti",
+      "variant": "ANTI",
+      "sql": "SELECT l.id FROM orders l LEFT ANTI JOIN customers r ON l.id = r.id",
+      "expected_terminal_bag": [
+        [
+          null
+        ],
+        [
+          3
+        ],
+        [
+          4
+        ]
+      ],
+      "columns": 1
+    },
+    {
+      "id": "88-C177-S056",
+      "feature_id": "joins.semi_anti",
+      "variant": "EXISTS-derived semi",
+      "sql": "SELECT l.id FROM orders l WHERE EXISTS (SELECT 1 FROM customers r WHERE r.id = l.id)",
+      "expected_terminal_bag": [
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ]
+      ],
+      "columns": 1
+    },
+    {
+      "id": "88-C177-S057",
+      "feature_id": "joins.semi_anti",
+      "variant": "anti with nullable keys",
+      "sql": "SELECT l.id FROM orders l WHERE NOT EXISTS (SELECT 1 FROM customers r WHERE r.id = l.id)",
+      "expected_terminal_bag": [
+        [
+          null
+        ],
+        [
+          3
+        ],
+        [
+          4
+        ]
+      ],
+      "columns": 1
+    },
+    {
+      "id": "88-C177-S058",
+      "feature_id": "joins.non_equi",
+      "variant": "theta join",
+      "sql": "SELECT l.id FROM orders l JOIN customers r ON l.amount > r.amount",
+      "expected_terminal_bag": [
+        [
+          null
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          2
+        ],
+        [
+          2
+        ],
+        [
+          2
+        ]
+      ],
+      "columns": 1
+    },
+    {
+      "id": "88-C177-S059",
+      "feature_id": "joins.non_equi",
+      "variant": "inequality",
+      "sql": "SELECT l.id FROM orders l JOIN customers r ON l.amount <= r.amount",
+      "expected_terminal_bag": [
+        [
+          null
+        ],
+        [
+          null
+        ],
+        [
+          null
+        ],
+        [
+          null
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          4
+        ],
+        [
+          4
+        ],
+        [
+          4
+        ],
+        [
+          4
+        ],
+        [
+          4
+        ]
+      ],
+      "columns": 1
+    },
+    {
+      "id": "88-C177-S060",
+      "feature_id": "joins.non_equi",
+      "variant": "expression keys",
+      "sql": "SELECT l.id FROM orders l JOIN customers r ON l.amount + 1 = r.amount",
+      "expected_terminal_bag": [],
+      "columns": 1
+    },
+    {
+      "id": "88-C177-S061",
+      "feature_id": "joins.non_equi",
+      "variant": "mixed AND/OR ON",
+      "sql": "SELECT l.id FROM orders l JOIN customers r ON (l.id = r.id OR l.amount > r.amount) AND r.amount IS NOT NULL",
+      "expected_terminal_bag": [
+        [
+          null
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          2
+        ],
+        [
+          2
+        ],
+        [
+          2
+        ],
+        [
+          2
+        ]
+      ],
+      "columns": 1
+    },
+    {
+      "id": "88-C177-S062",
+      "feature_id": "joins.repeated_source",
+      "variant": "self join",
+      "sql": "SELECT a.id FROM orders a JOIN orders b ON a.id = b.id",
+      "expected_terminal_bag": [
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          3
+        ],
+        [
+          4
+        ]
+      ],
+      "columns": 1
+    },
+    {
+      "id": "88-C177-S063",
+      "feature_id": "joins.repeated_source",
+      "variant": "repeated aliases",
+      "sql": "SELECT a.id FROM orders a JOIN orders b ON a.id = b.id JOIN orders c ON b.id = c.id",
+      "expected_terminal_bag": [
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          3
+        ],
+        [
+          4
+        ]
+      ],
+      "columns": 1
+    },
+    {
+      "id": "88-C177-S064",
+      "feature_id": "joins.repeated_source",
+      "variant": "multi-join trees",
+      "sql": "SELECT a.id FROM orders a JOIN customers b ON a.id = b.id JOIN products c ON b.id = c.id",
+      "expected_terminal_bag": [
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ]
+      ],
+      "columns": 1
+    },
+    {
+      "id": "88-C177-S065",
+      "feature_id": "joins.repeated_source",
+      "variant": "shared physical row identities",
+      "sql": "SELECT a.id FROM orders a JOIN orders b ON a.id = b.id",
+      "expected_terminal_bag": [
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          3
+        ],
+        [
+          4
+        ]
+      ],
+      "columns": 1
+    },
+    {
+      "id": "88-C177-S066",
+      "feature_id": "sets.union_all",
+      "variant": "UNION ALL",
+      "sql": "SELECT id FROM orders UNION ALL SELECT id FROM customers",
+      "expected_terminal_bag": [
+        [
+          null
+        ],
+        [
+          null
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          2
+        ],
+        [
+          3
+        ],
+        [
+          4
+        ],
+        [
+          5
+        ]
+      ],
+      "columns": 1
+    },
+    {
+      "id": "88-C177-S067",
+      "feature_id": "sets.union_all",
+      "variant": "positional alignment",
+      "sql": "SELECT id AS k FROM orders UNION ALL SELECT id AS other FROM customers",
+      "expected_terminal_bag": [
+        [
+          null
+        ],
+        [
+          null
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          2
+        ],
+        [
+          3
+        ],
+        [
+          4
+        ],
+        [
+          5
+        ]
+      ],
+      "columns": 1
+    },
+    {
+      "id": "88-C177-S068",
+      "feature_id": "sets.union_all",
+      "variant": "duplicate bag counts",
+      "sql": "SELECT id FROM orders UNION ALL SELECT id FROM orders",
+      "expected_terminal_bag": [
+        [
+          null
+        ],
+        [
+          null
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          2
+        ],
+        [
+          3
+        ],
+        [
+          3
+        ],
+        [
+          4
+        ],
+        [
+          4
+        ]
+      ],
+      "columns": 1
+    },
+    {
+      "id": "88-C177-S069",
+      "feature_id": "sets.union_all",
+      "variant": "NULL tuple identity",
+      "sql": "SELECT amount FROM orders UNION ALL SELECT amount FROM customers",
+      "expected_terminal_bag": [
+        [
+          null
+        ],
+        [
+          -5
+        ],
+        [
+          -5
+        ],
+        [
+          10
+        ],
+        [
+          10
+        ],
+        [
+          10
+        ],
+        [
+          10
+        ],
+        [
+          10
+        ],
+        [
+          10
+        ],
+        [
+          20
+        ],
+        [
+          100
+        ]
+      ],
+      "columns": 1
+    },
+    {
+      "id": "88-C177-S070",
+      "feature_id": "sets.union_distinct",
+      "variant": "UNION DISTINCT",
+      "sql": "SELECT id FROM orders UNION DISTINCT SELECT id FROM customers",
+      "expected_terminal_bag": [
+        [
+          null
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          3
+        ],
+        [
+          4
+        ],
+        [
+          5
+        ]
+      ],
+      "columns": 1
+    },
+    {
+      "id": "88-C177-S071",
+      "feature_id": "sets.union_distinct",
+      "variant": "overlapping branches",
+      "sql": "SELECT id FROM orders UNION SELECT id FROM orders",
+      "expected_terminal_bag": [
+        [
+          null
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          3
+        ],
+        [
+          4
+        ]
+      ],
+      "columns": 1
+    },
+    {
+      "id": "88-C177-S072",
+      "feature_id": "sets.union_distinct",
+      "variant": "duplicates",
+      "sql": "SELECT id FROM orders UNION SELECT id FROM customers",
+      "expected_terminal_bag": [
+        [
+          null
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          3
+        ],
+        [
+          4
+        ],
+        [
+          5
+        ]
+      ],
+      "columns": 1
+    },
+    {
+      "id": "88-C177-S073",
+      "feature_id": "sets.union_distinct",
+      "variant": "NULL tuples",
+      "sql": "SELECT amount FROM orders UNION SELECT amount FROM customers",
+      "expected_terminal_bag": [
+        [
+          null
+        ],
+        [
+          -5
+        ],
+        [
+          10
+        ],
+        [
+          20
+        ],
+        [
+          100
+        ]
+      ],
+      "columns": 1
+    },
+    {
+      "id": "88-C177-S074",
+      "feature_id": "sets.intersect",
+      "variant": "INTERSECT/INTERSECT ALL",
+      "sql": "SELECT id FROM orders INTERSECT SELECT id FROM customers",
+      "expected_terminal_bag": [
+        [
+          null
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ]
+      ],
+      "columns": 1
+    },
+    {
+      "id": "88-C177-S075",
+      "feature_id": "sets.intersect",
+      "variant": "nested",
+      "sql": "SELECT id FROM orders INTERSECT ALL SELECT id FROM customers",
+      "expected_terminal_bag": [
+        [
+          null
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ]
+      ],
+      "columns": 1
+    },
+    {
+      "id": "88-C177-S076",
+      "feature_id": "sets.intersect",
+      "variant": "multiset minimum",
+      "sql": "SELECT id FROM orders INTERSECT ALL SELECT id FROM customers",
+      "expected_terminal_bag": [
+        [
+          null
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ]
+      ],
+      "columns": 1
+    },
+    {
+      "id": "88-C177-S077",
+      "feature_id": "sets.intersect",
+      "variant": "NULL tuples",
+      "sql": "SELECT amount FROM orders INTERSECT SELECT amount FROM customers",
+      "expected_terminal_bag": [
+        [
+          -5
+        ],
+        [
+          10
+        ]
+      ],
+      "columns": 1
+    },
+    {
+      "id": "88-C177-S078",
+      "feature_id": "sets.except",
+      "variant": "EXCEPT/MINUS",
+      "sql": "SELECT id FROM orders EXCEPT SELECT id FROM customers",
+      "expected_terminal_bag": [
+        [
+          3
+        ],
+        [
+          4
+        ]
+      ],
+      "columns": 1
+    },
+    {
+      "id": "88-C177-S079",
+      "feature_id": "sets.except",
+      "variant": "EXCEPT ALL",
+      "sql": "SELECT id FROM orders EXCEPT ALL SELECT id FROM customers",
+      "expected_terminal_bag": [
+        [
+          3
+        ],
+        [
+          4
+        ]
+      ],
+      "columns": 1
+    },
+    {
+      "id": "88-C177-S080",
+      "feature_id": "sets.except",
+      "variant": "absence",
+      "sql": "SELECT id FROM orders EXCEPT SELECT id FROM customers",
+      "expected_terminal_bag": [
+        [
+          3
+        ],
+        [
+          4
+        ]
+      ],
+      "columns": 1
+    },
+    {
+      "id": "88-C177-S081",
+      "feature_id": "sets.except",
+      "variant": "multiset subtraction",
+      "sql": "SELECT id FROM orders EXCEPT ALL SELECT id FROM customers",
+      "expected_terminal_bag": [
+        [
+          3
+        ],
+        [
+          4
+        ]
+      ],
+      "columns": 1
+    },
+    {
+      "id": "88-C177-S082",
+      "feature_id": "sets.except",
+      "variant": "branch order",
+      "sql": "SELECT id FROM customers EXCEPT SELECT id FROM orders",
+      "expected_terminal_bag": [
+        [
+          5
+        ]
+      ],
+      "columns": 1
+    },
+    {
+      "id": "88-C177-S083",
+      "feature_id": "sets.alignment",
+      "variant": "BY NAME",
+      "sql": "SELECT id, amount FROM orders UNION BY NAME SELECT amount, id FROM customers",
+      "expected_terminal_bag": [
+        [
+          null,
+          10
+        ],
+        [
+          1,
+          10
+        ],
+        [
+          2,
+          20
+        ],
+        [
+          2,
+          100
+        ],
+        [
+          3,
+          null
+        ],
+        [
+          4,
+          -5
+        ],
+        [
+          5,
+          -5
+        ]
+      ],
+      "columns": 2
+    },
+    {
+      "id": "88-C177-S085",
+      "feature_id": "sets.alignment",
+      "variant": "column reorder",
+      "sql": "SELECT id, amount FROM orders UNION SELECT amount, id FROM customers",
+      "expected_terminal_bag": [
+        [
+          null,
+          10
+        ],
+        [
+          -5,
+          5
+        ],
+        [
+          1,
+          10
+        ],
+        [
+          2,
+          20
+        ],
+        [
+          3,
+          null
+        ],
+        [
+          4,
+          -5
+        ],
+        [
+          10,
+          null
+        ],
+        [
+          10,
+          1
+        ],
+        [
+          100,
+          2
+        ]
+      ],
+      "columns": 2
+    },
+    {
+      "id": "88-C177-S088",
+      "feature_id": "grouping.basic",
+      "variant": "GROUP BY columns/expressions",
+      "sql": "SELECT id, COUNT(*) FROM orders GROUP BY id",
+      "expected_terminal_bag": [
+        [
+          null,
+          1
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          2,
+          1
+        ],
+        [
+          3,
+          1
+        ],
+        [
+          4,
+          1
+        ]
+      ],
+      "columns": 2
+    },
+    {
+      "id": "88-C177-S089",
+      "feature_id": "grouping.basic",
+      "variant": "COUNT",
+      "sql": "SELECT COUNT(*) FROM orders",
+      "expected_terminal_bag": [
+        [
+          6
+        ]
+      ],
+      "columns": 1
+    },
+    {
+      "id": "88-C177-S091",
+      "feature_id": "grouping.basic",
+      "variant": "MIN",
+      "sql": "SELECT MIN(amount) FROM orders",
+      "expected_terminal_bag": [
+        [
+          -5
+        ]
+      ],
+      "columns": 1
+    },
+    {
+      "id": "88-C177-S092",
+      "feature_id": "grouping.basic",
+      "variant": "MAX",
+      "sql": "SELECT MAX(amount) FROM orders",
+      "expected_terminal_bag": [
+        [
+          20
+        ]
+      ],
+      "columns": 1
+    },
+    {
+      "id": "88-C177-S094",
+      "feature_id": "grouping.basic",
+      "variant": "duplicates",
+      "sql": "SELECT id, COUNT(*) FROM orders GROUP BY id",
+      "expected_terminal_bag": [
+        [
+          null,
+          1
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          2,
+          1
+        ],
+        [
+          3,
+          1
+        ],
+        [
+          4,
+          1
+        ]
+      ],
+      "columns": 2
+    },
+    {
+      "id": "88-C177-S095",
+      "feature_id": "grouping.advanced",
+      "variant": "DISTINCT aggregate",
+      "sql": "SELECT COUNT(DISTINCT id) FROM orders",
+      "expected_terminal_bag": [
+        [
+          4
+        ]
+      ],
+      "columns": 1
+    },
+    {
+      "id": "88-C177-S096",
+      "feature_id": "grouping.advanced",
+      "variant": "FILTER",
+      "sql": "SELECT COUNT(*) FILTER (WHERE amount > 0) FROM orders",
+      "expected_terminal_bag": [
+        [
+          4
+        ]
+      ],
+      "columns": 1
+    },
+    {
+      "id": "88-C177-S098",
+      "feature_id": "grouping.advanced",
+      "variant": "COUNT DISTINCT",
+      "sql": "SELECT COUNT(DISTINCT amount) FROM orders",
+      "expected_terminal_bag": [
+        [
+          3
+        ]
+      ],
+      "columns": 1
+    },
+    {
+      "id": "88-C177-S099",
+      "feature_id": "grouping.advanced",
+      "variant": "NULL elimination",
+      "sql": "SELECT COUNT(amount) FROM orders",
+      "expected_terminal_bag": [
+        [
+          5
+        ]
+      ],
+      "columns": 1
+    }
+  ]
+}
