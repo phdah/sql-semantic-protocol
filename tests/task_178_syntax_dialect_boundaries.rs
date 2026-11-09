@@ -17,16 +17,24 @@ fn normalized(mut document: Value) -> Value {
     document
 }
 
-fn classification(sql: &str, reference: &str, dialect_name: &str, no_ties_equivalence: bool) -> char {
+fn classification(
+    sql: &str,
+    reference: &str,
+    dialect_name: &str,
+    no_ties_equivalence: bool,
+) -> char {
     let dialect = dialect_from_name(dialect_name).expect("exposed dialect");
     let left = analyze_sql(sql, dialect_name, dialect.as_ref());
     let right = analyze_sql(reference, dialect_name, dialect.as_ref());
     let (Ok(left), Ok(right)) = (left, right) else {
         return 'R';
     };
-    if left.statements().iter().chain(right.statements()).any(|statement| {
-        matches!(statement, ProtocolStatement::Unsupported(_))
-    }) {
+    if left
+        .statements()
+        .iter()
+        .chain(right.statements())
+        .any(|statement| matches!(statement, ProtocolStatement::Unsupported(_)))
+    {
         return 'U';
     }
     if !no_ties_equivalence {
@@ -34,7 +42,11 @@ fn classification(sql: &str, reference: &str, dialect_name: &str, no_ties_equiva
     }
     let l = normalized(read(&to_json(&left)));
     let r = normalized(read(&to_json(&right)));
-    if l == r { 'C' } else { 'D' }
+    if l == r {
+        'C'
+    } else {
+        'D'
+    }
 }
 
 #[test]
@@ -45,25 +57,32 @@ fn top_fetch_and_minus_have_individually_pinned_thirteen_dialect_parser_evidence
     let dialects = fixture["dialects"].as_array().expect("13 project dialects");
     assert_eq!(dialects.len(), 13);
     let mut actual = Vec::new();
-    for case in fixture["cases"].as_array().expect("four named syntax variants") {
+    for case in fixture["cases"]
+        .as_array()
+        .expect("four named syntax variants")
+    {
         let id = case["id"].as_str().expect("stable case");
         let sql = case["sql"].as_str().expect("variant SQL");
         let reference = case["reference"].as_str().expect("reference SQL");
         let no_ties_equivalence = id != "88-C178-FETCH-TIES";
         let observed: String = dialects
             .iter()
-            .map(|name| classification(
-                sql,
-                reference,
-                name.as_str().expect("dialect"),
-                no_ties_equivalence,
-            ))
+            .map(|name| {
+                classification(
+                    sql,
+                    reference,
+                    name.as_str().expect("dialect"),
+                    no_ties_equivalence,
+                )
+            })
             .collect();
         actual.push(format!("{id}={observed}"));
         assert_eq!(observed.len(), 13);
         assert_eq!(
             observed,
-            case["expected_mask"].as_str().expect("frozen per-dialect evidence"),
+            case["expected_mask"]
+                .as_str()
+                .expect("frozen per-dialect evidence"),
             "{id}: observed parser or canonical classification changed; all={actual:?}"
         );
     }
@@ -89,8 +108,14 @@ fn native_except_and_limit_have_full_null_duplicate_output_and_nonmembership_gol
         bag.sort();
         bag
     };
-    assert_eq!(rows("SELECT id FROM orders"), vec![None,Some(1),Some(1),Some(2)]);
-    assert_eq!(rows("SELECT id FROM customers"), vec![None,Some(1),Some(1),Some(3)]);
+    assert_eq!(
+        rows("SELECT id FROM orders"),
+        vec![None, Some(1), Some(1), Some(2)]
+    );
+    assert_eq!(
+        rows("SELECT id FROM customers"),
+        vec![None, Some(1), Some(1), Some(3)]
+    );
     assert_eq!(
         rows("SELECT id FROM orders EXCEPT SELECT id FROM customers"),
         vec![Some(2)],
@@ -103,7 +128,7 @@ fn native_except_and_limit_have_full_null_duplicate_output_and_nonmembership_gol
     );
     assert_eq!(
         rows("SELECT id FROM orders ORDER BY id NULLS LAST LIMIT 2 OFFSET 1"),
-        vec![Some(1),Some(2)],
+        vec![Some(1), Some(2)],
         "pagination preserves terminal bag and exact source occurrence multiplicity"
     );
 }
