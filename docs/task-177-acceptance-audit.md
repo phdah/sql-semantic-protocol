@@ -61,7 +61,7 @@ triage evidence, **not** a reviewed explanation that the dialect laws differ.
 The [case-level physical proof ledger](task-177-physical-proof-ledger.json)
 independently reconciles the 251 original TASK-66 sample identities against
 their **actual first-party native and typed-oracle owners**, without promoting
-missing proofs. It records **228 distinct original SQL examples** with original-SQL native DuckDB source and terminal outputs or poststate oracles, and **24** that still lack one.
+missing proofs. It records **228 distinct original SQL examples** with original-SQL native DuckDB source and terminal outputs or poststate oracles, and **23** that still lack one.
 Two separate TASK-177 positive/Impossible goldens are not among the 251 sample
 IDs. The different native suites overlap on three ROLLUP/CUBE/GROUPING cases;
 overlapping executions must not inflate unique proof counts.

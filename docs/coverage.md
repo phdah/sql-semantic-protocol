@@ -175,9 +175,9 @@ The [complete-source predicate cases](task-177-predicate-oracles.json) certify
 25 original TASK-66 SQL samples against fully pinned physical DuckDB source bags.
 The [native regression](../tests/task_177_predicate_oracles.rs) checks complete
 terminal bags, TRUE/FALSE/UNKNOWN and NOT TRUE source occurrence partitions,
-NULL, duplicate values and six strongest typed inclusion-set/interval bounds.
+NULL, duplicate values and ten strongest typed inclusion-set/interval bounds.
 The [adapter parity regression](../tests/task_177_predicate_adapter_parity.rs)
-asserts those six bounded output facts through direct SQL DDL, dbt compiled
+asserts those ten bounded output facts through direct SQL DDL, dbt compiled
 model metadata and representable ODCS physical types. Unexecuted native vendor
 engines, remaining parser variants and arbitrary adapter materializations retain
 their original release-blocking review disposition.
@@ -206,10 +206,12 @@ string/timezone/floating semantics), `task-177-schema-lifecycle-oracles.json`
 (constraints, DDL and transaction rollback), and `task-177-window-oracles.json`
 (ranking and window frames), with matching public native integration tests.
 These are local original-SQL executions, not cross-vendor or canonical strongest
-value-domain proofs.
+value-domain proofs. S181 now also has an exact native GEOMETRY type and POINT WKT
+oracle; S176 is explicitly rejected by the DuckDB BLOB length binder, and S242
+has a valid native EXPLAIN plan without a stable complete plan oracle.
 
 Two additional dedicated
-positive/Impossible goldens are separate from those examples. Only six
+positive/Impossible goldens are separate from those examples. Only ten
 portable examples have the narrower strongest typed SQL/dbt/ODCS adapter
 parity check. Three exact syntax forms are DuckDB-native rejections,
 and the name-aligned output case remains canonically unsupported. No
