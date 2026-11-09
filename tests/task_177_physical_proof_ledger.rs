@@ -149,15 +149,19 @@ fn all_task_177_native_and_typed_proof_gaps_are_explicitly_accounted_for() {
 
     let typed: BTreeSet<_> = [
         "88-C177-S001",
+        "88-C177-S002",
         "88-C177-S003",
         "88-C177-S004",
         "88-C177-S005",
         "88-C177-S006",
         "88-C177-S007",
+        "88-C177-S008",
+        "88-C177-S009",
+        "88-C177-S012",
     ]
     .into_iter()
     .collect();
-    assert_eq!(ledger["six_case_sql_dbt_odcs_domain_parity"], 6);
+    assert_eq!(ledger["typed_sql_dbt_odcs_domain_parity_sample_count"], 10);
     assert_eq!(ledger["independent_signed_off_samples"], 0);
 
     let mut observed = BTreeSet::new();
@@ -196,7 +200,7 @@ fn all_task_177_native_and_typed_proof_gaps_are_explicitly_accounted_for() {
         assert_eq!(
             cell["canonical_typed_adapter_parity"],
             if typed.contains(id) {
-                "six_case_sql_dbt_odcs_exact_domain"
+                "ten_case_sql_dbt_odcs_exact_domain"
             } else {
                 "not_proven"
             },
@@ -245,5 +249,5 @@ fn all_task_177_native_and_typed_proof_gaps_are_explicitly_accounted_for() {
     }
     assert_eq!(observed, ids, "no original SQL variant may be omitted");
     assert_eq!(native_count, 227);
-    assert_eq!(typed_count, 6);
+    assert_eq!(typed_count, 10);
 }

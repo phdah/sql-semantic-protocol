@@ -55,54 +55,71 @@ fn expected_ids(case: &Value, field: &str) -> BTreeSet<i64> {
 
 fn assert_interval(domain: &ValueDomain, case: &Value) {
     let expected = &case["expected_projected_domain"];
-    if expected["kind"] == "set_include" {
+    let id = text(case, "id");
+    if expected["kind"] == "set_include" || expected["kind"] == "set_exclude" {
         let ValueDomain::Set(set) = domain else {
-            panic!(
-                "{}: equality must preserve a typed include set: {domain:?}",
-                text(case, "id")
-            );
+            panic!("{id}: expected exact typed set, found {domain:?}");
         };
-        assert_eq!(set.mode(), SetMode::Include);
-        assert_eq!(set.values().len(), 1);
-        let value = expected["values"][0].as_i64().expect("equal integer");
-        assert_eq!(
-            set.values()[0].value(),
-            &LiteralValue::Number(value.to_string())
-        );
+        let mode = if expected["kind"] == "set_include" {
+            SetMode::Include
+        } else {
+            SetMode::Exclude
+        };
+        assert_eq!(set.mode(), mode, "{id}: inclusion/exclusion direction");
+        let expected_values = expected["values"].as_array().expect("typed set values");
+        assert_eq!(set.values().len(), expected_values.len(), "{id}: set cardinality");
+        for value in expected_values {
+            let literal = if value.is_null() {
+                LiteralValue::Null
+            } else {
+                LiteralValue::Number(value.as_i64().expect("integer literal").to_string())
+            };
+            assert!(
+                set.values().iter().any(|actual| actual.value() == &literal),
+                "{id}: missing expected set element {literal:?}"
+            );
+        }
         return;
     }
 
     let ValueDomain::Ranges(ranges) = domain else {
-        panic!(
-            "{}: expected constrained interval: {domain:?}",
-            text(case, "id")
-        );
+        panic!("{id}: expected typed range(s), found {domain:?}");
     };
-    let [interval] = ranges.ranges() else {
-        panic!(
-            "{}: expected exactly one source-derived interval",
-            text(case, "id")
-        );
+    let expected_ranges: Vec<&Value> = match text(expected, "kind") {
+        "range" => vec![expected],
+        "range_union" => expected["ranges"]
+            .as_array()
+            .expect("two complementary ranges")
+            .iter()
+            .collect(),
+        kind => panic!("{id}: unknown expected domain kind {kind}"),
     };
-    for (actual, bound) in [
-        (interval.lower(), &expected["lower"]),
-        (interval.upper(), &expected["upper"]),
-    ] {
-        if bound.is_null() {
-            assert!(actual.is_none(), "{}: unexpected bound", text(case, "id"));
-        } else {
-            let data = bound
-                .as_array()
-                .expect("integer boundary and inclusive flag");
-            let actual = actual.expect("typed value bound required");
-            assert_eq!(
-                actual.value().value(),
-                &LiteralValue::Number(data[0].as_i64().expect("boundary integer").to_string())
-            );
-            assert_eq!(
-                actual.inclusive(),
-                data[1].as_bool().expect("inclusive/exclusive flag")
-            );
+    assert_eq!(
+        ranges.ranges().len(),
+        expected_ranges.len(),
+        "{id}: number of disjoint ranges"
+    );
+    for (range, expected_range) in ranges.ranges().iter().zip(expected_ranges) {
+        for (actual, bound) in [
+            (range.lower(), &expected_range["lower"]),
+            (range.upper(), &expected_range["upper"]),
+        ] {
+            if bound.is_null() {
+                assert!(actual.is_none(), "{id}: unexpected bound");
+            } else {
+                let data = bound.as_array().expect("integer boundary and inclusivity");
+                let actual = actual.expect("typed value bound required");
+                assert_eq!(
+                    actual.value().value(),
+                    &LiteralValue::Number(data[0].as_i64().expect("boundary integer").to_string()),
+                    "{id}: exact numeric boundary"
+                );
+                assert_eq!(
+                    actual.inclusive(),
+                    data[1].as_bool().expect("inclusive/exclusive flag"),
+                    "{id}: bound inclusivity"
+                );
+            }
         }
     }
 }
@@ -236,8 +253,8 @@ fn pinned_predicate_variants_match_complete_duckdb_bags_and_null_partitions() {
             };
             assert_interval(column.domain(), case);
             let expected_kind = match text(&case["expected_projected_domain"], "kind") {
-                "set_include" => "set",
-                "range" => "ranges",
+                "set_include" | "set_exclude" => "set",
+                "range" | "range_union" => "ranges",
                 other => panic!("{id}: unexpected domain type {other}"),
             };
             assert_eq!(

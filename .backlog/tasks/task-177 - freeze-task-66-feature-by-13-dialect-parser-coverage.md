@@ -199,3 +199,9 @@ requirements documented in `docs/task-177-acceptance-audit.md`.
 - CI-confirmed original SQL deterministic tests now cover 13 additional distinct source/terminal or poststate examples; the case-level proof ledger records **227 of 251** with native evidence and **24** original SQL examples remaining without a complete native terminal/state proof.
 - New native control tests exercise frozen rejected SQL with complete source setups, sample only source occurrences, and bound the recursive/RANDOM controls without inventing exact stochastic or nonterminating terminal outputs.
 - None of this certifies strongest typed outcome domains for all parser cells, cross-adapter parity, vendor/session equivalence, approved conditional laws or independent signoff. Original AC #1..#5 remain unchecked; TASK-178 is still blocked.
+
+## Expanded exact predicate-domain and adapter evidence (2026-11-09; no signoff)
+
+- Four further original predicate samples (S002, S008, S009, S012) now have independent typed expected results for NULL-excluding inequality, disjoint exclusive NOT BETWEEN intervals and two ID lower-bound conjunctions. All 13 portable parser dialects must preserve these typed claims.
+- Compiled dbt and ODCS source-equivalent facts must preserve the same domains as direct DDL for **ten** original samples, not just the prior six. This is a narrow parity subset and does not promote other variants to exact evidence.
+- All original AC #1..#5 remain incomplete pending exhaustive mandatory proofs and independent signoff.

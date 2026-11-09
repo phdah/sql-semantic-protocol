@@ -1,4 +1,4 @@
-//! TASK-177 source-independent typed-domain parity for six portable filters.
+//! TASK-177 source-independent typed-domain parity for ten portable filters.
 //! Direct DDL, dbt compiled manifest and ODCS source metadata must agree on
 //! canonical output value domains. The adapter's provenance and execution
 //! claims must remain separate from the facts those sources can actually prove.
@@ -95,16 +95,20 @@ fn odcs_source_catalog() -> RelationCatalog {
 }
 
 #[test]
-fn task_177_compiled_dbt_and_direct_sql_preserve_six_typed_filter_domains() {
+fn task_177_compiled_dbt_and_direct_sql_preserve_ten_typed_filter_domains() {
     let fixture: Value = serde_json::from_str(ORACLES).expect("oracle fixture");
     let catalog = direct_ddl_catalog();
     let ids = [
         "88-C177-S001",
+        "88-C177-S002",
         "88-C177-S003",
         "88-C177-S004",
         "88-C177-S005",
         "88-C177-S006",
         "88-C177-S007",
+        "88-C177-S008",
+        "88-C177-S009",
+        "88-C177-S012",
     ];
     for id in ids {
         let case = fixture["cases"]

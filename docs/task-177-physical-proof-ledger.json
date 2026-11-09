@@ -17,7 +17,6 @@
   "sample_count": 251,
   "native_duckdb_complete_original_sql_samples": 227,
   "native_duckdb_not_proven_original_sql_samples": 24,
-  "six_case_sql_dbt_odcs_domain_parity": 6,
   "independent_signed_off_samples": 0,
   "two_additional_explicit_positive_impossible_goldens": "88-C177-P / 88-C177-N",
   "known_dialect_boundaries": {
@@ -43,7 +42,7 @@
       "feature_id": "predicates.integer_ranges",
       "variant": "=",
       "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
-      "canonical_typed_adapter_parity": "six_case_sql_dbt_odcs_exact_domain",
+      "canonical_typed_adapter_parity": "ten_case_sql_dbt_odcs_exact_domain",
       "native_exact_syntax": "as_in_native_evidence",
       "independent_signoff": "blocked"
     },
@@ -52,7 +51,7 @@
       "feature_id": "predicates.integer_ranges",
       "variant": "<>",
       "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
-      "canonical_typed_adapter_parity": "not_proven",
+      "canonical_typed_adapter_parity": "ten_case_sql_dbt_odcs_exact_domain",
       "native_exact_syntax": "as_in_native_evidence",
       "independent_signoff": "blocked"
     },
@@ -61,7 +60,7 @@
       "feature_id": "predicates.integer_ranges",
       "variant": "<",
       "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
-      "canonical_typed_adapter_parity": "six_case_sql_dbt_odcs_exact_domain",
+      "canonical_typed_adapter_parity": "ten_case_sql_dbt_odcs_exact_domain",
       "native_exact_syntax": "as_in_native_evidence",
       "independent_signoff": "blocked"
     },
@@ -70,7 +69,7 @@
       "feature_id": "predicates.integer_ranges",
       "variant": "<=",
       "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
-      "canonical_typed_adapter_parity": "six_case_sql_dbt_odcs_exact_domain",
+      "canonical_typed_adapter_parity": "ten_case_sql_dbt_odcs_exact_domain",
       "native_exact_syntax": "as_in_native_evidence",
       "independent_signoff": "blocked"
     },
@@ -79,7 +78,7 @@
       "feature_id": "predicates.integer_ranges",
       "variant": ">",
       "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
-      "canonical_typed_adapter_parity": "six_case_sql_dbt_odcs_exact_domain",
+      "canonical_typed_adapter_parity": "ten_case_sql_dbt_odcs_exact_domain",
       "native_exact_syntax": "as_in_native_evidence",
       "independent_signoff": "blocked"
     },
@@ -88,7 +87,7 @@
       "feature_id": "predicates.integer_ranges",
       "variant": ">=",
       "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
-      "canonical_typed_adapter_parity": "six_case_sql_dbt_odcs_exact_domain",
+      "canonical_typed_adapter_parity": "ten_case_sql_dbt_odcs_exact_domain",
       "native_exact_syntax": "as_in_native_evidence",
       "independent_signoff": "blocked"
     },
@@ -97,7 +96,7 @@
       "feature_id": "predicates.integer_ranges",
       "variant": "BETWEEN",
       "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
-      "canonical_typed_adapter_parity": "six_case_sql_dbt_odcs_exact_domain",
+      "canonical_typed_adapter_parity": "ten_case_sql_dbt_odcs_exact_domain",
       "native_exact_syntax": "as_in_native_evidence",
       "independent_signoff": "blocked"
     },
@@ -106,7 +105,7 @@
       "feature_id": "predicates.integer_ranges",
       "variant": "NOT BETWEEN",
       "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
-      "canonical_typed_adapter_parity": "not_proven",
+      "canonical_typed_adapter_parity": "ten_case_sql_dbt_odcs_exact_domain",
       "native_exact_syntax": "as_in_native_evidence",
       "independent_signoff": "blocked"
     },
@@ -115,7 +114,7 @@
       "feature_id": "predicates.boolean_logic",
       "variant": "AND",
       "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
-      "canonical_typed_adapter_parity": "not_proven",
+      "canonical_typed_adapter_parity": "ten_case_sql_dbt_odcs_exact_domain",
       "native_exact_syntax": "as_in_native_evidence",
       "independent_signoff": "blocked"
     },
@@ -142,7 +141,7 @@
       "feature_id": "predicates.boolean_logic",
       "variant": "parenthesized",
       "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
-      "canonical_typed_adapter_parity": "not_proven",
+      "canonical_typed_adapter_parity": "ten_case_sql_dbt_odcs_exact_domain",
       "native_exact_syntax": "as_in_native_evidence",
       "independent_signoff": "blocked"
     },
@@ -2297,5 +2296,6 @@
       "native_exact_syntax": "as_in_native_evidence",
       "independent_signoff": "blocked"
     }
-  ]
+  ],
+  "typed_sql_dbt_odcs_domain_parity_sample_count": 10
 }

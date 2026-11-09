@@ -70,7 +70,7 @@ overlapping executions must not inflate unique proof counts.
   Impossible goldens with full physical input/terminal/NOT TRUE/UNKNOWN bags.
 - The [25 original predicate cases](task-177-predicate-oracles.json)
   retain complete NULL/duplicate source, truth partitions and terminal bags;
-  six of them have strongest typed interval/set and direct SQL/dbt/ODCS parity
+  ten of them have strongest typed interval/set and direct SQL/dbt/ODCS parity
   checks in [the adapter test](../tests/task_177_predicate_adapter_parity.rs).
   dbt view execution remains `Unattested`.
 - The [five drift native cases](../tests/task_177_cross_dialect_native_oracles.rs)
@@ -106,7 +106,9 @@ overlapping executions must not inflate unique proof counts.
   not an empty two-column semantic proof.
 - [The fail-closed ledger test](../tests/task_177_physical_proof_ledger.rs)
   ensures 251 unique rows, 227 native original examples, 24 missing
-  examples, six narrower typed adapter cases and **zero** independent signoffs.
+  examples, ten narrower typed adapter cases and **zero** independent signoffs.
+
+Four additional independently specified typed outcomes (NOT EQUAL with NULL excluded, NOT BETWEEN as two open intervals, AND and parenthesized OR/AND with positive ID bounds) now have direct SQL, dbt and ODCS parity assertions. They expand typed parity from six to ten without treating other output domains as exact.
 
 These are concrete incremental oracles, **not** 251 fully certified canonical
 typed-domain, rejected-direction, SQL/dbt/ODCS and vendor/session cases.
@@ -122,9 +124,9 @@ The new [bounded native probes](../tests/task_177_native_boundary_probes.rs) exe
 | AC | Executable evidence | Remaining blocker |
 | --- | --- | --- |
 | #1 Complete finite freeze | 251 stable sample IDs, 3,263 parser and analyzer cells, full canonical comparison, explicit source tasks and boundaries | Complete independently reviewed typed-domain, full physical source/terminal and P/N/Impossible/Residual evidence is still absent for most mandatory variants, including combined synonyms and alternative syntax forms |
-| #2 Sound outcome semantics | 25 exact NULL/duplicate predicate membership oracles, six typed range/set claims, two original P/N goldens, five native grouping/LATERAL/STRUCT oracles | No independent strongest-domain and cross-source correlation certification for every remaining family or every parsed dialect; matching protocol documents can still contain Unknown or incomplete outcomes |
+| #2 Sound outcome semantics | 25 exact NULL/duplicate predicate membership oracles, ten typed range/set claims, two original P/N goldens, five native grouping/LATERAL/STRUCT oracles | No independent strongest-domain and cross-source correlation certification for every remaining family or every parsed dialect; matching protocol documents can still contain Unknown or incomplete outcomes |
 | #3 Native differential proof | 227 distinct original SQL sample source/terminal or state oracles plus two separate positive/Impossible goldens; three-valued rejection, duplicate amplification, group subtotals, ranking and subquery identities | 24 original SQL samples lack independent native complete-bag or state oracle; many executed cases also lack original rejected-direction and strongest canonical typed-domain proofs |
-| #4 Dialects and adapter parity | Full 3,263-cell structural comparison, named 23-drifts/55-syntax/116-Unsupported boundaries, six SQL/dbt/ODCS typed-domain fact equivalences | Cross-dialect semantic divergences need reviewed resolution or explicit approved conditional laws; three new DuckDB exact-syntax rejections are recorded. Remaining representable adapter facts need parity tests and other native vendor/session execution remains unattested |
+| #4 Dialects and adapter parity | Full 3,263-cell structural comparison, named 23-drifts/55-syntax/116-Unsupported boundaries, ten SQL/dbt/ODCS typed-domain fact equivalences | Cross-dialect semantic divergences need reviewed resolution or explicit approved conditional laws; three new DuckDB exact-syntax rejections are recorded. Remaining representable adapter facts need parity tests and other native vendor/session execution remains unattested |
 | #5 Full verification, pinned consumer and independent signoff | GitHub Actions runs Rust default/no-default tests, fmt, strict Clippy, docs, dependencies and dbt Core E2E on each PR head | Draft consumer PR #47 records candidate-pinned sql-tdg compatibility checks. After every protocol head change, re-pin and rerun all five consumer checks against the exact final SHA; an earlier green run does not verify a newer candidate. Independent per-cell acceptance/release review is still missing |
 
 ## Rules for releasing or signing off

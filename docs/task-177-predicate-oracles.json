@@ -269,7 +269,13 @@
           20
         ]
       ],
-      "expected_projected_domain": null
+      "expected_projected_domain": {
+        "kind": "set_exclude",
+        "values": [
+          10,
+          null
+        ]
+      }
     },
     {
       "id": "88-C177-S003",
@@ -859,7 +865,25 @@
           20
         ]
       ],
-      "expected_projected_domain": null
+      "expected_projected_domain": {
+        "kind": "range_union",
+        "ranges": [
+          {
+            "lower": null,
+            "upper": [
+              1,
+              false
+            ]
+          },
+          {
+            "lower": [
+              10,
+              false
+            ],
+            "upper": null
+          }
+        ]
+      }
     },
     {
       "id": "88-C177-S009",
@@ -954,7 +978,14 @@
           9
         ]
       ],
-      "expected_projected_domain": null
+      "expected_projected_domain": {
+        "kind": "range",
+        "lower": [
+          0,
+          false
+        ],
+        "upper": null
+      }
     },
     {
       "id": "88-C177-S010",
@@ -1241,7 +1272,14 @@
           9
         ]
       ],
-      "expected_projected_domain": null
+      "expected_projected_domain": {
+        "kind": "range",
+        "lower": [
+          0,
+          false
+        ],
+        "upper": null
+      }
     },
     {
       "id": "88-C177-S013",
