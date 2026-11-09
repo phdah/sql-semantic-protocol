@@ -514,14 +514,24 @@ pub(super) fn unsupported_expression_with_reason(
     diagnostics: &mut Vec<Diagnostic>,
     missing_law: &str,
 ) -> Expression {
+    let reason = format!("{feature} {expression} is parsed but {missing_law}");
+    unsupported_expression_with_canonical_reason(feature, area, diagnostics, reason)
+}
+
+/// Retain an explicit, stable typed Unknown reason when equivalent SQLparser
+/// dialect ASTs print the same unsupported SQL construct differently.
+/// Never infer scalar, nested-type, or native-vendor evaluation from this.
+pub(super) fn unsupported_expression_with_canonical_reason(
+    feature: &str,
+    area: DiagnosticArea,
+    diagnostics: &mut Vec<Diagnostic>,
+    reason: String,
+) -> Expression {
     let code = if area == DiagnosticArea::Function {
         "unsupported_function"
     } else {
         "unsupported_expression"
     };
-    let reason = format!("{feature} {expression} is parsed but {missing_law}");
-
     diagnostics.push(warning(code, area, &reason));
-
     Expression::Unsupported(UnsupportedSemantic::new(feature.to_string(), Some(reason)))
 }
