@@ -55,7 +55,9 @@ fn original_string_predicates_match_complete_nullable_duplicate_source_and_outpu
             .expect("complete input"),
     )
     .expect("native named customer source");
-    let mut statement = db.prepare("SELECT id, name FROM customers").expect("source");
+    let mut statement = db
+        .prepare("SELECT id, name FROM customers")
+        .expect("source");
     let mut source: Vec<(Option<i64>, Option<String>)> = statement
         .query_map([], |row| Ok((row.get(0)?, row.get(1)?)))
         .expect("native source")
@@ -66,9 +68,14 @@ fn original_string_predicates_match_complete_nullable_duplicate_source_and_outpu
             .expect("complete independent source bag");
     source.sort();
     expected.sort();
-    assert_eq!(source, expected, "complete string source including NULL names");
+    assert_eq!(
+        source, expected,
+        "complete string source including NULL names"
+    );
 
-    let cases = fixture["customer_cases"].as_array().expect("five string cases");
+    let cases = fixture["customer_cases"]
+        .as_array()
+        .expect("five string cases");
     assert_eq!(cases.len(), 5);
     for case in cases {
         let id = case["id"].as_str().expect("fixed variant");
@@ -105,9 +112,14 @@ fn original_temporal_comparisons_obey_explicit_utc_session_and_source_nulls() {
             .expect("all source timestamps");
     actual.sort();
     expected.sort();
-    assert_eq!(actual, expected, "full timestamp source with NULL and duplicates");
+    assert_eq!(
+        actual, expected,
+        "full timestamp source with NULL and duplicates"
+    );
 
-    let cases = fixture["temporal_cases"].as_array().expect("four temporal cases");
+    let cases = fixture["temporal_cases"]
+        .as_array()
+        .expect("four temporal cases");
     assert_eq!(cases.len(), 4);
     for case in cases {
         let id = case["id"].as_str().expect("fixed variant");
@@ -137,10 +149,9 @@ fn signed_zero_equality_and_explicit_null_sort_have_native_oracles() {
         .map(|row| row.expect("source value"))
         .collect();
     let mut expected: Vec<(Option<i64>, Option<f64>)> =
-        serde_json::from_value(fixture["floating_source_bag"].clone())
-            .expect("literal source");
-    actual.sort_by(|a, b| a.0.cmp(&b.0));
-    expected.sort_by(|a, b| a.0.cmp(&b.0));
+        serde_json::from_value(fixture["floating_source_bag"].clone()).expect("literal source");
+    actual.sort_by_key(|row| row.0);
+    expected.sort_by_key(|row| row.0);
     assert_eq!(actual, expected, "signed zeros, NULL and nonzero source");
     let case = &fixture["floating_cases"][0];
     assert_int_bag(
@@ -185,5 +196,8 @@ fn fixed_width_overflow_is_a_native_negative_oracle() {
             .query([])
             .and_then(|mut rows| rows.next().map(|_| ()))
     });
-    assert!(result.is_err(), "{id}: arithmetic overflow must not wrap silently");
+    assert!(
+        result.is_err(),
+        "{id}: arithmetic overflow must not wrap silently"
+    );
 }
