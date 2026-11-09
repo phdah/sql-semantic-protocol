@@ -15339,5 +15339,52 @@
     "vendor_session_laws_owned_by": "TASK-179",
     "independent_whole_matrix_signoff_owned_by": "TASK-180",
     "full_matrix_release_approved": false
+  },
+  "task_178_canonical_equivalence_acceptance": {
+    "owner": "TASK-178",
+    "parent": "TASK-88",
+    "status": "in_progress_partial",
+    "freeze": "docs/task-178-acceptance-freeze.json",
+    "freeze_version": 1,
+    "fixture_ids": [
+      "88-C178-P",
+      "88-C178-N"
+    ],
+    "representative_families": [
+      "predicate",
+      "join",
+      "set",
+      "window",
+      "pagination",
+      "dml",
+      "ddl"
+    ],
+    "representative_cases": 7,
+    "parser_dialects": 13,
+    "public_document_cells_under_test": 91,
+    "full_mandatory_variant_matrix_frozen": false,
+    "literal_physical_bags": "docs/task-178-acceptance-freeze.json",
+    "public_native_test": "tests/task_178_portable_equivalence.rs",
+    "source_original_sql_provenance": "docs/task-177-parser-samples.json",
+    "preexisting_drift_cells": 23,
+    "preexisting_drift_cases": 5,
+    "unresolved_portable_spelling_boundaries": [
+      "TOP",
+      "FETCH WITH TIES",
+      "MINUS",
+      "ROLLUP/CUBE/GROUPING",
+      "LATERAL",
+      "STRUCT CAST"
+    ],
+    "typed_oracle_matrix_complete": false,
+    "negative_rejected_complete": false,
+    "dialect_semantics_certified": false,
+    "adapter_parity_certified": false,
+    "native_vendor_execution_certified": false,
+    "independent_review_verified": false,
+    "child_done": false,
+    "parent_done": false,
+    "release_approved": false,
+    "acceptance_audit": "docs/task-178-acceptance-audit.md"
   }
 }
