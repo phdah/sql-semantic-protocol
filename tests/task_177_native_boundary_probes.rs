@@ -91,7 +91,7 @@ fn frozen_native_rejections_are_observed_with_complete_source_relations() {
     let rejected = boundaries["expected_native_rejections"]
         .as_array()
         .expect("named and reviewed exception candidates");
-    assert_eq!(rejected.len(), 11);
+    assert_eq!(rejected.len(), 12);
     let mut unexpectedly_accepted = Vec::new();
     for case in rejected {
         let id = case["id"].as_str().expect("original ID");
@@ -122,26 +122,6 @@ fn frozen_native_rejections_are_observed_with_complete_source_relations() {
         unexpectedly_accepted.is_empty(),
         "original SQL unexpectedly executed: {unexpectedly_accepted:?}"
     );
-}
-
-#[test]
-fn explicitly_executable_geometry_has_a_real_native_result_but_no_fixed_domain_proof() {
-    let registry = parse(BOUNDARIES);
-    let samples = parse(SAMPLES);
-    let cases = registry["native_executable_without_fixed_terminal"]
-        .as_array()
-        .expect("accepted conditional native cases");
-    assert_eq!(cases.len(), 1);
-    for case in cases {
-        let id = case.as_str().expect("original ID");
-        let db = source_db();
-        let mut statement = db
-            .prepare(original(&samples, id))
-            .expect("native geometry statement");
-        let mut rows = statement.query([]).expect("geometry evaluated");
-        assert!(rows.next().expect("native geometry row").is_some());
-        assert!(rows.next().expect("single terminal").is_none());
-    }
 }
 
 #[test]

@@ -12,11 +12,12 @@
     "docs/task-177-predicate-environment-oracles.json",
     "docs/task-177-schema-lifecycle-oracles.json",
     "docs/task-177-window-oracles.json",
-    "docs/task-177-final-native-deterministic.json"
+    "docs/task-177-final-native-deterministic.json",
+    "tests/task_177_native_candidate_oracles.rs"
   ],
   "sample_count": 251,
-  "native_duckdb_complete_original_sql_samples": 227,
-  "native_duckdb_not_proven_original_sql_samples": 24,
+  "native_duckdb_complete_original_sql_samples": 228,
+  "native_duckdb_not_proven_original_sql_samples": 23,
   "independent_signed_off_samples": 0,
   "two_additional_explicit_positive_impossible_goldens": "88-C177-P / 88-C177-N",
   "known_dialect_boundaries": {
@@ -1618,7 +1619,7 @@
       "variant": "binary",
       "native_duckdb_original_sql": "not_proven",
       "canonical_typed_adapter_parity": "not_proven",
-      "native_exact_syntax": "as_in_native_evidence",
+      "native_exact_syntax": "duckdb_rejected_binary_length_companion_verified",
       "independent_signoff": "blocked"
     },
     {
@@ -1661,9 +1662,9 @@
       "id": "88-C177-S181",
       "feature_id": "types.structural",
       "variant": "geometry",
-      "native_duckdb_original_sql": "not_proven",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
       "canonical_typed_adapter_parity": "not_proven",
-      "native_exact_syntax": "duckdb_executes_without_terminal_oracle",
+      "native_exact_syntax": "native_geometry_wkt_exact",
       "independent_signoff": "blocked"
     },
     {

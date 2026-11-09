@@ -27,7 +27,7 @@
     "child_done": false,
     "parent_closed": false,
     "release_approved": false,
-    "boundary": "227 distinct original TASK-66 SQL cases now have first-party native DuckDB source/terminal evidence; 24 remain unproved. Neither parser evidence nor native output equality certifies strongest typed semantics, adapters, all vendors, or independent release approval.",
+    "boundary": "228 distinct original TASK-66 SQL cases now have first-party native DuckDB source/terminal evidence; 23 remain unproved. Neither parser evidence nor native output equality certifies strongest typed semantics, adapters, all vendors, or independent release approval.",
     "sql_cases": "docs/task-177-parser-samples.json",
     "parser_snapshot": "docs/task-177-parser-snapshot.json",
     "explicit_sql_cases": 251,
@@ -43,12 +43,13 @@
       "tests/task_177_window_oracles.rs",
       "tests/task_177_physical_proof_ledger.rs",
       "tests/task_177_final_native_deterministic.rs",
-      "tests/task_177_native_boundary_probes.rs"
+      "tests/task_177_native_boundary_probes.rs",
+      "tests/task_177_native_candidate_oracles.rs"
     ],
     "original_ac_status": {
-      "1": "in_progress:251_named_cases_and_3263_parser/canonical_cells_fixed;227_native_sources_and_terminals;mandatory_typed_truth_and_independent_review_incomplete",
-      "2": "in_progress:227_native_source_terminal_cases_and_two_separate_positive_impossible_goldens;only_10_typed_sql_dbt_odcs_domain_cases;strongest_proofs_missing",
-      "3": "in_progress:227_of_251_original_sql_samples_have_literal_native_duckdb_source_terminal_oracles;24_missing;negative_rejected_direction_and_typed_claims_incomplete",
+      "1": "in_progress:251_named_cases_and_3263_parser/canonical_cells_fixed;228_native_sources_and_terminals;mandatory_typed_truth_and_independent_review_incomplete",
+      "2": "in_progress:228_native_source_terminal_cases_and_two_separate_positive_impossible_goldens;only_10_typed_sql_dbt_odcs_domain_cases;strongest_proofs_missing",
+      "3": "in_progress:228_of_251_original_sql_samples_have_literal_native_duckdb_source_terminal_oracles;23_missing;negative_rejected_direction_and_typed_claims_incomplete",
       "4": "all_3263_public_parser_and_canonical_comparisons_tested;23_drifts_with_exact_first_path_across_5_cases;55_parser_and_116_unsupported_boundaries_pending_review;sql_dbt_odcs_parity_on_10_typed_cases",
       "5": "CI_and_exact_protocol_head_consumer_pin_must_be_rerun_after_final_change;independent_per_cell_signoff_missing"
     },
@@ -86,10 +87,10 @@
     "canonical_drift_path_evidence": "The first unequal public JSON field is pinned per drift; structural equivalence alone is not typed/native exactness.",
     "cross_dialect_native_oracle_test": "tests/task_177_cross_dialect_native_oracles.rs",
     "cross_dialect_native_oracle_cases": 5,
-    "native_duckdb_sample_cases_total": 227,
+    "native_duckdb_sample_cases_total": 228,
     "physical_proof_ledger": "docs/task-177-physical-proof-ledger.json",
-    "complete_native_original_sample_count": 227,
-    "missing_native_original_sample_count": 24,
+    "complete_native_original_sample_count": 228,
+    "missing_native_original_sample_count": 23,
     "typed_sql_dbt_odcs_domain_parity_sample_count": 10,
     "independent_signed_off_sample_count": 0
   },

@@ -205,3 +205,9 @@ requirements documented in `docs/task-177-acceptance-audit.md`.
 - Four further original predicate samples (S002, S008, S009, S012) now have independent typed expected results for NULL-excluding inequality, disjoint exclusive NOT BETWEEN intervals and two ID lower-bound conjunctions. All 13 portable parser dialects must preserve these typed claims.
 - Compiled dbt and ODCS source-equivalent facts must preserve the same domains as direct DDL for **ten** original samples, not just the prior six. This is a narrow parity subset and does not promote other variants to exact evidence.
 - All original AC #1..#5 remain incomplete pending exhaustive mandatory proofs and independent signoff.
+
+## Verified geometry outcome and binary binder boundary (2026-11-09; still In Progress)
+
+- Exact original S181 geometry WKT and native type add one successful terminal oracle: **228 of 251** originals now have native evidence; **23** do not have successful exact native terminal/state proof.
+- S176 original BINARY(2) fails the DuckDB BLOB binder. A separately executed BLOB companion is not original execution. S242 EXPLAIN executes but the optimizer plan is session/version-dependent.
+- Rejected original statements also have complete source bag preservation checks. Strongest typed-domain, 13-vendor/session and independent signoff gates still block AC #1..#5 and Done.

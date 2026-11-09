@@ -198,8 +198,8 @@ identities and STRUCT field values on complete pinned inputs. Protocol
 document equality is not native engine or strongest typed outcome proof.
 
 TASK-177 has [an explicit original-SQL physical proof ledger](task-177-physical-proof-ledger.json):
-227 of 251 distinct original SQL examples have first-party native DuckDB
-source and terminal output or state oracles; 24 still lack them. The new evidence is owned by `task-177-native-expansion.json` (bags, ordering,
+228 of 251 distinct original SQL examples have first-party native DuckDB
+source and terminal output or state oracles; 23 still lack them. The new evidence is owned by `task-177-native-expansion.json` (bags, ordering,
 PIVOT and multi-terminal SQL), `task-177-write-oracles.json` (complete DML
 pre/post-state), `task-177-predicate-environment-oracles.json` (fixed
 string/timezone/floating semantics), `task-177-schema-lifecycle-oracles.json`

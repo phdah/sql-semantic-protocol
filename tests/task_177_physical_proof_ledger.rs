@@ -133,13 +133,14 @@ fn all_task_177_native_and_typed_proof_gaps_are_explicitly_accounted_for() {
     assert!(deterministic.is_disjoint(&verified));
     assert!(deterministic.is_subset(&ids));
     verified.extend(deterministic);
-    assert_eq!(
-        verified.len(),
-        227,
-        "all native oracle owners accounted for"
+    assert_eq!(verified.len(), 227, "prior deterministic proof count");
+    assert!(
+        verified.insert("88-C177-S181".to_string()),
+        "original geometry cannot be double-counted"
     );
-    assert_eq!(ledger["native_duckdb_complete_original_sql_samples"], 227);
-    assert_eq!(ledger["native_duckdb_not_proven_original_sql_samples"], 24);
+    assert_eq!(verified.len(), 228, "all native oracle owners accounted for");
+    assert_eq!(ledger["native_duckdb_complete_original_sql_samples"], 228);
+    assert_eq!(ledger["native_duckdb_not_proven_original_sql_samples"], 23);
     for id in ["88-C177-S033", "88-C177-S086", "88-C177-S140"] {
         assert!(
             !verified.contains(id),
@@ -231,14 +232,15 @@ fn all_task_177_native_and_typed_proof_gaps_are_explicitly_accounted_for() {
             );
         }
         if id == "88-C177-S181" {
+            assert_eq!(cell["native_exact_syntax"], "native_geometry_wkt_exact");
+            assert!(proved, "{id}: original native geometry must have exact terminal evidence");
+        }
+        if id == "88-C177-S176" {
             assert_eq!(
                 cell["native_exact_syntax"],
-                "duckdb_executes_without_terminal_oracle"
+                "duckdb_rejected_binary_length_companion_verified"
             );
-            assert!(
-                !proved,
-                "{id}: physical execution is not a fixed typed oracle"
-            );
+            assert!(!proved, "{id}: portable BLOB control does not prove frozen BINARY(2)");
         }
         if id == "88-C177-S083" {
             assert_eq!(
@@ -248,6 +250,6 @@ fn all_task_177_native_and_typed_proof_gaps_are_explicitly_accounted_for() {
         }
     }
     assert_eq!(observed, ids, "no original SQL variant may be omitted");
-    assert_eq!(native_count, 227);
+    assert_eq!(native_count, 228);
     assert_eq!(typed_count, 10);
 }

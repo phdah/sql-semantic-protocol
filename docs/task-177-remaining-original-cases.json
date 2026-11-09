@@ -3,8 +3,8 @@
   "owner": "TASK-177",
   "source_samples": "docs/task-177-parser-samples.json",
   "source_proof_ledger": "docs/task-177-physical-proof-ledger.json",
-  "case_count": 24,
-  "classification_scope": "24 original SQL examples remain without independently proven native exact terminal/state outcomes, including engine-specific rejections, unbounded or stochastic cases and two conditional native candidates. A negative/conditional control never counts as a successful complete terminal proof.",
+  "case_count": 23,
+  "classification_scope": "23 original SQL examples still have no successful fixed native terminal/state proof: 15 invalid or conditional native inputs, five stochastic samples, nonterminating recursion, RANDOM(), and optimizer-dependent EXPLAIN. A rejected/conditional outcome is evidence but is not a successful terminal bag.",
   "cases": [
     {
       "id": "88-C177-S033",
@@ -241,23 +241,8 @@
       "semantic_owner": [
         "TASK-79"
       ],
-      "proof_obligation": "native_execution_candidate",
-      "native_duckdb_status": "unverified_in_this_registry",
-      "strongest_typed_domain": "not_proven",
-      "sql_dbt_odcs_parity": "not_proven",
-      "native_vendor_session_equivalence": "not_proven",
-      "independent_disposition": "blocked_not_approved"
-    },
-    {
-      "id": "88-C177-S181",
-      "feature_id": "types.structural",
-      "variant": "geometry",
-      "sql": "SELECT CAST('POINT(0 0)' AS GEOMETRY) AS v",
-      "semantic_owner": [
-        "TASK-79"
-      ],
-      "proof_obligation": "native_execution_candidate",
-      "native_duckdb_status": "observed_native_executable_without_fixed_typed_terminal",
+      "proof_obligation": "explicit_native_rejection_or_conditional_syntax",
+      "native_duckdb_status": "duckdb_binder_rejects_parameterized_blob_companion_verified",
       "strongest_typed_domain": "not_proven",
       "sql_dbt_odcs_parity": "not_proven",
       "native_vendor_session_equivalence": "not_proven",

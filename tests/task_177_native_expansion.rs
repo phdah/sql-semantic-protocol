@@ -152,6 +152,16 @@ fn named_incompatible_arity_and_multivalued_scalar_query_fail_natively() {
             result.is_err(),
             "{id}: must reject the original invalid input"
         );
+        for (relation, columns) in [("orders", 2), ("customers", 2), ("products", 1)] {
+            let mut actual = rows(&db, &format!("SELECT * FROM {relation}"), columns);
+            let mut expected = expected_rows(&relational["source_bags"][relation]);
+            actual.sort();
+            expected.sort();
+            assert_eq!(
+                actual, expected,
+                "{id}: rejected original SQL must preserve complete physical source bags"
+            );
+        }
     }
 }
 

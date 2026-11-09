@@ -61,7 +61,7 @@ triage evidence, **not** a reviewed explanation that the dialect laws differ.
 The [case-level physical proof ledger](task-177-physical-proof-ledger.json)
 independently reconciles the 251 original TASK-66 sample identities against
 their **actual first-party native and typed-oracle owners**, without promoting
-missing proofs. It records **227 distinct original SQL examples** with original-SQL native DuckDB source and terminal outputs or poststate oracles, and **24** that still lack one.
+missing proofs. It records **228 distinct original SQL examples** with original-SQL native DuckDB source and terminal outputs or poststate oracles, and **24** that still lack one.
 Two separate TASK-177 positive/Impossible goldens are not among the 251 sample
 IDs. The different native suites overlap on three ROLLUP/CUBE/GROUPING cases;
 overlapping executions must not inflate unique proof counts.
@@ -94,7 +94,7 @@ overlapping executions must not inflate unique proof counts.
   inputs and expected complete outputs. A valid native fixture does not itself
   certify strongest value domains or cross-adapter equivalence.
 - Three additional native negative cases (overflow, incompatible UNION arity,
-  multi-valued scalar subquery) are kept separate from the 227 completed
+  multi-valued scalar subquery) are kept separate from the 228 completed
   original SQL terminal/state oracles.
 - Three exact SQL samples expose **DuckDB native syntax boundaries**:
   `88-C177-S054` (LEFT SEMI), `88-C177-S055` (LEFT ANTI), and
@@ -105,10 +105,12 @@ overlapping executions must not inflate unique proof counts.
   name-based column alignment remains explicitly unsupported and diagnostic,
   not an empty two-column semantic proof.
 - [The fail-closed ledger test](../tests/task_177_physical_proof_ledger.rs)
-  ensures 251 unique rows, 227 native original examples, 24 missing
+  ensures 251 unique rows, 228 native original examples, 23 missing
   examples, ten narrower typed adapter cases and **zero** independent signoffs.
 
 Four additional independently specified typed outcomes (NOT EQUAL with NULL excluded, NOT BETWEEN as two open intervals, AND and parenthesized OR/AND with positive ID bounds) now have direct SQL, dbt and ODCS parity assertions. They expand typed parity from six to ten without treating other output domains as exact.
+
+The latest original S181 GEOMETRY type and exact POINT(0 0) WKT oracle increases native source/terminal coverage to **228/251**. Rejected original SQL now also checks the entire unchanged physical source bag, including NULLs and duplicates, and never counts equivalent alternative syntax as original execution.
 
 These are concrete incremental oracles, **not** 251 fully certified canonical
 typed-domain, rejected-direction, SQL/dbt/ODCS and vendor/session cases.
@@ -117,7 +119,7 @@ typed-domain, rejected-direction, SQL/dbt/ODCS and vendor/session cases.
 
 The exact original SQL deterministic native oracle suite adds **13** distinct cases (pattern matching, collation, NaN, scalar aggregates, typed scalar results, enum catalog state and UTC session state). Its source and terminal/poststate evidence is guarded in the case-level ledger; fixed native rejection and stochastic-control probes do not inflate completed counts. The full typed-domain, adapter, vendor/session and independent signoff obligations remain blocked.
 
-The new [bounded native probes](../tests/task_177_native_boundary_probes.rs) execute the original rejected syntax with complete source relations and classify stochastic sampling, recursion and RANDOM without inventing fixed outputs. Three original samples (S176, S181, S242) remain conditional native candidates. S181's geometry cast executes in the pinned DuckDB session, contradicting the earlier rejection assumption; its exact typed terminal proof remains missing. **Neither test passing nor an explicit rejection approves release Residual or Impossible status.**
+The new [bounded native probes](../tests/task_177_native_boundary_probes.rs) execute the original rejected syntax with complete source relations and classify stochastic sampling, recursion and RANDOM without inventing fixed outputs. S181 original GEOMETRY now has an independently specified exact native type/WKT oracle. S176 instead has an explicit DuckDB binder rejection for BINARY(2) with a separate BLOB control. S242 original EXPLAIN executes, but its engine-dependent plan text remains conditional rather than an independently fixed exact terminal bag. **Neither test passing nor an explicit rejection approves release Residual or Impossible status.**
 
 ## Original child acceptance criteria
 
@@ -125,7 +127,7 @@ The new [bounded native probes](../tests/task_177_native_boundary_probes.rs) exe
 | --- | --- | --- |
 | #1 Complete finite freeze | 251 stable sample IDs, 3,263 parser and analyzer cells, full canonical comparison, explicit source tasks and boundaries | Complete independently reviewed typed-domain, full physical source/terminal and P/N/Impossible/Residual evidence is still absent for most mandatory variants, including combined synonyms and alternative syntax forms |
 | #2 Sound outcome semantics | 25 exact NULL/duplicate predicate membership oracles, ten typed range/set claims, two original P/N goldens, five native grouping/LATERAL/STRUCT oracles | No independent strongest-domain and cross-source correlation certification for every remaining family or every parsed dialect; matching protocol documents can still contain Unknown or incomplete outcomes |
-| #3 Native differential proof | 227 distinct original SQL sample source/terminal or state oracles plus two separate positive/Impossible goldens; three-valued rejection, duplicate amplification, group subtotals, ranking and subquery identities | 24 original SQL samples lack independent native complete-bag or state oracle; many executed cases also lack original rejected-direction and strongest canonical typed-domain proofs |
+| #3 Native differential proof | 228 distinct original SQL sample source/terminal or state oracles plus two separate positive/Impossible goldens; three-valued rejection, duplicate amplification, group subtotals, ranking and subquery identities | 23 original SQL samples lack independent native complete-bag or state oracle; many executed cases also lack original rejected-direction and strongest canonical typed-domain proofs |
 | #4 Dialects and adapter parity | Full 3,263-cell structural comparison, named 23-drifts/55-syntax/116-Unsupported boundaries, ten SQL/dbt/ODCS typed-domain fact equivalences | Cross-dialect semantic divergences need reviewed resolution or explicit approved conditional laws; three new DuckDB exact-syntax rejections are recorded. Remaining representable adapter facts need parity tests and other native vendor/session execution remains unattested |
 | #5 Full verification, pinned consumer and independent signoff | GitHub Actions runs Rust default/no-default tests, fmt, strict Clippy, docs, dependencies and dbt Core E2E on each PR head | Draft consumer PR #47 records candidate-pinned sql-tdg compatibility checks. After every protocol head change, re-pin and rerun all five consumer checks against the exact final SHA; an earlier green run does not verify a newer candidate. Independent per-cell acceptance/release review is still missing |
 

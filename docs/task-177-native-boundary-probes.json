@@ -28,6 +28,10 @@
       "reason": "DuckDB rejects frozen CROSS APPLY spelling"
     },
     {
+      "id": "88-C177-S176",
+      "reason": "DuckDB maps BINARY to BLOB and rejects length parameters at binding"
+    },
+    {
       "id": "88-C177-S182",
       "reason": "unknown user-defined type"
     },
@@ -70,8 +74,8 @@
   ],
   "runtime_random_case": "88-C177-S250",
   "explain_case": "88-C177-S242",
-  "outside_native_proof": "Original recursion without termination must not execute indefinitely; stochastic sampling and RANDOM have no fixed terminal bag; external file, UDF and vendor-only syntax require a reviewed explicit conditional disposition. Native GEOMETRY cast S181 executes in this DuckDB session but has no independently pinned exact typed terminal representation or external vendor law.",
+  "outside_native_proof": "Unbounded recursion and stochastic sampling/RANDOM cannot be given fixed successful terminal bags. S176 BINARY(2) is a native DuckDB binder rejection with a separate BLOB control, not a successful original terminal. S181 original GEOMETRY has exact type and WKT physical proof. S242 EXPLAIN executes, but the optimizer-dependent plan is not a fixed exact semantic outcome; external vendors, UDFs, and files require reviewed conditional evidence.",
   "native_executable_without_fixed_terminal": [
-    "88-C177-S181"
+    "88-C177-S242"
   ]
 }
