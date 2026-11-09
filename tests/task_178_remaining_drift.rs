@@ -18,18 +18,38 @@ fn wire(sql: &str, name: &str) -> Value {
 }
 
 #[test]
-fn lateral_source_correlation_retains_same_full_physical_plan_across_ansi_and_mssql() {
+fn mssql_on_true_is_an_explicit_identifier_truth_boundary_not_a_portable_lateral_equivalence() {
     let sql = "SELECT o.id FROM orders o JOIN LATERAL (SELECT o.id) l ON TRUE";
     let ansi = wire(sql, "ansi");
     let mssql = wire(sql, "mssql");
-    assert_eq!(
+    assert_ne!(
         ansi, mssql,
-        "TASK-178 correlated LATERAL drift: ansi.witness={}; mssql.witness={}; ansi.join={}; mssql.join={}",
-        ansi["graph"]["physical_nodes"][1]["operator_witnesses"],
-        mssql["graph"]["physical_nodes"][1]["operator_witnesses"],
-        ansi["inputs"][0]["statements"][0]["joins"],
-        mssql["inputs"][0]["statements"][0]["joins"],
+        "MSSQL interprets unquoted TRUE as a source identifier; rewriting \
+         its equality predicate into an ANSI boolean literal would be unsound"
     );
+    let lhs = &ansi["inputs"][0]["statements"][0]["joins"][0]["condition"];
+    let rhs = &mssql["inputs"][0]["statements"][0]["joins"][0]["condition"];
+    assert_eq!(lhs["kind"], "boolean_expression");
+    assert_eq!(rhs["kind"], "comparison");
+    assert_eq!(rhs["left"]["name"], "TRUE");
+    assert_eq!(rhs["left"]["relation"], "orders");
+    for (name, value) in [("ansi", &ansi), ("mssql", &mssql)] {
+        assert_eq!(
+            value["graph"]["physical_source_plans"][0]["qualifying"]["status"],
+            "residual",
+            "{name}: no invented cross-row physical witness"
+        );
+        assert_eq!(
+            value["graph"]["physical_source_plans"][0]["rejected"]["status"],
+            "residual",
+            "{name}: no invented NOT TRUE/absence witness"
+        );
+        assert_eq!(
+            value["inputs"][0]["statements"][0]["condition_exactness"]["status"],
+            "residual",
+            "{name}: correlated LATERAL has no proved engine-independent scope"
+        );
+    }
 }
 
 #[test]
