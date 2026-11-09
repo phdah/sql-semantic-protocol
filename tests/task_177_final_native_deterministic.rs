@@ -40,10 +40,7 @@ fn assert_integer_bag(db: &Connection, sql: &str, expected: &Value, id: &str) {
     let mut expected: Vec<Vec<Option<i64>>> =
         serde_json::from_value(expected.clone()).expect("literal full occurrence bag");
     assert!(expected.iter().all(|row| row.len() == 1));
-    let mut want: Vec<_> = expected
-        .drain(..)
-        .map(|row| row[0])
-        .collect();
+    let mut want: Vec<_> = expected.drain(..).map(|row| row[0]).collect();
     actual.sort();
     want.sort();
     assert_eq!(actual, want, "{id}: complete original SQL output bag");
@@ -75,7 +72,10 @@ fn original_pattern_and_collation_sql_has_complete_literal_native_bags() {
             .expect("literal customer source");
     observed.sort();
     expected.sort();
-    assert_eq!(observed, expected, "complete source NULL and duplicate identities");
+    assert_eq!(
+        observed, expected,
+        "complete source NULL and duplicate identities"
+    );
 
     for case in evidence["original_integer_selects"]
         .as_array()
@@ -100,7 +100,9 @@ fn native_nan_comparison_retains_source_duplicates_and_non_ieee_equality_law() {
     let samples = read(SAMPLES);
     let db = Connection::open_in_memory().expect("native DuckDB");
     db.execute_batch(
-        evidence["nan_source_setup"].as_str().expect("typed NaN source"),
+        evidence["nan_source_setup"]
+            .as_str()
+            .expect("typed NaN source"),
     )
     .expect("native floating input");
     assert_integer_bag(
@@ -189,7 +191,9 @@ fn original_enum_and_timezone_statements_have_explicit_native_session_poststates
         let actual: String = row.get(0).expect("poststate value");
         assert_eq!(
             actual,
-            case["expected"].as_str().expect("independently expected state"),
+            case["expected"]
+                .as_str()
+                .expect("independently expected state"),
             "{id}: original SQL must produce pinned native state"
         );
         assert!(rows.next().expect("one state row").is_none());
