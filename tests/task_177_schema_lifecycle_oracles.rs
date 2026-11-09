@@ -66,7 +66,9 @@ fn original_schema_and_transaction_programs_match_source_terminal_and_negative_o
     let samples = read(SAMPLES);
     assert_eq!(fixture["schema_version"], 1);
     assert_eq!(fixture["case_count"], 22);
-    let cases = fixture["cases"].as_array().expect("task-owned SQL programs");
+    let cases = fixture["cases"]
+        .as_array()
+        .expect("task-owned SQL programs");
     assert_eq!(cases.len(), 22);
 
     for case in cases {
