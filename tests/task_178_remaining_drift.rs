@@ -8,8 +8,8 @@ use sql_semantic_protocol::{analyze_sql, dialect_from_name, to_json};
 
 fn wire(sql: &str, name: &str) -> Value {
     let dialect = dialect_from_name(name).expect("exposed public dialect");
-    let protocol = analyze_sql(sql, name, dialect.as_ref())
-        .expect("SQL must parse with both public dialects");
+    let protocol =
+        analyze_sql(sql, name, dialect.as_ref()).expect("SQL must parse with both public dialects");
     let mut value: Value = serde_json::from_str(&to_json(&protocol)).expect("public JSON");
     for input in value["inputs"].as_array_mut().expect("input") {
         input["dialect"] = Value::Null;
