@@ -90,7 +90,7 @@ fn every_parsed_variant_has_a_pinned_public_protocol_equivalence_classification(
     assert_eq!(
         rows(&reconciliation, "remaining_boundaries").len(),
         2,
-        "only LATERAL and STRUCT CAST are still structurally divergent"
+        "only MSSQL LATERAL TRUE-identifier semantics remain structurally divergent"
     );
     let fixed_paths: BTreeSet<String> = fixed_cells
         .iter()
