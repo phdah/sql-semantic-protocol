@@ -78,14 +78,25 @@ fn top_fetch_and_minus_have_individually_pinned_thirteen_dialect_parser_evidence
             .collect();
         actual.push(format!("{id}={observed}"));
         assert_eq!(observed.len(), 13);
-        assert_eq!(
-            observed,
-            case["expected_mask"]
-                .as_str()
-                .expect("frozen per-dialect evidence"),
-            "{id}: observed parser or canonical classification changed; all={actual:?}"
-        );
     }
+    let expected: Vec<_> = fixture["cases"]
+        .as_array()
+        .expect("named syntax variants")
+        .iter()
+        .map(|case| {
+            format!(
+                "{}={}",
+                case["id"].as_str().expect("case ID"),
+                case["expected_mask"]
+                    .as_str()
+                    .expect("frozen per-dialect evidence")
+            )
+        })
+        .collect();
+    assert_eq!(
+        actual, expected,
+        "all TOP/FETCH/MINUS dialect classifications must be reviewed together"
+    );
     assert_eq!(fixture["release_approved"], false);
 }
 
