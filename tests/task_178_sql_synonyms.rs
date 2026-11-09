@@ -57,7 +57,9 @@ fn wanted(value: &Value) -> Vec<Vec<Option<i64>>> {
 #[test]
 fn portable_spelling_pairs_have_identical_complete_protocol_for_thirteen_dialects() {
     let fixture = parse(PAIRS);
-    let cases = fixture["exact_synonym_cases"].as_array().expect("exact pairs");
+    let cases = fixture["exact_synonym_cases"]
+        .as_array()
+        .expect("exact pairs");
     assert_eq!(fixture["schema_version"], 1);
     assert_eq!(cases.len(), 3);
     assert_eq!(fixture["dialects"].as_array().expect("dialects").len(), 13);
@@ -80,7 +82,10 @@ fn portable_spelling_pairs_have_identical_complete_protocol_for_thirteen_dialect
 fn portable_spelling_pairs_have_independent_native_duckdb_null_duplicate_bags() {
     let fixture = parse(PAIRS);
     let source = parse(FIXTURE);
-    for pair in fixture["exact_synonym_cases"].as_array().expect("exact pairs") {
+    for pair in fixture["exact_synonym_cases"]
+        .as_array()
+        .expect("exact pairs")
+    {
         let db = Connection::open_in_memory().expect("in-memory DuckDB");
         db.execute_batch(source["source_setup"].as_str().expect("complete input"))
             .expect("complete NULL and duplicate source");
@@ -90,7 +95,10 @@ fn portable_spelling_pairs_have_independent_native_duckdb_null_duplicate_bags() 
                     .prepare(&format!("SELECT id, amount FROM {name}"))
                     .expect("source bag");
                 stmt.query_map([], |row| {
-                    Ok(vec![row.get::<_, Option<i64>>(0)?, row.get::<_, Option<i64>>(1)?])
+                    Ok(vec![
+                        row.get::<_, Option<i64>>(0)?,
+                        row.get::<_, Option<i64>>(1)?,
+                    ])
                 })
                 .expect("full source result")
                 .map(|row| row.expect("physical source row"))
@@ -126,7 +134,8 @@ fn distinct_dialect_and_materialization_laws_remain_named_unapproved_boundaries(
         assert!(
             boundaries
                 .iter()
-                .any(|boundary| boundary["id"] == id && boundary["required_evidence"].as_str().is_some()),
+                .any(|boundary| boundary["id"] == id
+                    && boundary["required_evidence"].as_str().is_some()),
             "{id}: named variant must not be silently omitted"
         );
     }
