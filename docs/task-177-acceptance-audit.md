@@ -115,7 +115,7 @@ typed-domain, rejected-direction, SQL/dbt/ODCS and vendor/session cases.
 
 The exact original SQL deterministic native oracle suite adds **13** distinct cases (pattern matching, collation, NaN, scalar aggregates, typed scalar results, enum catalog state and UTC session state). Its source and terminal/poststate evidence is guarded in the case-level ledger; fixed native rejection and stochastic-control probes do not inflate completed counts. The full typed-domain, adapter, vendor/session and independent signoff obligations remain blocked.
 
-The new [bounded native probes](../tests/task_177_native_boundary_probes.rs) execute the original rejected syntax with complete source relations and classify stochastic sampling, recursion and RANDOM without inventing fixed outputs. Two original samples (S176, S242) remain conditional native candidates. **Neither test passing nor an explicit rejection approves release Residual or Impossible status.**
+The new [bounded native probes](../tests/task_177_native_boundary_probes.rs) execute the original rejected syntax with complete source relations and classify stochastic sampling, recursion and RANDOM without inventing fixed outputs. Three original samples (S176, S181, S242) remain conditional native candidates. S181's geometry cast executes in the pinned DuckDB session, contradicting the earlier rejection assumption; its exact typed terminal proof remains missing. **Neither test passing nor an explicit rejection approves release Residual or Impossible status.**
 
 ## Original child acceptance criteria
 

@@ -28,10 +28,6 @@
       "reason": "DuckDB rejects frozen CROSS APPLY spelling"
     },
     {
-      "id": "88-C177-S181",
-      "reason": "geometry extension/type not present in baseline native session"
-    },
-    {
       "id": "88-C177-S182",
       "reason": "unknown user-defined type"
     },
@@ -74,5 +70,8 @@
   ],
   "runtime_random_case": "88-C177-S250",
   "explain_case": "88-C177-S242",
-  "outside_native_proof": "Original recursion without termination must not execute indefinitely; stochastic sampling and RANDOM have no fixed terminal bag; external file, UDF and vendor-only syntax require a reviewed explicit conditional disposition."
+  "outside_native_proof": "Original recursion without termination must not execute indefinitely; stochastic sampling and RANDOM have no fixed terminal bag; external file, UDF and vendor-only syntax require a reviewed explicit conditional disposition. Native GEOMETRY cast S181 executes in this DuckDB session but has no independently pinned exact typed terminal representation or external vendor law.",
+  "native_executable_without_fixed_terminal": [
+    "88-C177-S181"
+  ]
 }

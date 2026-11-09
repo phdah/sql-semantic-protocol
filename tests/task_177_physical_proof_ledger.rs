@@ -226,6 +226,13 @@ fn all_task_177_native_and_typed_proof_gaps_are_explicitly_accounted_for() {
                 "{id}: a fixture-specific LIMIT alternative is not the original"
             );
         }
+        if id == "88-C177-S181" {
+            assert_eq!(
+                cell["native_exact_syntax"],
+                "duckdb_executes_without_terminal_oracle"
+            );
+            assert!(!proved, "{id}: physical execution is not a fixed typed oracle");
+        }
         if id == "88-C177-S083" {
             assert_eq!(
                 cell["native_exact_syntax"],

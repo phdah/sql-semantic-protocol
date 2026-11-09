@@ -69,10 +69,10 @@ fn every_missing_original_sql_has_one_explicit_semantic_owner_and_proof_obligati
         assert_eq!(case["independent_disposition"], "blocked_not_approved");
     }
     assert_eq!(observed, gaps, "no outstanding SQL can silently disappear");
-    assert_eq!(kinds.get("native_execution_candidate"), Some(&2));
+    assert_eq!(kinds.get("native_execution_candidate"), Some(&3));
     assert_eq!(
         kinds.get("explicit_native_rejection_or_conditional_syntax"),
-        Some(&15)
+        Some(&14)
     );
     assert_eq!(kinds.get("recursive_nontermination"), Some(&1));
     assert_eq!(kinds.get("engine_sample_nondeterminism"), Some(&5));

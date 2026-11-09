@@ -256,8 +256,8 @@
       "semantic_owner": [
         "TASK-79"
       ],
-      "proof_obligation": "explicit_native_rejection_or_conditional_syntax",
-      "native_duckdb_status": "unverified_in_this_registry",
+      "proof_obligation": "native_execution_candidate",
+      "native_duckdb_status": "observed_native_executable_without_fixed_typed_terminal",
       "strongest_typed_domain": "not_proven",
       "sql_dbt_odcs_parity": "not_proven",
       "native_vendor_session_equivalence": "not_proven",

@@ -1664,7 +1664,7 @@
       "variant": "geometry",
       "native_duckdb_original_sql": "not_proven",
       "canonical_typed_adapter_parity": "not_proven",
-      "native_exact_syntax": "as_in_native_evidence",
+      "native_exact_syntax": "duckdb_executes_without_terminal_oracle",
       "independent_signoff": "blocked"
     },
     {
