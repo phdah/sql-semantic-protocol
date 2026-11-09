@@ -1,4 +1,112 @@
 {
+  "task_177_dialect_parser_acceptance": {
+    "owner": "TASK-177",
+    "parent": "TASK-88",
+    "status": "done_bounded_parser_analyzer_inventory__full_semantic_acceptance_transferred",
+    "freeze": "docs/task-177-acceptance-freeze.json",
+    "freeze_version": 1,
+    "feature_variants": 251,
+    "public_dialects": 13,
+    "variant_dialect_cells": 3263,
+    "parser_evidence_counts": {
+      "unverified": 3002,
+      "fixture_tested": 156,
+      "representative_only": 105
+    },
+    "positive_and_negative_native_fixtures": [
+      "88-C177-P",
+      "88-C177-N"
+    ],
+    "contract_test": "tests/task_177_dialect_inventory.rs",
+    "canonical_equivalence_certified_for_full_matrix": false,
+    "typed_terminal_oracles_certified_for_full_matrix": false,
+    "direct_dbt_odcs_parity_certified_for_full_matrix": false,
+    "external_engine_laws_certified": false,
+    "independent_review_verified": false,
+    "full_ci_verified": true,
+    "child_done": true,
+    "parent_closed": false,
+    "release_approved": false,
+    "boundary": "Scoped TASK-177 is Done for CI-observed 251 x 13 parser/analyzer/canonical classification inventory and evidence ledger only. 228 successful original native samples, 23 without fixed native proof, 10 typed SQL/dbt/ODCS cases. All wider strongest-outcome and native/vendor/adapter/review gates remain blocking under TASK-178/179/191/180.",
+    "sql_cases": "docs/task-177-parser-samples.json",
+    "parser_snapshot": "docs/task-177-parser-snapshot.json",
+    "explicit_sql_cases": 251,
+    "snapshot_status": "frozen_from_red_green_ci_observation_pending_final_head",
+    "parser_snapshot_cells": 3263,
+    "test_sources": [
+      "tests/task_177_dialect_inventory.rs",
+      "tests/task_177_parser_matrix.rs",
+      "tests/task_177_native_expansion.rs",
+      "tests/task_177_write_oracles.rs",
+      "tests/task_177_predicate_environment.rs",
+      "tests/task_177_schema_lifecycle_oracles.rs",
+      "tests/task_177_window_oracles.rs",
+      "tests/task_177_physical_proof_ledger.rs",
+      "tests/task_177_final_native_deterministic.rs",
+      "tests/task_177_native_boundary_probes.rs",
+      "tests/task_177_native_candidate_oracles.rs"
+    ],
+    "original_ac_status": {
+      "1": "inventory_done__mandatory_exact_typed_and_physical_cell_ownership_transferred_to_TASK178_TASK191_TASK180",
+      "2": "structural_freeze_done__strongest_composed_semantics_transferred_to_TASK178_TASK180",
+      "3": "228_native_evidence_observed__23_unproven_native_and_negative_dispositions_transferred_to_TASK191_TASK180",
+      "4": "all_3263_parser_and_structural_observations_done__23_drift_to_TASK178__55_parser_116_unsupported_to_TASK191__vendor_to_TASK179__adapter_and_global_to_TASK180",
+      "5": "bounded_protocol_and_consumer_ci_green__independent_per_cell_global_signoff_transferred_to_TASK180"
+    },
+    "parser_observed": {
+      "parsed": 3208,
+      "parse_rejected": 55
+    },
+    "parser_boundary_register": "docs/task-177-parser-boundaries.json",
+    "parser_rejected_sample_variants": 12,
+    "public_analyzer_snapshot": {
+      "returned_protocol": 3092,
+      "explicit_unsupported": 116,
+      "analysis_error": 0,
+      "parser_rejected": 55
+    },
+    "analyzer_status": "fixed_observation_not_semantic_proof",
+    "canonical_unsupported_registry": "docs/task-177-analysis-boundaries.json",
+    "predicate_oracles": "docs/task-177-predicate-oracles.json",
+    "predicate_oracle_cases": 25,
+    "predicate_full_bag_tests": "tests/task_177_predicate_oracles.rs",
+    "predicate_typed_bound_cases": 10,
+    "predicate_adapter_parity_test": "tests/task_177_predicate_adapter_parity.rs",
+    "adapter_parity_scope": "Ten named equality/bound/BETWEEN variants with representable SQL dbt ODCS source metadata; not a universal 251-variant equivalence claim.",
+    "canonical_equivalence_snapshot": "docs/task-177-equivalence-snapshot.json",
+    "canonical_equivalence_test": "tests/task_177_canonical_equivalence.rs",
+    "canonical_equivalence_classifications": {
+      "same_full_protocol": 3069,
+      "full_protocol_drifts": 23,
+      "explicit_unsupported": 116,
+      "parser_rejected": 55,
+      "analysis_error": 0
+    },
+    "canonical_drift_registry": "docs/task-177-canonical-drift-boundaries.json",
+    "canonical_drift_affected_cases": 5,
+    "canonical_drift_path_evidence": "The first unequal public JSON field is pinned per drift; structural equivalence alone is not typed/native exactness.",
+    "cross_dialect_native_oracle_test": "tests/task_177_cross_dialect_native_oracles.rs",
+    "cross_dialect_native_oracle_cases": 5,
+    "native_duckdb_sample_cases_total": 228,
+    "physical_proof_ledger": "docs/task-177-physical-proof-ledger.json",
+    "complete_native_original_sample_count": 228,
+    "missing_native_original_sample_count": 23,
+    "typed_sql_dbt_odcs_domain_parity_sample_count": 10,
+    "independent_signed_off_sample_count": 0,
+    "scope_split_handoff": "docs/task-177-scope-split.md",
+    "historical_freeze_per_cell_release_certification_remains_unapproved": true,
+    "scope_completion": {
+      "status": "done_evidence_freeze_only",
+      "maintainer_authorized_scope_split_date": "2026-11-09",
+      "complete_frozen_sql_cases": 251,
+      "complete_parser_and_analyzer_observation_cells": 3263,
+      "explicit_exception_registers": true,
+      "verified_protocol_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/42697295355",
+      "verified_exact_head_tdg_ci": "https://github.com/phdah/sql-tdg/actions/runs/42697390328",
+      "independent_full_matrix_review": false,
+      "scope_is_not_global_semantic_certification": true
+    }
+  },
   "task_176_paired_adapter_write_acceptance": {
     "owner": "TASK-176",
     "parent": "TASK-87",
@@ -15214,5 +15322,22 @@
     "implementation_ci_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/42258873335",
     "implementation_ci_jobs_passed": "9/9",
     "pinned_consumer_disposition": "not_applicable_to_odcs_only_change"
+  },
+  "task_191_boundary_disposition_acceptance": {
+    "owner": "TASK-191",
+    "parent": "TASK-88",
+    "status": "to_do_release_blocking",
+    "source_task": "TASK-177",
+    "dependencies": [
+      "TASK-179"
+    ],
+    "handoff": "docs/task-177-scope-split.md",
+    "parser_rejected_cells": 55,
+    "analyzer_unsupported_cells": 116,
+    "unproven_original_native_cases": 23,
+    "canonical_drift_cells_owned_by": "TASK-178",
+    "vendor_session_laws_owned_by": "TASK-179",
+    "independent_whole_matrix_signoff_owned_by": "TASK-180",
+    "full_matrix_release_approved": false
   }
 }

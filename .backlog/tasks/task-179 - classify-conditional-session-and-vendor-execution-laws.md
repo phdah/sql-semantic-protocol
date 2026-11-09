@@ -4,7 +4,7 @@ title: Classify conditional session and vendor execution laws
 status: To Do
 assignee: []
 created_date: '2026-10-17'
-updated_date: '2026-10-17'
+updated_date: '2026-11-09'
 labels: []
 milestone: m-3
 dependencies:
@@ -19,7 +19,7 @@ type: feature
 ## Description
 
 <!-- SECTION:DESCRIPTION:BEGIN -->
-**TASK-88 child 3/4.** Classify conditional session and vendor execution laws. Implement this scope in its own PR against `main` after dependencies merge. Preserve original TASK-88 AC for separate parent signoff. Never create parent-child dependency cycles.
+**TASK-88 child 3/5.** Classify conditional session and vendor execution laws. Implement this scope in its own PR against `main` after dependencies merge. Preserve original TASK-88 AC for separate parent signoff. Never create parent-child dependency cycles.
 <!-- SECTION:DESCRIPTION:END -->
 
 ## Bounded planning scope
@@ -42,4 +42,4 @@ type: feature
 
 ## Next
 
-Next: [TASK-180](task-180%20-%20independently-certify-complete-dialect-matrix-and-gate-ci.md), only after completion and merge.
+Next: [TASK-191](task-191%20-%20adjudicate-task-177-parser-and-native-boundaries.md), only after completion and merge. TASK-180 is the independent final matrix gate after TASK-191.

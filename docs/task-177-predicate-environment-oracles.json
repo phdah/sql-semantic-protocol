@@ -1,0 +1,279 @@
+{
+  "schema_version": 1,
+  "owner": "TASK-177",
+  "scope": "Literal original SQL DuckDB predicate/environment/temporal oracles with full source bags and explicitly fixed session TimeZone; these do not attest other engines.",
+  "customer_source_setup": "CREATE TABLE customers (id INT, name VARCHAR); INSERT INTO customers VALUES (1,'Alice'),(1,'Alice'),(2,'Amy'),(3,'Bob'),(4,'A_foo'),(5,'abc'),(6,NULL),(7,'ABC'),(8,'abc '),(9,'A%');",
+  "customer_source_bag": [
+    [
+      1,
+      "Alice"
+    ],
+    [
+      1,
+      "Alice"
+    ],
+    [
+      2,
+      "Amy"
+    ],
+    [
+      3,
+      "Bob"
+    ],
+    [
+      4,
+      "A_foo"
+    ],
+    [
+      5,
+      "abc"
+    ],
+    [
+      6,
+      null
+    ],
+    [
+      7,
+      "ABC"
+    ],
+    [
+      8,
+      "abc "
+    ],
+    [
+      9,
+      "A%"
+    ]
+  ],
+  "customer_cases": [
+    {
+      "id": "88-C177-S020",
+      "expected_terminal_bag": [
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          4
+        ],
+        [
+          7
+        ],
+        [
+          9
+        ]
+      ]
+    },
+    {
+      "id": "88-C177-S021",
+      "expected_terminal_bag": [
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          4
+        ],
+        [
+          5
+        ],
+        [
+          7
+        ],
+        [
+          8
+        ],
+        [
+          9
+        ]
+      ]
+    },
+    {
+      "id": "88-C177-S022",
+      "expected_terminal_bag": [
+        [
+          4
+        ]
+      ]
+    },
+    {
+      "id": "88-C177-S025",
+      "expected_terminal_bag": [
+        [
+          7
+        ]
+      ]
+    },
+    {
+      "id": "88-C177-S039",
+      "expected_terminal_bag": [
+        [
+          8
+        ]
+      ]
+    }
+  ],
+  "temporal_source_setup": "SET TimeZone = 'UTC'; CREATE TABLE orders(id INT, created_at TIMESTAMP); INSERT INTO orders VALUES (1,'2020-01-01 00:00:00'),(1,'2020-01-02 00:00:00'),(2,'2020-01-02 12:00:00'),(3,'2020-03-08 01:30:00'),(4,'2020-03-08 03:30:00'),(5,NULL),(NULL,'2020-03-08 02:30:00');",
+  "temporal_source_bag": [
+    [
+      1,
+      "2020-01-01 00:00:00"
+    ],
+    [
+      1,
+      "2020-01-02 00:00:00"
+    ],
+    [
+      2,
+      "2020-01-02 12:00:00"
+    ],
+    [
+      3,
+      "2020-03-08 01:30:00"
+    ],
+    [
+      4,
+      "2020-03-08 03:30:00"
+    ],
+    [
+      5,
+      null
+    ],
+    [
+      null,
+      "2020-03-08 02:30:00"
+    ]
+  ],
+  "temporal_cases": [
+    {
+      "id": "88-C177-S034",
+      "expected_terminal_bag": [
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          3
+        ],
+        [
+          4
+        ],
+        [
+          null
+        ]
+      ]
+    },
+    {
+      "id": "88-C177-S035",
+      "expected_terminal_bag": [
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          3
+        ],
+        [
+          4
+        ],
+        [
+          null
+        ]
+      ]
+    },
+    {
+      "id": "88-C177-S036",
+      "expected_terminal_bag": [
+        [
+          1
+        ]
+      ]
+    },
+    {
+      "id": "88-C177-S037",
+      "expected_terminal_bag": [
+        [
+          3
+        ],
+        [
+          null
+        ]
+      ]
+    }
+  ],
+  "floating_source_setup": "CREATE TABLE orders (id INT, amount DOUBLE); INSERT INTO orders VALUES (1,0.0),(2,-0.0),(3,1.0),(4,NULL);",
+  "floating_source_bag": [
+    [
+      1,
+      0
+    ],
+    [
+      2,
+      0
+    ],
+    [
+      3,
+      1
+    ],
+    [
+      4,
+      null
+    ]
+  ],
+  "floating_cases": [
+    {
+      "id": "88-C177-S041",
+      "expected_terminal_bag": [
+        [
+          1
+        ],
+        [
+          2
+        ]
+      ]
+    }
+  ],
+  "ordering_case": {
+    "id": "88-C177-S042",
+    "expected_terminal_rows": [
+      [
+        4
+      ],
+      [
+        1
+      ],
+      [
+        1
+      ],
+      [
+        null
+      ],
+      [
+        2
+      ],
+      [
+        3
+      ]
+    ]
+  },
+  "native_rejected_cases": [
+    {
+      "id": "88-C177-S033",
+      "reason": "native fixed-width arithmetic overflow"
+    }
+  ]
+}

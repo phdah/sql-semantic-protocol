@@ -4,6 +4,35 @@
 
 The authoritative, machine-readable source is [`coverage-manifest.json`](coverage-manifest.json). Each `?` and `unverified` status is an **explicit open release-proof requirement**, not unfinished inventory work or an approved capability claim. [`tests/coverage_manifest.rs`](../tests/coverage_manifest.rs) checks each dialect/feature cell, parser fixtures and DuckDB SQL oracles. Adding or extending a dialect or semantic feature requires updating the manifest and corresponding tests.
 
+## TASK-177 variant/dialect parser freeze (in progress)
+
+The [versioned TASK-177 inventory](task-177-acceptance-freeze.json) records every
+one of the 251 TASK-66 variants against all 13 exposed parsing dialects,
+for 3,263 explicit cells. It preserves **156 fixture-tested**, **105
+representative-only** and **3,002 unverified** cells from exact variant-level
+evidence without inheriting a feature-level sample. A separate, now pinned
+[251-case SQL sample suite](task-177-parser-samples.json) and
+[3,263-cell observed parser snapshot](task-177-parser-snapshot.json) classify
+**3,208 parsed** and **55 rejected** exact SQL examples. The same
+samples are also pinned through the public analyzer: **3,092 protocol
+returns**, **116 explicit Unsupported** and **55 parser rejections**, with
+zero public API errors. The 116 cells retain
+[named blocking semantic owners](task-177-analysis-boundaries.json), not
+release-approved residual status. All rejected pairs
+retain their [12 named boundary families](task-177-parser-boundaries.json)
+with owner and pending review disposition. None of these parser results
+proves variant-wide semantics or changes the original release-blocking
+evidence baseline. The public-API
+[contract test](../tests/task_177_dialect_inventory.rs) guards the complete
+cross-product and compares two named portable SQL fixtures against closed-world
+DuckDB TRUE, NOT TRUE and UNKNOWN bags.
+
+**Not certified:** A named SQL parser sample is not a variant-wide semantic
+proof, an adapter parity result or an external vendor engine attestation. All
+unverified/representative-only cases and missing full typed/domain/terminal
+oracles remain release-blocking. TASK-177 stays In Progress; TASK-88 and the
+3.0.0 gate remain open.
+
 ## TASK-67 canonical witness foundation
 
 PR #89 adds a normalized typed local witness algebra covering Boolean, join,
@@ -138,3 +167,56 @@ The canonical constructive IR now emits typed physical closed-world obligations 
 This is **operator-local evidence**, not whole-graph generator certification. The unchanged variant/dialect cells remain release-blocking until TASK-68, TASK-88/89 and the downstream sql-tdg physical-source acceptance tests supply their required evidence. The inventory's `task_69_operator_local_evidence` records the checkpoint without upgrading unsupported variants.
 
 **TASK-79 schema proof checkpoint:** Direct SQL DDL typed schemas, portable default declarations, ODCS scalar defaults, physical integer/decimal/time/UUID guards and a closed-world multi-relation FK/PK feasibility API now have focused Rust and DuckDB tests. Typed Arrow-style nested source populations, conservative typed JSON document witnesses and checked integer generated-column INSERT/UPDATE/MERGE value production have focused proof paths. The typed ordered DML subset also proves scalar filters, canonical attested INSERT default omissions and scalar UPDATE/DELETE without replacing nested Arrow values. Unattested identity/sequence allocation, unproved coercion and vendor-specific enforcement remain explicit residuals. The bounded local TASK-79 physical schema/witness AC are verified against the traceable evidence in `docs/task-79-proof-scope.md`. This does not upgrade any variant/dialect cell or prove full downstream data generation or protocol 3.0.0 release readiness; see `task_79_schema_evidence` in the machine-readable manifest.
+
+
+### TASK-177 predicate and adapter differential scope
+
+The [complete-source predicate cases](task-177-predicate-oracles.json) certify
+25 original TASK-66 SQL samples against fully pinned physical DuckDB source bags.
+The [native regression](../tests/task_177_predicate_oracles.rs) checks complete
+terminal bags, TRUE/FALSE/UNKNOWN and NOT TRUE source occurrence partitions,
+NULL, duplicate values and ten strongest typed inclusion-set/interval bounds.
+The [adapter parity regression](../tests/task_177_predicate_adapter_parity.rs)
+asserts those ten bounded output facts through direct SQL DDL, dbt compiled
+model metadata and representable ODCS physical types. Unexecuted native vendor
+engines, remaining parser variants and arbitrary adapter materializations retain
+their original release-blocking review disposition.
+
+### TASK-177 full canonical dialect equivalence matrix
+
+The [complete 251-case x 13-dialect public comparison](task-177-equivalence-snapshot.json)
+is tested through the
+[public protocol equivalence regression](../tests/task_177_canonical_equivalence.rs).
+Of 3,263 samples, 3,069 produce identical full protocol documents (after
+normalizing the input dialect name), 23 produce differing documents, 116 are
+explicitly Unsupported and 55 are rejected by sqlparser. The
+[23-cell canonical drift register](task-177-canonical-drift-boundaries.json)
+pins first differing public JSON paths for five original variant samples.
+The [native DuckDB drift oracle](../tests/task_177_cross_dialect_native_oracles.rs)
+covers grouped subtotal and real NULL groups, duplicate-key LATERAL source
+identities and STRUCT field values on complete pinned inputs. Protocol
+document equality is not native engine or strongest typed outcome proof.
+
+TASK-177 has [an explicit original-SQL physical proof ledger](task-177-physical-proof-ledger.json):
+228 of 251 distinct original SQL examples have first-party native DuckDB
+source and terminal output or state oracles; 23 still lack them. The new evidence is owned by `task-177-native-expansion.json` (bags, ordering,
+PIVOT and multi-terminal SQL), `task-177-write-oracles.json` (complete DML
+pre/post-state), `task-177-predicate-environment-oracles.json` (fixed
+string/timezone/floating semantics), `task-177-schema-lifecycle-oracles.json`
+(constraints, DDL and transaction rollback), and `task-177-window-oracles.json`
+(ranking and window frames), with matching public native integration tests.
+These are local original-SQL executions, not cross-vendor or canonical strongest
+value-domain proofs. S181 now also has an exact native GEOMETRY type and POINT WKT
+oracle; S176 is explicitly rejected by the DuckDB BLOB length binder, and S242
+has a valid native EXPLAIN plan without a stable complete plan oracle.
+
+Two additional dedicated
+positive/Impossible goldens are separate from those examples. Only ten
+portable examples have the narrower strongest typed SQL/dbt/ODCS adapter
+parity check. Three exact syntax forms are DuckDB-native rejections,
+and the name-aligned output case remains canonically unsupported. No
+independent per-cell signoff or vendor-session approval has been granted.
+
+### TASK-177 bounded completion does not certify TASK-88
+
+As of 2026-11-09, [TASK-177](../.backlog/tasks/task-177%20-%20freeze-task-66-feature-by-13-dialect-parser-coverage.md) is **Done for parser/analyzer evidence freezing only**. See the [scope split and original AC transfer](task-177-scope-split.md). TASK-178 owns strongest shared-AST canonical equality, TASK-179 vendor/session laws, [TASK-191](../.backlog/tasks/task-191%20-%20adjudicate-task-177-parser-and-native-boundaries.md) the 55 parser / 116 Unsupported / 23 original native exception reviews, and TASK-180 global independent typed-domain, source, terminal, adapter and review signoff. No full-matrix or vendor-engine certification is implied by this bounded Done status. TASK-88 and the release gate remain open.

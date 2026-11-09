@@ -1,0 +1,592 @@
+{
+  "schema_version": 1,
+  "owner": "TASK-177",
+  "scope": "Independent exact-original SQL DDL and ordered-transaction native physical source/poststate, including constraint violation negative paths, duplicated rows, NULL and rollback. No dbt/ODCS or other native vendor attestation.",
+  "case_count": 22,
+  "cases": [
+    {
+      "id": "88-C177-S183",
+      "source_setup": "",
+      "expected_source_query": "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = 'main' AND table_name IN ('orders', 'v', 'tmp')",
+      "expected_source_bag": [
+        [
+          0
+        ]
+      ],
+      "after_original_sql": "INSERT INTO orders VALUES (1)",
+      "expected_terminal_query": "SELECT id FROM orders",
+      "expected_terminal_bag": [
+        [
+          1
+        ]
+      ],
+      "must_reject_after": "INSERT INTO orders VALUES (1)"
+    },
+    {
+      "id": "88-C177-S184",
+      "source_setup": "CREATE TABLE customers(id INT PRIMARY KEY); INSERT INTO customers VALUES (1),(2)",
+      "expected_source_query": "SELECT id FROM customers",
+      "expected_source_bag": [
+        [
+          1
+        ],
+        [
+          2
+        ]
+      ],
+      "after_original_sql": "INSERT INTO orders VALUES (10,1),(11,2)",
+      "expected_terminal_query": "SELECT id, customer_id FROM orders",
+      "expected_terminal_bag": [
+        [
+          10,
+          1
+        ],
+        [
+          11,
+          2
+        ]
+      ],
+      "must_reject_after": "INSERT INTO orders VALUES (12,99)"
+    },
+    {
+      "id": "88-C177-S185",
+      "source_setup": "",
+      "expected_source_query": "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = 'main' AND table_name IN ('orders', 'v', 'tmp')",
+      "expected_source_bag": [
+        [
+          0
+        ]
+      ],
+      "after_original_sql": "INSERT INTO orders VALUES (1),(2),(NULL),(NULL)",
+      "expected_terminal_query": "SELECT id FROM orders",
+      "expected_terminal_bag": [
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          null
+        ],
+        [
+          null
+        ]
+      ],
+      "must_reject_after": "INSERT INTO orders VALUES (1)"
+    },
+    {
+      "id": "88-C177-S186",
+      "source_setup": "",
+      "expected_source_query": "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = 'main' AND table_name IN ('orders', 'v', 'tmp')",
+      "expected_source_bag": [
+        [
+          0
+        ]
+      ],
+      "after_original_sql": "INSERT INTO orders VALUES (1),(-1)",
+      "expected_terminal_query": "SELECT id FROM orders",
+      "expected_terminal_bag": [
+        [
+          1
+        ],
+        [
+          -1
+        ]
+      ],
+      "must_reject_after": "INSERT INTO orders VALUES (NULL)"
+    },
+    {
+      "id": "88-C177-S187",
+      "source_setup": "",
+      "expected_source_query": "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = 'main' AND table_name IN ('orders', 'v', 'tmp')",
+      "expected_source_bag": [
+        [
+          0
+        ]
+      ],
+      "after_original_sql": "INSERT INTO orders VALUES (1),(2)",
+      "expected_terminal_query": "SELECT id FROM orders",
+      "expected_terminal_bag": [
+        [
+          1
+        ],
+        [
+          2
+        ]
+      ],
+      "must_reject_after": "INSERT INTO orders VALUES (0)"
+    },
+    {
+      "id": "88-C177-S188",
+      "source_setup": "",
+      "expected_source_query": "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = 'main' AND table_name IN ('orders', 'v', 'tmp')",
+      "expected_source_bag": [
+        [
+          0
+        ]
+      ],
+      "after_original_sql": "INSERT INTO orders DEFAULT VALUES; INSERT INTO orders(id) VALUES (2)",
+      "expected_terminal_query": "SELECT id FROM orders",
+      "expected_terminal_bag": [
+        [
+          1
+        ],
+        [
+          2
+        ]
+      ]
+    },
+    {
+      "id": "88-C177-S189",
+      "source_setup": "",
+      "expected_source_query": "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = 'main' AND table_name IN ('orders', 'v', 'tmp')",
+      "expected_source_bag": [
+        [
+          0
+        ]
+      ],
+      "after_original_sql": "INSERT INTO orders(id) VALUES (1),(2)",
+      "expected_terminal_query": "SELECT id, amount FROM orders",
+      "expected_terminal_bag": [
+        [
+          1,
+          2
+        ],
+        [
+          2,
+          3
+        ]
+      ]
+    },
+    {
+      "id": "88-C177-S190",
+      "source_setup": "",
+      "expected_source_query": "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = 'main' AND table_name IN ('orders', 'v', 'tmp')",
+      "expected_source_bag": [
+        [
+          0
+        ]
+      ],
+      "after_original_sql": "INSERT INTO orders(id, amount) VALUES (1,10.25)",
+      "expected_terminal_query": "SELECT id, CAST(amount * 100 AS INTEGER) FROM orders",
+      "expected_terminal_bag": [
+        [
+          1,
+          1025
+        ]
+      ],
+      "must_reject_after": "INSERT INTO orders(id,amount) VALUES (1,20.0)"
+    },
+    {
+      "id": "88-C177-S192",
+      "source_setup": "",
+      "expected_source_query": "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = 'main' AND table_name IN ('orders', 'v', 'tmp')",
+      "expected_source_bag": [
+        [
+          0
+        ]
+      ],
+      "after_original_sql": "INSERT INTO orders(id, amount) VALUES (1,10.25)",
+      "expected_terminal_query": "SELECT id, CAST(amount * 100 AS INTEGER) FROM orders",
+      "expected_terminal_bag": [
+        [
+          1,
+          1025
+        ]
+      ],
+      "must_reject_after": "INSERT INTO orders(id,amount) VALUES (1,20.0)"
+    },
+    {
+      "id": "88-C177-S212",
+      "source_setup": "CREATE TABLE customers(id INTEGER); INSERT INTO customers VALUES (1),(1),(2),(NULL);",
+      "expected_source_query": "SELECT id FROM customers",
+      "expected_source_bag": [
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          null
+        ]
+      ],
+      "after_original_sql": "",
+      "expected_terminal_query": "SELECT id FROM orders",
+      "expected_terminal_bag": [
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          null
+        ]
+      ]
+    },
+    {
+      "id": "88-C177-S213",
+      "source_setup": "CREATE TABLE orders(id INTEGER); INSERT INTO orders VALUES (1),(1),(2),(NULL);",
+      "expected_source_query": "SELECT id FROM orders",
+      "expected_source_bag": [
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          null
+        ]
+      ],
+      "after_original_sql": "INSERT INTO orders VALUES (3)",
+      "expected_terminal_query": "SELECT id FROM v",
+      "expected_terminal_bag": [
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          null
+        ],
+        [
+          3
+        ]
+      ]
+    },
+    {
+      "id": "88-C177-S214",
+      "source_setup": "CREATE TABLE orders(id INTEGER); INSERT INTO orders VALUES (1),(1),(2),(NULL);CREATE VIEW v AS SELECT 0 AS id;",
+      "expected_source_query": "SELECT id FROM orders",
+      "expected_source_bag": [
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          null
+        ]
+      ],
+      "after_original_sql": "",
+      "expected_terminal_query": "SELECT id FROM v",
+      "expected_terminal_bag": [
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          null
+        ]
+      ]
+    },
+    {
+      "id": "88-C177-S215",
+      "source_setup": "CREATE TABLE orders(id INTEGER); INSERT INTO orders VALUES (1),(1),(2),(NULL);",
+      "expected_source_query": "SELECT id FROM orders",
+      "expected_source_bag": [
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          null
+        ]
+      ],
+      "after_original_sql": "",
+      "expected_terminal_query": "SELECT id FROM tmp",
+      "expected_terminal_bag": [
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          null
+        ]
+      ]
+    },
+    {
+      "id": "88-C177-S216",
+      "source_setup": "CREATE TABLE orders(id INTEGER); INSERT INTO orders VALUES (1),(1),(2),(NULL);",
+      "expected_source_query": "SELECT id FROM orders",
+      "expected_source_bag": [
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          null
+        ]
+      ],
+      "after_original_sql": "INSERT INTO orders(id,amount) VALUES (3,30)",
+      "expected_terminal_query": "SELECT id, amount FROM orders",
+      "expected_terminal_bag": [
+        [
+          1,
+          null
+        ],
+        [
+          1,
+          null
+        ],
+        [
+          2,
+          null
+        ],
+        [
+          null,
+          null
+        ],
+        [
+          3,
+          30
+        ]
+      ]
+    },
+    {
+      "id": "88-C177-S217",
+      "source_setup": "CREATE TABLE orders(id INTEGER); INSERT INTO orders VALUES (1),(1),(2),(NULL);",
+      "expected_source_query": "SELECT id FROM orders",
+      "expected_source_bag": [
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          null
+        ]
+      ],
+      "after_original_sql": "",
+      "expected_terminal_query": "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = 'main' AND table_name='orders'",
+      "expected_terminal_bag": [
+        [
+          0
+        ]
+      ],
+      "must_reject_after": "SELECT id FROM orders"
+    },
+    {
+      "id": "88-C177-S218",
+      "source_setup": "CREATE TABLE orders(id INTEGER); INSERT INTO orders VALUES (1),(1),(2),(NULL);",
+      "expected_source_query": "SELECT id FROM orders",
+      "expected_source_bag": [
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          null
+        ]
+      ],
+      "after_original_sql": "",
+      "expected_terminal_query": "SELECT id FROM archived_orders",
+      "expected_terminal_bag": [
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          null
+        ]
+      ],
+      "must_reject_after": "SELECT id FROM orders"
+    },
+    {
+      "id": "88-C177-S219",
+      "source_setup": "CREATE TABLE orders(id INTEGER); INSERT INTO orders VALUES (1),(1),(2),(NULL);",
+      "expected_source_query": "SELECT id FROM orders",
+      "expected_source_bag": [
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          null
+        ]
+      ],
+      "after_original_sql": "",
+      "expected_terminal_query": "SELECT id FROM orders",
+      "expected_terminal_bag": []
+    },
+    {
+      "id": "88-C177-S220",
+      "source_setup": "CREATE TABLE orders(id INTEGER, amount INTEGER); INSERT INTO orders VALUES (1,10),(2,NULL)",
+      "expected_source_query": "SELECT id, amount FROM orders",
+      "expected_source_bag": [
+        [
+          1,
+          10
+        ],
+        [
+          2,
+          null
+        ]
+      ],
+      "after_original_sql": "INSERT INTO orders(id) VALUES (3)",
+      "expected_terminal_query": "SELECT id, amount FROM orders",
+      "expected_terminal_bag": [
+        [
+          1,
+          10
+        ],
+        [
+          2,
+          null
+        ],
+        [
+          3,
+          0
+        ]
+      ]
+    },
+    {
+      "id": "88-C177-S221",
+      "source_setup": "",
+      "expected_source_query": "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = 'main' AND table_name IN ('orders', 'v', 'tmp')",
+      "expected_source_bag": [
+        [
+          0
+        ]
+      ],
+      "after_original_sql": "",
+      "expected_terminal_query": "SELECT id FROM orders",
+      "expected_terminal_bag": [
+        [
+          1
+        ]
+      ]
+    },
+    {
+      "id": "88-C177-S222",
+      "source_setup": "CREATE TABLE orders(id INTEGER); INSERT INTO orders VALUES (2),(NULL)",
+      "expected_source_query": "SELECT id FROM orders",
+      "expected_source_bag": [
+        [
+          2
+        ],
+        [
+          null
+        ]
+      ],
+      "after_original_sql": "",
+      "expected_terminal_query": "SELECT id FROM orders",
+      "expected_terminal_bag": [
+        [
+          2
+        ],
+        [
+          null
+        ],
+        [
+          1
+        ]
+      ]
+    },
+    {
+      "id": "88-C177-S223",
+      "source_setup": "",
+      "expected_source_query": "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = 'main' AND table_name IN ('orders', 'v', 'tmp')",
+      "expected_source_bag": [
+        [
+          0
+        ]
+      ],
+      "after_original_sql": "",
+      "expected_terminal_query": "SELECT id FROM orders",
+      "expected_terminal_bag": [
+        [
+          1
+        ]
+      ]
+    },
+    {
+      "id": "88-C177-S224",
+      "source_setup": "CREATE TABLE orders(id INTEGER); INSERT INTO orders VALUES (1),(1),(NULL)",
+      "expected_source_query": "SELECT id FROM orders",
+      "expected_source_bag": [
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          null
+        ]
+      ],
+      "after_original_sql": "",
+      "expected_terminal_query": "SELECT id FROM orders",
+      "expected_terminal_bag": [
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          null
+        ]
+      ]
+    }
+  ]
+}

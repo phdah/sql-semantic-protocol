@@ -1,0 +1,2302 @@
+{
+  "schema_version": 1,
+  "task_id": "TASK-177",
+  "scope": "Case-level evidence only; parser and canonical dialect cells are governed by the TASK-177 freeze. This ledger does not authorize promotion to exact domains, vendor engine equivalence, or independent signoff.",
+  "source_cases": "docs/task-177-parser-samples.json",
+  "source_oracles": [
+    "docs/task-177-relational-bag-oracles.json",
+    "docs/task-177-predicate-oracles.json",
+    "tests/task_177_cross_dialect_native_oracles.rs",
+    "docs/task-177-native-expansion.json",
+    "docs/task-177-write-oracles.json",
+    "docs/task-177-predicate-environment-oracles.json",
+    "docs/task-177-schema-lifecycle-oracles.json",
+    "docs/task-177-window-oracles.json",
+    "docs/task-177-final-native-deterministic.json",
+    "tests/task_177_native_candidate_oracles.rs"
+  ],
+  "sample_count": 251,
+  "native_duckdb_complete_original_sql_samples": 228,
+  "native_duckdb_not_proven_original_sql_samples": 23,
+  "independent_signed_off_samples": 0,
+  "two_additional_explicit_positive_impossible_goldens": "88-C177-P / 88-C177-N",
+  "known_dialect_boundaries": {
+    "exact_left_semi_anti_syntax": [
+      "88-C177-S054",
+      "88-C177-S055"
+    ],
+    "native_valid_but_canonical_output_unsupported": [
+      "88-C177-S083"
+    ],
+    "exact_fetch_with_ties_syntax": [
+      "88-C177-S160"
+    ],
+    "native_rejected_nonterminal_originals": [
+      "88-C177-S033",
+      "88-C177-S086",
+      "88-C177-S140"
+    ]
+  },
+  "cases": [
+    {
+      "id": "88-C177-S001",
+      "feature_id": "predicates.integer_ranges",
+      "variant": "=",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "ten_case_sql_dbt_odcs_exact_domain",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S002",
+      "feature_id": "predicates.integer_ranges",
+      "variant": "<>",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "ten_case_sql_dbt_odcs_exact_domain",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S003",
+      "feature_id": "predicates.integer_ranges",
+      "variant": "<",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "ten_case_sql_dbt_odcs_exact_domain",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S004",
+      "feature_id": "predicates.integer_ranges",
+      "variant": "<=",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "ten_case_sql_dbt_odcs_exact_domain",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S005",
+      "feature_id": "predicates.integer_ranges",
+      "variant": ">",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "ten_case_sql_dbt_odcs_exact_domain",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S006",
+      "feature_id": "predicates.integer_ranges",
+      "variant": ">=",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "ten_case_sql_dbt_odcs_exact_domain",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S007",
+      "feature_id": "predicates.integer_ranges",
+      "variant": "BETWEEN",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "ten_case_sql_dbt_odcs_exact_domain",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S008",
+      "feature_id": "predicates.integer_ranges",
+      "variant": "NOT BETWEEN",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "ten_case_sql_dbt_odcs_exact_domain",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S009",
+      "feature_id": "predicates.boolean_logic",
+      "variant": "AND",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "ten_case_sql_dbt_odcs_exact_domain",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S010",
+      "feature_id": "predicates.boolean_logic",
+      "variant": "OR",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S011",
+      "feature_id": "predicates.boolean_logic",
+      "variant": "NOT",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S012",
+      "feature_id": "predicates.boolean_logic",
+      "variant": "parenthesized",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "ten_case_sql_dbt_odcs_exact_domain",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S013",
+      "feature_id": "predicates.boolean_logic",
+      "variant": "correlated column truth",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S014",
+      "feature_id": "predicates.null_truth",
+      "variant": "IS NULL",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S015",
+      "feature_id": "predicates.null_truth",
+      "variant": "IS NOT NULL",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S016",
+      "feature_id": "predicates.null_truth",
+      "variant": "IS TRUE",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S017",
+      "feature_id": "predicates.null_truth",
+      "variant": "IS FALSE",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S018",
+      "feature_id": "predicates.null_truth",
+      "variant": "UNKNOWN",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S019",
+      "feature_id": "predicates.null_truth",
+      "variant": "IN with NULL",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S020",
+      "feature_id": "predicates.string_pattern",
+      "variant": "LIKE",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S021",
+      "feature_id": "predicates.string_pattern",
+      "variant": "ILIKE",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S022",
+      "feature_id": "predicates.string_pattern",
+      "variant": "ESCAPE",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S023",
+      "feature_id": "predicates.string_pattern",
+      "variant": "SIMILAR TO",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S024",
+      "feature_id": "predicates.string_pattern",
+      "variant": "regex",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S025",
+      "feature_id": "predicates.string_pattern",
+      "variant": "prefix",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S026",
+      "feature_id": "predicates.string_pattern",
+      "variant": "collations",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S027",
+      "feature_id": "predicates.computed",
+      "variant": "arithmetic",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S028",
+      "feature_id": "predicates.computed",
+      "variant": "casts",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S029",
+      "feature_id": "predicates.computed",
+      "variant": "CASE",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S030",
+      "feature_id": "predicates.computed",
+      "variant": "COALESCE",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S031",
+      "feature_id": "predicates.computed",
+      "variant": "NULLIF",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S032",
+      "feature_id": "predicates.computed",
+      "variant": "scalar functions",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S033",
+      "feature_id": "predicates.computed",
+      "variant": "overflow",
+      "native_duckdb_original_sql": "not_proven",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S034",
+      "feature_id": "predicates.temporal",
+      "variant": "DATE/TIME/TIMESTAMP/INTERVAL",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S035",
+      "feature_id": "predicates.temporal",
+      "variant": "timezone",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S036",
+      "feature_id": "predicates.temporal",
+      "variant": "coercion",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S037",
+      "feature_id": "predicates.temporal",
+      "variant": "DST",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S038",
+      "feature_id": "predicates.comparison_environment",
+      "variant": "binary/locale collation",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S039",
+      "feature_id": "predicates.comparison_environment",
+      "variant": "padding",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S040",
+      "feature_id": "predicates.comparison_environment",
+      "variant": "NaN",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S041",
+      "feature_id": "predicates.comparison_environment",
+      "variant": "signed zero",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S042",
+      "feature_id": "predicates.comparison_environment",
+      "variant": "NULL sorting",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S043",
+      "feature_id": "joins.inner",
+      "variant": "ON equality",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S044",
+      "feature_id": "joins.inner",
+      "variant": "USING",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S045",
+      "feature_id": "joins.inner",
+      "variant": "NATURAL",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S046",
+      "feature_id": "joins.inner",
+      "variant": "composite keys",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S047",
+      "feature_id": "joins.inner",
+      "variant": "typed NULL equality",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S048",
+      "feature_id": "joins.outer",
+      "variant": "LEFT",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S049",
+      "feature_id": "joins.outer",
+      "variant": "RIGHT",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S050",
+      "feature_id": "joins.outer",
+      "variant": "FULL",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S051",
+      "feature_id": "joins.outer",
+      "variant": "preserved side",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S052",
+      "feature_id": "joins.outer",
+      "variant": "NULL-extension",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S053",
+      "feature_id": "joins.outer",
+      "variant": "multiple matches",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S054",
+      "feature_id": "joins.semi_anti",
+      "variant": "SEMI",
+      "native_duckdb_original_sql": "not_proven",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "duckdb_rejected_alternate_verified",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S055",
+      "feature_id": "joins.semi_anti",
+      "variant": "ANTI",
+      "native_duckdb_original_sql": "not_proven",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "duckdb_rejected_alternate_verified",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S056",
+      "feature_id": "joins.semi_anti",
+      "variant": "EXISTS-derived semi",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S057",
+      "feature_id": "joins.semi_anti",
+      "variant": "anti with nullable keys",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S058",
+      "feature_id": "joins.non_equi",
+      "variant": "theta join",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S059",
+      "feature_id": "joins.non_equi",
+      "variant": "inequality",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S060",
+      "feature_id": "joins.non_equi",
+      "variant": "expression keys",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S061",
+      "feature_id": "joins.non_equi",
+      "variant": "mixed AND/OR ON",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S062",
+      "feature_id": "joins.repeated_source",
+      "variant": "self join",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S063",
+      "feature_id": "joins.repeated_source",
+      "variant": "repeated aliases",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S064",
+      "feature_id": "joins.repeated_source",
+      "variant": "multi-join trees",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S065",
+      "feature_id": "joins.repeated_source",
+      "variant": "shared physical row identities",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S066",
+      "feature_id": "sets.union_all",
+      "variant": "UNION ALL",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S067",
+      "feature_id": "sets.union_all",
+      "variant": "positional alignment",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S068",
+      "feature_id": "sets.union_all",
+      "variant": "duplicate bag counts",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S069",
+      "feature_id": "sets.union_all",
+      "variant": "NULL tuple identity",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S070",
+      "feature_id": "sets.union_distinct",
+      "variant": "UNION DISTINCT",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S071",
+      "feature_id": "sets.union_distinct",
+      "variant": "overlapping branches",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S072",
+      "feature_id": "sets.union_distinct",
+      "variant": "duplicates",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S073",
+      "feature_id": "sets.union_distinct",
+      "variant": "NULL tuples",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S074",
+      "feature_id": "sets.intersect",
+      "variant": "INTERSECT/INTERSECT ALL",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S075",
+      "feature_id": "sets.intersect",
+      "variant": "nested",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S076",
+      "feature_id": "sets.intersect",
+      "variant": "multiset minimum",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S077",
+      "feature_id": "sets.intersect",
+      "variant": "NULL tuples",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S078",
+      "feature_id": "sets.except",
+      "variant": "EXCEPT/MINUS",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S079",
+      "feature_id": "sets.except",
+      "variant": "EXCEPT ALL",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S080",
+      "feature_id": "sets.except",
+      "variant": "absence",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S081",
+      "feature_id": "sets.except",
+      "variant": "multiset subtraction",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S082",
+      "feature_id": "sets.except",
+      "variant": "branch order",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S083",
+      "feature_id": "sets.alignment",
+      "variant": "BY NAME",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "duckdb_executes_canonical_name_alignment_unsupported",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S084",
+      "feature_id": "sets.alignment",
+      "variant": "CORRESPONDING",
+      "native_duckdb_original_sql": "not_proven",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S085",
+      "feature_id": "sets.alignment",
+      "variant": "column reorder",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S086",
+      "feature_id": "sets.alignment",
+      "variant": "incompatible arity",
+      "native_duckdb_original_sql": "not_proven",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S087",
+      "feature_id": "sets.alignment",
+      "variant": "nested sets",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S088",
+      "feature_id": "grouping.basic",
+      "variant": "GROUP BY columns/expressions",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S089",
+      "feature_id": "grouping.basic",
+      "variant": "COUNT",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S090",
+      "feature_id": "grouping.basic",
+      "variant": "SUM",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S091",
+      "feature_id": "grouping.basic",
+      "variant": "MIN",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S092",
+      "feature_id": "grouping.basic",
+      "variant": "MAX",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S093",
+      "feature_id": "grouping.basic",
+      "variant": "AVG",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S094",
+      "feature_id": "grouping.basic",
+      "variant": "duplicates",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S095",
+      "feature_id": "grouping.advanced",
+      "variant": "DISTINCT aggregate",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S096",
+      "feature_id": "grouping.advanced",
+      "variant": "FILTER",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S097",
+      "feature_id": "grouping.advanced",
+      "variant": "ordered aggregates",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S098",
+      "feature_id": "grouping.advanced",
+      "variant": "COUNT DISTINCT",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S099",
+      "feature_id": "grouping.advanced",
+      "variant": "NULL elimination",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S100",
+      "feature_id": "grouping.supergroups",
+      "variant": "ROLLUP",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S101",
+      "feature_id": "grouping.supergroups",
+      "variant": "CUBE",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S102",
+      "feature_id": "grouping.supergroups",
+      "variant": "GROUPING SETS",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S103",
+      "feature_id": "grouping.supergroups",
+      "variant": "GROUP BY ALL",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S104",
+      "feature_id": "grouping.supergroups",
+      "variant": "GROUPING()",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S105",
+      "feature_id": "grouping.having",
+      "variant": "HAVING COUNT/SUM/MIN/MAX/AVG with composite predicates and joined inputs",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S106",
+      "feature_id": "windows.row_number",
+      "variant": "ROW_NUMBER",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S107",
+      "feature_id": "windows.row_number",
+      "variant": "partitioned ordering",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S108",
+      "feature_id": "windows.row_number",
+      "variant": "peers",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S109",
+      "feature_id": "windows.row_number",
+      "variant": "stable ties",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S110",
+      "feature_id": "windows.row_number",
+      "variant": "NULL ordering",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S111",
+      "feature_id": "windows.ranking",
+      "variant": "RANK",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S112",
+      "feature_id": "windows.ranking",
+      "variant": "DENSE_RANK",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S113",
+      "feature_id": "windows.ranking",
+      "variant": "NTILE",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S114",
+      "feature_id": "windows.ranking",
+      "variant": "PERCENT_RANK",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S115",
+      "feature_id": "windows.ranking",
+      "variant": "CUME_DIST",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S116",
+      "feature_id": "windows.frames",
+      "variant": "ROWS",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S117",
+      "feature_id": "windows.frames",
+      "variant": "RANGE",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S118",
+      "feature_id": "windows.frames",
+      "variant": "GROUPS",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S119",
+      "feature_id": "windows.frames",
+      "variant": "sliding/window aggregates",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S120",
+      "feature_id": "windows.frames",
+      "variant": "named windows",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S121",
+      "feature_id": "windows.qualify",
+      "variant": "QUALIFY aliases",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S122",
+      "feature_id": "windows.qualify",
+      "variant": "multiple predicates",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S123",
+      "feature_id": "windows.qualify",
+      "variant": "grouped/window joins",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S124",
+      "feature_id": "windows.qualify",
+      "variant": "negative membership",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S125",
+      "feature_id": "subqueries.exists",
+      "variant": "EXISTS",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S126",
+      "feature_id": "subqueries.exists",
+      "variant": "NOT EXISTS",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S127",
+      "feature_id": "subqueries.exists",
+      "variant": "correlated",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S128",
+      "feature_id": "subqueries.exists",
+      "variant": "uncorrelated",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S129",
+      "feature_id": "subqueries.exists",
+      "variant": "nested",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S130",
+      "feature_id": "subqueries.exists",
+      "variant": "zero rows",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S131",
+      "feature_id": "subqueries.in",
+      "variant": "IN",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S132",
+      "feature_id": "subqueries.in",
+      "variant": "NOT IN",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S133",
+      "feature_id": "subqueries.in",
+      "variant": "nullable sets",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S134",
+      "feature_id": "subqueries.in",
+      "variant": "duplicate keys",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S135",
+      "feature_id": "subqueries.in",
+      "variant": "tuple IN",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S136",
+      "feature_id": "subqueries.scalar_quantified",
+      "variant": "scalar",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S137",
+      "feature_id": "subqueries.scalar_quantified",
+      "variant": "ANY/ALL/SOME",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S138",
+      "feature_id": "subqueries.scalar_quantified",
+      "variant": "comparisons",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S139",
+      "feature_id": "subqueries.scalar_quantified",
+      "variant": "correlations",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S140",
+      "feature_id": "subqueries.scalar_quantified",
+      "variant": "cardinality >1",
+      "native_duckdb_original_sql": "not_proven",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S141",
+      "feature_id": "scopes.cte",
+      "variant": "WITH",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S142",
+      "feature_id": "scopes.cte",
+      "variant": "chained CTE",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S143",
+      "feature_id": "scopes.cte",
+      "variant": "shadowing",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S144",
+      "feature_id": "scopes.cte",
+      "variant": "repeated references",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S145",
+      "feature_id": "scopes.cte",
+      "variant": "producer dependencies",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S146",
+      "feature_id": "scopes.recursive_cte",
+      "variant": "WITH RECURSIVE",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S147",
+      "feature_id": "scopes.recursive_cte",
+      "variant": "cycles",
+      "native_duckdb_original_sql": "not_proven",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S148",
+      "feature_id": "scopes.recursive_cte",
+      "variant": "bounded/unbounded recursion",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S149",
+      "feature_id": "scopes.recursive_cte",
+      "variant": "termination",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S150",
+      "feature_id": "scopes.derived_lateral",
+      "variant": "nested derived tables",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S151",
+      "feature_id": "scopes.derived_lateral",
+      "variant": "LATERAL",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S152",
+      "feature_id": "scopes.derived_lateral",
+      "variant": "correlated table sources",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S153",
+      "feature_id": "scopes.derived_lateral",
+      "variant": "alias scopes",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S154",
+      "feature_id": "ordering.sort",
+      "variant": "ORDER BY",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S155",
+      "feature_id": "ordering.sort",
+      "variant": "ASC/DESC",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S156",
+      "feature_id": "ordering.sort",
+      "variant": "NULLS FIRST/LAST",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S157",
+      "feature_id": "ordering.sort",
+      "variant": "computed ordering",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S158",
+      "feature_id": "ordering.sort",
+      "variant": "ties",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S159",
+      "feature_id": "ordering.pagination",
+      "variant": "LIMIT/OFFSET",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S160",
+      "feature_id": "ordering.pagination",
+      "variant": "FETCH FIRST/WITH TIES",
+      "native_duckdb_original_sql": "not_proven",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "duckdb_rejected_frozen_fetch_with_ties",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S161",
+      "feature_id": "ordering.pagination",
+      "variant": "TOP",
+      "native_duckdb_original_sql": "not_proven",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S162",
+      "feature_id": "ordering.pagination",
+      "variant": "row ordering stability",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S163",
+      "feature_id": "ordering.sampling",
+      "variant": "TABLESAMPLE",
+      "native_duckdb_original_sql": "not_proven",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S164",
+      "feature_id": "ordering.sampling",
+      "variant": "BERNOULLI",
+      "native_duckdb_original_sql": "not_proven",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S165",
+      "feature_id": "ordering.sampling",
+      "variant": "SYSTEM",
+      "native_duckdb_original_sql": "not_proven",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S166",
+      "feature_id": "ordering.sampling",
+      "variant": "seeds",
+      "native_duckdb_original_sql": "not_proven",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S167",
+      "feature_id": "ordering.sampling",
+      "variant": "engine randomness",
+      "native_duckdb_original_sql": "not_proven",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S168",
+      "feature_id": "relations.advanced_sources",
+      "variant": "UNNEST",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S169",
+      "feature_id": "relations.advanced_sources",
+      "variant": "PIVOT/UNPIVOT",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S170",
+      "feature_id": "relations.advanced_sources",
+      "variant": "table functions",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S171",
+      "feature_id": "relations.advanced_sources",
+      "variant": "generators",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S172",
+      "feature_id": "relations.advanced_sources",
+      "variant": "VALUES",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S173",
+      "feature_id": "relations.advanced_sources",
+      "variant": "cross apply",
+      "native_duckdb_original_sql": "not_proven",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S174",
+      "feature_id": "types.structural",
+      "variant": "numeric/decimal",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S175",
+      "feature_id": "types.structural",
+      "variant": "strings",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S176",
+      "feature_id": "types.structural",
+      "variant": "binary",
+      "native_duckdb_original_sql": "not_proven",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "duckdb_rejected_binary_length_companion_verified",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S177",
+      "feature_id": "types.structural",
+      "variant": "JSON",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S178",
+      "feature_id": "types.structural",
+      "variant": "array",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S179",
+      "feature_id": "types.structural",
+      "variant": "struct",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S180",
+      "feature_id": "types.structural",
+      "variant": "enum",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S181",
+      "feature_id": "types.structural",
+      "variant": "geometry",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "native_geometry_wkt_exact",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S182",
+      "feature_id": "types.structural",
+      "variant": "custom",
+      "native_duckdb_original_sql": "not_proven",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S183",
+      "feature_id": "schema.constraints",
+      "variant": "PK",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S184",
+      "feature_id": "schema.constraints",
+      "variant": "FK",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S185",
+      "feature_id": "schema.constraints",
+      "variant": "UNIQUE",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S186",
+      "feature_id": "schema.constraints",
+      "variant": "NOT NULL",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S187",
+      "feature_id": "schema.constraints",
+      "variant": "CHECK",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S188",
+      "feature_id": "schema.constraints",
+      "variant": "DEFAULT",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S189",
+      "feature_id": "schema.constraints",
+      "variant": "generated columns",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S190",
+      "feature_id": "schema.metadata_parity",
+      "variant": "SQL DDL",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S191",
+      "feature_id": "schema.metadata_parity",
+      "variant": "dbt manifest/catalog",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S192",
+      "feature_id": "schema.metadata_parity",
+      "variant": "ODCS contract",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S193",
+      "feature_id": "schema.metadata_parity",
+      "variant": "absent/conflicting evidence",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S194",
+      "feature_id": "dml.insert",
+      "variant": "INSERT VALUES/SELECT",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S195",
+      "feature_id": "dml.insert",
+      "variant": "explicit/implicit columns",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S196",
+      "feature_id": "dml.insert",
+      "variant": "multi-row",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S197",
+      "feature_id": "dml.insert",
+      "variant": "RETURNING",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S198",
+      "feature_id": "dml.insert_conflicts",
+      "variant": "ON CONFLICT/ON DUPLICATE KEY",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S199",
+      "feature_id": "dml.insert_conflicts",
+      "variant": "REPLACE INTO",
+      "native_duckdb_original_sql": "not_proven",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S200",
+      "feature_id": "dml.insert_conflicts",
+      "variant": "INSERT OVERWRITE",
+      "native_duckdb_original_sql": "not_proven",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S201",
+      "feature_id": "dml.update",
+      "variant": "UPDATE FROM/joined",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S202",
+      "feature_id": "dml.update",
+      "variant": "computed assignments",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S203",
+      "feature_id": "dml.update",
+      "variant": "correlated predicates",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S204",
+      "feature_id": "dml.update",
+      "variant": "RETURNING",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S205",
+      "feature_id": "dml.delete",
+      "variant": "DELETE WHERE/USING/joined",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S206",
+      "feature_id": "dml.delete",
+      "variant": "subquery",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S207",
+      "feature_id": "dml.delete",
+      "variant": "RETURNING",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S208",
+      "feature_id": "dml.delete",
+      "variant": "cascade effects",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S209",
+      "feature_id": "dml.merge",
+      "variant": "MERGE matched/unmatched/by source",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S210",
+      "feature_id": "dml.merge",
+      "variant": "ordered WHEN",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S211",
+      "feature_id": "dml.merge",
+      "variant": "UPDATE/INSERT/DELETE branches",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S212",
+      "feature_id": "ddl.producers",
+      "variant": "CREATE TABLE AS",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S213",
+      "feature_id": "ddl.producers",
+      "variant": "CREATE VIEW",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S214",
+      "feature_id": "ddl.producers",
+      "variant": "CREATE OR REPLACE VIEW/TABLE",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S215",
+      "feature_id": "ddl.producers",
+      "variant": "TEMPORARY",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S216",
+      "feature_id": "ddl.schema_lifecycle",
+      "variant": "ALTER TABLE",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S217",
+      "feature_id": "ddl.schema_lifecycle",
+      "variant": "DROP",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S218",
+      "feature_id": "ddl.schema_lifecycle",
+      "variant": "RENAME",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S219",
+      "feature_id": "ddl.schema_lifecycle",
+      "variant": "TRUNCATE",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S220",
+      "feature_id": "ddl.schema_lifecycle",
+      "variant": "defaults/constraints",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S221",
+      "feature_id": "transactions.ordered_effects",
+      "variant": "ordered statements",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S222",
+      "feature_id": "transactions.ordered_effects",
+      "variant": "snapshot visibility",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S223",
+      "feature_id": "transactions.ordered_effects",
+      "variant": "dependency graph",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S224",
+      "feature_id": "transactions.ordered_effects",
+      "variant": "rollback",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S225",
+      "feature_id": "outcomes.cardinality",
+      "variant": "COUNT exact/bounded",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S226",
+      "feature_id": "outcomes.cardinality",
+      "variant": "zero-count",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S227",
+      "feature_id": "outcomes.cardinality",
+      "variant": "duplicate multiplicity",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S228",
+      "feature_id": "outcomes.cardinality",
+      "variant": "final row counts",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S229",
+      "feature_id": "outcomes.distribution",
+      "variant": "value frequency",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S230",
+      "feature_id": "outcomes.distribution",
+      "variant": "null frequency",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S231",
+      "feature_id": "outcomes.distribution",
+      "variant": "group counts",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S232",
+      "feature_id": "outcomes.distribution",
+      "variant": "joined aggregates",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S233",
+      "feature_id": "outcomes.classification",
+      "variant": "multi-terminal positive/negative vectors",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S234",
+      "feature_id": "outcomes.classification",
+      "variant": "partial overlap",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S235",
+      "feature_id": "outcomes.classification",
+      "variant": "rejected absence",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S236",
+      "feature_id": "outcomes.dag",
+      "variant": "shared sources",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S237",
+      "feature_id": "outcomes.dag",
+      "variant": "composed CTE/dbt models",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S238",
+      "feature_id": "outcomes.dag",
+      "variant": "physical realizability",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S239",
+      "feature_id": "outcomes.dag",
+      "variant": "conflict",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S240",
+      "feature_id": "execution.dialect_equivalence",
+      "variant": "engine SQL versions",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S241",
+      "feature_id": "execution.dialect_equivalence",
+      "variant": "session state",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S242",
+      "feature_id": "execution.dialect_equivalence",
+      "variant": "runtime plan",
+      "native_duckdb_original_sql": "not_proven",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S243",
+      "feature_id": "execution.dialect_equivalence",
+      "variant": "SQL result oracle",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S244",
+      "feature_id": "execution.dbt_fixture",
+      "variant": "dbt compile",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S245",
+      "feature_id": "execution.dbt_fixture",
+      "variant": "docs generate",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S246",
+      "feature_id": "execution.dbt_fixture",
+      "variant": "make all",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S247",
+      "feature_id": "execution.dbt_fixture",
+      "variant": "source and terminal output assertion",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S248",
+      "feature_id": "execution.unsupported_opaque",
+      "variant": "arbitrary UDF",
+      "native_duckdb_original_sql": "not_proven",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S249",
+      "feature_id": "execution.unsupported_opaque",
+      "variant": "external I/O",
+      "native_duckdb_original_sql": "not_proven",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S250",
+      "feature_id": "execution.unsupported_opaque",
+      "variant": "nondeterminism",
+      "native_duckdb_original_sql": "not_proven",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    },
+    {
+      "id": "88-C177-S251",
+      "feature_id": "execution.unsupported_opaque",
+      "variant": "vendor operators",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
+      "canonical_typed_adapter_parity": "not_proven",
+      "native_exact_syntax": "as_in_native_evidence",
+      "independent_signoff": "blocked"
+    }
+  ],
+  "typed_sql_dbt_odcs_domain_parity_sample_count": 10
+}

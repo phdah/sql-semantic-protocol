@@ -1,0 +1,81 @@
+{
+  "schema_version": 1,
+  "owner": "TASK-177",
+  "scope": "Explicit original-SQL native rejection, stochastic/runtime and bounded control evidence for unresolved cases; no successful full-terminal claim or independent conditional approval.",
+  "expected_native_rejections": [
+    {
+      "id": "88-C177-S054",
+      "reason": "DuckDB rejects frozen LEFT SEMI spelling"
+    },
+    {
+      "id": "88-C177-S055",
+      "reason": "DuckDB rejects frozen LEFT ANTI spelling"
+    },
+    {
+      "id": "88-C177-S084",
+      "reason": "DuckDB does not accept frozen CORRESPONDING spelling"
+    },
+    {
+      "id": "88-C177-S160",
+      "reason": "DuckDB rejects frozen FETCH WITH TIES spelling"
+    },
+    {
+      "id": "88-C177-S161",
+      "reason": "DuckDB rejects SQL Server TOP spelling"
+    },
+    {
+      "id": "88-C177-S173",
+      "reason": "DuckDB rejects frozen CROSS APPLY spelling"
+    },
+    {
+      "id": "88-C177-S176",
+      "reason": "DuckDB maps BINARY to BLOB and rejects length parameters at binding"
+    },
+    {
+      "id": "88-C177-S182",
+      "reason": "unknown user-defined type"
+    },
+    {
+      "id": "88-C177-S199",
+      "reason": "DuckDB rejects MySQL-style REPLACE INTO"
+    },
+    {
+      "id": "88-C177-S200",
+      "reason": "DuckDB rejects INSERT OVERWRITE TABLE"
+    },
+    {
+      "id": "88-C177-S248",
+      "reason": "no arbitrary_udf has been registered in native session"
+    },
+    {
+      "id": "88-C177-S249",
+      "reason": "no /tmp/input.csv external source in native session"
+    }
+  ],
+  "stochastic_sampling_cases": [
+    "88-C177-S163",
+    "88-C177-S164",
+    "88-C177-S165",
+    "88-C177-S166",
+    "88-C177-S167"
+  ],
+  "nonterminating_case": "88-C177-S147",
+  "bounded_companion": "WITH RECURSIVE t(n) AS (SELECT 1 UNION ALL SELECT n + 1 FROM t WHERE n < 3) SELECT n FROM t",
+  "bounded_companion_bag": [
+    [
+      1
+    ],
+    [
+      2
+    ],
+    [
+      3
+    ]
+  ],
+  "runtime_random_case": "88-C177-S250",
+  "explain_case": "88-C177-S242",
+  "outside_native_proof": "Unbounded recursion and stochastic sampling/RANDOM cannot be given fixed successful terminal bags. S176 BINARY(2) is a native DuckDB binder rejection with a separate BLOB control, not a successful original terminal. S181 original GEOMETRY has exact type and WKT physical proof. S242 EXPLAIN executes, but the optimizer-dependent plan is not a fixed exact semantic outcome; external vendors, UDFs, and files require reviewed conditional evidence.",
+  "native_executable_without_fixed_terminal": [
+    "88-C177-S242"
+  ]
+}

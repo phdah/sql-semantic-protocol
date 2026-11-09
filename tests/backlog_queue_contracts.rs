@@ -202,5 +202,10 @@ fn all_planned_parent_queues_have_acyclic_child_dependencies_and_complete_ac_map
         );
     }
     global_ids.sort_unstable();
-    assert_eq!(global_ids, (109..=189).collect::<Vec<_>>());
+    // Existing parent-queue task IDs 109..=189 remain intact. The explicit
+    // TASK-191 scope-split child is appended to TASK-88's dependency chain;
+    // TASK-190 belongs to unrelated backlog scope, not this queue.
+    let mut expected: Vec<u64> = (109..=189).collect();
+    expected.push(191);
+    assert_eq!(global_ids, expected);
 }

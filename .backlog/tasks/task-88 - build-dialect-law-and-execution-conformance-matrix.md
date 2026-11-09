@@ -4,7 +4,7 @@ title: Verify all exposed SQL dialects and dialect-specific semantic laws
 status: To Do
 assignee: []
 created_date: '2026-10-09'
-updated_date: '2026-10-09'
+updated_date: '2026-11-09'
 labels: []
 milestone: m-3
 dependencies: 
@@ -26,6 +26,7 @@ dependencies:
   - TASK-178
   - TASK-179
   - TASK-180
+  - TASK-191
 references: 
   - 'TASK-47'
   - 'TASK-51'
@@ -79,13 +80,14 @@ TASK-70/108 completed the expression-specific 13-parser, 546-cell audit. The 14 
 
 ## Bounded dependency-ordered child execution queue (2026-10-17)
 
-TASK-88 is an **independent parent signoff** and cannot be closed from a narrow passing CI subset. All original AC remain mandatory and unchecked until every child below is Done and merged. Choose first unfinished child with satisfied upstream dependencies; no child depends on TASK-88. `docs/backlog-child-queue-plan.json` is the versioned planning inventory, and each child must register a frozen, executable task-specific acceptance matrix before semantics change.
+TASK-88 is an **independent parent signoff** and cannot be closed from a narrow passing CI subset. All original AC remain mandatory and unchecked until every child below is Done and merged. TASK-177's Done status is bounded to the observed parser/analyzer freeze; TASK-191 owns its outstanding parser/native exception dispositions and does not waive parent acceptance. Choose first unfinished child with satisfied upstream dependencies; no child depends on TASK-88. `docs/backlog-child-queue-plan.json` is the versioned planning inventory, and each child must register a frozen, executable task-specific acceptance matrix before semantics change.
 
-- **[TASK-177](task-177%20-%20freeze-task-66-feature-by-13-dialect-parser-coverage.md)** (1/4): 13 named dialects; every reviewed variant; parser accepted/unsupported statuses. Fixtures `88-C177-P`, `88-C177-N`.
-- **[TASK-178](task-178%20-%20certify-canonical-equivalence-for-shared-dialect-ast-variants.md)** (2/4): JOIN, sets, predicates, windows, DML, DDL, TOP/FETCH/MINUS variants. Fixtures `88-C178-P`, `88-C178-N`.
-- **[TASK-179](task-179%20-%20classify-conditional-session-and-vendor-execution-laws.md)** (3/4): NULL ordering; collations; implicit coercion; FLOAT/timezone; DML/transaction; name case. Fixtures `88-C179-P`, `88-C179-N`.
-- **[TASK-180](task-180%20-%20independently-certify-complete-dialect-matrix-and-gate-ci.md)** (4/4): all 13 dialect rows and conditionals; SQL/dbt/ODCS; physical outcomes. Fixtures `88-C180-P`, `88-C180-N`.
+- **[TASK-177](task-177%20-%20freeze-task-66-feature-by-13-dialect-parser-coverage.md)** (1/5, bounded freeze Done, merge pending): 13 named dialects; every reviewed variant; parser accepted/unsupported statuses. Fixtures `88-C177-P`, `88-C177-N`.
+- **[TASK-178](task-178%20-%20certify-canonical-equivalence-for-shared-dialect-ast-variants.md)** (2/5): JOIN, sets, predicates, windows, DML, DDL, TOP/FETCH/MINUS variants. Fixtures `88-C178-P`, `88-C178-N`.
+- **[TASK-179](task-179%20-%20classify-conditional-session-and-vendor-execution-laws.md)** (3/5): NULL ordering; collations; implicit coercion; FLOAT/timezone; DML/transaction; name case. Fixtures `88-C179-P`, `88-C179-N`.
+- **[TASK-191](task-191%20-%20adjudicate-task-177-parser-and-native-boundaries.md)** (4/5): adjudicate 55 parser rejects, 116 analyzer Unsupported cells and 23 unresolved original native outcomes with reviewed conditional dispositions. Original fixture identities remain unchanged; TASK-178/179 still own canonical/vendor laws.
+- **[TASK-180](task-180%20-%20independently-certify-complete-dialect-matrix-and-gate-ci.md)** (5/5): all 13 dialect rows and conditionals; SQL/dbt/ODCS; physical outcomes. Fixtures `88-C180-P`, `88-C180-N`.
 
-**Original AC ownership:** #1 -> TASK-177, TASK-180; #2 -> TASK-177, TASK-178, TASK-180; #3 -> TASK-179, TASK-180; #4 -> TASK-177, TASK-178, TASK-179, TASK-180; #5 -> TASK-177, TASK-178, TASK-179, TASK-180; #6 -> TASK-178, TASK-179, TASK-180; #7 -> TASK-177, TASK-178, TASK-180; #8 -> TASK-177, TASK-178, TASK-179, TASK-180.
+**Original AC ownership:** #1 -> TASK-177 freeze, TASK-191 boundaries, TASK-180 final; #2 -> TASK-178, TASK-180; #3 -> TASK-179, TASK-180; #4 -> TASK-178, TASK-179, TASK-191, TASK-180; #5 -> TASK-178, TASK-179, TASK-191, TASK-180; #6 -> TASK-178, TASK-179, TASK-180; #7 -> TASK-177 freeze, TASK-178, TASK-191, TASK-180; #8 -> TASK-178, TASK-179, TASK-191, TASK-180. TASK-177 is not the independent parent semantic signoff.
 
 **No premature Done:** mandatory typed exactness cannot be deferred as residual; unverified cells block completion. Positive/NOT TRUE rows, nullable interval output domains, full DuckDB bags, adapter/13-dialect evidence, reviewed conditional vendor cases and final CI are necessary. TASK-91 remains a distinct release decision after TASK-88 closure.

@@ -1,0 +1,3905 @@
+{
+  "schema_version": 1,
+  "task_id": "TASK-177",
+  "source_manifest": "docs/coverage-manifest.json",
+  "dialects": [
+    "ansi",
+    "bigquery",
+    "clickhouse",
+    "databricks",
+    "duckdb",
+    "generic",
+    "hive",
+    "mssql",
+    "mysql",
+    "postgresql",
+    "redshift",
+    "snowflake",
+    "sqlite"
+  ],
+  "case_count": 251,
+  "distinction": "Each SQL shape exemplifies one named variant: a parser success/rejection does not certify full semantic behavior, physical proofs, vendor execution or a complete synonym family.",
+  "cases": [
+    {
+      "id": "88-C177-S001",
+      "feature_id": "predicates.integer_ranges",
+      "variant": "=",
+      "sql": "SELECT amount FROM orders WHERE amount = 10",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-70"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S002",
+      "feature_id": "predicates.integer_ranges",
+      "variant": "<>",
+      "sql": "SELECT amount FROM orders WHERE amount <> 10",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-70"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S003",
+      "feature_id": "predicates.integer_ranges",
+      "variant": "<",
+      "sql": "SELECT amount FROM orders WHERE amount < 10",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-70"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S004",
+      "feature_id": "predicates.integer_ranges",
+      "variant": "<=",
+      "sql": "SELECT amount FROM orders WHERE amount <= 10",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-70"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S005",
+      "feature_id": "predicates.integer_ranges",
+      "variant": ">",
+      "sql": "SELECT amount FROM orders WHERE amount > 10",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-70"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S006",
+      "feature_id": "predicates.integer_ranges",
+      "variant": ">=",
+      "sql": "SELECT amount FROM orders WHERE amount >= 10",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-70"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S007",
+      "feature_id": "predicates.integer_ranges",
+      "variant": "BETWEEN",
+      "sql": "SELECT amount FROM orders WHERE amount BETWEEN 1 AND 10",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-70"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S008",
+      "feature_id": "predicates.integer_ranges",
+      "variant": "NOT BETWEEN",
+      "sql": "SELECT amount FROM orders WHERE amount NOT BETWEEN 1 AND 10",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-70"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S009",
+      "feature_id": "predicates.boolean_logic",
+      "variant": "AND",
+      "sql": "SELECT id FROM orders WHERE amount > 1 AND id > 0",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-70"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S010",
+      "feature_id": "predicates.boolean_logic",
+      "variant": "OR",
+      "sql": "SELECT id FROM orders WHERE amount > 1 OR id > 0",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-70"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S011",
+      "feature_id": "predicates.boolean_logic",
+      "variant": "NOT",
+      "sql": "SELECT id FROM orders WHERE NOT (amount > 1)",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-70"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S012",
+      "feature_id": "predicates.boolean_logic",
+      "variant": "parenthesized",
+      "sql": "SELECT id FROM orders WHERE (amount > 1 OR amount IS NULL) AND id > 0",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-70"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S013",
+      "feature_id": "predicates.boolean_logic",
+      "variant": "correlated column truth",
+      "sql": "SELECT o.id FROM orders o WHERE EXISTS (SELECT 1 FROM customers c WHERE c.id = o.id)",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-70"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S014",
+      "feature_id": "predicates.null_truth",
+      "variant": "IS NULL",
+      "sql": "SELECT id FROM orders WHERE amount IS NULL",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-70"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S015",
+      "feature_id": "predicates.null_truth",
+      "variant": "IS NOT NULL",
+      "sql": "SELECT id FROM orders WHERE amount IS NOT NULL",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-70"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S016",
+      "feature_id": "predicates.null_truth",
+      "variant": "IS TRUE",
+      "sql": "SELECT id FROM orders WHERE amount > 0 IS TRUE",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-70"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S017",
+      "feature_id": "predicates.null_truth",
+      "variant": "IS FALSE",
+      "sql": "SELECT id FROM orders WHERE amount > 0 IS FALSE",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-70"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S018",
+      "feature_id": "predicates.null_truth",
+      "variant": "UNKNOWN",
+      "sql": "SELECT id FROM orders WHERE amount > 0 IS UNKNOWN",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-70"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S019",
+      "feature_id": "predicates.null_truth",
+      "variant": "IN with NULL",
+      "sql": "SELECT id FROM orders WHERE amount IN (1, NULL)",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-70"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S020",
+      "feature_id": "predicates.string_pattern",
+      "variant": "LIKE",
+      "sql": "SELECT id FROM customers WHERE name LIKE 'A%'",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-70"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S021",
+      "feature_id": "predicates.string_pattern",
+      "variant": "ILIKE",
+      "sql": "SELECT id FROM customers WHERE name ILIKE 'a%'",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-70"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S022",
+      "feature_id": "predicates.string_pattern",
+      "variant": "ESCAPE",
+      "sql": "SELECT id FROM customers WHERE name LIKE 'A!_%' ESCAPE '!'",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-70"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S023",
+      "feature_id": "predicates.string_pattern",
+      "variant": "SIMILAR TO",
+      "sql": "SELECT id FROM customers WHERE name SIMILAR TO '(A|B)%'",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-70"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S024",
+      "feature_id": "predicates.string_pattern",
+      "variant": "regex",
+      "sql": "SELECT id FROM customers WHERE name ~ '^A'",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-70"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S025",
+      "feature_id": "predicates.string_pattern",
+      "variant": "prefix",
+      "sql": "SELECT id FROM customers WHERE name LIKE 'ABC%'",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-70"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S026",
+      "feature_id": "predicates.string_pattern",
+      "variant": "collations",
+      "sql": "SELECT id FROM customers WHERE name COLLATE en_US = 'a'",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-70"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S027",
+      "feature_id": "predicates.computed",
+      "variant": "arithmetic",
+      "sql": "SELECT id FROM orders WHERE amount + 2 > 10",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-70",
+        "TASK-101",
+        "TASK-102"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S028",
+      "feature_id": "predicates.computed",
+      "variant": "casts",
+      "sql": "SELECT id FROM orders WHERE CAST(amount AS BIGINT) > 10",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-70",
+        "TASK-101",
+        "TASK-102"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S029",
+      "feature_id": "predicates.computed",
+      "variant": "CASE",
+      "sql": "SELECT id FROM orders WHERE CASE WHEN amount > 5 THEN 1 ELSE 0 END = 1",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-70",
+        "TASK-101",
+        "TASK-102"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S030",
+      "feature_id": "predicates.computed",
+      "variant": "COALESCE",
+      "sql": "SELECT id FROM orders WHERE COALESCE(amount, 0) >= 0",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-70",
+        "TASK-101",
+        "TASK-102"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S031",
+      "feature_id": "predicates.computed",
+      "variant": "NULLIF",
+      "sql": "SELECT id FROM orders WHERE NULLIF(amount, 0) IS NULL",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-70",
+        "TASK-101",
+        "TASK-102"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S032",
+      "feature_id": "predicates.computed",
+      "variant": "scalar functions",
+      "sql": "SELECT id FROM orders WHERE ABS(amount) > 2",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-70",
+        "TASK-101",
+        "TASK-102"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S033",
+      "feature_id": "predicates.computed",
+      "variant": "overflow",
+      "sql": "SELECT 9223372036854775807 + 1 AS overflow_case",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-70",
+        "TASK-101",
+        "TASK-102"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S034",
+      "feature_id": "predicates.temporal",
+      "variant": "DATE/TIME/TIMESTAMP/INTERVAL",
+      "sql": "SELECT id FROM orders WHERE created_at >= TIMESTAMP '2020-01-01 00:00:00' + INTERVAL '1' DAY",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-70",
+        "TASK-79"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S035",
+      "feature_id": "predicates.temporal",
+      "variant": "timezone",
+      "sql": "SELECT id FROM orders WHERE created_at AT TIME ZONE 'UTC' > TIMESTAMP '2020-01-01 00:00:00'",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-70",
+        "TASK-79"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S036",
+      "feature_id": "predicates.temporal",
+      "variant": "coercion",
+      "sql": "SELECT id FROM orders WHERE CAST(created_at AS DATE) = DATE '2020-01-01'",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-70",
+        "TASK-79"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S037",
+      "feature_id": "predicates.temporal",
+      "variant": "DST",
+      "sql": "SELECT id FROM orders WHERE created_at BETWEEN TIMESTAMP '2020-03-08 01:00:00' AND TIMESTAMP '2020-03-08 03:00:00'",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-70",
+        "TASK-79"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S038",
+      "feature_id": "predicates.comparison_environment",
+      "variant": "binary/locale collation",
+      "sql": "SELECT id FROM customers WHERE name COLLATE en_US = 'abc'",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-70",
+        "TASK-79"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S039",
+      "feature_id": "predicates.comparison_environment",
+      "variant": "padding",
+      "sql": "SELECT id FROM customers WHERE name = 'abc '",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-70",
+        "TASK-79"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S040",
+      "feature_id": "predicates.comparison_environment",
+      "variant": "NaN",
+      "sql": "SELECT id FROM orders WHERE amount = 'NaN'",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-70",
+        "TASK-79"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S041",
+      "feature_id": "predicates.comparison_environment",
+      "variant": "signed zero",
+      "sql": "SELECT id FROM orders WHERE amount = -0.0",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-70",
+        "TASK-79"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S042",
+      "feature_id": "predicates.comparison_environment",
+      "variant": "NULL sorting",
+      "sql": "SELECT id FROM orders ORDER BY amount NULLS LAST",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-70",
+        "TASK-79"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S043",
+      "feature_id": "joins.inner",
+      "variant": "ON equality",
+      "sql": "SELECT l.id FROM orders l INNER JOIN customers r ON l.id = r.id",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-71"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S044",
+      "feature_id": "joins.inner",
+      "variant": "USING",
+      "sql": "SELECT id FROM orders INNER JOIN customers USING (id)",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-71"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S045",
+      "feature_id": "joins.inner",
+      "variant": "NATURAL",
+      "sql": "SELECT id FROM orders NATURAL JOIN customers",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-71"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S046",
+      "feature_id": "joins.inner",
+      "variant": "composite keys",
+      "sql": "SELECT l.id FROM orders l INNER JOIN customers r ON l.id = r.id AND l.amount = r.amount",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-71"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S047",
+      "feature_id": "joins.inner",
+      "variant": "typed NULL equality",
+      "sql": "SELECT l.id FROM orders l INNER JOIN customers r ON l.amount IS NOT DISTINCT FROM r.amount",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-71"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S048",
+      "feature_id": "joins.outer",
+      "variant": "LEFT",
+      "sql": "SELECT l.id FROM orders l LEFT JOIN customers r ON l.id = r.id",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-71"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S049",
+      "feature_id": "joins.outer",
+      "variant": "RIGHT",
+      "sql": "SELECT l.id FROM orders l RIGHT JOIN customers r ON l.id = r.id",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-71"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S050",
+      "feature_id": "joins.outer",
+      "variant": "FULL",
+      "sql": "SELECT l.id FROM orders l FULL OUTER JOIN customers r ON l.id = r.id",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-71"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S051",
+      "feature_id": "joins.outer",
+      "variant": "preserved side",
+      "sql": "SELECT l.id FROM orders l LEFT JOIN customers r ON l.id = r.id WHERE r.id IS NULL",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-71"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S052",
+      "feature_id": "joins.outer",
+      "variant": "NULL-extension",
+      "sql": "SELECT l.id, r.id FROM orders l LEFT JOIN customers r ON l.id = r.id",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-71"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S053",
+      "feature_id": "joins.outer",
+      "variant": "multiple matches",
+      "sql": "SELECT l.id FROM orders l LEFT JOIN customers r ON l.id = r.id",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-71"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S054",
+      "feature_id": "joins.semi_anti",
+      "variant": "SEMI",
+      "sql": "SELECT l.id FROM orders l LEFT SEMI JOIN customers r ON l.id = r.id",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-71"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S055",
+      "feature_id": "joins.semi_anti",
+      "variant": "ANTI",
+      "sql": "SELECT l.id FROM orders l LEFT ANTI JOIN customers r ON l.id = r.id",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-71"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S056",
+      "feature_id": "joins.semi_anti",
+      "variant": "EXISTS-derived semi",
+      "sql": "SELECT l.id FROM orders l WHERE EXISTS (SELECT 1 FROM customers r WHERE r.id = l.id)",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-71"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S057",
+      "feature_id": "joins.semi_anti",
+      "variant": "anti with nullable keys",
+      "sql": "SELECT l.id FROM orders l WHERE NOT EXISTS (SELECT 1 FROM customers r WHERE r.id = l.id)",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-71"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S058",
+      "feature_id": "joins.non_equi",
+      "variant": "theta join",
+      "sql": "SELECT l.id FROM orders l JOIN customers r ON l.amount > r.amount",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-71"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S059",
+      "feature_id": "joins.non_equi",
+      "variant": "inequality",
+      "sql": "SELECT l.id FROM orders l JOIN customers r ON l.amount <= r.amount",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-71"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S060",
+      "feature_id": "joins.non_equi",
+      "variant": "expression keys",
+      "sql": "SELECT l.id FROM orders l JOIN customers r ON l.amount + 1 = r.amount",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-71"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S061",
+      "feature_id": "joins.non_equi",
+      "variant": "mixed AND/OR ON",
+      "sql": "SELECT l.id FROM orders l JOIN customers r ON (l.id = r.id OR l.amount > r.amount) AND r.amount IS NOT NULL",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-71"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S062",
+      "feature_id": "joins.repeated_source",
+      "variant": "self join",
+      "sql": "SELECT a.id FROM orders a JOIN orders b ON a.id = b.id",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-71"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S063",
+      "feature_id": "joins.repeated_source",
+      "variant": "repeated aliases",
+      "sql": "SELECT a.id FROM orders a JOIN orders b ON a.id = b.id JOIN orders c ON b.id = c.id",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-71"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S064",
+      "feature_id": "joins.repeated_source",
+      "variant": "multi-join trees",
+      "sql": "SELECT a.id FROM orders a JOIN customers b ON a.id = b.id JOIN products c ON b.id = c.id",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-71"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S065",
+      "feature_id": "joins.repeated_source",
+      "variant": "shared physical row identities",
+      "sql": "SELECT a.id FROM orders a JOIN orders b ON a.id = b.id",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-71"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S066",
+      "feature_id": "sets.union_all",
+      "variant": "UNION ALL",
+      "sql": "SELECT id FROM orders UNION ALL SELECT id FROM customers",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-72",
+        "TASK-69"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S067",
+      "feature_id": "sets.union_all",
+      "variant": "positional alignment",
+      "sql": "SELECT id AS k FROM orders UNION ALL SELECT id AS other FROM customers",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-72",
+        "TASK-69"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S068",
+      "feature_id": "sets.union_all",
+      "variant": "duplicate bag counts",
+      "sql": "SELECT id FROM orders UNION ALL SELECT id FROM orders",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-72",
+        "TASK-69"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S069",
+      "feature_id": "sets.union_all",
+      "variant": "NULL tuple identity",
+      "sql": "SELECT amount FROM orders UNION ALL SELECT amount FROM customers",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-72",
+        "TASK-69"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S070",
+      "feature_id": "sets.union_distinct",
+      "variant": "UNION DISTINCT",
+      "sql": "SELECT id FROM orders UNION DISTINCT SELECT id FROM customers",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-72",
+        "TASK-69"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S071",
+      "feature_id": "sets.union_distinct",
+      "variant": "overlapping branches",
+      "sql": "SELECT id FROM orders UNION SELECT id FROM orders",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-72",
+        "TASK-69"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S072",
+      "feature_id": "sets.union_distinct",
+      "variant": "duplicates",
+      "sql": "SELECT id FROM orders UNION SELECT id FROM customers",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-72",
+        "TASK-69"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S073",
+      "feature_id": "sets.union_distinct",
+      "variant": "NULL tuples",
+      "sql": "SELECT amount FROM orders UNION SELECT amount FROM customers",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-72",
+        "TASK-69"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S074",
+      "feature_id": "sets.intersect",
+      "variant": "INTERSECT/INTERSECT ALL",
+      "sql": "SELECT id FROM orders INTERSECT SELECT id FROM customers",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-72",
+        "TASK-69"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S075",
+      "feature_id": "sets.intersect",
+      "variant": "nested",
+      "sql": "SELECT id FROM orders INTERSECT ALL SELECT id FROM customers",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-72",
+        "TASK-69"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S076",
+      "feature_id": "sets.intersect",
+      "variant": "multiset minimum",
+      "sql": "SELECT id FROM orders INTERSECT ALL SELECT id FROM customers",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-72",
+        "TASK-69"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S077",
+      "feature_id": "sets.intersect",
+      "variant": "NULL tuples",
+      "sql": "SELECT amount FROM orders INTERSECT SELECT amount FROM customers",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-72",
+        "TASK-69"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S078",
+      "feature_id": "sets.except",
+      "variant": "EXCEPT/MINUS",
+      "sql": "SELECT id FROM orders EXCEPT SELECT id FROM customers",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-72",
+        "TASK-69"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S079",
+      "feature_id": "sets.except",
+      "variant": "EXCEPT ALL",
+      "sql": "SELECT id FROM orders EXCEPT ALL SELECT id FROM customers",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-72",
+        "TASK-69"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S080",
+      "feature_id": "sets.except",
+      "variant": "absence",
+      "sql": "SELECT id FROM orders EXCEPT SELECT id FROM customers",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-72",
+        "TASK-69"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S081",
+      "feature_id": "sets.except",
+      "variant": "multiset subtraction",
+      "sql": "SELECT id FROM orders EXCEPT ALL SELECT id FROM customers",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-72",
+        "TASK-69"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S082",
+      "feature_id": "sets.except",
+      "variant": "branch order",
+      "sql": "SELECT id FROM customers EXCEPT SELECT id FROM orders",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-72",
+        "TASK-69"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S083",
+      "feature_id": "sets.alignment",
+      "variant": "BY NAME",
+      "sql": "SELECT id, amount FROM orders UNION BY NAME SELECT amount, id FROM customers",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-72"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S084",
+      "feature_id": "sets.alignment",
+      "variant": "CORRESPONDING",
+      "sql": "SELECT id, amount FROM orders UNION CORRESPONDING SELECT amount, id FROM customers",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-72"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S085",
+      "feature_id": "sets.alignment",
+      "variant": "column reorder",
+      "sql": "SELECT id, amount FROM orders UNION SELECT amount, id FROM customers",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-72"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S086",
+      "feature_id": "sets.alignment",
+      "variant": "incompatible arity",
+      "sql": "SELECT id FROM orders UNION SELECT id, amount FROM customers",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-72"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S087",
+      "feature_id": "sets.alignment",
+      "variant": "nested sets",
+      "sql": "SELECT id FROM orders UNION ALL (SELECT id FROM customers UNION ALL SELECT id FROM orders)",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-72"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S088",
+      "feature_id": "grouping.basic",
+      "variant": "GROUP BY columns/expressions",
+      "sql": "SELECT id, COUNT(*) FROM orders GROUP BY id",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-73",
+        "TASK-69"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S089",
+      "feature_id": "grouping.basic",
+      "variant": "COUNT",
+      "sql": "SELECT COUNT(*) FROM orders",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-73",
+        "TASK-69"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S090",
+      "feature_id": "grouping.basic",
+      "variant": "SUM",
+      "sql": "SELECT SUM(amount) FROM orders",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-73",
+        "TASK-69"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S091",
+      "feature_id": "grouping.basic",
+      "variant": "MIN",
+      "sql": "SELECT MIN(amount) FROM orders",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-73",
+        "TASK-69"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S092",
+      "feature_id": "grouping.basic",
+      "variant": "MAX",
+      "sql": "SELECT MAX(amount) FROM orders",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-73",
+        "TASK-69"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S093",
+      "feature_id": "grouping.basic",
+      "variant": "AVG",
+      "sql": "SELECT AVG(amount) FROM orders",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-73",
+        "TASK-69"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S094",
+      "feature_id": "grouping.basic",
+      "variant": "duplicates",
+      "sql": "SELECT id, COUNT(*) FROM orders GROUP BY id",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-73",
+        "TASK-69"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S095",
+      "feature_id": "grouping.advanced",
+      "variant": "DISTINCT aggregate",
+      "sql": "SELECT COUNT(DISTINCT id) FROM orders",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-73"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S096",
+      "feature_id": "grouping.advanced",
+      "variant": "FILTER",
+      "sql": "SELECT COUNT(*) FILTER (WHERE amount > 0) FROM orders",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-73"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S097",
+      "feature_id": "grouping.advanced",
+      "variant": "ordered aggregates",
+      "sql": "SELECT ARRAY_AGG(id ORDER BY id) FROM orders",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-73"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S098",
+      "feature_id": "grouping.advanced",
+      "variant": "COUNT DISTINCT",
+      "sql": "SELECT COUNT(DISTINCT amount) FROM orders",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-73"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S099",
+      "feature_id": "grouping.advanced",
+      "variant": "NULL elimination",
+      "sql": "SELECT COUNT(amount) FROM orders",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-73"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S100",
+      "feature_id": "grouping.supergroups",
+      "variant": "ROLLUP",
+      "sql": "SELECT id, COUNT(*) FROM orders GROUP BY ROLLUP(id)",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-73"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S101",
+      "feature_id": "grouping.supergroups",
+      "variant": "CUBE",
+      "sql": "SELECT id, COUNT(*) FROM orders GROUP BY CUBE(id)",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-73"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S102",
+      "feature_id": "grouping.supergroups",
+      "variant": "GROUPING SETS",
+      "sql": "SELECT id, COUNT(*) FROM orders GROUP BY GROUPING SETS ((id), ())",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-73"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S103",
+      "feature_id": "grouping.supergroups",
+      "variant": "GROUP BY ALL",
+      "sql": "SELECT id, COUNT(*) FROM orders GROUP BY ALL",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-73"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S104",
+      "feature_id": "grouping.supergroups",
+      "variant": "GROUPING()",
+      "sql": "SELECT GROUPING(id), COUNT(*) FROM orders GROUP BY ROLLUP(id)",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-73"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S105",
+      "feature_id": "grouping.having",
+      "variant": "HAVING COUNT/SUM/MIN/MAX/AVG with composite predicates and joined inputs",
+      "sql": "SELECT o.id, COUNT(*), SUM(o.amount) FROM orders o JOIN customers c ON o.id = c.id GROUP BY o.id HAVING COUNT(*) > 1 AND SUM(o.amount) > 0",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-73",
+        "TASK-68"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S106",
+      "feature_id": "windows.row_number",
+      "variant": "ROW_NUMBER",
+      "sql": "SELECT ROW_NUMBER() OVER (ORDER BY id) FROM orders",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-74"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S107",
+      "feature_id": "windows.row_number",
+      "variant": "partitioned ordering",
+      "sql": "SELECT ROW_NUMBER() OVER (PARTITION BY id ORDER BY amount) FROM orders",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-74"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S108",
+      "feature_id": "windows.row_number",
+      "variant": "peers",
+      "sql": "SELECT ROW_NUMBER() OVER (ORDER BY amount) FROM orders",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-74"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S109",
+      "feature_id": "windows.row_number",
+      "variant": "stable ties",
+      "sql": "SELECT ROW_NUMBER() OVER (ORDER BY amount, id) FROM orders",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-74"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S110",
+      "feature_id": "windows.row_number",
+      "variant": "NULL ordering",
+      "sql": "SELECT ROW_NUMBER() OVER (ORDER BY amount NULLS LAST) FROM orders",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-74"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S111",
+      "feature_id": "windows.ranking",
+      "variant": "RANK",
+      "sql": "SELECT RANK() OVER (ORDER BY amount) FROM orders",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-74"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S112",
+      "feature_id": "windows.ranking",
+      "variant": "DENSE_RANK",
+      "sql": "SELECT DENSE_RANK() OVER (ORDER BY amount) FROM orders",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-74"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S113",
+      "feature_id": "windows.ranking",
+      "variant": "NTILE",
+      "sql": "SELECT NTILE(3) OVER (ORDER BY amount) FROM orders",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-74"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S114",
+      "feature_id": "windows.ranking",
+      "variant": "PERCENT_RANK",
+      "sql": "SELECT PERCENT_RANK() OVER (ORDER BY amount) FROM orders",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-74"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S115",
+      "feature_id": "windows.ranking",
+      "variant": "CUME_DIST",
+      "sql": "SELECT CUME_DIST() OVER (ORDER BY amount) FROM orders",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-74"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S116",
+      "feature_id": "windows.frames",
+      "variant": "ROWS",
+      "sql": "SELECT SUM(amount) OVER (ORDER BY id ROWS BETWEEN 1 PRECEDING AND CURRENT ROW) FROM orders",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-74"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S117",
+      "feature_id": "windows.frames",
+      "variant": "RANGE",
+      "sql": "SELECT SUM(amount) OVER (ORDER BY id RANGE BETWEEN 1 PRECEDING AND CURRENT ROW) FROM orders",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-74"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S118",
+      "feature_id": "windows.frames",
+      "variant": "GROUPS",
+      "sql": "SELECT COUNT(*) OVER (ORDER BY id GROUPS BETWEEN 1 PRECEDING AND CURRENT ROW) FROM orders",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-74"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S119",
+      "feature_id": "windows.frames",
+      "variant": "sliding/window aggregates",
+      "sql": "SELECT AVG(amount) OVER (PARTITION BY id ORDER BY amount ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) FROM orders",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-74"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S120",
+      "feature_id": "windows.frames",
+      "variant": "named windows",
+      "sql": "SELECT SUM(amount) OVER w FROM orders WINDOW w AS (ORDER BY id ROWS UNBOUNDED PRECEDING)",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-74"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S121",
+      "feature_id": "windows.qualify",
+      "variant": "QUALIFY aliases",
+      "sql": "SELECT ROW_NUMBER() OVER (ORDER BY id) AS rn FROM orders QUALIFY rn = 1",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-74",
+        "TASK-68"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S122",
+      "feature_id": "windows.qualify",
+      "variant": "multiple predicates",
+      "sql": "SELECT ROW_NUMBER() OVER (ORDER BY id) AS rn FROM orders QUALIFY rn = 1 AND id > 0",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-74",
+        "TASK-68"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S123",
+      "feature_id": "windows.qualify",
+      "variant": "grouped/window joins",
+      "sql": "SELECT o.id, COUNT(*) OVER (PARTITION BY c.id) AS n FROM orders o JOIN customers c ON o.id = c.id QUALIFY n > 1",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-74",
+        "TASK-68"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S124",
+      "feature_id": "windows.qualify",
+      "variant": "negative membership",
+      "sql": "SELECT ROW_NUMBER() OVER (ORDER BY id) AS rn FROM orders QUALIFY rn > 1",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-74",
+        "TASK-68"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S125",
+      "feature_id": "subqueries.exists",
+      "variant": "EXISTS",
+      "sql": "SELECT id FROM orders WHERE EXISTS (SELECT 1 FROM customers)",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-75"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S126",
+      "feature_id": "subqueries.exists",
+      "variant": "NOT EXISTS",
+      "sql": "SELECT id FROM orders WHERE NOT EXISTS (SELECT 1 FROM customers)",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-75"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S127",
+      "feature_id": "subqueries.exists",
+      "variant": "correlated",
+      "sql": "SELECT o.id FROM orders o WHERE EXISTS (SELECT 1 FROM customers c WHERE c.id = o.id)",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-75"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S128",
+      "feature_id": "subqueries.exists",
+      "variant": "uncorrelated",
+      "sql": "SELECT id FROM orders WHERE EXISTS (SELECT 1 FROM customers)",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-75"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S129",
+      "feature_id": "subqueries.exists",
+      "variant": "nested",
+      "sql": "SELECT o.id FROM orders o WHERE EXISTS (SELECT 1 FROM customers c WHERE EXISTS (SELECT 1 FROM products p WHERE p.id = c.id))",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-75"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S130",
+      "feature_id": "subqueries.exists",
+      "variant": "zero rows",
+      "sql": "SELECT id FROM orders WHERE EXISTS (SELECT 1 FROM customers WHERE 1 = 0)",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-75"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S131",
+      "feature_id": "subqueries.in",
+      "variant": "IN",
+      "sql": "SELECT id FROM orders WHERE id IN (SELECT id FROM customers)",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-75",
+        "TASK-69"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S132",
+      "feature_id": "subqueries.in",
+      "variant": "NOT IN",
+      "sql": "SELECT id FROM orders WHERE id NOT IN (SELECT id FROM customers)",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-75",
+        "TASK-69"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S133",
+      "feature_id": "subqueries.in",
+      "variant": "nullable sets",
+      "sql": "SELECT id FROM orders WHERE id IN (1, NULL)",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-75",
+        "TASK-69"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S134",
+      "feature_id": "subqueries.in",
+      "variant": "duplicate keys",
+      "sql": "SELECT id FROM orders WHERE id IN (1,1,2)",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-75",
+        "TASK-69"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S135",
+      "feature_id": "subqueries.in",
+      "variant": "tuple IN",
+      "sql": "SELECT id FROM orders WHERE (id, amount) IN (SELECT id, amount FROM customers)",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-75",
+        "TASK-69"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S136",
+      "feature_id": "subqueries.scalar_quantified",
+      "variant": "scalar",
+      "sql": "SELECT (SELECT MAX(amount) FROM customers) AS scalar_value FROM orders",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-75"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S137",
+      "feature_id": "subqueries.scalar_quantified",
+      "variant": "ANY/ALL/SOME",
+      "sql": "SELECT id FROM orders WHERE amount > ANY (SELECT amount FROM customers)",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-75"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S138",
+      "feature_id": "subqueries.scalar_quantified",
+      "variant": "comparisons",
+      "sql": "SELECT id FROM orders WHERE amount < ALL (SELECT amount FROM customers)",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-75"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S139",
+      "feature_id": "subqueries.scalar_quantified",
+      "variant": "correlations",
+      "sql": "SELECT o.id FROM orders o WHERE o.amount > (SELECT MAX(c.amount) FROM customers c WHERE c.id = o.id)",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-75"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S140",
+      "feature_id": "subqueries.scalar_quantified",
+      "variant": "cardinality >1",
+      "sql": "SELECT (SELECT amount FROM customers) AS scalar_value FROM orders",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-75"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S141",
+      "feature_id": "scopes.cte",
+      "variant": "WITH",
+      "sql": "WITH x AS (SELECT id FROM orders) SELECT id FROM x",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-78",
+        "TASK-68"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S142",
+      "feature_id": "scopes.cte",
+      "variant": "chained CTE",
+      "sql": "WITH x AS (SELECT id FROM orders), y AS (SELECT id FROM x) SELECT id FROM y",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-78",
+        "TASK-68"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S143",
+      "feature_id": "scopes.cte",
+      "variant": "shadowing",
+      "sql": "WITH x AS (SELECT id FROM orders) SELECT * FROM (WITH x AS (SELECT id FROM customers) SELECT id FROM x) y",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-78",
+        "TASK-68"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S144",
+      "feature_id": "scopes.cte",
+      "variant": "repeated references",
+      "sql": "WITH x AS (SELECT id FROM orders) SELECT a.id FROM x a JOIN x b ON a.id = b.id",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-78",
+        "TASK-68"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S145",
+      "feature_id": "scopes.cte",
+      "variant": "producer dependencies",
+      "sql": "WITH x AS (SELECT id FROM orders), y AS (SELECT id FROM x) SELECT id FROM y",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-78",
+        "TASK-68"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S146",
+      "feature_id": "scopes.recursive_cte",
+      "variant": "WITH RECURSIVE",
+      "sql": "WITH RECURSIVE t(n) AS (SELECT 1 UNION ALL SELECT n + 1 FROM t WHERE n < 3) SELECT n FROM t",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-78"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S147",
+      "feature_id": "scopes.recursive_cte",
+      "variant": "cycles",
+      "sql": "WITH RECURSIVE t(n) AS (SELECT 1 UNION ALL SELECT n + 1 FROM t) SELECT n FROM t",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-78"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S148",
+      "feature_id": "scopes.recursive_cte",
+      "variant": "bounded/unbounded recursion",
+      "sql": "WITH RECURSIVE t(n) AS (SELECT 1 UNION ALL SELECT n + 1 FROM t WHERE n < 3) SELECT n FROM t",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-78"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S149",
+      "feature_id": "scopes.recursive_cte",
+      "variant": "termination",
+      "sql": "WITH RECURSIVE t(n) AS (SELECT 1 UNION ALL SELECT n + 1 FROM t WHERE n < 3) SELECT n FROM t",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-78"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S150",
+      "feature_id": "scopes.derived_lateral",
+      "variant": "nested derived tables",
+      "sql": "SELECT d.id FROM (SELECT id FROM orders) d",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-78",
+        "TASK-77"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S151",
+      "feature_id": "scopes.derived_lateral",
+      "variant": "LATERAL",
+      "sql": "SELECT o.id FROM orders o, LATERAL (SELECT o.id) l",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-78",
+        "TASK-77"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S152",
+      "feature_id": "scopes.derived_lateral",
+      "variant": "correlated table sources",
+      "sql": "SELECT o.id FROM orders o JOIN LATERAL (SELECT o.id) l ON TRUE",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-78",
+        "TASK-77"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S153",
+      "feature_id": "scopes.derived_lateral",
+      "variant": "alias scopes",
+      "sql": "SELECT d.id FROM (SELECT id FROM orders) d",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-78",
+        "TASK-77"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S154",
+      "feature_id": "ordering.sort",
+      "variant": "ORDER BY",
+      "sql": "SELECT id FROM orders ORDER BY amount",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-76"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S155",
+      "feature_id": "ordering.sort",
+      "variant": "ASC/DESC",
+      "sql": "SELECT id FROM orders ORDER BY amount DESC, id ASC",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-76"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S156",
+      "feature_id": "ordering.sort",
+      "variant": "NULLS FIRST/LAST",
+      "sql": "SELECT id FROM orders ORDER BY amount NULLS FIRST",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-76"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S157",
+      "feature_id": "ordering.sort",
+      "variant": "computed ordering",
+      "sql": "SELECT id FROM orders ORDER BY amount + 1",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-76"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S158",
+      "feature_id": "ordering.sort",
+      "variant": "ties",
+      "sql": "SELECT id FROM orders ORDER BY amount",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-76"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S159",
+      "feature_id": "ordering.pagination",
+      "variant": "LIMIT/OFFSET",
+      "sql": "SELECT id FROM orders ORDER BY id LIMIT 2 OFFSET 1",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-76"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S160",
+      "feature_id": "ordering.pagination",
+      "variant": "FETCH FIRST/WITH TIES",
+      "sql": "SELECT id FROM orders ORDER BY id FETCH FIRST 2 ROWS WITH TIES",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-76"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S161",
+      "feature_id": "ordering.pagination",
+      "variant": "TOP",
+      "sql": "SELECT TOP 2 id FROM orders ORDER BY id",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-76"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S162",
+      "feature_id": "ordering.pagination",
+      "variant": "row ordering stability",
+      "sql": "SELECT id FROM orders ORDER BY amount LIMIT 2",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-76"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S163",
+      "feature_id": "ordering.sampling",
+      "variant": "TABLESAMPLE",
+      "sql": "SELECT id FROM orders TABLESAMPLE BERNOULLI (10)",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-76"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S164",
+      "feature_id": "ordering.sampling",
+      "variant": "BERNOULLI",
+      "sql": "SELECT id FROM orders TABLESAMPLE BERNOULLI (10)",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-76"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S165",
+      "feature_id": "ordering.sampling",
+      "variant": "SYSTEM",
+      "sql": "SELECT id FROM orders TABLESAMPLE SYSTEM (10)",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-76"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S166",
+      "feature_id": "ordering.sampling",
+      "variant": "seeds",
+      "sql": "SELECT id FROM orders TABLESAMPLE BERNOULLI (10) REPEATABLE (7)",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-76"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S167",
+      "feature_id": "ordering.sampling",
+      "variant": "engine randomness",
+      "sql": "SELECT id FROM orders TABLESAMPLE SYSTEM (10)",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-76"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S168",
+      "feature_id": "relations.advanced_sources",
+      "variant": "UNNEST",
+      "sql": "SELECT * FROM UNNEST(ARRAY[1, 2]) AS u(x)",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-77"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S169",
+      "feature_id": "relations.advanced_sources",
+      "variant": "PIVOT/UNPIVOT",
+      "sql": "SELECT * FROM orders PIVOT (SUM(amount) FOR id IN (1, 2))",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-77"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S170",
+      "feature_id": "relations.advanced_sources",
+      "variant": "table functions",
+      "sql": "SELECT * FROM GENERATE_SERIES(1, 3)",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-77"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S171",
+      "feature_id": "relations.advanced_sources",
+      "variant": "generators",
+      "sql": "SELECT * FROM GENERATE_SERIES(1, 3)",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-77"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S172",
+      "feature_id": "relations.advanced_sources",
+      "variant": "VALUES",
+      "sql": "VALUES (1), (2), (NULL)",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-77"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S173",
+      "feature_id": "relations.advanced_sources",
+      "variant": "cross apply",
+      "sql": "SELECT o.id FROM orders o CROSS APPLY (SELECT o.id) x",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-77"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S174",
+      "feature_id": "types.structural",
+      "variant": "numeric/decimal",
+      "sql": "SELECT CAST(1.25 AS DECIMAL(10,2)) AS v",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-79"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S175",
+      "feature_id": "types.structural",
+      "variant": "strings",
+      "sql": "SELECT CAST('abc' AS VARCHAR(10)) AS v",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-79"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S176",
+      "feature_id": "types.structural",
+      "variant": "binary",
+      "sql": "SELECT CAST('ab' AS BINARY(2)) AS v",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-79"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S177",
+      "feature_id": "types.structural",
+      "variant": "JSON",
+      "sql": "SELECT CAST('{\"a\":1}' AS JSON) AS v",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-79"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S178",
+      "feature_id": "types.structural",
+      "variant": "array",
+      "sql": "SELECT ARRAY[1,2,3] AS v",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-79"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S179",
+      "feature_id": "types.structural",
+      "variant": "struct",
+      "sql": "SELECT CAST(ROW(1, 'a') AS STRUCT(a INT, b VARCHAR)) AS v",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-79"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S180",
+      "feature_id": "types.structural",
+      "variant": "enum",
+      "sql": "CREATE TYPE mood AS ENUM ('happy','sad')",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-79"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S181",
+      "feature_id": "types.structural",
+      "variant": "geometry",
+      "sql": "SELECT CAST('POINT(0 0)' AS GEOMETRY) AS v",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-79"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S182",
+      "feature_id": "types.structural",
+      "variant": "custom",
+      "sql": "SELECT CAST(1 AS user_defined_type) AS v",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-79"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S183",
+      "feature_id": "schema.constraints",
+      "variant": "PK",
+      "sql": "CREATE TABLE orders (id INT PRIMARY KEY)",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-79",
+        "TASK-87"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S184",
+      "feature_id": "schema.constraints",
+      "variant": "FK",
+      "sql": "CREATE TABLE orders (id INT, customer_id INT REFERENCES customers(id))",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-79",
+        "TASK-87"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S185",
+      "feature_id": "schema.constraints",
+      "variant": "UNIQUE",
+      "sql": "CREATE TABLE orders (id INT UNIQUE)",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-79",
+        "TASK-87"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S186",
+      "feature_id": "schema.constraints",
+      "variant": "NOT NULL",
+      "sql": "CREATE TABLE orders (id INT NOT NULL)",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-79",
+        "TASK-87"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S187",
+      "feature_id": "schema.constraints",
+      "variant": "CHECK",
+      "sql": "CREATE TABLE orders (id INT CHECK (id > 0))",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-79",
+        "TASK-87"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S188",
+      "feature_id": "schema.constraints",
+      "variant": "DEFAULT",
+      "sql": "CREATE TABLE orders (id INT DEFAULT 1)",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-79",
+        "TASK-87"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S189",
+      "feature_id": "schema.constraints",
+      "variant": "generated columns",
+      "sql": "CREATE TABLE orders (id INT, amount INT GENERATED ALWAYS AS (id + 1))",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-79",
+        "TASK-87"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S190",
+      "feature_id": "schema.metadata_parity",
+      "variant": "SQL DDL",
+      "sql": "CREATE TABLE orders (id INT PRIMARY KEY, amount DECIMAL(10,2))",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-87",
+        "TASK-79"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S191",
+      "feature_id": "schema.metadata_parity",
+      "variant": "dbt manifest/catalog",
+      "sql": "SELECT id FROM orders",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-87",
+        "TASK-79"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S192",
+      "feature_id": "schema.metadata_parity",
+      "variant": "ODCS contract",
+      "sql": "CREATE TABLE orders (id INT PRIMARY KEY, amount DECIMAL(10,2))",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-87",
+        "TASK-79"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S193",
+      "feature_id": "schema.metadata_parity",
+      "variant": "absent/conflicting evidence",
+      "sql": "SELECT id FROM orders",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-87",
+        "TASK-79"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S194",
+      "feature_id": "dml.insert",
+      "variant": "INSERT VALUES/SELECT",
+      "sql": "INSERT INTO orders (id, amount) VALUES (1, 10)",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-80"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S195",
+      "feature_id": "dml.insert",
+      "variant": "explicit/implicit columns",
+      "sql": "INSERT INTO orders (id, amount) SELECT id, amount FROM customers",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-80"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S196",
+      "feature_id": "dml.insert",
+      "variant": "multi-row",
+      "sql": "INSERT INTO orders (id, amount) VALUES (1, 10), (2, NULL)",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-80"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S197",
+      "feature_id": "dml.insert",
+      "variant": "RETURNING",
+      "sql": "INSERT INTO orders (id, amount) VALUES (1, 10) RETURNING id",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-80"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S198",
+      "feature_id": "dml.insert_conflicts",
+      "variant": "ON CONFLICT/ON DUPLICATE KEY",
+      "sql": "INSERT INTO orders (id) VALUES (1) ON CONFLICT (id) DO NOTHING",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-80",
+        "TASK-82"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S199",
+      "feature_id": "dml.insert_conflicts",
+      "variant": "REPLACE INTO",
+      "sql": "REPLACE INTO orders (id) VALUES (1)",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-80",
+        "TASK-82"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S200",
+      "feature_id": "dml.insert_conflicts",
+      "variant": "INSERT OVERWRITE",
+      "sql": "INSERT OVERWRITE TABLE orders SELECT * FROM customers",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-80",
+        "TASK-82"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S201",
+      "feature_id": "dml.update",
+      "variant": "UPDATE FROM/joined",
+      "sql": "UPDATE orders AS o SET amount = c.amount FROM customers c WHERE o.id = c.id",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-81"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S202",
+      "feature_id": "dml.update",
+      "variant": "computed assignments",
+      "sql": "UPDATE orders SET amount = amount + 1 WHERE id > 0",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-81"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S203",
+      "feature_id": "dml.update",
+      "variant": "correlated predicates",
+      "sql": "UPDATE orders SET amount = 1 WHERE id IN (SELECT id FROM customers)",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-81"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S204",
+      "feature_id": "dml.update",
+      "variant": "RETURNING",
+      "sql": "UPDATE orders SET amount = 2 WHERE id = 1 RETURNING id",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-81"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S205",
+      "feature_id": "dml.delete",
+      "variant": "DELETE WHERE/USING/joined",
+      "sql": "DELETE FROM orders USING customers WHERE orders.id = customers.id",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-81"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S206",
+      "feature_id": "dml.delete",
+      "variant": "subquery",
+      "sql": "DELETE FROM orders WHERE id IN (SELECT id FROM customers)",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-81"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S207",
+      "feature_id": "dml.delete",
+      "variant": "RETURNING",
+      "sql": "DELETE FROM orders WHERE amount IS NULL RETURNING id",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-81"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S208",
+      "feature_id": "dml.delete",
+      "variant": "cascade effects",
+      "sql": "DELETE FROM orders WHERE id = 1",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-81"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S209",
+      "feature_id": "dml.merge",
+      "variant": "MERGE matched/unmatched/by source",
+      "sql": "MERGE INTO orders o USING customers c ON o.id = c.id WHEN MATCHED THEN UPDATE SET amount = c.amount WHEN NOT MATCHED THEN INSERT (id, amount) VALUES (c.id, c.amount)",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-82"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S210",
+      "feature_id": "dml.merge",
+      "variant": "ordered WHEN",
+      "sql": "MERGE INTO orders o USING customers c ON o.id = c.id WHEN MATCHED AND c.amount > 0 THEN DELETE WHEN MATCHED THEN UPDATE SET amount = c.amount",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-82"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S211",
+      "feature_id": "dml.merge",
+      "variant": "UPDATE/INSERT/DELETE branches",
+      "sql": "MERGE INTO orders o USING customers c ON o.id = c.id WHEN MATCHED THEN DELETE WHEN NOT MATCHED THEN INSERT (id) VALUES (c.id)",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-82"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S212",
+      "feature_id": "ddl.producers",
+      "variant": "CREATE TABLE AS",
+      "sql": "CREATE TABLE orders AS SELECT id FROM customers",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-83",
+        "TASK-78"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S213",
+      "feature_id": "ddl.producers",
+      "variant": "CREATE VIEW",
+      "sql": "CREATE VIEW v AS SELECT id FROM orders",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-83",
+        "TASK-78"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S214",
+      "feature_id": "ddl.producers",
+      "variant": "CREATE OR REPLACE VIEW/TABLE",
+      "sql": "CREATE OR REPLACE VIEW v AS SELECT id FROM orders",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-83",
+        "TASK-78"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S215",
+      "feature_id": "ddl.producers",
+      "variant": "TEMPORARY",
+      "sql": "CREATE TEMPORARY TABLE tmp AS SELECT id FROM orders",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-83",
+        "TASK-78"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S216",
+      "feature_id": "ddl.schema_lifecycle",
+      "variant": "ALTER TABLE",
+      "sql": "ALTER TABLE orders ADD COLUMN amount INT",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-83",
+        "TASK-79"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S217",
+      "feature_id": "ddl.schema_lifecycle",
+      "variant": "DROP",
+      "sql": "DROP TABLE orders",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-83",
+        "TASK-79"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S218",
+      "feature_id": "ddl.schema_lifecycle",
+      "variant": "RENAME",
+      "sql": "ALTER TABLE orders RENAME TO archived_orders",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-83",
+        "TASK-79"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S219",
+      "feature_id": "ddl.schema_lifecycle",
+      "variant": "TRUNCATE",
+      "sql": "TRUNCATE TABLE orders",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-83",
+        "TASK-79"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S220",
+      "feature_id": "ddl.schema_lifecycle",
+      "variant": "defaults/constraints",
+      "sql": "ALTER TABLE orders ALTER COLUMN amount SET DEFAULT 0",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-83",
+        "TASK-79"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S221",
+      "feature_id": "transactions.ordered_effects",
+      "variant": "ordered statements",
+      "sql": "CREATE TABLE orders (id INT); INSERT INTO orders VALUES (1); SELECT id FROM orders",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-84"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S222",
+      "feature_id": "transactions.ordered_effects",
+      "variant": "snapshot visibility",
+      "sql": "BEGIN; INSERT INTO orders VALUES (1); SELECT id FROM orders; COMMIT",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-84"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S223",
+      "feature_id": "transactions.ordered_effects",
+      "variant": "dependency graph",
+      "sql": "CREATE TABLE orders (id INT); INSERT INTO orders VALUES (1); SELECT id FROM orders",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-84"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S224",
+      "feature_id": "transactions.ordered_effects",
+      "variant": "rollback",
+      "sql": "BEGIN; UPDATE orders SET id = 2; ROLLBACK",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-84"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S225",
+      "feature_id": "outcomes.cardinality",
+      "variant": "COUNT exact/bounded",
+      "sql": "SELECT COUNT(*) FROM orders",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-85",
+        "TASK-69"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S226",
+      "feature_id": "outcomes.cardinality",
+      "variant": "zero-count",
+      "sql": "SELECT COUNT(*) FROM orders WHERE 1 = 0",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-85",
+        "TASK-69"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S227",
+      "feature_id": "outcomes.cardinality",
+      "variant": "duplicate multiplicity",
+      "sql": "SELECT id FROM orders UNION ALL SELECT id FROM orders",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-85",
+        "TASK-69"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S228",
+      "feature_id": "outcomes.cardinality",
+      "variant": "final row counts",
+      "sql": "SELECT id FROM orders",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-85",
+        "TASK-69"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S229",
+      "feature_id": "outcomes.distribution",
+      "variant": "value frequency",
+      "sql": "SELECT amount, COUNT(*) FROM orders GROUP BY amount",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-85"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S230",
+      "feature_id": "outcomes.distribution",
+      "variant": "null frequency",
+      "sql": "SELECT COUNT(*) FILTER (WHERE amount IS NULL) FROM orders",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-85"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S231",
+      "feature_id": "outcomes.distribution",
+      "variant": "group counts",
+      "sql": "SELECT id, COUNT(*) FROM orders GROUP BY id",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-85"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S232",
+      "feature_id": "outcomes.distribution",
+      "variant": "joined aggregates",
+      "sql": "SELECT o.id, COUNT(*) FROM orders o JOIN customers c ON o.id = c.id GROUP BY o.id",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-85"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S233",
+      "feature_id": "outcomes.classification",
+      "variant": "multi-terminal positive/negative vectors",
+      "sql": "SELECT id FROM orders WHERE amount > 0; SELECT id FROM orders WHERE amount IS NULL",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-86",
+        "TASK-68"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S234",
+      "feature_id": "outcomes.classification",
+      "variant": "partial overlap",
+      "sql": "SELECT id FROM orders WHERE amount > 0 OR amount IS NULL",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-86",
+        "TASK-68"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S235",
+      "feature_id": "outcomes.classification",
+      "variant": "rejected absence",
+      "sql": "SELECT id FROM orders WHERE amount IS NULL",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-86",
+        "TASK-68"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S236",
+      "feature_id": "outcomes.dag",
+      "variant": "shared sources",
+      "sql": "WITH x AS (SELECT id FROM orders) SELECT a.id FROM x a JOIN x b ON a.id=b.id",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-67",
+        "TASK-68"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S237",
+      "feature_id": "outcomes.dag",
+      "variant": "composed CTE/dbt models",
+      "sql": "WITH x AS (SELECT id FROM orders) SELECT id FROM x",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-67",
+        "TASK-68"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S238",
+      "feature_id": "outcomes.dag",
+      "variant": "physical realizability",
+      "sql": "SELECT o.id FROM orders o JOIN customers c ON o.id=c.id",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-67",
+        "TASK-68"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S239",
+      "feature_id": "outcomes.dag",
+      "variant": "conflict",
+      "sql": "SELECT o.id FROM orders o JOIN customers c ON o.id=c.id WHERE o.amount > 0",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-67",
+        "TASK-68"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S240",
+      "feature_id": "execution.dialect_equivalence",
+      "variant": "engine SQL versions",
+      "sql": "SELECT CAST(1 AS BIGINT) + 2 AS v",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-88",
+        "TASK-89"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S241",
+      "feature_id": "execution.dialect_equivalence",
+      "variant": "session state",
+      "sql": "SET TIME ZONE 'UTC'",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-88",
+        "TASK-89"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S242",
+      "feature_id": "execution.dialect_equivalence",
+      "variant": "runtime plan",
+      "sql": "EXPLAIN SELECT * FROM orders",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-88",
+        "TASK-89"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S243",
+      "feature_id": "execution.dialect_equivalence",
+      "variant": "SQL result oracle",
+      "sql": "SELECT id FROM orders WHERE amount > 0",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-88",
+        "TASK-89"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S244",
+      "feature_id": "execution.dbt_fixture",
+      "variant": "dbt compile",
+      "sql": "SELECT id FROM orders",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-89",
+        "TASK-91"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S245",
+      "feature_id": "execution.dbt_fixture",
+      "variant": "docs generate",
+      "sql": "SELECT id, COUNT(*) FROM orders GROUP BY id",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-89",
+        "TASK-91"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S246",
+      "feature_id": "execution.dbt_fixture",
+      "variant": "make all",
+      "sql": "SELECT id FROM orders",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-89",
+        "TASK-91"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S247",
+      "feature_id": "execution.dbt_fixture",
+      "variant": "source and terminal output assertion",
+      "sql": "SELECT id FROM orders WHERE amount > 0",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-89",
+        "TASK-91"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S248",
+      "feature_id": "execution.unsupported_opaque",
+      "variant": "arbitrary UDF",
+      "sql": "SELECT arbitrary_udf(amount) FROM orders",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-66",
+        "TASK-88",
+        "TASK-91"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S249",
+      "feature_id": "execution.unsupported_opaque",
+      "variant": "external I/O",
+      "sql": "SELECT read_csv('/tmp/input.csv')",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-66",
+        "TASK-88",
+        "TASK-91"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S250",
+      "feature_id": "execution.unsupported_opaque",
+      "variant": "nondeterminism",
+      "sql": "SELECT RANDOM() FROM orders",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-66",
+        "TASK-88",
+        "TASK-91"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    },
+    {
+      "id": "88-C177-S251",
+      "feature_id": "execution.unsupported_opaque",
+      "variant": "vendor operators",
+      "sql": "SELECT id FROM orders QUALIFY ROW_NUMBER() OVER (ORDER BY id)=1",
+      "classification": "pending_fixed_parser_snapshot",
+      "test_scope": "sqlparser_parser_boundary_only",
+      "canonical_evidence": "not_certified",
+      "semantic_owner": [
+        "TASK-66",
+        "TASK-88",
+        "TASK-91"
+      ],
+      "adapter_evidence": "not_certified",
+      "engine_execution": "not_certified",
+      "boundary": "Parser acceptance alone does not prove semantic outcome or engine execution"
+    }
+  ]
+}

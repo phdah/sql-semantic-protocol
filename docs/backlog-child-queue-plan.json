@@ -1416,7 +1416,7 @@
           "title": "Freeze TASK-66 feature-by-13-dialect parser coverage",
           "variants": "13 named dialects; every reviewed variant; parser accepted/unsupported statuses",
           "oracle": "Full cross-product of approved stable TASK-66 variant IDs with 13 dialects; no missing rows or implicit skip",
-          "boundary": "Parser success alone never certifies outcome semantics or vendor engine execution",
+          "boundary": "Bounded Done: observed per-cell parsing/analyzer/structural status freeze only. No independently certified typed semantic or external engine claims; remaining boundaries transferred to TASK-191 and global acceptance to TASK-178/179/180.",
           "original_ac": [
             1,
             2,
@@ -1429,7 +1429,9 @@
           "fixture_ids": [
             "88-C177-P",
             "88-C177-N"
-          ]
+          ],
+          "scoped_status": "Done (PR #196 merge pending)",
+          "handoff": "docs/task-177-scope-split.md"
         },
         {
           "title": "Certify canonical equivalence for shared dialect AST variants",
@@ -1466,6 +1468,24 @@
           "fixture_ids": [
             "88-C179-P",
             "88-C179-N"
+          ]
+        },
+        {
+          "id": 191,
+          "title": "Adjudicate TASK-177 parser and native boundaries",
+          "variants": "55 parser rejection cells; 116 analyzer Unsupported cells; 23 original SQL native missing/conditional samples",
+          "oracle": "Every named exception has source-backed parser/analyzer/native evidence, an independent reviewed disposition or a blocking mandatory semantic implementation owner",
+          "boundary": "No syntax companion or DuckDB-only oracle implies vendor support; unresolved mandatory exactness blocks TASK-180 and TASK-88",
+          "original_ac": [
+            1,
+            4,
+            5,
+            7,
+            8
+          ],
+          "fixture_ids": [
+            "88-C191-P",
+            "88-C191-N"
           ]
         },
         {
@@ -1647,6 +1667,6 @@
       ]
     }
   ],
-  "next_unallocated_child_id": 189,
-  "updated": "2026-10-30"
+  "next_unallocated_child_id": 192,
+  "updated": "2026-11-09"
 }

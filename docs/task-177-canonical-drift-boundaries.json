@@ -1,0 +1,478 @@
+{
+  "schema_version": 1,
+  "task_id": "TASK-177",
+  "source_snapshot": "docs/task-177-equivalence-snapshot.json",
+  "boundary_description": "Normalized public protocol structural mismatch for identical SQL sample; classification is not native or semantic correctness. Explicitly unapproved until reviewed.",
+  "native_duckdb_original_sql_oracle_case_ids": [
+    "88-C177-S100",
+    "88-C177-S101",
+    "88-C177-S104",
+    "88-C177-S152",
+    "88-C177-S179"
+  ],
+  "drift_cell_count": 23,
+  "affected_case_count": 5,
+  "cells": [
+    {
+      "id": "88-C177-S100-bigquery",
+      "case_id": "88-C177-S100",
+      "feature_id": "grouping.supergroups",
+      "variant": "ROLLUP",
+      "dialect": "bigquery",
+      "reference_dialect": "ansi",
+      "sql": "SELECT id, COUNT(*) FROM orders GROUP BY ROLLUP(id)",
+      "source_task_owners": [
+        "TASK-73"
+      ],
+      "classification": "canonical_output_drift",
+      "reason": "ROLLUP yields different normalized protocol documents across dialect parser ASTs; group-subtotal / grouping-id laws are unreviewed.",
+      "required_evidence": "Review actual normalized protocol difference, fix analyzer semantics or prove the material dialect-law difference; re-run public canonical and independent native outcomes",
+      "owner": "TASK-177",
+      "next_dialect_equivalence_owner": "TASK-178",
+      "release_disposition": "blocking_not_approved_residual",
+      "native_vendor_execution": "not_certified",
+      "first_difference_path": "$.graph.physical_source_plans[0].zero_output.cases"
+    },
+    {
+      "id": "88-C177-S100-clickhouse",
+      "case_id": "88-C177-S100",
+      "feature_id": "grouping.supergroups",
+      "variant": "ROLLUP",
+      "dialect": "clickhouse",
+      "reference_dialect": "ansi",
+      "sql": "SELECT id, COUNT(*) FROM orders GROUP BY ROLLUP(id)",
+      "source_task_owners": [
+        "TASK-73"
+      ],
+      "classification": "canonical_output_drift",
+      "reason": "ROLLUP yields different normalized protocol documents across dialect parser ASTs; group-subtotal / grouping-id laws are unreviewed.",
+      "required_evidence": "Review actual normalized protocol difference, fix analyzer semantics or prove the material dialect-law difference; re-run public canonical and independent native outcomes",
+      "owner": "TASK-177",
+      "next_dialect_equivalence_owner": "TASK-178",
+      "release_disposition": "blocking_not_approved_residual",
+      "native_vendor_execution": "not_certified",
+      "first_difference_path": "$.graph.physical_source_plans[0].zero_output.cases"
+    },
+    {
+      "id": "88-C177-S100-databricks",
+      "case_id": "88-C177-S100",
+      "feature_id": "grouping.supergroups",
+      "variant": "ROLLUP",
+      "dialect": "databricks",
+      "reference_dialect": "ansi",
+      "sql": "SELECT id, COUNT(*) FROM orders GROUP BY ROLLUP(id)",
+      "source_task_owners": [
+        "TASK-73"
+      ],
+      "classification": "canonical_output_drift",
+      "reason": "ROLLUP yields different normalized protocol documents across dialect parser ASTs; group-subtotal / grouping-id laws are unreviewed.",
+      "required_evidence": "Review actual normalized protocol difference, fix analyzer semantics or prove the material dialect-law difference; re-run public canonical and independent native outcomes",
+      "owner": "TASK-177",
+      "next_dialect_equivalence_owner": "TASK-178",
+      "release_disposition": "blocking_not_approved_residual",
+      "native_vendor_execution": "not_certified",
+      "first_difference_path": "$.graph.physical_source_plans[0].zero_output.cases"
+    },
+    {
+      "id": "88-C177-S100-duckdb",
+      "case_id": "88-C177-S100",
+      "feature_id": "grouping.supergroups",
+      "variant": "ROLLUP",
+      "dialect": "duckdb",
+      "reference_dialect": "ansi",
+      "sql": "SELECT id, COUNT(*) FROM orders GROUP BY ROLLUP(id)",
+      "source_task_owners": [
+        "TASK-73"
+      ],
+      "classification": "canonical_output_drift",
+      "reason": "ROLLUP yields different normalized protocol documents across dialect parser ASTs; group-subtotal / grouping-id laws are unreviewed.",
+      "required_evidence": "Review actual normalized protocol difference, fix analyzer semantics or prove the material dialect-law difference; re-run public canonical and independent native outcomes",
+      "owner": "TASK-177",
+      "next_dialect_equivalence_owner": "TASK-178",
+      "release_disposition": "blocking_not_approved_residual",
+      "native_vendor_execution": "not_certified",
+      "first_difference_path": "$.graph.physical_source_plans[0].zero_output.cases"
+    },
+    {
+      "id": "88-C177-S100-generic",
+      "case_id": "88-C177-S100",
+      "feature_id": "grouping.supergroups",
+      "variant": "ROLLUP",
+      "dialect": "generic",
+      "reference_dialect": "ansi",
+      "sql": "SELECT id, COUNT(*) FROM orders GROUP BY ROLLUP(id)",
+      "source_task_owners": [
+        "TASK-73"
+      ],
+      "classification": "canonical_output_drift",
+      "reason": "ROLLUP yields different normalized protocol documents across dialect parser ASTs; group-subtotal / grouping-id laws are unreviewed.",
+      "required_evidence": "Review actual normalized protocol difference, fix analyzer semantics or prove the material dialect-law difference; re-run public canonical and independent native outcomes",
+      "owner": "TASK-177",
+      "next_dialect_equivalence_owner": "TASK-178",
+      "release_disposition": "blocking_not_approved_residual",
+      "native_vendor_execution": "not_certified",
+      "first_difference_path": "$.graph.physical_source_plans[0].zero_output.cases"
+    },
+    {
+      "id": "88-C177-S100-postgresql",
+      "case_id": "88-C177-S100",
+      "feature_id": "grouping.supergroups",
+      "variant": "ROLLUP",
+      "dialect": "postgresql",
+      "reference_dialect": "ansi",
+      "sql": "SELECT id, COUNT(*) FROM orders GROUP BY ROLLUP(id)",
+      "source_task_owners": [
+        "TASK-73"
+      ],
+      "classification": "canonical_output_drift",
+      "reason": "ROLLUP yields different normalized protocol documents across dialect parser ASTs; group-subtotal / grouping-id laws are unreviewed.",
+      "required_evidence": "Review actual normalized protocol difference, fix analyzer semantics or prove the material dialect-law difference; re-run public canonical and independent native outcomes",
+      "owner": "TASK-177",
+      "next_dialect_equivalence_owner": "TASK-178",
+      "release_disposition": "blocking_not_approved_residual",
+      "native_vendor_execution": "not_certified",
+      "first_difference_path": "$.graph.physical_source_plans[0].zero_output.cases"
+    },
+    {
+      "id": "88-C177-S100-snowflake",
+      "case_id": "88-C177-S100",
+      "feature_id": "grouping.supergroups",
+      "variant": "ROLLUP",
+      "dialect": "snowflake",
+      "reference_dialect": "ansi",
+      "sql": "SELECT id, COUNT(*) FROM orders GROUP BY ROLLUP(id)",
+      "source_task_owners": [
+        "TASK-73"
+      ],
+      "classification": "canonical_output_drift",
+      "reason": "ROLLUP yields different normalized protocol documents across dialect parser ASTs; group-subtotal / grouping-id laws are unreviewed.",
+      "required_evidence": "Review actual normalized protocol difference, fix analyzer semantics or prove the material dialect-law difference; re-run public canonical and independent native outcomes",
+      "owner": "TASK-177",
+      "next_dialect_equivalence_owner": "TASK-178",
+      "release_disposition": "blocking_not_approved_residual",
+      "native_vendor_execution": "not_certified",
+      "first_difference_path": "$.graph.physical_source_plans[0].zero_output.cases"
+    },
+    {
+      "id": "88-C177-S101-bigquery",
+      "case_id": "88-C177-S101",
+      "feature_id": "grouping.supergroups",
+      "variant": "CUBE",
+      "dialect": "bigquery",
+      "reference_dialect": "ansi",
+      "sql": "SELECT id, COUNT(*) FROM orders GROUP BY CUBE(id)",
+      "source_task_owners": [
+        "TASK-73"
+      ],
+      "classification": "canonical_output_drift",
+      "reason": "CUBE yields different normalized protocol documents across dialect parser ASTs; subtotal and NULL grouping identity are unreviewed.",
+      "required_evidence": "Review actual normalized protocol difference, fix analyzer semantics or prove the material dialect-law difference; re-run public canonical and independent native outcomes",
+      "owner": "TASK-177",
+      "next_dialect_equivalence_owner": "TASK-178",
+      "release_disposition": "blocking_not_approved_residual",
+      "native_vendor_execution": "not_certified",
+      "first_difference_path": "$.graph.physical_source_plans[0].zero_output.cases"
+    },
+    {
+      "id": "88-C177-S101-clickhouse",
+      "case_id": "88-C177-S101",
+      "feature_id": "grouping.supergroups",
+      "variant": "CUBE",
+      "dialect": "clickhouse",
+      "reference_dialect": "ansi",
+      "sql": "SELECT id, COUNT(*) FROM orders GROUP BY CUBE(id)",
+      "source_task_owners": [
+        "TASK-73"
+      ],
+      "classification": "canonical_output_drift",
+      "reason": "CUBE yields different normalized protocol documents across dialect parser ASTs; subtotal and NULL grouping identity are unreviewed.",
+      "required_evidence": "Review actual normalized protocol difference, fix analyzer semantics or prove the material dialect-law difference; re-run public canonical and independent native outcomes",
+      "owner": "TASK-177",
+      "next_dialect_equivalence_owner": "TASK-178",
+      "release_disposition": "blocking_not_approved_residual",
+      "native_vendor_execution": "not_certified",
+      "first_difference_path": "$.graph.physical_source_plans[0].zero_output.cases"
+    },
+    {
+      "id": "88-C177-S101-databricks",
+      "case_id": "88-C177-S101",
+      "feature_id": "grouping.supergroups",
+      "variant": "CUBE",
+      "dialect": "databricks",
+      "reference_dialect": "ansi",
+      "sql": "SELECT id, COUNT(*) FROM orders GROUP BY CUBE(id)",
+      "source_task_owners": [
+        "TASK-73"
+      ],
+      "classification": "canonical_output_drift",
+      "reason": "CUBE yields different normalized protocol documents across dialect parser ASTs; subtotal and NULL grouping identity are unreviewed.",
+      "required_evidence": "Review actual normalized protocol difference, fix analyzer semantics or prove the material dialect-law difference; re-run public canonical and independent native outcomes",
+      "owner": "TASK-177",
+      "next_dialect_equivalence_owner": "TASK-178",
+      "release_disposition": "blocking_not_approved_residual",
+      "native_vendor_execution": "not_certified",
+      "first_difference_path": "$.graph.physical_source_plans[0].zero_output.cases"
+    },
+    {
+      "id": "88-C177-S101-duckdb",
+      "case_id": "88-C177-S101",
+      "feature_id": "grouping.supergroups",
+      "variant": "CUBE",
+      "dialect": "duckdb",
+      "reference_dialect": "ansi",
+      "sql": "SELECT id, COUNT(*) FROM orders GROUP BY CUBE(id)",
+      "source_task_owners": [
+        "TASK-73"
+      ],
+      "classification": "canonical_output_drift",
+      "reason": "CUBE yields different normalized protocol documents across dialect parser ASTs; subtotal and NULL grouping identity are unreviewed.",
+      "required_evidence": "Review actual normalized protocol difference, fix analyzer semantics or prove the material dialect-law difference; re-run public canonical and independent native outcomes",
+      "owner": "TASK-177",
+      "next_dialect_equivalence_owner": "TASK-178",
+      "release_disposition": "blocking_not_approved_residual",
+      "native_vendor_execution": "not_certified",
+      "first_difference_path": "$.graph.physical_source_plans[0].zero_output.cases"
+    },
+    {
+      "id": "88-C177-S101-generic",
+      "case_id": "88-C177-S101",
+      "feature_id": "grouping.supergroups",
+      "variant": "CUBE",
+      "dialect": "generic",
+      "reference_dialect": "ansi",
+      "sql": "SELECT id, COUNT(*) FROM orders GROUP BY CUBE(id)",
+      "source_task_owners": [
+        "TASK-73"
+      ],
+      "classification": "canonical_output_drift",
+      "reason": "CUBE yields different normalized protocol documents across dialect parser ASTs; subtotal and NULL grouping identity are unreviewed.",
+      "required_evidence": "Review actual normalized protocol difference, fix analyzer semantics or prove the material dialect-law difference; re-run public canonical and independent native outcomes",
+      "owner": "TASK-177",
+      "next_dialect_equivalence_owner": "TASK-178",
+      "release_disposition": "blocking_not_approved_residual",
+      "native_vendor_execution": "not_certified",
+      "first_difference_path": "$.graph.physical_source_plans[0].zero_output.cases"
+    },
+    {
+      "id": "88-C177-S101-postgresql",
+      "case_id": "88-C177-S101",
+      "feature_id": "grouping.supergroups",
+      "variant": "CUBE",
+      "dialect": "postgresql",
+      "reference_dialect": "ansi",
+      "sql": "SELECT id, COUNT(*) FROM orders GROUP BY CUBE(id)",
+      "source_task_owners": [
+        "TASK-73"
+      ],
+      "classification": "canonical_output_drift",
+      "reason": "CUBE yields different normalized protocol documents across dialect parser ASTs; subtotal and NULL grouping identity are unreviewed.",
+      "required_evidence": "Review actual normalized protocol difference, fix analyzer semantics or prove the material dialect-law difference; re-run public canonical and independent native outcomes",
+      "owner": "TASK-177",
+      "next_dialect_equivalence_owner": "TASK-178",
+      "release_disposition": "blocking_not_approved_residual",
+      "native_vendor_execution": "not_certified",
+      "first_difference_path": "$.graph.physical_source_plans[0].zero_output.cases"
+    },
+    {
+      "id": "88-C177-S101-snowflake",
+      "case_id": "88-C177-S101",
+      "feature_id": "grouping.supergroups",
+      "variant": "CUBE",
+      "dialect": "snowflake",
+      "reference_dialect": "ansi",
+      "sql": "SELECT id, COUNT(*) FROM orders GROUP BY CUBE(id)",
+      "source_task_owners": [
+        "TASK-73"
+      ],
+      "classification": "canonical_output_drift",
+      "reason": "CUBE yields different normalized protocol documents across dialect parser ASTs; subtotal and NULL grouping identity are unreviewed.",
+      "required_evidence": "Review actual normalized protocol difference, fix analyzer semantics or prove the material dialect-law difference; re-run public canonical and independent native outcomes",
+      "owner": "TASK-177",
+      "next_dialect_equivalence_owner": "TASK-178",
+      "release_disposition": "blocking_not_approved_residual",
+      "native_vendor_execution": "not_certified",
+      "first_difference_path": "$.graph.physical_source_plans[0].zero_output.cases"
+    },
+    {
+      "id": "88-C177-S104-bigquery",
+      "case_id": "88-C177-S104",
+      "feature_id": "grouping.supergroups",
+      "variant": "GROUPING()",
+      "dialect": "bigquery",
+      "reference_dialect": "ansi",
+      "sql": "SELECT GROUPING(id), COUNT(*) FROM orders GROUP BY ROLLUP(id)",
+      "source_task_owners": [
+        "TASK-73"
+      ],
+      "classification": "canonical_output_drift",
+      "reason": "GROUPING() with ROLLUP yields different canonical documents; grouping-value / supergroup semantics require dialect-law review.",
+      "required_evidence": "Review actual normalized protocol difference, fix analyzer semantics or prove the material dialect-law difference; re-run public canonical and independent native outcomes",
+      "owner": "TASK-177",
+      "next_dialect_equivalence_owner": "TASK-178",
+      "release_disposition": "blocking_not_approved_residual",
+      "native_vendor_execution": "not_certified",
+      "first_difference_path": "$.graph.physical_source_plans[0].zero_output.cases"
+    },
+    {
+      "id": "88-C177-S104-clickhouse",
+      "case_id": "88-C177-S104",
+      "feature_id": "grouping.supergroups",
+      "variant": "GROUPING()",
+      "dialect": "clickhouse",
+      "reference_dialect": "ansi",
+      "sql": "SELECT GROUPING(id), COUNT(*) FROM orders GROUP BY ROLLUP(id)",
+      "source_task_owners": [
+        "TASK-73"
+      ],
+      "classification": "canonical_output_drift",
+      "reason": "GROUPING() with ROLLUP yields different canonical documents; grouping-value / supergroup semantics require dialect-law review.",
+      "required_evidence": "Review actual normalized protocol difference, fix analyzer semantics or prove the material dialect-law difference; re-run public canonical and independent native outcomes",
+      "owner": "TASK-177",
+      "next_dialect_equivalence_owner": "TASK-178",
+      "release_disposition": "blocking_not_approved_residual",
+      "native_vendor_execution": "not_certified",
+      "first_difference_path": "$.graph.physical_source_plans[0].zero_output.cases"
+    },
+    {
+      "id": "88-C177-S104-databricks",
+      "case_id": "88-C177-S104",
+      "feature_id": "grouping.supergroups",
+      "variant": "GROUPING()",
+      "dialect": "databricks",
+      "reference_dialect": "ansi",
+      "sql": "SELECT GROUPING(id), COUNT(*) FROM orders GROUP BY ROLLUP(id)",
+      "source_task_owners": [
+        "TASK-73"
+      ],
+      "classification": "canonical_output_drift",
+      "reason": "GROUPING() with ROLLUP yields different canonical documents; grouping-value / supergroup semantics require dialect-law review.",
+      "required_evidence": "Review actual normalized protocol difference, fix analyzer semantics or prove the material dialect-law difference; re-run public canonical and independent native outcomes",
+      "owner": "TASK-177",
+      "next_dialect_equivalence_owner": "TASK-178",
+      "release_disposition": "blocking_not_approved_residual",
+      "native_vendor_execution": "not_certified",
+      "first_difference_path": "$.graph.physical_source_plans[0].zero_output.cases"
+    },
+    {
+      "id": "88-C177-S104-duckdb",
+      "case_id": "88-C177-S104",
+      "feature_id": "grouping.supergroups",
+      "variant": "GROUPING()",
+      "dialect": "duckdb",
+      "reference_dialect": "ansi",
+      "sql": "SELECT GROUPING(id), COUNT(*) FROM orders GROUP BY ROLLUP(id)",
+      "source_task_owners": [
+        "TASK-73"
+      ],
+      "classification": "canonical_output_drift",
+      "reason": "GROUPING() with ROLLUP yields different canonical documents; grouping-value / supergroup semantics require dialect-law review.",
+      "required_evidence": "Review actual normalized protocol difference, fix analyzer semantics or prove the material dialect-law difference; re-run public canonical and independent native outcomes",
+      "owner": "TASK-177",
+      "next_dialect_equivalence_owner": "TASK-178",
+      "release_disposition": "blocking_not_approved_residual",
+      "native_vendor_execution": "not_certified",
+      "first_difference_path": "$.graph.physical_source_plans[0].zero_output.cases"
+    },
+    {
+      "id": "88-C177-S104-generic",
+      "case_id": "88-C177-S104",
+      "feature_id": "grouping.supergroups",
+      "variant": "GROUPING()",
+      "dialect": "generic",
+      "reference_dialect": "ansi",
+      "sql": "SELECT GROUPING(id), COUNT(*) FROM orders GROUP BY ROLLUP(id)",
+      "source_task_owners": [
+        "TASK-73"
+      ],
+      "classification": "canonical_output_drift",
+      "reason": "GROUPING() with ROLLUP yields different canonical documents; grouping-value / supergroup semantics require dialect-law review.",
+      "required_evidence": "Review actual normalized protocol difference, fix analyzer semantics or prove the material dialect-law difference; re-run public canonical and independent native outcomes",
+      "owner": "TASK-177",
+      "next_dialect_equivalence_owner": "TASK-178",
+      "release_disposition": "blocking_not_approved_residual",
+      "native_vendor_execution": "not_certified",
+      "first_difference_path": "$.graph.physical_source_plans[0].zero_output.cases"
+    },
+    {
+      "id": "88-C177-S104-postgresql",
+      "case_id": "88-C177-S104",
+      "feature_id": "grouping.supergroups",
+      "variant": "GROUPING()",
+      "dialect": "postgresql",
+      "reference_dialect": "ansi",
+      "sql": "SELECT GROUPING(id), COUNT(*) FROM orders GROUP BY ROLLUP(id)",
+      "source_task_owners": [
+        "TASK-73"
+      ],
+      "classification": "canonical_output_drift",
+      "reason": "GROUPING() with ROLLUP yields different canonical documents; grouping-value / supergroup semantics require dialect-law review.",
+      "required_evidence": "Review actual normalized protocol difference, fix analyzer semantics or prove the material dialect-law difference; re-run public canonical and independent native outcomes",
+      "owner": "TASK-177",
+      "next_dialect_equivalence_owner": "TASK-178",
+      "release_disposition": "blocking_not_approved_residual",
+      "native_vendor_execution": "not_certified",
+      "first_difference_path": "$.graph.physical_source_plans[0].zero_output.cases"
+    },
+    {
+      "id": "88-C177-S104-snowflake",
+      "case_id": "88-C177-S104",
+      "feature_id": "grouping.supergroups",
+      "variant": "GROUPING()",
+      "dialect": "snowflake",
+      "reference_dialect": "ansi",
+      "sql": "SELECT GROUPING(id), COUNT(*) FROM orders GROUP BY ROLLUP(id)",
+      "source_task_owners": [
+        "TASK-73"
+      ],
+      "classification": "canonical_output_drift",
+      "reason": "GROUPING() with ROLLUP yields different canonical documents; grouping-value / supergroup semantics require dialect-law review.",
+      "required_evidence": "Review actual normalized protocol difference, fix analyzer semantics or prove the material dialect-law difference; re-run public canonical and independent native outcomes",
+      "owner": "TASK-177",
+      "next_dialect_equivalence_owner": "TASK-178",
+      "release_disposition": "blocking_not_approved_residual",
+      "native_vendor_execution": "not_certified",
+      "first_difference_path": "$.graph.physical_source_plans[0].zero_output.cases"
+    },
+    {
+      "id": "88-C177-S152-mssql",
+      "case_id": "88-C177-S152",
+      "feature_id": "scopes.derived_lateral",
+      "variant": "correlated table sources",
+      "dialect": "mssql",
+      "reference_dialect": "ansi",
+      "sql": "SELECT o.id FROM orders o JOIN LATERAL (SELECT o.id) l ON TRUE",
+      "source_task_owners": [
+        "TASK-78",
+        "TASK-77"
+      ],
+      "classification": "canonical_output_drift",
+      "reason": "Correlated LATERAL JOIN produces different canonical documents for one dialect; correlation and source scope must be established.",
+      "required_evidence": "Review actual normalized protocol difference, fix analyzer semantics or prove the material dialect-law difference; re-run public canonical and independent native outcomes",
+      "owner": "TASK-177",
+      "next_dialect_equivalence_owner": "TASK-178",
+      "release_disposition": "blocking_not_approved_residual",
+      "native_vendor_execution": "not_certified",
+      "first_difference_path": "$.graph.physical_nodes[1].operator_witnesses[0].qualifying.reason"
+    },
+    {
+      "id": "88-C177-S179-duckdb",
+      "case_id": "88-C177-S179",
+      "feature_id": "types.structural",
+      "variant": "struct",
+      "dialect": "duckdb",
+      "reference_dialect": "ansi",
+      "sql": "SELECT CAST(ROW(1, 'a') AS STRUCT(a INT, b VARCHAR)) AS v",
+      "source_task_owners": [
+        "TASK-79"
+      ],
+      "classification": "canonical_output_drift",
+      "reason": "STRUCT CAST with ROW input normalizes differently for one dialect; native STRUCT type/value semantics are not attested.",
+      "required_evidence": "Review actual normalized protocol difference, fix analyzer semantics or prove the material dialect-law difference; re-run public canonical and independent native outcomes",
+      "owner": "TASK-177",
+      "next_dialect_equivalence_owner": "TASK-178",
+      "release_disposition": "blocking_not_approved_residual",
+      "native_vendor_execution": "not_certified",
+      "first_difference_path": "$.inputs[0].statements[0].diagnostics[0].message"
+    }
+  ]
+}

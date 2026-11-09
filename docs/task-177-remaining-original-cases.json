@@ -1,0 +1,366 @@
+{
+  "schema_version": 1,
+  "owner": "TASK-177",
+  "source_samples": "docs/task-177-parser-samples.json",
+  "source_proof_ledger": "docs/task-177-physical-proof-ledger.json",
+  "case_count": 23,
+  "classification_scope": "23 original SQL examples still have no successful fixed native terminal/state proof: 15 invalid or conditional native inputs, five stochastic samples, nonterminating recursion, RANDOM(), and optimizer-dependent EXPLAIN. A rejected/conditional outcome is evidence but is not a successful terminal bag.",
+  "cases": [
+    {
+      "id": "88-C177-S033",
+      "feature_id": "predicates.computed",
+      "variant": "overflow",
+      "sql": "SELECT 9223372036854775807 + 1 AS overflow_case",
+      "semantic_owner": [
+        "TASK-70",
+        "TASK-101",
+        "TASK-102"
+      ],
+      "proof_obligation": "explicit_native_rejection_or_conditional_syntax",
+      "native_duckdb_status": "unverified_in_this_registry",
+      "strongest_typed_domain": "not_proven",
+      "sql_dbt_odcs_parity": "not_proven",
+      "native_vendor_session_equivalence": "not_proven",
+      "independent_disposition": "blocked_not_approved"
+    },
+    {
+      "id": "88-C177-S054",
+      "feature_id": "joins.semi_anti",
+      "variant": "SEMI",
+      "sql": "SELECT l.id FROM orders l LEFT SEMI JOIN customers r ON l.id = r.id",
+      "semantic_owner": [
+        "TASK-71"
+      ],
+      "proof_obligation": "explicit_native_rejection_or_conditional_syntax",
+      "native_duckdb_status": "unverified_in_this_registry",
+      "strongest_typed_domain": "not_proven",
+      "sql_dbt_odcs_parity": "not_proven",
+      "native_vendor_session_equivalence": "not_proven",
+      "independent_disposition": "blocked_not_approved"
+    },
+    {
+      "id": "88-C177-S055",
+      "feature_id": "joins.semi_anti",
+      "variant": "ANTI",
+      "sql": "SELECT l.id FROM orders l LEFT ANTI JOIN customers r ON l.id = r.id",
+      "semantic_owner": [
+        "TASK-71"
+      ],
+      "proof_obligation": "explicit_native_rejection_or_conditional_syntax",
+      "native_duckdb_status": "unverified_in_this_registry",
+      "strongest_typed_domain": "not_proven",
+      "sql_dbt_odcs_parity": "not_proven",
+      "native_vendor_session_equivalence": "not_proven",
+      "independent_disposition": "blocked_not_approved"
+    },
+    {
+      "id": "88-C177-S084",
+      "feature_id": "sets.alignment",
+      "variant": "CORRESPONDING",
+      "sql": "SELECT id, amount FROM orders UNION CORRESPONDING SELECT amount, id FROM customers",
+      "semantic_owner": [
+        "TASK-72"
+      ],
+      "proof_obligation": "explicit_native_rejection_or_conditional_syntax",
+      "native_duckdb_status": "unverified_in_this_registry",
+      "strongest_typed_domain": "not_proven",
+      "sql_dbt_odcs_parity": "not_proven",
+      "native_vendor_session_equivalence": "not_proven",
+      "independent_disposition": "blocked_not_approved"
+    },
+    {
+      "id": "88-C177-S086",
+      "feature_id": "sets.alignment",
+      "variant": "incompatible arity",
+      "sql": "SELECT id FROM orders UNION SELECT id, amount FROM customers",
+      "semantic_owner": [
+        "TASK-72"
+      ],
+      "proof_obligation": "explicit_native_rejection_or_conditional_syntax",
+      "native_duckdb_status": "unverified_in_this_registry",
+      "strongest_typed_domain": "not_proven",
+      "sql_dbt_odcs_parity": "not_proven",
+      "native_vendor_session_equivalence": "not_proven",
+      "independent_disposition": "blocked_not_approved"
+    },
+    {
+      "id": "88-C177-S140",
+      "feature_id": "subqueries.scalar_quantified",
+      "variant": "cardinality >1",
+      "sql": "SELECT (SELECT amount FROM customers) AS scalar_value FROM orders",
+      "semantic_owner": [
+        "TASK-75"
+      ],
+      "proof_obligation": "explicit_native_rejection_or_conditional_syntax",
+      "native_duckdb_status": "unverified_in_this_registry",
+      "strongest_typed_domain": "not_proven",
+      "sql_dbt_odcs_parity": "not_proven",
+      "native_vendor_session_equivalence": "not_proven",
+      "independent_disposition": "blocked_not_approved"
+    },
+    {
+      "id": "88-C177-S147",
+      "feature_id": "scopes.recursive_cte",
+      "variant": "cycles",
+      "sql": "WITH RECURSIVE t(n) AS (SELECT 1 UNION ALL SELECT n + 1 FROM t) SELECT n FROM t",
+      "semantic_owner": [
+        "TASK-78"
+      ],
+      "proof_obligation": "recursive_nontermination",
+      "native_duckdb_status": "unverified_in_this_registry",
+      "strongest_typed_domain": "not_proven",
+      "sql_dbt_odcs_parity": "not_proven",
+      "native_vendor_session_equivalence": "not_proven",
+      "independent_disposition": "blocked_not_approved"
+    },
+    {
+      "id": "88-C177-S160",
+      "feature_id": "ordering.pagination",
+      "variant": "FETCH FIRST/WITH TIES",
+      "sql": "SELECT id FROM orders ORDER BY id FETCH FIRST 2 ROWS WITH TIES",
+      "semantic_owner": [
+        "TASK-76"
+      ],
+      "proof_obligation": "explicit_native_rejection_or_conditional_syntax",
+      "native_duckdb_status": "unverified_in_this_registry",
+      "strongest_typed_domain": "not_proven",
+      "sql_dbt_odcs_parity": "not_proven",
+      "native_vendor_session_equivalence": "not_proven",
+      "independent_disposition": "blocked_not_approved"
+    },
+    {
+      "id": "88-C177-S161",
+      "feature_id": "ordering.pagination",
+      "variant": "TOP",
+      "sql": "SELECT TOP 2 id FROM orders ORDER BY id",
+      "semantic_owner": [
+        "TASK-76"
+      ],
+      "proof_obligation": "explicit_native_rejection_or_conditional_syntax",
+      "native_duckdb_status": "unverified_in_this_registry",
+      "strongest_typed_domain": "not_proven",
+      "sql_dbt_odcs_parity": "not_proven",
+      "native_vendor_session_equivalence": "not_proven",
+      "independent_disposition": "blocked_not_approved"
+    },
+    {
+      "id": "88-C177-S163",
+      "feature_id": "ordering.sampling",
+      "variant": "TABLESAMPLE",
+      "sql": "SELECT id FROM orders TABLESAMPLE BERNOULLI (10)",
+      "semantic_owner": [
+        "TASK-76"
+      ],
+      "proof_obligation": "engine_sample_nondeterminism",
+      "native_duckdb_status": "unverified_in_this_registry",
+      "strongest_typed_domain": "not_proven",
+      "sql_dbt_odcs_parity": "not_proven",
+      "native_vendor_session_equivalence": "not_proven",
+      "independent_disposition": "blocked_not_approved"
+    },
+    {
+      "id": "88-C177-S164",
+      "feature_id": "ordering.sampling",
+      "variant": "BERNOULLI",
+      "sql": "SELECT id FROM orders TABLESAMPLE BERNOULLI (10)",
+      "semantic_owner": [
+        "TASK-76"
+      ],
+      "proof_obligation": "engine_sample_nondeterminism",
+      "native_duckdb_status": "unverified_in_this_registry",
+      "strongest_typed_domain": "not_proven",
+      "sql_dbt_odcs_parity": "not_proven",
+      "native_vendor_session_equivalence": "not_proven",
+      "independent_disposition": "blocked_not_approved"
+    },
+    {
+      "id": "88-C177-S165",
+      "feature_id": "ordering.sampling",
+      "variant": "SYSTEM",
+      "sql": "SELECT id FROM orders TABLESAMPLE SYSTEM (10)",
+      "semantic_owner": [
+        "TASK-76"
+      ],
+      "proof_obligation": "engine_sample_nondeterminism",
+      "native_duckdb_status": "unverified_in_this_registry",
+      "strongest_typed_domain": "not_proven",
+      "sql_dbt_odcs_parity": "not_proven",
+      "native_vendor_session_equivalence": "not_proven",
+      "independent_disposition": "blocked_not_approved"
+    },
+    {
+      "id": "88-C177-S166",
+      "feature_id": "ordering.sampling",
+      "variant": "seeds",
+      "sql": "SELECT id FROM orders TABLESAMPLE BERNOULLI (10) REPEATABLE (7)",
+      "semantic_owner": [
+        "TASK-76"
+      ],
+      "proof_obligation": "engine_sample_nondeterminism",
+      "native_duckdb_status": "unverified_in_this_registry",
+      "strongest_typed_domain": "not_proven",
+      "sql_dbt_odcs_parity": "not_proven",
+      "native_vendor_session_equivalence": "not_proven",
+      "independent_disposition": "blocked_not_approved"
+    },
+    {
+      "id": "88-C177-S167",
+      "feature_id": "ordering.sampling",
+      "variant": "engine randomness",
+      "sql": "SELECT id FROM orders TABLESAMPLE SYSTEM (10)",
+      "semantic_owner": [
+        "TASK-76"
+      ],
+      "proof_obligation": "engine_sample_nondeterminism",
+      "native_duckdb_status": "unverified_in_this_registry",
+      "strongest_typed_domain": "not_proven",
+      "sql_dbt_odcs_parity": "not_proven",
+      "native_vendor_session_equivalence": "not_proven",
+      "independent_disposition": "blocked_not_approved"
+    },
+    {
+      "id": "88-C177-S173",
+      "feature_id": "relations.advanced_sources",
+      "variant": "cross apply",
+      "sql": "SELECT o.id FROM orders o CROSS APPLY (SELECT o.id) x",
+      "semantic_owner": [
+        "TASK-77"
+      ],
+      "proof_obligation": "explicit_native_rejection_or_conditional_syntax",
+      "native_duckdb_status": "unverified_in_this_registry",
+      "strongest_typed_domain": "not_proven",
+      "sql_dbt_odcs_parity": "not_proven",
+      "native_vendor_session_equivalence": "not_proven",
+      "independent_disposition": "blocked_not_approved"
+    },
+    {
+      "id": "88-C177-S176",
+      "feature_id": "types.structural",
+      "variant": "binary",
+      "sql": "SELECT CAST('ab' AS BINARY(2)) AS v",
+      "semantic_owner": [
+        "TASK-79"
+      ],
+      "proof_obligation": "explicit_native_rejection_or_conditional_syntax",
+      "native_duckdb_status": "duckdb_binder_rejects_parameterized_blob_companion_verified",
+      "strongest_typed_domain": "not_proven",
+      "sql_dbt_odcs_parity": "not_proven",
+      "native_vendor_session_equivalence": "not_proven",
+      "independent_disposition": "blocked_not_approved"
+    },
+    {
+      "id": "88-C177-S182",
+      "feature_id": "types.structural",
+      "variant": "custom",
+      "sql": "SELECT CAST(1 AS user_defined_type) AS v",
+      "semantic_owner": [
+        "TASK-79"
+      ],
+      "proof_obligation": "explicit_native_rejection_or_conditional_syntax",
+      "native_duckdb_status": "unverified_in_this_registry",
+      "strongest_typed_domain": "not_proven",
+      "sql_dbt_odcs_parity": "not_proven",
+      "native_vendor_session_equivalence": "not_proven",
+      "independent_disposition": "blocked_not_approved"
+    },
+    {
+      "id": "88-C177-S199",
+      "feature_id": "dml.insert_conflicts",
+      "variant": "REPLACE INTO",
+      "sql": "REPLACE INTO orders (id) VALUES (1)",
+      "semantic_owner": [
+        "TASK-80",
+        "TASK-82"
+      ],
+      "proof_obligation": "explicit_native_rejection_or_conditional_syntax",
+      "native_duckdb_status": "unverified_in_this_registry",
+      "strongest_typed_domain": "not_proven",
+      "sql_dbt_odcs_parity": "not_proven",
+      "native_vendor_session_equivalence": "not_proven",
+      "independent_disposition": "blocked_not_approved"
+    },
+    {
+      "id": "88-C177-S200",
+      "feature_id": "dml.insert_conflicts",
+      "variant": "INSERT OVERWRITE",
+      "sql": "INSERT OVERWRITE TABLE orders SELECT * FROM customers",
+      "semantic_owner": [
+        "TASK-80",
+        "TASK-82"
+      ],
+      "proof_obligation": "explicit_native_rejection_or_conditional_syntax",
+      "native_duckdb_status": "unverified_in_this_registry",
+      "strongest_typed_domain": "not_proven",
+      "sql_dbt_odcs_parity": "not_proven",
+      "native_vendor_session_equivalence": "not_proven",
+      "independent_disposition": "blocked_not_approved"
+    },
+    {
+      "id": "88-C177-S242",
+      "feature_id": "execution.dialect_equivalence",
+      "variant": "runtime plan",
+      "sql": "EXPLAIN SELECT * FROM orders",
+      "semantic_owner": [
+        "TASK-88",
+        "TASK-89"
+      ],
+      "proof_obligation": "native_execution_candidate",
+      "native_duckdb_status": "unverified_in_this_registry",
+      "strongest_typed_domain": "not_proven",
+      "sql_dbt_odcs_parity": "not_proven",
+      "native_vendor_session_equivalence": "not_proven",
+      "independent_disposition": "blocked_not_approved"
+    },
+    {
+      "id": "88-C177-S248",
+      "feature_id": "execution.unsupported_opaque",
+      "variant": "arbitrary UDF",
+      "sql": "SELECT arbitrary_udf(amount) FROM orders",
+      "semantic_owner": [
+        "TASK-66",
+        "TASK-88",
+        "TASK-91"
+      ],
+      "proof_obligation": "explicit_native_rejection_or_conditional_syntax",
+      "native_duckdb_status": "unverified_in_this_registry",
+      "strongest_typed_domain": "not_proven",
+      "sql_dbt_odcs_parity": "not_proven",
+      "native_vendor_session_equivalence": "not_proven",
+      "independent_disposition": "blocked_not_approved"
+    },
+    {
+      "id": "88-C177-S249",
+      "feature_id": "execution.unsupported_opaque",
+      "variant": "external I/O",
+      "sql": "SELECT read_csv('/tmp/input.csv')",
+      "semantic_owner": [
+        "TASK-66",
+        "TASK-88",
+        "TASK-91"
+      ],
+      "proof_obligation": "explicit_native_rejection_or_conditional_syntax",
+      "native_duckdb_status": "unverified_in_this_registry",
+      "strongest_typed_domain": "not_proven",
+      "sql_dbt_odcs_parity": "not_proven",
+      "native_vendor_session_equivalence": "not_proven",
+      "independent_disposition": "blocked_not_approved"
+    },
+    {
+      "id": "88-C177-S250",
+      "feature_id": "execution.unsupported_opaque",
+      "variant": "nondeterminism",
+      "sql": "SELECT RANDOM() FROM orders",
+      "semantic_owner": [
+        "TASK-66",
+        "TASK-88",
+        "TASK-91"
+      ],
+      "proof_obligation": "runtime_nondeterminism",
+      "native_duckdb_status": "unverified_in_this_registry",
+      "strongest_typed_domain": "not_proven",
+      "sql_dbt_odcs_parity": "not_proven",
+      "native_vendor_session_equivalence": "not_proven",
+      "independent_disposition": "blocked_not_approved"
+    }
+  ]
+}

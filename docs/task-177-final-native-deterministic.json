@@ -1,0 +1,109 @@
+{
+  "schema_version": 1,
+  "owner": "TASK-177",
+  "scope": "Candidate original-SQL native differential oracles for remaining deterministic cases. Successful execution proves only named DuckDB source/session outcomes, not 13 vendor semantics, canonical domains or adapter parity.",
+  "original_integer_selects": [
+    {
+      "id": "88-C177-S023",
+      "source": "customers",
+      "expected_terminal_bag": [
+        [
+          9
+        ]
+      ]
+    },
+    {
+      "id": "88-C177-S024",
+      "source": "customers",
+      "expected_terminal_bag": []
+    },
+    {
+      "id": "88-C177-S026",
+      "source": "customers",
+      "expected_terminal_bag": []
+    },
+    {
+      "id": "88-C177-S038",
+      "source": "customers",
+      "expected_terminal_bag": [
+        [
+          5
+        ]
+      ]
+    },
+    {
+      "id": "88-C177-S040",
+      "source": "nan",
+      "expected_terminal_bag": [
+        [
+          1
+        ],
+        [
+          1
+        ]
+      ]
+    }
+  ],
+  "nan_source_setup": "CREATE TABLE orders (id INTEGER, amount DOUBLE); INSERT INTO orders VALUES (1, CAST('NaN' AS DOUBLE)),(1, CAST('NaN' AS DOUBLE)),(2,0.0),(3,NULL),(4,1.0);",
+  "nan_source_id_bag": [
+    [
+      1
+    ],
+    [
+      1
+    ],
+    [
+      2
+    ],
+    [
+      3
+    ],
+    [
+      4
+    ]
+  ],
+  "original_scalar_floating": [
+    {
+      "id": "88-C177-S093",
+      "expected": 9
+    }
+  ],
+  "original_scalar_rendered": [
+    {
+      "id": "88-C177-S097",
+      "expected": "[1, 1, 2, 3, 4, NULL]"
+    },
+    {
+      "id": "88-C177-S174",
+      "expected": "1.25"
+    },
+    {
+      "id": "88-C177-S175",
+      "expected": "abc"
+    },
+    {
+      "id": "88-C177-S177",
+      "expected": "{\"a\":1}"
+    },
+    {
+      "id": "88-C177-S178",
+      "expected": "[1, 2, 3]"
+    }
+  ],
+  "original_catalog_state": [
+    {
+      "id": "88-C177-S180",
+      "poststate_sql": "SELECT CAST(CAST('happy' AS mood) AS VARCHAR)",
+      "expected": "happy"
+    },
+    {
+      "id": "88-C177-S241",
+      "poststate_sql": "SELECT current_setting('TimeZone')",
+      "expected": "UTC"
+    }
+  ],
+  "samples_with_known_native_boundaries": [
+    "88-C177-S176",
+    "88-C177-S242"
+  ]
+}
