@@ -25,9 +25,19 @@ fn rollup_cube_and_grouping_have_one_portable_empty_source_proof() {
     ] {
         let ansi = canonical(sql, "ansi");
         let dialects = [
-            "ansi", "bigquery", "clickhouse", "databricks", "duckdb",
-            "generic", "hive", "mssql", "mysql", "postgresql",
-            "redshift", "snowflake", "sqlite",
+            "ansi",
+            "bigquery",
+            "clickhouse",
+            "databricks",
+            "duckdb",
+            "generic",
+            "hive",
+            "mssql",
+            "mysql",
+            "postgresql",
+            "redshift",
+            "snowflake",
+            "sqlite",
         ];
         for name in dialects {
             let actual = canonical(sql, name);
@@ -43,7 +53,6 @@ fn rollup_cube_and_grouping_have_one_portable_empty_source_proof() {
         }
     }
 }
-
 
 #[test]
 fn duckdb_empty_rollup_and_cube_produce_grand_total_so_zero_source_cannot_prove_zero_output() {
