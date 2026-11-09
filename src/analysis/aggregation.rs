@@ -149,11 +149,60 @@ pub(super) fn analyze_select_aggregation(
     }
 }
 
+/// Some sqlparser dialects emit `GROUP BY ROLLUP(...)` and `CUBE(...)`
+/// as ordinary function ASTs while others emit dedicated grouping nodes.
+/// Normalize them *at the SQL parser boundary* before physical/zero-output
+/// reasoning. A grouping subtotal may produce a row from an empty source;
+/// interpreting it as a row-local function is an unsound empty-bag proof.
+fn grouping_function_variant(
+    expression: &Expr,
+    named_windows: &[NamedWindowDefinition],
+    diagnostics: &mut Vec<Diagnostic>,
+) -> Option<GroupingExpression> {
+    let Expr::Function(function) = expression else {
+        return None;
+    };
+    let rollup = function.name.to_string().eq_ignore_ascii_case("ROLLUP");
+    let cube = function.name.to_string().eq_ignore_ascii_case("CUBE");
+    if !(rollup || cube)
+        || function.over.is_some()
+        || function.filter.is_some()
+        || function.null_treatment.is_some()
+        || !function.within_group.is_empty()
+    {
+        return None;
+    }
+    let FunctionArguments::List(arguments) = &function.args else {
+        return None;
+    };
+    if arguments.duplicate_treatment.is_some() || !arguments.clauses.is_empty() {
+        return None;
+    }
+    let sets = arguments
+        .args
+        .iter()
+        .map(|argument| match argument {
+            FunctionArg::Unnamed(FunctionArgExpr::Expr(item)) => Some(vec![
+                analyze_expression_with_windows(item, named_windows, diagnostics),
+            ]),
+            _ => None,
+        })
+        .collect::<Option<Vec<_>>>()?;
+    if rollup {
+        Some(GroupingExpression::Rollup(sets))
+    } else {
+        Some(GroupingExpression::Cube(sets))
+    }
+}
+
 pub(super) fn analyze_grouping_expression(
     expression: &Expr,
     named_windows: &[NamedWindowDefinition],
     diagnostics: &mut Vec<Diagnostic>,
 ) -> GroupingExpression {
+    if let Some(grouping) = grouping_function_variant(expression, named_windows, diagnostics) {
+        return grouping;
+    }
     match expression {
         Expr::GroupingSets(sets) => GroupingExpression::GroupingSets(analyze_grouping_sets(
             sets,
