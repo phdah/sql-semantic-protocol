@@ -74,7 +74,9 @@ fn frozen_seven_portable_families_preserve_complete_canonical_documents_in_all_d
     assert_eq!(freeze["dialects"], source["dialects"]);
     assert_eq!(freeze["dialects"], old["dialects"]);
 
-    let cases = freeze["cases"].as_array().expect("mandatory portable cases");
+    let cases = freeze["cases"]
+        .as_array()
+        .expect("mandatory portable cases");
     assert_eq!(cases.len(), 7);
     for case in cases {
         let id = text(case, "id");
@@ -131,7 +133,8 @@ fn independent_duckdb_source_and_terminal_bags_preserve_duplicates_nulls_and_wri
         } else {
             text(&freeze, "source_setup")
         };
-        db.execute_batch(setup).expect("independent complete source setup");
+        db.execute_batch(setup)
+            .expect("independent complete source setup");
         for &name in if family == "ddl" {
             &["customers"][..]
         } else {
@@ -210,7 +213,10 @@ fn nullable_predicate_has_both_exact_rejection_directions_and_inclusive_domain()
     );
     assert!(lower.inclusive());
     assert!(range.upper().is_none());
-    assert_eq!(case["expected_projected_domain"]["lower"], parse("[10,true]"));
+    assert_eq!(
+        case["expected_projected_domain"]["lower"],
+        parse("[10,true]")
+    );
     assert!(case["expected_projected_domain"]["upper"].is_null());
 }
 
@@ -279,7 +285,9 @@ fn unverified_variant_and_vendor_boundaries_block_task_done() {
                 cell["id"] == id
                     && cell["owner"] == "TASK-178"
                     && cell["released"] == false
-                    && cell["required_evidence"].as_str().is_some_and(|text| !text.is_empty())
+                    && cell["required_evidence"]
+                        .as_str()
+                        .is_some_and(|text| !text.is_empty())
             }),
             "{id}: conditional evidence cannot be silently promoted"
         );
@@ -301,7 +309,8 @@ fn unverified_variant_and_vendor_boundaries_block_task_done() {
         assert_eq!(completion[key], false, "{key}: not signed off");
     }
     let duckdb = Connection::open_in_memory().expect("DuckDB");
-    duckdb.execute_batch("CREATE TABLE orders(id INTEGER)")
+    duckdb
+        .execute_batch("CREATE TABLE orders(id INTEGER)")
         .expect("fixture relation exists before testing syntax");
     assert!(
         duckdb
