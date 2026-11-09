@@ -544,7 +544,16 @@ pub(super) fn analyze_query(
                 && select.top.is_none()
                 && matches!(&select.group_by, GroupByExpr::Expressions(items, modifiers)
                     if !items.is_empty() && modifiers.is_empty()
-                        && items.iter().all(|item| !matches!(item, Expr::GroupingSets(_) | Expr::Cube(_) | Expr::Rollup(_)))));
+                        && items.iter().all(|item| {
+                            // sqlparser represents the same GROUP BY ROLLUP/CUBE
+                            // as dedicated nodes in some dialects and functions
+                            // in others. Neither proves ordinary one-row-per-key
+                            // grouping, even after semantic normalization.
+                            !matches!(item, Expr::GroupingSets(_) | Expr::Cube(_) | Expr::Rollup(_))
+                                && !matches!(item, Expr::Function(function)
+                                    if function.name.to_string().eq_ignore_ascii_case("ROLLUP")
+                                        || function.name.to_string().eq_ignore_ascii_case("CUBE"))
+                        }))));
 
     // These are the only upstream row-shapes whose physical QUALIFY
     // composition is currently certified. Any unrelated row shaping fails closed.
