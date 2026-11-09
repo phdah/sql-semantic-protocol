@@ -5,7 +5,7 @@
 
 use std::collections::BTreeMap;
 
-use serde_json::{json, Value};
+use serde_json::json;
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, analyze_dbt_manifest_with_schemas, analyze_inputs,
     dialect_from_name, parse_dbt_manifest, ComposedSemantics, ConfiguredSqlInput, LiteralValue,
