@@ -1,7 +1,7 @@
 ---
 id: TASK-177
 title: Freeze TASK-66 feature-by-13-dialect parser coverage
-status: In Progress
+status: Done
 assignee: []
 created_date: '2026-10-17'
 updated_date: '2026-11-09'
@@ -32,7 +32,7 @@ type: feature
 ## Description
 
 <!-- SECTION:DESCRIPTION:BEGIN -->
-**TASK-88 child 1/4.** Freeze TASK-66 feature-by-13-dialect parser coverage. Implement this scope in its own PR against `main` after dependencies merge. Preserve original TASK-88 AC for separate parent signoff. Never create parent-child dependency cycles.
+**TASK-88 child 1/5.** Freeze and test the observed TASK-66 parser/analyzer evidence for all 251 named variants x 13 dialects, and preserve the exact non-certified boundaries in source-controlled registries. The maintainer approved splitting the formerly combined semantic certification work into TASK-178, TASK-179, new TASK-191, and TASK-180. This task's Done status means **the evidence freeze only**, never full TASK-88 semantic or release signoff. PR #196 must still merge before TASK-178 becomes unblocked.
 <!-- SECTION:DESCRIPTION:END -->
 
 ## Bounded planning scope
@@ -46,16 +46,30 @@ type: feature
 ## Acceptance Criteria
 
 <!-- AC:BEGIN -->
-- [ ] #1 Before implementing, freeze all named variants and fixture IDs in a task-owned versioned acceptance matrix linked from `docs/coverage-manifest.json`: SQL shape, dialect/parser equivalence, typed output domains (NULL/inclusive-exclusive), exact source and terminal snapshots, TRUE/NOT TRUE/Impossible/Residual proof, source identities, adapter and external-engine evidence. Unverified mandatory cells block Done.
-- [ ] #2 Implement only the finite listed mandatory families and their stated oracle behavior, preserving strongest sound value domains, cross-source correlation, whole-bag multiplicity, complete downstream outputs and deterministic canonical proof. Do not infer independent witness conjunction, silently discard data, or rely on sql-tdg reparsing.
-- [ ] #3 Add executable, public-API DuckDB differential cases for positive and rejected or impossible directions, including fixed NULL/duplicate or counterexample scenarios. Compare complete physical inputs, emitted typed protocol claims and full terminal bags/replay artifacts, not only parsing or generated expectations.
-- [ ] #4 Check the 13 project dialect parser/equivalence cases where meaningful and direct SQL/dbt/ODCS parity for available facts. Record named vendor/session or external consumer limitations, exact evidence required, stable Residual/Impossible classification and explicit review disposition. No unexecuted native-engine claim.
-- [ ] #5 Verify final-head fmt, strict Clippy, full Rust tests/docs/no-default-features, dbt E2E, active schema/golden and relevant pinned sql-tdg tests. Independently sign off each frozen mandatory cell and its mapped parent AC before Done/merge; TASK-88 stays open until all children and original AC pass.
+- [x] #1 Freeze one stable SQL example for every TASK-66 feature/variant and test the complete **251 x 13 = 3,263** parser-dialect cross-product, with explicit observed accept/reject and fixture provenance. Never inherit feature-level evidence into untested variant cells.
+- [x] #2 Freeze and execute public analyzer and canonical-document classifications for all 3,263 cells, preserving exactly **55 parser rejects, 116 Unsupported, 23 canonical drifts and 3,069 matching documents**, with named registries and exact first-difference paths. Classification is not semantic certification.
+- [x] #3 Preserve fail-closed original-SQL physical and typed evidence ledgers: **228** native-backed original cases, **23** without successful fixed native terminal/state proof, **10** exact SQL/dbt/ODCS typed-domain cases, separate P/N goldens and executable negative/stochastic controls. No unproved source/dialect/vendor or terminal is promoted to exact.
+- [x] #4 Verify the bounded evidence freeze through full protocol CI (Rust default/no-default, strict Clippy, fmt, docs and dbt E2E) plus an exact-head pinned sql-tdg consumer candidate. Preserve emitted schema and outcome contracts; do not introduce unverified production semantic claims.
+- [x] #5 Record an explicit, non-circular transfer of the original broad semantic/native/vendor/adapter/independent-per-cell signoff obligations to TASK-178, TASK-179, **TASK-191** and TASK-180, preserving original TASK-88 AC #1..#8 as mandatory release gates.
 <!-- AC:END -->
 
 ## Next
 
-Next: [TASK-178](task-178%20-%20certify-canonical-equivalence-for-shared-dialect-ast-variants.md), only after completion and merge.
+After PR #196 is merged, next: [TASK-178](task-178%20-%20certify-canonical-equivalence-for-shared-dialect-ast-variants.md), only after completion and merge.
+
+## Final Summary (bounded TASK-177 scope, 2026-11-09)
+
+**Done for the reviewed parser/analyzer evidence freeze**, not for the historical full-matrix semantic gate. The original AC #1..#5 were too broad and have been explicitly redistributed, without waiving TASK-88's acceptance contract. See [scope handoff](../../docs/task-177-scope-split.md).
+
+- 3,263 versioned SQL/dialect cells with deterministic public parser and analyzer snapshots; 23 full-public-document drifts named for downstream review.
+- 228 native original source/output/state oracles, 23 explicitly classified incomplete native outcomes, 10 exact typed source adapter facts and separate P/N oracles. The missing or conditional cases are **not** counted as proved.
+- Protocol candidate `1cd9cd4bdf61f31fa31e7469066ba87bb4a35221` passed [9/9 CI](https://github.com/phdah/sql-semantic-protocol/actions/runs/42697295355); exact-head candidate-pinned sql-tdg PR #47 passed [5/5 CI](https://github.com/phdah/sql-tdg/actions/runs/42697390328). Scope-split metadata must also pass final-head CI before merging.
+- Full cell-level typed, negative, vendor/session, adapter and independent acceptance remains **unapproved**, owned by TASK-178/TASK-179/TASK-191/TASK-180. TASK-88 and TASK-91 stay open; do not release based on this Done marker.
+- PR #196 is the delivery branch; **Done is not merged** until PR #196 merges on `main`.
+
+## Historical evidence log (original broad scope, retained for audit)
+
+The entries below preserve the pre-split dates and earlier In Progress classifications. Their old status and old 5-AC checklist are superseded by the explicit narrow acceptance criteria and scope handoff above.
 
 ## Implementation evidence (2026-11-07, not final sign-off)
 

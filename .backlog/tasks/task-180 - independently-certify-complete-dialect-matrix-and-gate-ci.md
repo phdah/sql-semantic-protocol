@@ -4,11 +4,12 @@ title: Independently certify complete dialect matrix and gate CI
 status: To Do
 assignee: []
 created_date: '2026-10-17'
-updated_date: '2026-10-17'
+updated_date: '2026-11-09'
 labels: []
 milestone: m-3
 dependencies:
   - TASK-179
+  - TASK-191
 references:
   - TASK-88
   - TASK-66
@@ -19,7 +20,7 @@ type: feature
 ## Description
 
 <!-- SECTION:DESCRIPTION:BEGIN -->
-**TASK-88 child 4/4.** Independently certify complete dialect matrix and gate CI. Implement this scope in its own PR against `main` after dependencies merge. Preserve original TASK-88 AC for separate parent signoff. Never create parent-child dependency cycles.
+**TASK-88 child 5/5.** Independently certify complete dialect matrix and gate CI. Implement this scope in its own PR against `main` after dependencies merge. Preserve original TASK-88 AC for separate parent signoff. Never create parent-child dependency cycles.
 <!-- SECTION:DESCRIPTION:END -->
 
 ## Bounded planning scope
@@ -42,4 +43,4 @@ type: feature
 
 ## Next
 
-After this child, audit and sign off TASK-88 separately; TASK-91 controls release readiness.
+After this child, including completed/merged TASK-191 boundary dispositions, audit and sign off TASK-88 separately; TASK-91 controls release readiness.

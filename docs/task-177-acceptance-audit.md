@@ -2,7 +2,7 @@
 
 **Task:** [TASK-177](../.backlog/tasks/task-177%20-%20freeze-task-66-feature-by-13-dialect-parser-coverage.md), TASK-88 child 1/4.
 **Implementation:** [PR #196](https://github.com/phdah/sql-semantic-protocol/pull/196).
-**Disposition:** **In Progress**. This is not independent acceptance signoff.
+**Disposition:** **TASK-177 Done for the bounded parser/analyzer inventory freeze only**, via [maintainer-approved split](task-177-scope-split.md). The historical original broad acceptance and independent 3,263-cell signoff are still **not approved** and are owned by TASK-178/TASK-179/TASK-191/TASK-180.
 
 ## Independent evidence boundaries
 
@@ -121,7 +121,7 @@ The exact original SQL deterministic native oracle suite adds **13** distinct ca
 
 The new [bounded native probes](../tests/task_177_native_boundary_probes.rs) execute the original rejected syntax with complete source relations and classify stochastic sampling, recursion and RANDOM without inventing fixed outputs. S181 original GEOMETRY now has an independently specified exact native type/WKT oracle. S176 instead has an explicit DuckDB binder rejection for BINARY(2) with a separate BLOB control. S242 original EXPLAIN executes, but its engine-dependent plan text remains conditional rather than an independently fixed exact terminal bag. **Neither test passing nor an explicit rejection approves release Residual or Impossible status.**
 
-## Original child acceptance criteria
+## Original broad child acceptance criteria (transferred, not waived)
 
 | AC | Executable evidence | Remaining blocker |
 | --- | --- | --- |
@@ -166,3 +166,7 @@ as an observation, but independently certified semantic/physical and
 adapter equivalence for all mandatory families is **not**. The remaining
 AC require additional first-party oracle implementations and external
 review. This author-side assessment cannot replace an independent reviewer.
+
+## TASK-177 bounded completion and follow-up
+
+The maintainer-approved 2026-11-09 [scope split](task-177-scope-split.md) marks **only the observed parser/analyzer/differential inventory freeze** Done. The original five historical AC rows in this file are intentionally still unverified for **TASK-88 global certification**. TASK-191 is the named release-blocking owner of 55 parser, 116 analyzer Unsupported, and 23 original native-unproven cases. TASK-178 owns 23 canonical drifts and shared strongest typed outputs; TASK-179 vendor/session laws; TASK-180 all mandatory per-cell/adapter and independent parent signoff. None of those proof gaps has been silently changed into a passing test or approved Residual.

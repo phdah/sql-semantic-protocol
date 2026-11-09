@@ -43,6 +43,9 @@ fn every_task_66_variant_has_thirteen_explicit_parser_evidence_cells() {
     );
     assert_eq!(freeze["variant_count"], 251);
     assert_eq!(freeze["dialect_cell_count"], 3263);
+    // The immutable v1 freeze records the superseded full semantic-signoff
+    // contract, which is still incomplete under TASK-88 despite the newly
+    // scoped TASK-177 parser/analyzer inventory task being Done.
     assert_eq!(freeze["completion"]["child_done"], false);
     assert_eq!(freeze["completion"]["release_approved"], false);
 
@@ -169,7 +172,16 @@ fn every_task_66_variant_has_thirteen_explicit_parser_evidence_cells() {
     );
     assert_eq!(
         manifest["task_177_dialect_parser_acceptance"]["status"],
-        "in_progress_parser_inventory_release_blocked"
+        "done_bounded_parser_analyzer_inventory__full_semantic_acceptance_transferred"
+    );
+    assert_eq!(manifest["task_177_dialect_parser_acceptance"]["child_done"], true);
+    assert_eq!(
+        manifest["task_177_dialect_parser_acceptance"]["release_approved"],
+        false
+    );
+    assert_eq!(
+        manifest["task_177_dialect_parser_acceptance"]["scope_split_handoff"],
+        "docs/task-177-scope-split.md"
     );
 }
 

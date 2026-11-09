@@ -216,3 +216,7 @@ portable examples have the narrower strongest typed SQL/dbt/ODCS adapter
 parity check. Three exact syntax forms are DuckDB-native rejections,
 and the name-aligned output case remains canonically unsupported. No
 independent per-cell signoff or vendor-session approval has been granted.
+
+### TASK-177 bounded completion does not certify TASK-88
+
+As of 2026-11-09, [TASK-177](../.backlog/tasks/task-177%20-%20freeze-task-66-feature-by-13-dialect-parser-coverage.md) is **Done for parser/analyzer evidence freezing only**. See the [scope split and original AC transfer](task-177-scope-split.md). TASK-178 owns strongest shared-AST canonical equality, TASK-179 vendor/session laws, [TASK-191](../.backlog/tasks/task-191%20-%20adjudicate-task-177-parser-and-native-boundaries.md) the 55 parser / 116 Unsupported / 23 original native exception reviews, and TASK-180 global independent typed-domain, source, terminal, adapter and review signoff. No full-matrix or vendor-engine certification is implied by this bounded Done status. TASK-88 and the release gate remain open.

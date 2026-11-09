@@ -4,7 +4,7 @@ title: Certify canonical equivalence for shared dialect AST variants
 status: To Do
 assignee: []
 created_date: '2026-10-17'
-updated_date: '2026-10-17'
+updated_date: '2026-11-09'
 labels: []
 milestone: m-3
 dependencies:
@@ -19,7 +19,7 @@ type: feature
 ## Description
 
 <!-- SECTION:DESCRIPTION:BEGIN -->
-**TASK-88 child 2/4.** Certify canonical equivalence for shared dialect AST variants. Implement this scope in its own PR against `main` after dependencies merge. Preserve original TASK-88 AC for separate parent signoff. Never create parent-child dependency cycles.
+**TASK-88 child 2/5.** Certify canonical equivalence for shared dialect AST variants. Implement this scope in its own PR against `main` after dependencies merge. Preserve original TASK-88 AC for separate parent signoff. Never create parent-child dependency cycles.
 <!-- SECTION:DESCRIPTION:END -->
 
 ## Bounded planning scope
