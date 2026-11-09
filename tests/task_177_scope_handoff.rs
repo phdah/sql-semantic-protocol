@@ -18,11 +18,20 @@ fn bounded_done_is_distinct_from_parent_semantic_and_release_approval() {
     let manifest = parse(MANIFEST);
     let scoped = &manifest["task_177_dialect_parser_acceptance"];
     let follow_up = &manifest["task_191_boundary_disposition_acceptance"];
-    assert_eq!(scoped["status"], "done_bounded_parser_analyzer_inventory__full_semantic_acceptance_transferred");
+    assert_eq!(
+        scoped["status"],
+        "done_bounded_parser_analyzer_inventory__full_semantic_acceptance_transferred"
+    );
     assert_eq!(scoped["child_done"], true);
     assert_eq!(scoped["full_ci_verified"], true);
-    assert_eq!(scoped["scope_completion"]["scope_is_not_global_semantic_certification"], true);
-    assert_eq!(scoped["historical_freeze_per_cell_release_certification_remains_unapproved"], true);
+    assert_eq!(
+        scoped["scope_completion"]["scope_is_not_global_semantic_certification"],
+        true
+    );
+    assert_eq!(
+        scoped["historical_freeze_per_cell_release_certification_remains_unapproved"],
+        true
+    );
     for name in [
         "canonical_equivalence_certified_for_full_matrix",
         "typed_terminal_oracles_certified_for_full_matrix",
@@ -32,7 +41,10 @@ fn bounded_done_is_distinct_from_parent_semantic_and_release_approval() {
         "parent_closed",
         "release_approved",
     ] {
-        assert_eq!(scoped[name], false, "{name}: scoped Done cannot certify TASK-88");
+        assert_eq!(
+            scoped[name], false,
+            "{name}: scoped Done cannot certify TASK-88"
+        );
     }
     assert_eq!(follow_up["status"], "to_do_release_blocking");
     assert_eq!(follow_up["parser_rejected_cells"], 55);
@@ -47,9 +59,21 @@ fn bounded_done_is_distinct_from_parent_semantic_and_release_approval() {
     assert_eq!(scoped["variant_dialect_cells"], 3263);
     assert_eq!(scoped["parser_observed"]["parsed"], 3208);
     assert_eq!(scoped["parser_observed"]["parse_rejected"], 55);
-    assert_eq!(parser["matrix"].as_object().expect("251 named masks").len(), 251);
-    assert_eq!(equivalence["case_count"], 251);
-    assert_eq!(scoped["canonical_equivalence_classifications"]["full_protocol_drifts"], 23);
+    assert_eq!(
+        parser["matrix"].as_object().expect("251 named masks").len(),
+        251
+    );
+    assert_eq!(
+        equivalence["matrix"]
+            .as_object()
+            .expect("251 canonical comparison masks")
+            .len(),
+        251
+    );
+    assert_eq!(
+        scoped["canonical_equivalence_classifications"]["full_protocol_drifts"],
+        23
+    );
     assert_eq!(ledger["native_duckdb_complete_original_sql_samples"], 228);
     assert_eq!(ledger["native_duckdb_not_proven_original_sql_samples"], 23);
     assert_eq!(remaining["case_count"], 23);
@@ -73,7 +97,13 @@ fn task_88_child_queue_preserves_a_non_circular_final_acceptance_gate() {
         .map(|p| p["id"].as_u64().expect("numeric task ID"))
         .collect();
     assert_eq!(children, [177, 178, 179, 191, 180]);
-    assert_eq!(parent["phases"][0]["scoped_status"], "Done (PR #196 merge pending)");
-    assert_eq!(parent["phases"][3]["fixture_ids"], serde_json::json!(["88-C191-P", "88-C191-N"]));
+    assert_eq!(
+        parent["phases"][0]["scoped_status"],
+        "Done (PR #196 merge pending)"
+    );
+    assert_eq!(
+        parent["phases"][3]["fixture_ids"],
+        serde_json::json!(["88-C191-P", "88-C191-N"])
+    );
     assert_eq!(parent["phases"][4]["id"], 180);
 }

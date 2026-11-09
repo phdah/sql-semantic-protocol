@@ -174,7 +174,10 @@ fn every_task_66_variant_has_thirteen_explicit_parser_evidence_cells() {
         manifest["task_177_dialect_parser_acceptance"]["status"],
         "done_bounded_parser_analyzer_inventory__full_semantic_acceptance_transferred"
     );
-    assert_eq!(manifest["task_177_dialect_parser_acceptance"]["child_done"], true);
+    assert_eq!(
+        manifest["task_177_dialect_parser_acceptance"]["child_done"],
+        true
+    );
     assert_eq!(
         manifest["task_177_dialect_parser_acceptance"]["release_approved"],
         false
