@@ -54,7 +54,10 @@ fn named_family_inventory_has_no_skips_and_never_promotes_structural_proof() {
         let id = case["id"].as_str().expect("original variant id");
         assert!(ids.insert(id), "duplicate variant {id}");
         let source = source_index.get(id).expect("original named TASK-66 SQL");
-        assert_eq!(case["sql"], source["sql"], "{id}: fixture SQL must not drift");
+        assert_eq!(
+            case["sql"], source["sql"],
+            "{id}: fixture SQL must not drift"
+        );
         assert_eq!(case["feature_id"], source["feature_id"]);
         assert_eq!(case["variant"], source["variant"]);
         assert_eq!(case["historical_owner"], source["semantic_owner"]);
@@ -69,11 +72,10 @@ fn named_family_inventory_has_no_skips_and_never_promotes_structural_proof() {
             assert_eq!(cell["dialect"], j["dialects"][i]);
             assert_eq!(
                 cell["observed_status"].as_str().expect("status"),
-                mask[i..=i].as_ref()
+                &mask[i..=i]
             );
             assert_eq!(
-                cell["typed_membership"],
-                "pending_independent_equivalent_source_terminal_evidence",
+                cell["typed_membership"], "pending_independent_equivalent_source_terminal_evidence",
                 "{id}: full-domain membership remains unproved"
             );
             assert_eq!(cell["vendor_native_execution"], "unattested");
@@ -133,13 +135,21 @@ fn actual_full_public_protocol_matches_each_frozen_observed_dialect_classificati
                 let result = analyze_sql(sql, name, dialect.as_ref());
                 match result {
                     Err(error) => panic!("{id}/{name}: unexpected analyzer error {error}"),
-                    Ok(protocol) if protocol.statements().iter().any(|statement| {
-                        matches!(statement, ProtocolStatement::Unsupported(_))
-                    }) => 'U',
+                    Ok(protocol)
+                        if protocol.statements().iter().any(|statement| {
+                            matches!(statement, ProtocolStatement::Unsupported(_))
+                        }) =>
+                    {
+                        'U'
+                    }
                     Ok(protocol) => {
                         let next = document_without_input_provenance(&protocol);
                         if let Some(expected) = &baseline {
-                            if &next == expected { 'C' } else { 'D' }
+                            if &next == expected {
+                                'C'
+                            } else {
+                                'D'
+                            }
                         } else {
                             baseline = Some(next);
                             'C'
