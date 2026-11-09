@@ -23,7 +23,7 @@ fn every_missing_original_sql_has_one_explicit_semantic_owner_and_proof_obligati
     let remaining = parse(REMAINING);
     assert_eq!(remaining["schema_version"], 1);
     assert_eq!(remaining["owner"], "TASK-177");
-    assert_eq!(remaining["case_count"], 37);
+    assert_eq!(remaining["case_count"], 24);
     let all_samples = samples["cases"]
         .as_array()
         .expect("251 original SQL samples");
@@ -33,7 +33,7 @@ fn every_missing_original_sql_has_one_explicit_semantic_owner_and_proof_obligati
         .filter(|cell| cell["native_duckdb_original_sql"] == "not_proven")
         .map(|cell| cell["id"].as_str().expect("original ID"))
         .collect();
-    assert_eq!(gaps.len(), 37);
+    assert_eq!(gaps.len(), 24);
 
     let mut observed = BTreeSet::new();
     let mut kinds = std::collections::BTreeMap::new();
@@ -69,7 +69,7 @@ fn every_missing_original_sql_has_one_explicit_semantic_owner_and_proof_obligati
         assert_eq!(case["independent_disposition"], "blocked_not_approved");
     }
     assert_eq!(observed, gaps, "no outstanding SQL can silently disappear");
-    assert_eq!(kinds.get("native_execution_candidate"), Some(&15));
+    assert_eq!(kinds.get("native_execution_candidate"), Some(&2));
     assert_eq!(
         kinds.get("explicit_native_rejection_or_conditional_syntax"),
         Some(&15)

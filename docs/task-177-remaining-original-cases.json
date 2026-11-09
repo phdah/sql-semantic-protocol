@@ -3,54 +3,9 @@
   "owner": "TASK-177",
   "source_samples": "docs/task-177-parser-samples.json",
   "source_proof_ledger": "docs/task-177-physical-proof-ledger.json",
-  "case_count": 37,
-  "classification_scope": "37 original SQL examples missing independently proven native exact terminal/state outcomes. All explicit expected failures and vendor conditions must remain different from successful terminal evidence.",
+  "case_count": 24,
+  "classification_scope": "24 original SQL examples remain without independently proven native exact terminal/state outcomes, including engine-specific rejections, unbounded or stochastic cases and two conditional native candidates. A negative/conditional control never counts as a successful complete terminal proof.",
   "cases": [
-    {
-      "id": "88-C177-S023",
-      "feature_id": "predicates.string_pattern",
-      "variant": "SIMILAR TO",
-      "sql": "SELECT id FROM customers WHERE name SIMILAR TO '(A|B)%'",
-      "semantic_owner": [
-        "TASK-70"
-      ],
-      "proof_obligation": "native_execution_candidate",
-      "native_duckdb_status": "unverified_in_this_registry",
-      "strongest_typed_domain": "not_proven",
-      "sql_dbt_odcs_parity": "not_proven",
-      "native_vendor_session_equivalence": "not_proven",
-      "independent_disposition": "blocked_not_approved"
-    },
-    {
-      "id": "88-C177-S024",
-      "feature_id": "predicates.string_pattern",
-      "variant": "regex",
-      "sql": "SELECT id FROM customers WHERE name ~ '^A'",
-      "semantic_owner": [
-        "TASK-70"
-      ],
-      "proof_obligation": "native_execution_candidate",
-      "native_duckdb_status": "unverified_in_this_registry",
-      "strongest_typed_domain": "not_proven",
-      "sql_dbt_odcs_parity": "not_proven",
-      "native_vendor_session_equivalence": "not_proven",
-      "independent_disposition": "blocked_not_approved"
-    },
-    {
-      "id": "88-C177-S026",
-      "feature_id": "predicates.string_pattern",
-      "variant": "collations",
-      "sql": "SELECT id FROM customers WHERE name COLLATE en_US = 'a'",
-      "semantic_owner": [
-        "TASK-70"
-      ],
-      "proof_obligation": "native_execution_candidate",
-      "native_duckdb_status": "unverified_in_this_registry",
-      "strongest_typed_domain": "not_proven",
-      "sql_dbt_odcs_parity": "not_proven",
-      "native_vendor_session_equivalence": "not_proven",
-      "independent_disposition": "blocked_not_approved"
-    },
     {
       "id": "88-C177-S033",
       "feature_id": "predicates.computed",
@@ -62,38 +17,6 @@
         "TASK-102"
       ],
       "proof_obligation": "explicit_native_rejection_or_conditional_syntax",
-      "native_duckdb_status": "unverified_in_this_registry",
-      "strongest_typed_domain": "not_proven",
-      "sql_dbt_odcs_parity": "not_proven",
-      "native_vendor_session_equivalence": "not_proven",
-      "independent_disposition": "blocked_not_approved"
-    },
-    {
-      "id": "88-C177-S038",
-      "feature_id": "predicates.comparison_environment",
-      "variant": "binary/locale collation",
-      "sql": "SELECT id FROM customers WHERE name COLLATE en_US = 'abc'",
-      "semantic_owner": [
-        "TASK-70",
-        "TASK-79"
-      ],
-      "proof_obligation": "native_execution_candidate",
-      "native_duckdb_status": "unverified_in_this_registry",
-      "strongest_typed_domain": "not_proven",
-      "sql_dbt_odcs_parity": "not_proven",
-      "native_vendor_session_equivalence": "not_proven",
-      "independent_disposition": "blocked_not_approved"
-    },
-    {
-      "id": "88-C177-S040",
-      "feature_id": "predicates.comparison_environment",
-      "variant": "NaN",
-      "sql": "SELECT id FROM orders WHERE amount = 'NaN'",
-      "semantic_owner": [
-        "TASK-70",
-        "TASK-79"
-      ],
-      "proof_obligation": "native_execution_candidate",
       "native_duckdb_status": "unverified_in_this_registry",
       "strongest_typed_domain": "not_proven",
       "sql_dbt_odcs_parity": "not_proven",
@@ -154,37 +77,6 @@
         "TASK-72"
       ],
       "proof_obligation": "explicit_native_rejection_or_conditional_syntax",
-      "native_duckdb_status": "unverified_in_this_registry",
-      "strongest_typed_domain": "not_proven",
-      "sql_dbt_odcs_parity": "not_proven",
-      "native_vendor_session_equivalence": "not_proven",
-      "independent_disposition": "blocked_not_approved"
-    },
-    {
-      "id": "88-C177-S093",
-      "feature_id": "grouping.basic",
-      "variant": "AVG",
-      "sql": "SELECT AVG(amount) FROM orders",
-      "semantic_owner": [
-        "TASK-73",
-        "TASK-69"
-      ],
-      "proof_obligation": "native_execution_candidate",
-      "native_duckdb_status": "unverified_in_this_registry",
-      "strongest_typed_domain": "not_proven",
-      "sql_dbt_odcs_parity": "not_proven",
-      "native_vendor_session_equivalence": "not_proven",
-      "independent_disposition": "blocked_not_approved"
-    },
-    {
-      "id": "88-C177-S097",
-      "feature_id": "grouping.advanced",
-      "variant": "ordered aggregates",
-      "sql": "SELECT ARRAY_AGG(id ORDER BY id) FROM orders",
-      "semantic_owner": [
-        "TASK-73"
-      ],
-      "proof_obligation": "native_execution_candidate",
       "native_duckdb_status": "unverified_in_this_registry",
       "strongest_typed_domain": "not_proven",
       "sql_dbt_odcs_parity": "not_proven",
@@ -342,85 +234,10 @@
       "independent_disposition": "blocked_not_approved"
     },
     {
-      "id": "88-C177-S174",
-      "feature_id": "types.structural",
-      "variant": "numeric/decimal",
-      "sql": "SELECT CAST(1.25 AS DECIMAL(10,2)) AS v",
-      "semantic_owner": [
-        "TASK-79"
-      ],
-      "proof_obligation": "native_execution_candidate",
-      "native_duckdb_status": "unverified_in_this_registry",
-      "strongest_typed_domain": "not_proven",
-      "sql_dbt_odcs_parity": "not_proven",
-      "native_vendor_session_equivalence": "not_proven",
-      "independent_disposition": "blocked_not_approved"
-    },
-    {
-      "id": "88-C177-S175",
-      "feature_id": "types.structural",
-      "variant": "strings",
-      "sql": "SELECT CAST('abc' AS VARCHAR(10)) AS v",
-      "semantic_owner": [
-        "TASK-79"
-      ],
-      "proof_obligation": "native_execution_candidate",
-      "native_duckdb_status": "unverified_in_this_registry",
-      "strongest_typed_domain": "not_proven",
-      "sql_dbt_odcs_parity": "not_proven",
-      "native_vendor_session_equivalence": "not_proven",
-      "independent_disposition": "blocked_not_approved"
-    },
-    {
       "id": "88-C177-S176",
       "feature_id": "types.structural",
       "variant": "binary",
       "sql": "SELECT CAST('ab' AS BINARY(2)) AS v",
-      "semantic_owner": [
-        "TASK-79"
-      ],
-      "proof_obligation": "native_execution_candidate",
-      "native_duckdb_status": "unverified_in_this_registry",
-      "strongest_typed_domain": "not_proven",
-      "sql_dbt_odcs_parity": "not_proven",
-      "native_vendor_session_equivalence": "not_proven",
-      "independent_disposition": "blocked_not_approved"
-    },
-    {
-      "id": "88-C177-S177",
-      "feature_id": "types.structural",
-      "variant": "JSON",
-      "sql": "SELECT CAST('{\"a\":1}' AS JSON) AS v",
-      "semantic_owner": [
-        "TASK-79"
-      ],
-      "proof_obligation": "native_execution_candidate",
-      "native_duckdb_status": "unverified_in_this_registry",
-      "strongest_typed_domain": "not_proven",
-      "sql_dbt_odcs_parity": "not_proven",
-      "native_vendor_session_equivalence": "not_proven",
-      "independent_disposition": "blocked_not_approved"
-    },
-    {
-      "id": "88-C177-S178",
-      "feature_id": "types.structural",
-      "variant": "array",
-      "sql": "SELECT ARRAY[1,2,3] AS v",
-      "semantic_owner": [
-        "TASK-79"
-      ],
-      "proof_obligation": "native_execution_candidate",
-      "native_duckdb_status": "unverified_in_this_registry",
-      "strongest_typed_domain": "not_proven",
-      "sql_dbt_odcs_parity": "not_proven",
-      "native_vendor_session_equivalence": "not_proven",
-      "independent_disposition": "blocked_not_approved"
-    },
-    {
-      "id": "88-C177-S180",
-      "feature_id": "types.structural",
-      "variant": "enum",
-      "sql": "CREATE TYPE mood AS ENUM ('happy','sad')",
       "semantic_owner": [
         "TASK-79"
       ],
@@ -487,22 +304,6 @@
         "TASK-82"
       ],
       "proof_obligation": "explicit_native_rejection_or_conditional_syntax",
-      "native_duckdb_status": "unverified_in_this_registry",
-      "strongest_typed_domain": "not_proven",
-      "sql_dbt_odcs_parity": "not_proven",
-      "native_vendor_session_equivalence": "not_proven",
-      "independent_disposition": "blocked_not_approved"
-    },
-    {
-      "id": "88-C177-S241",
-      "feature_id": "execution.dialect_equivalence",
-      "variant": "session state",
-      "sql": "SET TIME ZONE 'UTC'",
-      "semantic_owner": [
-        "TASK-88",
-        "TASK-89"
-      ],
-      "proof_obligation": "native_execution_candidate",
       "native_duckdb_status": "unverified_in_this_registry",
       "strongest_typed_domain": "not_proven",
       "sql_dbt_odcs_parity": "not_proven",

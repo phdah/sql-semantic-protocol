@@ -193,3 +193,9 @@ requirements documented in `docs/task-177-acceptance-audit.md`.
 - **No signoff:** All original AC #1..#5 stay unchecked; TASK-177 remains
   In Progress and PR #196 stays draft until mandatory proofs and independent
   review are complete.
+
+## Latest deterministic native and bounded control evidence (2026-11-09, still In Progress)
+
+- CI-confirmed original SQL deterministic tests now cover 13 additional distinct source/terminal or poststate examples; the case-level proof ledger records **227 of 251** with native evidence and **24** original SQL examples remaining without a complete native terminal/state proof.
+- New native control tests exercise frozen rejected SQL with complete source setups, sample only source occurrences, and bound the recursive/RANDOM controls without inventing exact stochastic or nonterminating terminal outputs.
+- None of this certifies strongest typed outcome domains for all parser cells, cross-adapter parity, vendor/session equivalence, approved conditional laws or independent signoff. Original AC #1..#5 remain unchecked; TASK-178 is still blocked.

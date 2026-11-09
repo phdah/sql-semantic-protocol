@@ -15,6 +15,7 @@ const WRITES: &str = include_str!("../docs/task-177-write-oracles.json");
 const ENVIRONMENT: &str = include_str!("../docs/task-177-predicate-environment-oracles.json");
 const SCHEMA_LIFECYCLE: &str = include_str!("../docs/task-177-schema-lifecycle-oracles.json");
 const WINDOWS: &str = include_str!("../docs/task-177-window-oracles.json");
+const FINAL_NATIVE: &str = include_str!("../docs/task-177-final-native-deterministic.json");
 
 fn parse(source: &str) -> Value {
     serde_json::from_str(source).expect("versioned evidence")
@@ -109,8 +110,29 @@ fn all_task_177_native_and_typed_proof_gaps_are_explicitly_accounted_for() {
     );
     verified.extend(additional);
     assert_eq!(verified.len(), 214, "whole-bag proof coverage changed");
-    assert_eq!(ledger["native_duckdb_complete_original_sql_samples"], 214);
-    assert_eq!(ledger["native_duckdb_not_proven_original_sql_samples"], 37);
+    let final_native = parse(FINAL_NATIVE);
+    let mut deterministic = BTreeSet::new();
+    for key in [
+        "original_integer_selects",
+        "original_scalar_floating",
+        "original_scalar_rendered",
+        "original_catalog_state",
+    ] {
+        for item in final_native[key].as_array().expect("independent native oracles") {
+            let id = item["id"].as_str().expect("TASK-66 original ID");
+            assert!(
+                deterministic.insert(id.to_owned()),
+                "{id}: duplicate deterministic proof"
+            );
+        }
+    }
+    assert_eq!(deterministic.len(), 13);
+    assert!(deterministic.is_disjoint(&verified));
+    assert!(deterministic.is_subset(&ids));
+    verified.extend(deterministic);
+    assert_eq!(verified.len(), 227, "all native oracle owners accounted for");
+    assert_eq!(ledger["native_duckdb_complete_original_sql_samples"], 227);
+    assert_eq!(ledger["native_duckdb_not_proven_original_sql_samples"], 24);
     for id in ["88-C177-S033", "88-C177-S086", "88-C177-S140"] {
         assert!(
             !verified.contains(id),
@@ -205,6 +227,6 @@ fn all_task_177_native_and_typed_proof_gaps_are_explicitly_accounted_for() {
         }
     }
     assert_eq!(observed, ids, "no original SQL variant may be omitted");
-    assert_eq!(native_count, 214);
+    assert_eq!(native_count, 227);
     assert_eq!(typed_count, 6);
 }
