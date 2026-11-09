@@ -31,8 +31,12 @@ fn original<'a>(samples: &'a Value, id: &str) -> &'a str {
 fn source_db() -> Connection {
     let db = Connection::open_in_memory().expect("native DuckDB");
     let sources = parse(RELATIONS);
-    db.execute_batch(sources["source_setup"].as_str().expect("complete source setup"))
-        .expect("physical source setup");
+    db.execute_batch(
+        sources["source_setup"]
+            .as_str()
+            .expect("complete source setup"),
+    )
+    .expect("physical source setup");
     db
 }
 
@@ -116,17 +120,16 @@ fn bounded_recursive_companion_has_exact_rows_without_running_infinite_original(
             .as_str()
             .expect("terminating explicit control"),
     );
-    let mut expected: Vec<Option<i64>> =
-        serde_json::from_value::<Vec<Vec<Option<i64>>>>(
-            boundaries["bounded_companion_bag"].clone(),
-        )
-        .expect("independent expected control bag")
-        .into_iter()
-        .map(|row| {
-            assert_eq!(row.len(), 1);
-            row[0]
-        })
-        .collect();
+    let mut expected: Vec<Option<i64>> = serde_json::from_value::<Vec<Vec<Option<i64>>>>(
+        boundaries["bounded_companion_bag"].clone(),
+    )
+    .expect("independent expected control bag")
+    .into_iter()
+    .map(|row| {
+        assert_eq!(row.len(), 1);
+        row[0]
+    })
+    .collect();
     actual.sort();
     expected.sort();
     assert_eq!(actual, expected);
