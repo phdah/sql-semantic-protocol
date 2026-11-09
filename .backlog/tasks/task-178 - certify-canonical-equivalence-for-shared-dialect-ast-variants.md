@@ -1,7 +1,7 @@
 ---
 id: TASK-178
 title: Certify canonical equivalence for shared dialect AST variants
-status: To Do
+status: In Progress
 assignee: []
 created_date: '2026-10-17'
 updated_date: '2026-11-09'
@@ -43,3 +43,10 @@ type: feature
 ## Next
 
 Next: [TASK-179](task-179%20-%20classify-conditional-session-and-vendor-execution-laws.md), only after completion and merge.
+
+## Initial implementation PR (2026-11-09)
+
+- **Versioned v1 task-local acceptance baseline:** [docs/task-178-acceptance-freeze.json](../../docs/task-178-acceptance-freeze.json), linked from the coverage manifest. This freezes seven first-party, all-13-dialect representative SQL families (predicates, joins, sets, windows, pagination, INSERT and CTAS) with explicit physical NULL/duplicate source and terminal bags, positive and rejected directions where applicable, and a conservative unsigned matrix.
+- **Executable public/native tests:** `tests/task_178_portable_equivalence.rs` checks the exact original TASK-177 sample SQL against complete emitted public protocol documents, and independent DuckDB positive/negative bag oracles, including an inclusive typed predicate lower bound and source-preserving writes.
+- **Still blocking:** the complete TASK-178 family/SQL synonym matrix (especially TOP, FETCH, MINUS), 23 preexisting public drift cells, strong typed outcome/oracle coverage for all mandatory cells, native engine/session evidence, direct/dbt/ODCS equivalence and independent review. No new type or semantic support is claimed for unsupported SQL or unexecuted vendors.
+- **No AC signed off yet:** the finite task freeze is only a starter subset, not the full AC #1 inventory. TASK-178 remains In Progress and cannot be marked Done or unblock TASK-179 before independent final verification, successful final-head CI, and merge. TASK-88 and TASK-91 remain open.
