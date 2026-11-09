@@ -15385,6 +15385,26 @@
     "child_done": false,
     "parent_done": false,
     "release_approved": false,
-    "acceptance_audit": "docs/task-178-acceptance-audit.md"
+    "acceptance_audit": "docs/task-178-acceptance-audit.md",
+    "full_named_variant_inventory": "docs/task-178-full-variant-inventory.json",
+    "full_named_variant_cases": 163,
+    "full_variant_parser_dialect_cells": 2119,
+    "frozen_observation_classifications": {
+      "same_public_document": 2014,
+      "public_document_drift": 23,
+      "analyzer_unsupported": 55,
+      "parser_rejected": 27
+    },
+    "independent_typed_complete_source_oracles_certified_for_all_2119": false,
+    "sql_synonym_pairs": "docs/task-178-syntax-pairs.json",
+    "sql_synonym_test": "tests/task_178_sql_synonyms.rs",
+    "full_variant_public_test": "tests/task_178_full_variant_inventory.rs",
+    "typed_adapter_test": "tests/task_178_adapter_typed_parity.rs",
+    "grouping_ast_drift_test": "tests/task_178_grouping_ast_equivalence.rs",
+    "top_fetch_minus_dialect_evidence": "docs/task-178-syntax-dialect-boundaries.json",
+    "top_fetch_minus_dialect_test": "tests/task_178_syntax_dialect_boundaries.rs",
+    "tdd_cycle": "red_expected_parser_and_grouping_drift_observations_not_yet_accepted",
+    "full_frozen_matrix_status": "complete_observed_case_ids_and_parser_cells_but_missing_source_instance_terminal_typed_coverage_per_cell",
+    "verified_ci_head": "https://github.com/phdah/sql-semantic-protocol/actions/runs/42708967167"
   }
 }
