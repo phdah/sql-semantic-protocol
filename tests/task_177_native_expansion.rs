@@ -31,7 +31,9 @@ fn expected_rows(source: &Value) -> Vec<Vec<Option<i64>>> {
 }
 
 fn rows(db: &Connection, sql: &str, columns: usize) -> Vec<Vec<Option<i64>>> {
-    let mut stmt = db.prepare(sql).expect("original SQL accepted by native DuckDB");
+    let mut stmt = db
+        .prepare(sql)
+        .expect("original SQL accepted by native DuckDB");
     let mapped = stmt
         .query_map([], |row| {
             (0..columns)
@@ -62,10 +64,15 @@ fn additional_original_sql_cases_have_complete_source_and_terminal_bag_oracles()
         let mut expected = expected_rows(&relational["source_bags"][relation]);
         actual.sort();
         expected.sort();
-        assert_eq!(actual, expected, "{relation}: all source occurrences required");
+        assert_eq!(
+            actual, expected,
+            "{relation}: all source occurrences required"
+        );
     }
 
-    let cases = oracle["bag_cases"].as_array().expect("literal native oracles");
+    let cases = oracle["bag_cases"]
+        .as_array()
+        .expect("literal native oracles");
     assert_eq!(cases.len(), 24);
     for case in cases {
         let id = case["id"].as_str().expect("stable variant ID");
@@ -100,7 +107,10 @@ fn original_ordering_cases_preserve_exact_position_null_policy_and_ties() {
     let mut expected_source = expected_rows(&oracle["ordering_source_bag"]);
     actual_source.sort();
     expected_source.sort();
-    assert_eq!(actual_source, expected_source, "fixed NULL and duplicate source");
+    assert_eq!(
+        actual_source, expected_source,
+        "fixed NULL and duplicate source"
+    );
 
     let cases = oracle["ordered_cases"].as_array().expect("ordered cases");
     assert_eq!(cases.len(), 5);
@@ -126,14 +136,21 @@ fn named_incompatible_arity_and_multivalued_scalar_query_fail_natively() {
             .expect("full physical sources"),
     )
     .expect("native source setup");
-    let cases = oracle["native_rejected_cases"].as_array().expect("negative cases");
+    let cases = oracle["native_rejected_cases"]
+        .as_array()
+        .expect("negative cases");
     assert_eq!(cases.len(), 2);
     for id in cases {
         let id = id.as_str().expect("stable negative variant");
         let sql = sample_sql(&samples, id);
-        let result = db
-            .prepare(sql)
-            .and_then(|mut statement| statement.query([]).and_then(|mut result| result.next().map(|_| ())));
-        assert!(result.is_err(), "{id}: must reject the original invalid input");
+        let result = db.prepare(sql).and_then(|mut statement| {
+            statement
+                .query([])
+                .and_then(|mut result| result.next().map(|_| ()))
+        });
+        assert!(
+            result.is_err(),
+            "{id}: must reject the original invalid input"
+        );
     }
 }
