@@ -49,6 +49,33 @@ fn native_ids(db: &Connection, sql: &str) -> Vec<Option<i64>> {
         .collect()
 }
 
+fn complete_native_sources(db: &Connection) -> BTreeMap<String, Vec<Vec<Option<i64>>>> {
+    let fixture = parse(RELATIONS);
+    let mut observed = BTreeMap::new();
+    for (relation, column_count) in [("orders", 2), ("customers", 2), ("products", 1)] {
+        let mut statement = db
+            .prepare(&format!("SELECT * FROM {relation}"))
+            .expect("named physical source");
+        let mut rows: Vec<Vec<Option<i64>>> = statement
+            .query_map([], |row| {
+                (0..column_count)
+                    .map(|index| row.get::<usize, Option<i64>>(index))
+                    .collect::<duckdb::Result<Vec<_>>>()
+            })
+            .expect("complete physical source bag")
+            .map(|row| row.expect("typed physical row"))
+            .collect();
+        let mut expected: Vec<Vec<Option<i64>>> =
+            serde_json::from_value(fixture["source_bags"][relation].clone())
+                .expect("independent source occurrence bag");
+        rows.sort();
+        expected.sort();
+        assert_eq!(rows, expected, "{relation}: source fixture drift");
+        observed.insert(relation.to_string(), rows);
+    }
+    observed
+}
+
 fn occurrence_counts(rows: &[Option<i64>]) -> BTreeMap<Option<i64>, usize> {
     let mut counts = BTreeMap::new();
     for &id in rows {
@@ -69,6 +96,7 @@ fn frozen_native_rejections_are_observed_with_complete_source_relations() {
     for case in rejected {
         let id = case["id"].as_str().expect("original ID");
         let db = source_db();
+        let prestate = complete_native_sources(&db);
         let sql = original(&samples, id);
         // SELECT must be materialized: execute_batch alone can succeed even
         // when the deferred expression would fail at query time.
@@ -84,6 +112,11 @@ fn frozen_native_rejections_are_observed_with_complete_source_relations() {
         if result.is_ok() {
             unexpectedly_accepted.push(id);
         }
+        assert_eq!(
+            complete_native_sources(&db),
+            prestate,
+            "{id}: failed native statement must not mutate any source bag"
+        );
     }
     assert!(
         unexpectedly_accepted.is_empty(),

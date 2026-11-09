@@ -67,7 +67,11 @@ fn assert_interval(domain: &ValueDomain, case: &Value) {
         };
         assert_eq!(set.mode(), mode, "{id}: inclusion/exclusion direction");
         let expected_values = expected["values"].as_array().expect("typed set values");
-        assert_eq!(set.values().len(), expected_values.len(), "{id}: set cardinality");
+        assert_eq!(
+            set.values().len(),
+            expected_values.len(),
+            "{id}: set cardinality"
+        );
         for value in expected_values {
             let literal = if value.is_null() {
                 LiteralValue::Null
