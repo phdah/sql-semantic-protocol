@@ -35,18 +35,15 @@ fn mssql_on_true_is_an_explicit_identifier_truth_boundary_not_a_portable_lateral
     assert_eq!(rhs["left"]["relation"], "orders");
     for (name, value) in [("ansi", &ansi), ("mssql", &mssql)] {
         assert_eq!(
-            value["graph"]["physical_source_plans"][0]["qualifying"]["status"],
-            "residual",
+            value["graph"]["physical_source_plans"][0]["qualifying"]["status"], "residual",
             "{name}: no invented cross-row physical witness"
         );
         assert_eq!(
-            value["graph"]["physical_source_plans"][0]["rejected"]["status"],
-            "residual",
+            value["graph"]["physical_source_plans"][0]["rejected"]["status"], "residual",
             "{name}: no invented NOT TRUE/absence witness"
         );
         assert_eq!(
-            value["inputs"][0]["statements"][0]["condition_exactness"]["status"],
-            "residual",
+            value["inputs"][0]["statements"][0]["condition_exactness"]["status"], "residual",
             "{name}: correlated LATERAL has no proved engine-independent scope"
         );
     }
