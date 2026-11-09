@@ -15,6 +15,8 @@ const SAMPLES: &str = include_str!("../docs/task-177-parser-samples.json");
 const SNAPSHOT: &str = include_str!("../docs/task-177-parser-snapshot.json");
 const EQUIVALENCE: &str = include_str!("../docs/task-177-equivalence-snapshot.json");
 const DRIFT: &str = include_str!("../docs/task-177-canonical-drift-boundaries.json");
+const TASK178_RECONCILIATION: &str =
+    include_str!("../docs/task-178-canonical-reconciliation.json");
 
 fn read(source: &str) -> Value {
     serde_json::from_str(source).expect("versioned task evidence")
@@ -81,6 +83,26 @@ fn every_parsed_variant_has_a_pinned_public_protocol_equivalence_classification(
     let source = read(SAMPLES);
     let parser = read(SNAPSHOT);
     let pinned = read(EQUIVALENCE);
+    // The TASK-177 snapshot stays immutable historical evidence. TASK-178
+    // registers a separate reviewed target for repaired SQLparser dialect ASTs.
+    let reconciliation = read(TASK178_RECONCILIATION);
+    let fixed_cells = rows(&reconciliation, "resolved_grouping_cells");
+    assert_eq!(fixed_cells.len(), 21);
+    assert_eq!(
+        rows(&reconciliation, "remaining_boundaries").len(),
+        2,
+        "only LATERAL and STRUCT CAST are still structurally divergent"
+    );
+    let fixed_paths: BTreeSet<String> = fixed_cells
+        .iter()
+        .map(|cell| {
+            format!(
+                "{}/{}",
+                cell["case_id"].as_str().expect("case ID"),
+                cell["dialect"].as_str().expect("dialect")
+            )
+        })
+        .collect();
     assert_eq!(source["schema_version"], 1);
     assert_eq!(pinned["schema_version"], 1);
     assert_eq!(pinned["task_id"], "TASK-177");
@@ -175,6 +197,7 @@ fn every_parsed_variant_has_a_pinned_public_protocol_equivalence_classification(
     }
     let pinned_paths: BTreeMap<_, _> = expected_paths
         .iter()
+        .filter(|(id, _)| !fixed_paths.contains(*id))
         .map(|(id, value)| {
             (
                 id.to_owned(),
@@ -193,8 +216,25 @@ fn every_parsed_variant_has_a_pinned_public_protocol_equivalence_classification(
     let pinned_ids: BTreeSet<_> = expected.keys().map(String::as_str).collect();
     assert_eq!(actual_ids, pinned_ids, "versioned variant ID drift");
     for (id, mask) in &observed {
-        let expected_mask = expected[id].as_str().expect("pinned row");
-        assert_eq!(mask, expected_mask, "{id}: full protocol equivalence drift");
+        let mut expected_mask = expected[id]
+            .as_str()
+            .expect("TASK-177 historical pinned row")
+            .as_bytes()
+            .to_vec();
+        for cell in fixed_cells.iter().filter(|cell| cell["case_id"] == id.as_str()) {
+            let dialect = cell["dialect"].as_str().expect("dialect");
+            let index = dialects
+                .iter()
+                .position(|name| name == dialect)
+                .expect("one of 13 dialects");
+            assert_eq!(expected_mask[index], b'D', "{id}/{dialect}: old drift preserved");
+            expected_mask[index] = b'C';
+        }
+        assert_eq!(
+            mask.as_bytes(),
+            expected_mask,
+            "{id}: full public protocol differs from TASK-177 plus explicit TASK-178 repair"
+        );
         assert!(mask
             .chars()
             .all(|status| matches!(status, 'C' | 'D' | 'E' | 'U' | 'R')));
