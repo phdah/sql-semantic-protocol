@@ -48,7 +48,10 @@ fn native_window_frames_and_rankings_match_full_duplicate_null_source_bags() {
             .expect("independent source bag");
     actual_source.sort();
     expected_source.sort();
-    assert_eq!(actual_source, expected_source, "full input including ties and NULL");
+    assert_eq!(
+        actual_source, expected_source,
+        "full input including ties and NULL"
+    );
 
     let integers = fixture["integer_cases"]
         .as_array()
@@ -60,8 +63,7 @@ fn native_window_frames_and_rankings_match_full_duplicate_null_source_bags() {
         let values = stmt
             .query_map([], |row| row.get::<usize, Option<i64>>(0))
             .expect("window rows");
-        let mut actual: Vec<Option<i64>> =
-            values.map(|row| row.expect("typed integer")).collect();
+        let mut actual: Vec<Option<i64>> = values.map(|row| row.expect("typed integer")).collect();
         let mut expected: Vec<Option<i64>> =
             serde_json::from_value(case["expected_terminal_bag"].clone())
                 .expect("independent nullable integers");
@@ -80,8 +82,7 @@ fn native_window_frames_and_rankings_match_full_duplicate_null_source_bags() {
         let values = stmt
             .query_map([], |row| row.get::<usize, Option<f64>>(0))
             .expect("native ranking rows");
-        let mut actual: Vec<Option<f64>> =
-            values.map(|row| row.expect("typed numeric")).collect();
+        let mut actual: Vec<Option<f64>> = values.map(|row| row.expect("typed numeric")).collect();
         let mut expected: Vec<Option<f64>> =
             serde_json::from_value(case["expected_terminal_bag"].clone())
                 .expect("independent fractional/nullable bag");
