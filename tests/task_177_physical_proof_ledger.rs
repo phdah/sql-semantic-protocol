@@ -118,7 +118,10 @@ fn all_task_177_native_and_typed_proof_gaps_are_explicitly_accounted_for() {
         "original_scalar_rendered",
         "original_catalog_state",
     ] {
-        for item in final_native[key].as_array().expect("independent native oracles") {
+        for item in final_native[key]
+            .as_array()
+            .expect("independent native oracles")
+        {
             let id = item["id"].as_str().expect("TASK-66 original ID");
             assert!(
                 deterministic.insert(id.to_owned()),
@@ -130,7 +133,11 @@ fn all_task_177_native_and_typed_proof_gaps_are_explicitly_accounted_for() {
     assert!(deterministic.is_disjoint(&verified));
     assert!(deterministic.is_subset(&ids));
     verified.extend(deterministic);
-    assert_eq!(verified.len(), 227, "all native oracle owners accounted for");
+    assert_eq!(
+        verified.len(),
+        227,
+        "all native oracle owners accounted for"
+    );
     assert_eq!(ledger["native_duckdb_complete_original_sql_samples"], 227);
     assert_eq!(ledger["native_duckdb_not_proven_original_sql_samples"], 24);
     for id in ["88-C177-S033", "88-C177-S086", "88-C177-S140"] {
