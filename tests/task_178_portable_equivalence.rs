@@ -132,7 +132,7 @@ fn independent_duckdb_source_and_terminal_bags_preserve_duplicates_nulls_and_wri
             text(&freeze, "source_setup")
         };
         db.execute_batch(setup).expect("independent complete source setup");
-        for name in if family == "ddl" {
+        for &name in if family == "ddl" {
             &["customers"][..]
         } else {
             &["orders", "customers"][..]
@@ -301,6 +301,8 @@ fn unverified_variant_and_vendor_boundaries_block_task_done() {
         assert_eq!(completion[key], false, "{key}: not signed off");
     }
     let duckdb = Connection::open_in_memory().expect("DuckDB");
+    duckdb.execute_batch("CREATE TABLE orders(id INTEGER)")
+        .expect("fixture relation exists before testing syntax");
     assert!(
         duckdb
             .prepare("SELECT id FROM orders ORDER BY id FETCH FIRST 2 ROWS WITH TIES")
