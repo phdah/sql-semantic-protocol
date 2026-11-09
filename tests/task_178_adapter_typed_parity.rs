@@ -206,7 +206,7 @@ fn real_duckdb_three_valued_predicate_matches_closed_source_and_terminal_bags() 
     )
     .unwrap();
     let PhysicalOrderedLifecycleProof::Exact(exact) =
-        physical_ordered_lifecycle_plan(&bundle, &[physical.clone()])
+        physical_ordered_lifecycle_plan(&bundle, std::slice::from_ref(&physical))
     else {
         panic!("same typed physical bag must admit Exact configured read proof");
     };
