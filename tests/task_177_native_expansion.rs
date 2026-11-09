@@ -73,7 +73,7 @@ fn additional_original_sql_cases_have_complete_source_and_terminal_bag_oracles()
     let cases = oracle["bag_cases"]
         .as_array()
         .expect("literal native oracles");
-    assert_eq!(cases.len(), 24);
+    assert_eq!(cases.len(), 27);
     for case in cases {
         let id = case["id"].as_str().expect("stable variant ID");
         let sql = sample_sql(&original, id);
@@ -152,5 +152,48 @@ fn named_incompatible_arity_and_multivalued_scalar_query_fail_natively() {
             result.is_err(),
             "{id}: must reject the original invalid input"
         );
+    }
+}
+
+#[test]
+fn multi_terminal_original_sql_program_preserves_each_complete_physical_bag() {
+    let oracle = read(ORACLES);
+    let original = read(SAMPLES);
+    let relational = read(RELATIONAL);
+    let db = Connection::open_in_memory().expect("DuckDB");
+    db.execute_batch(
+        relational["source_setup"]
+            .as_str()
+            .expect("whole original source"),
+    )
+    .expect("physical initial catalog");
+
+    let cases = oracle["multi_statement_cases"]
+        .as_array()
+        .expect("literal multi-terminal oracle");
+    assert_eq!(cases.len(), 1);
+    for case in cases {
+        let id = case["id"].as_str().expect("stable SQL identity");
+        let sql = sample_sql(&original, id);
+        let statements: Vec<_> = sql
+            .split(';')
+            .map(str::trim)
+            .filter(|stmt| !stmt.is_empty())
+            .collect();
+        let expected = case["expected_terminal_bags"]
+            .as_array()
+            .expect("each physical terminal");
+        assert_eq!(statements.len(), 2, "{id}: two original SQL statements");
+        assert_eq!(statements.len(), expected.len());
+        for (index, (statement, want)) in statements.iter().zip(expected).enumerate() {
+            let mut actual = rows(&db, statement, 1);
+            let mut expected = expected_rows(want);
+            actual.sort();
+            expected.sort();
+            assert_eq!(
+                actual, expected,
+                "{id}: independent exact SQL terminal {index} and complete bag"
+            );
+        }
     }
 }
