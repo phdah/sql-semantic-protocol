@@ -57,7 +57,11 @@ fn all_task_177_native_and_typed_proof_gaps_are_explicitly_accounted_for() {
     assert_eq!(drift_oracles.len(), 5);
     assert!(drift_oracles.is_subset(&drift_cases));
     verified.extend(drift_oracles);
-    assert_eq!(verified.len(), 125, "original native oracle baseline changed");
+    assert_eq!(
+        verified.len(),
+        125,
+        "original native oracle baseline changed"
+    );
     assert!(verified.is_subset(&ids));
 
     let expansion = parse(EXPANSION);
@@ -81,7 +85,10 @@ fn all_task_177_native_and_typed_proof_gaps_are_explicitly_accounted_for() {
         let entries = document[key].as_array().expect("task-owned native oracles");
         for entry in entries {
             let id = entry["id"].as_str().expect("original sample ID");
-            assert!(additional.insert(id.to_owned()), "{id}: duplicate new oracle");
+            assert!(
+                additional.insert(id.to_owned()),
+                "{id}: duplicate new oracle"
+            );
         }
     }
     let sort_id = environment["ordering_case"]["id"]
@@ -96,13 +103,19 @@ fn all_task_177_native_and_typed_proof_gaps_are_explicitly_accounted_for() {
         additional.is_disjoint(&verified),
         "do not double-count existing native proof"
     );
-    assert!(additional.is_subset(&ids), "all evidence must come from TASK-66");
+    assert!(
+        additional.is_subset(&ids),
+        "all evidence must come from TASK-66"
+    );
     verified.extend(additional);
     assert_eq!(verified.len(), 214, "whole-bag proof coverage changed");
     assert_eq!(ledger["native_duckdb_complete_original_sql_samples"], 214);
     assert_eq!(ledger["native_duckdb_not_proven_original_sql_samples"], 37);
     for id in ["88-C177-S033", "88-C177-S086", "88-C177-S140"] {
-        assert!(!verified.contains(id), "{id}: rejection is not an exact terminal bag");
+        assert!(
+            !verified.contains(id),
+            "{id}: rejection is not an exact terminal bag"
+        );
     }
 
     let typed: BTreeSet<_> = [
