@@ -138,7 +138,11 @@ fn all_task_177_native_and_typed_proof_gaps_are_explicitly_accounted_for() {
         verified.insert("88-C177-S181".to_string()),
         "original geometry cannot be double-counted"
     );
-    assert_eq!(verified.len(), 228, "all native oracle owners accounted for");
+    assert_eq!(
+        verified.len(),
+        228,
+        "all native oracle owners accounted for"
+    );
     assert_eq!(ledger["native_duckdb_complete_original_sql_samples"], 228);
     assert_eq!(ledger["native_duckdb_not_proven_original_sql_samples"], 23);
     for id in ["88-C177-S033", "88-C177-S086", "88-C177-S140"] {
@@ -233,14 +237,20 @@ fn all_task_177_native_and_typed_proof_gaps_are_explicitly_accounted_for() {
         }
         if id == "88-C177-S181" {
             assert_eq!(cell["native_exact_syntax"], "native_geometry_wkt_exact");
-            assert!(proved, "{id}: original native geometry must have exact terminal evidence");
+            assert!(
+                proved,
+                "{id}: original native geometry must have exact terminal evidence"
+            );
         }
         if id == "88-C177-S176" {
             assert_eq!(
                 cell["native_exact_syntax"],
                 "duckdb_rejected_binary_length_companion_verified"
             );
-            assert!(!proved, "{id}: portable BLOB control does not prove frozen BINARY(2)");
+            assert!(
+                !proved,
+                "{id}: portable BLOB control does not prove frozen BINARY(2)"
+            );
         }
         if id == "88-C177-S083" {
             assert_eq!(

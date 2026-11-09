@@ -31,13 +31,20 @@ fn original_binary_cast_is_a_named_binder_rejection_with_a_separate_blob_control
         Err(error) => error,
     };
     assert!(
-        error.to_string().contains("does not take any type parameters"),
+        error
+            .to_string()
+            .contains("does not take any type parameters"),
         "original binder boundary changed: {error}"
     );
     // Companion SQL is not a proof of the original parameterized syntax.
-    let mut stmt = db.prepare("SELECT CAST('ab' AS BLOB)").expect("native BLOB");
+    let mut stmt = db
+        .prepare("SELECT CAST('ab' AS BLOB)")
+        .expect("native BLOB");
     let mut rows = stmt.query([]).expect("native BLOB output");
-    let row = rows.next().expect("control output").expect("one binary row");
+    let row = rows
+        .next()
+        .expect("control output")
+        .expect("one binary row");
     let payload: Vec<u8> = row.get(0).expect("BLOB payload");
     assert_eq!(payload.as_slice(), b"ab");
     assert!(rows.next().expect("complete companion result").is_none());
@@ -71,8 +78,7 @@ fn original_explain_has_one_plan_for_the_complete_named_source() {
     let sources: Value = serde_json::from_str(SOURCES).expect("complete source fixtures");
     let boundaries: Value = serde_json::from_str(BOUNDARIES).expect("native boundaries");
     assert_eq!(
-        boundaries["native_executable_without_fixed_terminal"][0],
-        "88-C177-S242",
+        boundaries["native_executable_without_fixed_terminal"][0], "88-C177-S242",
         "EXPLAIN remains a version-sensitive plan rather than fixed terminal"
     );
     let db = Connection::open_in_memory().expect("native DuckDB");
@@ -82,10 +88,16 @@ fn original_explain_has_one_plan_for_the_complete_named_source() {
         .prepare(original(&samples, "88-C177-S242"))
         .expect("original EXPLAIN syntax");
     let mut rows = stmt.query([]).expect("EXPLAIN terminal");
-    let row = rows.next().expect("native explain result").expect("one plan");
+    let row = rows
+        .next()
+        .expect("native explain result")
+        .expect("one plan");
     let kind: String = row.get(0).expect("plan kind");
     let plan: String = row.get(1).expect("plan text");
     assert!(!kind.is_empty(), "plan kind is a required terminal column");
-    assert!(plan.to_lowercase().contains("orders"), "plan must reference original source");
+    assert!(
+        plan.to_lowercase().contains("orders"),
+        "plan must reference original source"
+    );
     assert!(rows.next().expect("one terminal plan").is_none());
 }
