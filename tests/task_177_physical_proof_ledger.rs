@@ -10,6 +10,11 @@ const SAMPLES: &str = include_str!("../docs/task-177-parser-samples.json");
 const RELATIONAL: &str = include_str!("../docs/task-177-relational-bag-oracles.json");
 const PREDICATES: &str = include_str!("../docs/task-177-predicate-oracles.json");
 const DRIFTS: &str = include_str!("../docs/task-177-canonical-drift-boundaries.json");
+const EXPANSION: &str = include_str!("../docs/task-177-native-expansion.json");
+const WRITES: &str = include_str!("../docs/task-177-write-oracles.json");
+const ENVIRONMENT: &str = include_str!("../docs/task-177-predicate-environment-oracles.json");
+const SCHEMA_LIFECYCLE: &str = include_str!("../docs/task-177-schema-lifecycle-oracles.json");
+const WINDOWS: &str = include_str!("../docs/task-177-window-oracles.json");
 
 fn parse(source: &str) -> Value {
     serde_json::from_str(source).expect("versioned evidence")
@@ -52,10 +57,53 @@ fn all_task_177_native_and_typed_proof_gaps_are_explicitly_accounted_for() {
     assert_eq!(drift_oracles.len(), 5);
     assert!(drift_oracles.is_subset(&drift_cases));
     verified.extend(drift_oracles);
-    assert_eq!(verified.len(), 125, "a native oracle changed its scope");
+    assert_eq!(verified.len(), 125, "original native oracle baseline changed");
     assert!(verified.is_subset(&ids));
-    assert_eq!(ledger["native_duckdb_complete_original_sql_samples"], 125);
-    assert_eq!(ledger["native_duckdb_not_proven_original_sql_samples"], 126);
+
+    let expansion = parse(EXPANSION);
+    let writes = parse(WRITES);
+    let environment = parse(ENVIRONMENT);
+    let schema = parse(SCHEMA_LIFECYCLE);
+    let windows = parse(WINDOWS);
+    let mut additional = BTreeSet::new();
+    for (document, key) in [
+        (&expansion, "bag_cases"),
+        (&expansion, "ordered_cases"),
+        (&expansion, "multi_statement_cases"),
+        (&writes, "cases"),
+        (&environment, "customer_cases"),
+        (&environment, "temporal_cases"),
+        (&environment, "floating_cases"),
+        (&schema, "cases"),
+        (&windows, "integer_cases"),
+        (&windows, "float_cases"),
+    ] {
+        let entries = document[key].as_array().expect("task-owned native oracles");
+        for entry in entries {
+            let id = entry["id"].as_str().expect("original sample ID");
+            assert!(additional.insert(id.to_owned()), "{id}: duplicate new oracle");
+        }
+    }
+    let sort_id = environment["ordering_case"]["id"]
+        .as_str()
+        .expect("original NULL-ordering oracle");
+    assert!(
+        additional.insert(sort_id.to_owned()),
+        "{sort_id}: duplicate NULL ordering oracle"
+    );
+    assert_eq!(additional.len(), 89, "new native proof scope changed");
+    assert!(
+        additional.is_disjoint(&verified),
+        "do not double-count existing native proof"
+    );
+    assert!(additional.is_subset(&ids), "all evidence must come from TASK-66");
+    verified.extend(additional);
+    assert_eq!(verified.len(), 214, "whole-bag proof coverage changed");
+    assert_eq!(ledger["native_duckdb_complete_original_sql_samples"], 214);
+    assert_eq!(ledger["native_duckdb_not_proven_original_sql_samples"], 37);
+    for id in ["88-C177-S033", "88-C177-S086", "88-C177-S140"] {
+        assert!(!verified.contains(id), "{id}: rejection is not an exact terminal bag");
+    }
 
     let typed: BTreeSet<_> = [
         "88-C177-S001",
@@ -144,6 +192,6 @@ fn all_task_177_native_and_typed_proof_gaps_are_explicitly_accounted_for() {
         }
     }
     assert_eq!(observed, ids, "no original SQL variant may be omitted");
-    assert_eq!(native_count, 125);
+    assert_eq!(native_count, 214);
     assert_eq!(typed_count, 6);
 }
