@@ -72,7 +72,11 @@ fn original_dml_writes_match_complete_initial_and_terminal_duckdb_bags() {
         db.execute_batch(setup)
             .expect("complete native initial catalog");
         let initial = if primary_key {
-            vec![vec![Some(1), Some(10)], vec![Some(2), Some(20)], vec![Some(3), None]]
+            vec![
+                vec![Some(1), Some(10)],
+                vec![Some(2), Some(20)],
+                vec![Some(3), None],
+            ]
         } else {
             expected(&fixture["orders_source_bag"])
         };
