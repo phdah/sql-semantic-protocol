@@ -68,7 +68,18 @@ fn frozen_native_rejections_are_observed_with_complete_source_relations() {
     for case in rejected {
         let id = case["id"].as_str().expect("original ID");
         let db = source_db();
-        let result = db.execute_batch(original(&samples, id));
+        let sql = original(&samples, id);
+        // SELECT must be materialized: execute_batch alone can succeed even
+        // when the deferred expression would fail at query time.
+        let result: duckdb::Result<()> = if sql.trim_start().starts_with("SELECT") {
+            db.prepare(sql).and_then(|mut statement| {
+                let mut rows = statement.query([])?;
+                while rows.next()?.is_some() {}
+                Ok(())
+            })
+        } else {
+            db.execute_batch(sql)
+        };
         assert!(
             result.is_err(),
             "{id}: original SQL unexpectedly executed; reconcile native boundary registry"
