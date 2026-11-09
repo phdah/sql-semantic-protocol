@@ -13,8 +13,7 @@ const SAMPLES: &str = include_str!("../docs/task-177-parser-samples.json");
 const SNAPSHOT: &str = include_str!("../docs/task-177-equivalence-snapshot.json");
 const PARSER: &str = include_str!("../docs/task-177-parser-snapshot.json");
 const DRIFTS: &str = include_str!("../docs/task-177-canonical-drift-boundaries.json");
-const RECONCILIATION: &str =
-    include_str!("../docs/task-178-canonical-reconciliation.json");
+const RECONCILIATION: &str = include_str!("../docs/task-178-canonical-reconciliation.json");
 
 fn parse(text: &str) -> Value {
     serde_json::from_str(text).expect("frozen task evidence")
