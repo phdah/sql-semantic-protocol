@@ -1,0 +1,86 @@
+{
+  "schema_version": 1,
+  "owner": "TASK-177",
+  "scope": "Exact original DuckDB window SQL with complete physical relational source and independent literal terminal bag; evidence does not certify strongest canonical value domains or alternate vendor/session rules.",
+  "integer_cases": [
+    {
+      "id": "88-C177-S116",
+      "expected_terminal_bag": [
+        10,
+        20,
+        30,
+        20,
+        -5,
+        5
+      ]
+    },
+    {
+      "id": "88-C177-S117",
+      "expected_terminal_bag": [
+        20,
+        20,
+        40,
+        20,
+        -5,
+        10
+      ]
+    },
+    {
+      "id": "88-C177-S118",
+      "expected_terminal_bag": [
+        2,
+        2,
+        3,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "id": "88-C177-S120",
+      "expected_terminal_bag": [
+        10,
+        20,
+        40,
+        40,
+        35,
+        45
+      ]
+    }
+  ],
+  "float_cases": [
+    {
+      "id": "88-C177-S114",
+      "expected_terminal_bag": [
+        0,
+        0.2,
+        0.2,
+        0.2,
+        0.8,
+        1
+      ]
+    },
+    {
+      "id": "88-C177-S115",
+      "expected_terminal_bag": [
+        0.16666666666666666,
+        0.6666666666666666,
+        0.6666666666666666,
+        0.6666666666666666,
+        0.8333333333333334,
+        1
+      ]
+    },
+    {
+      "id": "88-C177-S119",
+      "expected_terminal_bag": [
+        10,
+        10,
+        20,
+        null,
+        -5,
+        10
+      ]
+    }
+  ]
+}
