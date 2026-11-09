@@ -182,7 +182,10 @@ fn top_fetch_and_limit_preserve_the_same_typed_count_and_sort_shape_without_ties
                     shape_left["with_ties"], true,
                     "{id}/{name}: ties cannot be lost"
                 );
-                assert!(shape_right["with_ties"].is_null(), "false WITH TIES is omitted from the canonical JSON");
+                assert!(
+                    shape_right["with_ties"].is_null(),
+                    "false WITH TIES is omitted from the canonical JSON"
+                );
                 assert_ne!(
                     shape_left, shape_right,
                     "{id}/{name}: tied selection is not LIMIT"
