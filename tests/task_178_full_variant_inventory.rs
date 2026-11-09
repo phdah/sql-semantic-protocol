@@ -13,6 +13,8 @@ const SAMPLES: &str = include_str!("../docs/task-177-parser-samples.json");
 const SNAPSHOT: &str = include_str!("../docs/task-177-equivalence-snapshot.json");
 const PARSER: &str = include_str!("../docs/task-177-parser-snapshot.json");
 const DRIFTS: &str = include_str!("../docs/task-177-canonical-drift-boundaries.json");
+const RECONCILIATION: &str =
+    include_str!("../docs/task-178-canonical-reconciliation.json");
 
 fn parse(text: &str) -> Value {
     serde_json::from_str(text).expect("frozen task evidence")
@@ -109,6 +111,20 @@ fn actual_full_public_protocol_matches_each_frozen_observed_dialect_classificati
     let inventory = parse(INVENTORY);
     let parsed = parse(PARSER);
     let snapshot = parse(SNAPSHOT);
+    let reconciliation = parse(RECONCILIATION);
+    let fixed: BTreeSet<_> = reconciliation["resolved_grouping_cells"]
+        .as_array()
+        .expect("exactly 21 reviewed normalization candidates")
+        .iter()
+        .map(|cell| {
+            format!(
+                "{}/{}",
+                cell["case_id"].as_str().expect("case"),
+                cell["dialect"].as_str().expect("dialect")
+            )
+        })
+        .collect();
+    assert_eq!(fixed.len(), 21);
     for case in inventory["cases"].as_array().expect("variant cases") {
         let id = case["id"].as_str().expect("stable case id");
         let sql = case["sql"].as_str().expect("original SQL text");
@@ -157,17 +173,23 @@ fn actual_full_public_protocol_matches_each_frozen_observed_dialect_classificati
                     }
                 }
             };
+            let historical = observed.as_bytes()[index];
             assert_eq!(
-                actual as u8,
-                observed.as_bytes()[index],
-                "{id}/{name}: actual emitted public protocol drifted from frozen observation"
-            );
-            assert_eq!(
-                actual as u8,
+                historical,
                 snapshot["matrix"][id]
                     .as_str()
-                    .expect("existing classification")
+                    .expect("immutable TASK-177 classification")
                     .as_bytes()[index]
+            );
+            let expected = if fixed.contains(&format!("{id}/{name}")) {
+                assert_eq!(historical, b'D', "only historical drift can be repaired");
+                b'C'
+            } else {
+                historical
+            };
+            assert_eq!(
+                actual as u8, expected,
+                "{id}/{name}: current public protocol must obey the explicit TASK-178 overlay"
             );
         }
     }
