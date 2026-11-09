@@ -24,7 +24,9 @@ fn every_missing_original_sql_has_one_explicit_semantic_owner_and_proof_obligati
     assert_eq!(remaining["schema_version"], 1);
     assert_eq!(remaining["owner"], "TASK-177");
     assert_eq!(remaining["case_count"], 37);
-    let all_samples = samples["cases"].as_array().expect("251 original SQL samples");
+    let all_samples = samples["cases"]
+        .as_array()
+        .expect("251 original SQL samples");
     let ledger_cases = ledger["cases"].as_array().expect("251 ledger rows");
     let gaps: BTreeSet<&str> = ledger_cases
         .iter()
@@ -46,7 +48,9 @@ fn every_missing_original_sql_has_one_explicit_semantic_owner_and_proof_obligati
         assert_eq!(case["variant"], source["variant"]);
         assert_eq!(case["sql"], source["sql"]);
         assert_eq!(case["semantic_owner"], source["semantic_owner"]);
-        let kind = case["proof_obligation"].as_str().expect("bounded proof kind");
+        let kind = case["proof_obligation"]
+            .as_str()
+            .expect("bounded proof kind");
         assert!(
             matches!(
                 kind,
