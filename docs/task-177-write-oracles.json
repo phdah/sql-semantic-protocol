@@ -1,0 +1,488 @@
+{
+  "schema_version": 1,
+  "owner": "TASK-177",
+  "scope": "Independent native DuckDB DML before/after whole bags for original SQL, including NULL and duplicate occurrences; original SQL only, not proof of canonical write-state graph or other engine laws.",
+  "source_setup": "CREATE TABLE orders(id INTEGER, amount INTEGER); INSERT INTO orders VALUES (1,10),(2,20),(2,20),(3,NULL),(NULL,7); CREATE TABLE customers(id INTEGER, amount INTEGER); INSERT INTO customers VALUES (1,100),(4,40),(4,40);",
+  "orders_source_bag": [
+    [
+      1,
+      10
+    ],
+    [
+      2,
+      20
+    ],
+    [
+      2,
+      20
+    ],
+    [
+      3,
+      null
+    ],
+    [
+      null,
+      7
+    ]
+  ],
+  "customers_source_bag": [
+    [
+      1,
+      100
+    ],
+    [
+      4,
+      40
+    ],
+    [
+      4,
+      40
+    ]
+  ],
+  "primary_key_source_setup": "CREATE TABLE orders(id INTEGER PRIMARY KEY, amount INTEGER); INSERT INTO orders VALUES (1,10),(2,20),(3,NULL);",
+  "cases": [
+    {
+      "id": "88-C177-S194",
+      "source": "duplicate_and_null",
+      "expected_terminal_bag": [
+        [
+          1,
+          10
+        ],
+        [
+          2,
+          20
+        ],
+        [
+          2,
+          20
+        ],
+        [
+          3,
+          null
+        ],
+        [
+          null,
+          7
+        ],
+        [
+          1,
+          10
+        ]
+      ]
+    },
+    {
+      "id": "88-C177-S195",
+      "source": "duplicate_and_null",
+      "expected_terminal_bag": [
+        [
+          1,
+          10
+        ],
+        [
+          2,
+          20
+        ],
+        [
+          2,
+          20
+        ],
+        [
+          3,
+          null
+        ],
+        [
+          null,
+          7
+        ],
+        [
+          1,
+          100
+        ],
+        [
+          4,
+          40
+        ],
+        [
+          4,
+          40
+        ]
+      ]
+    },
+    {
+      "id": "88-C177-S196",
+      "source": "duplicate_and_null",
+      "expected_terminal_bag": [
+        [
+          1,
+          10
+        ],
+        [
+          2,
+          20
+        ],
+        [
+          2,
+          20
+        ],
+        [
+          3,
+          null
+        ],
+        [
+          null,
+          7
+        ],
+        [
+          1,
+          10
+        ],
+        [
+          2,
+          null
+        ]
+      ]
+    },
+    {
+      "id": "88-C177-S197",
+      "source": "duplicate_and_null",
+      "expected_terminal_bag": [
+        [
+          1,
+          10
+        ],
+        [
+          2,
+          20
+        ],
+        [
+          2,
+          20
+        ],
+        [
+          3,
+          null
+        ],
+        [
+          null,
+          7
+        ],
+        [
+          1,
+          10
+        ]
+      ],
+      "expected_returning_bag": [
+        [
+          1
+        ]
+      ]
+    },
+    {
+      "id": "88-C177-S198",
+      "source": "primary_key",
+      "expected_terminal_bag": [
+        [
+          1,
+          10
+        ],
+        [
+          2,
+          20
+        ],
+        [
+          3,
+          null
+        ]
+      ]
+    },
+    {
+      "id": "88-C177-S201",
+      "source": "duplicate_and_null",
+      "expected_terminal_bag": [
+        [
+          1,
+          100
+        ],
+        [
+          2,
+          20
+        ],
+        [
+          2,
+          20
+        ],
+        [
+          3,
+          null
+        ],
+        [
+          null,
+          7
+        ]
+      ]
+    },
+    {
+      "id": "88-C177-S202",
+      "source": "duplicate_and_null",
+      "expected_terminal_bag": [
+        [
+          1,
+          11
+        ],
+        [
+          2,
+          21
+        ],
+        [
+          2,
+          21
+        ],
+        [
+          3,
+          null
+        ],
+        [
+          null,
+          7
+        ]
+      ]
+    },
+    {
+      "id": "88-C177-S203",
+      "source": "duplicate_and_null",
+      "expected_terminal_bag": [
+        [
+          1,
+          1
+        ],
+        [
+          2,
+          20
+        ],
+        [
+          2,
+          20
+        ],
+        [
+          3,
+          null
+        ],
+        [
+          null,
+          7
+        ]
+      ]
+    },
+    {
+      "id": "88-C177-S204",
+      "source": "duplicate_and_null",
+      "expected_terminal_bag": [
+        [
+          1,
+          2
+        ],
+        [
+          2,
+          20
+        ],
+        [
+          2,
+          20
+        ],
+        [
+          3,
+          null
+        ],
+        [
+          null,
+          7
+        ]
+      ],
+      "expected_returning_bag": [
+        [
+          1
+        ]
+      ]
+    },
+    {
+      "id": "88-C177-S205",
+      "source": "duplicate_and_null",
+      "expected_terminal_bag": [
+        [
+          2,
+          20
+        ],
+        [
+          2,
+          20
+        ],
+        [
+          3,
+          null
+        ],
+        [
+          null,
+          7
+        ]
+      ]
+    },
+    {
+      "id": "88-C177-S206",
+      "source": "duplicate_and_null",
+      "expected_terminal_bag": [
+        [
+          2,
+          20
+        ],
+        [
+          2,
+          20
+        ],
+        [
+          3,
+          null
+        ],
+        [
+          null,
+          7
+        ]
+      ]
+    },
+    {
+      "id": "88-C177-S207",
+      "source": "duplicate_and_null",
+      "expected_terminal_bag": [
+        [
+          1,
+          10
+        ],
+        [
+          2,
+          20
+        ],
+        [
+          2,
+          20
+        ],
+        [
+          null,
+          7
+        ]
+      ],
+      "expected_returning_bag": [
+        [
+          3
+        ]
+      ]
+    },
+    {
+      "id": "88-C177-S208",
+      "source": "duplicate_and_null",
+      "expected_terminal_bag": [
+        [
+          2,
+          20
+        ],
+        [
+          2,
+          20
+        ],
+        [
+          3,
+          null
+        ],
+        [
+          null,
+          7
+        ]
+      ]
+    },
+    {
+      "id": "88-C177-S209",
+      "source": "duplicate_and_null",
+      "expected_terminal_bag": [
+        [
+          1,
+          100
+        ],
+        [
+          2,
+          20
+        ],
+        [
+          2,
+          20
+        ],
+        [
+          3,
+          null
+        ],
+        [
+          null,
+          7
+        ],
+        [
+          4,
+          40
+        ],
+        [
+          4,
+          40
+        ]
+      ]
+    },
+    {
+      "id": "88-C177-S210",
+      "source": "duplicate_and_null",
+      "expected_terminal_bag": [
+        [
+          2,
+          20
+        ],
+        [
+          2,
+          20
+        ],
+        [
+          3,
+          null
+        ],
+        [
+          null,
+          7
+        ]
+      ]
+    },
+    {
+      "id": "88-C177-S211",
+      "source": "duplicate_and_null",
+      "expected_terminal_bag": [
+        [
+          2,
+          20
+        ],
+        [
+          2,
+          20
+        ],
+        [
+          3,
+          null
+        ],
+        [
+          null,
+          7
+        ],
+        [
+          4,
+          null
+        ],
+        [
+          4,
+          null
+        ]
+      ]
+    }
+  ]
+}
