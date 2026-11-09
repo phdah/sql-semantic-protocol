@@ -29,6 +29,7 @@ type: feature
 
 - 55 exact parser-rejected SQL/dialect cells in `docs/task-177-parser-boundaries.json`.
 - 116 exact public-analyzer Unsupported SQL/dialect cells in `docs/task-177-analysis-boundaries.json`.
+- DuckDB-original boundary checks must preserve physical source bags and separate native engine from parser/adapter claims.
 - 23 original SQL samples without successful fixed native terminal/state proof in `docs/task-177-remaining-original-cases.json`. Their current breakdown is **15 conditional/rejected syntax, five nondeterministic samples, one nonterminating recursion, one RANDOM(), and one optimizer-sensitive EXPLAIN**.
 - Join on the stable `88-C177-Snnn` sample IDs and dialect identities. A boundary may appear in multiple registers. Do not double-count it or infer certified semantics from parser success, companion SQL or a different vendor.
 - Independently reviewed canonical divergence for 23 cells is owned by **TASK-178**; vendor/session/transaction laws by **TASK-179**; whole-matrix typed domains, complete positive/negative direction and SQL/dbt/ODCS release parity by **TASK-180**. This ticket owns the residual parser, Unsupported and original-execution boundary dispositions and hands them to those owners.

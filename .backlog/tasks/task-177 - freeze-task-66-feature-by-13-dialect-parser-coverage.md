@@ -64,7 +64,7 @@ After PR #196 is merged, next: [TASK-178](task-178%20-%20certify-canonical-equiv
 - 3,263 versioned SQL/dialect cells with deterministic public parser and analyzer snapshots; 23 full-public-document drifts named for downstream review.
 - 228 native original source/output/state oracles, 23 explicitly classified incomplete native outcomes, 10 exact typed source adapter facts and separate P/N oracles. The missing or conditional cases are **not** counted as proved.
 - Protocol candidate `1cd9cd4bdf61f31fa31e7469066ba87bb4a35221` passed [9/9 CI](https://github.com/phdah/sql-semantic-protocol/actions/runs/42697295355); exact-head candidate-pinned sql-tdg PR #47 passed [5/5 CI](https://github.com/phdah/sql-tdg/actions/runs/42697390328). Scope-split metadata must also pass final-head CI before merging.
-- Full cell-level typed, negative, vendor/session, adapter and independent acceptance remains **unapproved**, owned by TASK-178/TASK-179/TASK-191/TASK-180. TASK-88 and TASK-91 stay open; do not release based on this Done marker.
+- Full cell-level typed, negative, vendor/session, adapter and independent acceptance remains **unapproved**, owned by TASK-178/TASK-179/TASK-191/TASK-180. Any unreviewed **Residual** or Impossible disposition remains a TASK-191/TASK-180 blocker, not a TASK-177 scoped success claim. TASK-88 and TASK-91 stay open; do not release based on this Done marker.
 - PR #196 is the delivery branch; **Done is not merged** until PR #196 merges on `main`.
 
 ## Historical evidence log (original broad scope, retained for audit)
