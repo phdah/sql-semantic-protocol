@@ -86,7 +86,7 @@ fn every_parsed_variant_has_a_pinned_public_protocol_equivalence_classification(
     // registers a separate reviewed target for repaired SQLparser dialect ASTs.
     let reconciliation = read(TASK178_RECONCILIATION);
     let fixed_cells = rows(&reconciliation, "resolved_grouping_cells");
-    assert_eq!(fixed_cells.len(), 21);
+    assert_eq!(fixed_cells.len(), 22);
     assert_eq!(
         rows(&reconciliation, "remaining_boundaries").len(),
         2,
