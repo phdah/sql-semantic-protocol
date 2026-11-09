@@ -15,8 +15,7 @@ const SAMPLES: &str = include_str!("../docs/task-177-parser-samples.json");
 const SNAPSHOT: &str = include_str!("../docs/task-177-parser-snapshot.json");
 const EQUIVALENCE: &str = include_str!("../docs/task-177-equivalence-snapshot.json");
 const DRIFT: &str = include_str!("../docs/task-177-canonical-drift-boundaries.json");
-const TASK178_RECONCILIATION: &str =
-    include_str!("../docs/task-178-canonical-reconciliation.json");
+const TASK178_RECONCILIATION: &str = include_str!("../docs/task-178-canonical-reconciliation.json");
 
 fn read(source: &str) -> Value {
     serde_json::from_str(source).expect("versioned task evidence")
@@ -221,13 +220,19 @@ fn every_parsed_variant_has_a_pinned_public_protocol_equivalence_classification(
             .expect("TASK-177 historical pinned row")
             .as_bytes()
             .to_vec();
-        for cell in fixed_cells.iter().filter(|cell| cell["case_id"] == id.as_str()) {
+        for cell in fixed_cells
+            .iter()
+            .filter(|cell| cell["case_id"] == id.as_str())
+        {
             let dialect = cell["dialect"].as_str().expect("dialect");
             let index = dialects
                 .iter()
                 .position(|name| name == dialect)
                 .expect("one of 13 dialects");
-            assert_eq!(expected_mask[index], b'D', "{id}/{dialect}: old drift preserved");
+            assert_eq!(
+                expected_mask[index], b'D',
+                "{id}/{dialect}: old drift preserved"
+            );
             expected_mask[index] = b'C';
         }
         assert_eq!(
