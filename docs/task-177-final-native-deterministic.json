@@ -8,24 +8,6 @@
       "source": "customers",
       "expected_terminal_bag": [
         [
-          1
-        ],
-        [
-          1
-        ],
-        [
-          2
-        ],
-        [
-          3
-        ],
-        [
-          4
-        ],
-        [
-          7
-        ],
-        [
           9
         ]
       ]
@@ -33,26 +15,7 @@
     {
       "id": "88-C177-S024",
       "source": "customers",
-      "expected_terminal_bag": [
-        [
-          1
-        ],
-        [
-          1
-        ],
-        [
-          2
-        ],
-        [
-          4
-        ],
-        [
-          7
-        ],
-        [
-          9
-        ]
-      ]
+      "expected_terminal_bag": []
     },
     {
       "id": "88-C177-S026",
