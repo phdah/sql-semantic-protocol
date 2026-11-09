@@ -384,6 +384,9 @@
       ],
       "expected_rejected_bag": [
         [
+          1
+        ],
+        [
           null
         ]
       ],
