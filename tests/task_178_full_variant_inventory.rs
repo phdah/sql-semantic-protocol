@@ -113,7 +113,7 @@ fn actual_full_public_protocol_matches_each_frozen_observed_dialect_classificati
     let reconciliation = parse(RECONCILIATION);
     let fixed: BTreeSet<_> = reconciliation["resolved_grouping_cells"]
         .as_array()
-        .expect("exactly 21 reviewed normalization candidates")
+        .expect("exactly 22 reviewed normalization candidates")
         .iter()
         .map(|cell| {
             format!(
@@ -123,7 +123,7 @@ fn actual_full_public_protocol_matches_each_frozen_observed_dialect_classificati
             )
         })
         .collect();
-    assert_eq!(fixed.len(), 21);
+    assert_eq!(fixed.len(), 22);
     for case in inventory["cases"].as_array().expect("variant cases") {
         let id = case["id"].as_str().expect("stable case id");
         let sql = case["sql"].as_str().expect("original SQL text");
