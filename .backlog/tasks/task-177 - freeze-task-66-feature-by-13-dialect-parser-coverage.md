@@ -4,7 +4,7 @@ title: Freeze TASK-66 feature-by-13-dialect parser coverage
 status: In Progress
 assignee: []
 created_date: '2026-10-17'
-updated_date: '2026-11-07'
+updated_date: '2026-11-09'
 labels: []
 milestone: m-3
 dependencies:
@@ -173,3 +173,23 @@ requirements documented in `docs/task-177-acceptance-audit.md`.
   whole-bag, per-adapter, conditional dialect/vendor/session and independent
   per-cell reviews remain incomplete. AC #1..#5 are not checked, TASK-178
   remains dependency-blocked and TASK-88 remains open.
+
+## Additional native original-SQL proof (2026-11-09, still In Progress)
+
+- Five additional task-owned, versioned oracle fixtures and public DuckDB
+  test suites cover **89 more distinct original SQL samples**: query, sorting,
+  PIVOT and multi-terminal bags; duplicate/NULL write before/after states;
+  timestamp, string and signed-zero environments; schema/DDL, constraints
+  and rollback; and ranking/window frame outcomes.
+- `tests/task_177_physical_proof_ledger.rs` now reconciles original owners
+  and guards **214 of 251** sample IDs with first-party native source and
+  terminal evidence, **37** without native complete-bag or state proof.
+  Separate fixed native rejection tests do not inflate this count.
+- The additional original SQL executions do not certify independent strongest
+  typed-domain outcomes for all 3,263 cells or all equally representable
+  SQL/dbt/ODCS facts, and do not certify native vendor/session equivalence.
+  The 23 canonical drifts, 55 parser rejects, 116 analyzer Unsupported cells
+  and independent per-cell release dispositions remain unresolved.
+- **No signoff:** All original AC #1..#5 stay unchecked; TASK-177 remains
+  In Progress and PR #196 stays draft until mandatory proofs and independent
+  review are complete.
