@@ -182,9 +182,13 @@ fn grouping_function_variant(
         .args
         .iter()
         .map(|argument| match argument {
-            FunctionArg::Unnamed(FunctionArgExpr::Expr(item)) => Some(vec![
-                analyze_expression_with_windows(item, named_windows, diagnostics),
-            ]),
+            FunctionArg::Unnamed(FunctionArgExpr::Expr(item)) => {
+                Some(vec![analyze_expression_with_windows(
+                    item,
+                    named_windows,
+                    diagnostics,
+                )])
+            }
             _ => None,
         })
         .collect::<Option<Vec<_>>>()?;
