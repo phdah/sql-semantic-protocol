@@ -8,22 +8,34 @@ use std::collections::BTreeMap;
 use serde_json::json;
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, analyze_dbt_manifest_with_schemas, analyze_inputs,
-    dialect_from_name, parse_dbt_manifest, ComposedSemantics, ConfiguredSqlInput, LiteralValue,
-    PhysicalOrderedLifecycleProof, PhysicalWriteRow, PhysicalWriteState, ProducerExecution,
-    RelationCatalog, SqlInput, ValueDomain,
-    physical_ordered_lifecycle_plan,
+    dialect_from_name, parse_dbt_manifest, physical_ordered_lifecycle_plan, ComposedSemantics,
+    ConfiguredSqlInput, LiteralValue, PhysicalOrderedLifecycleProof, PhysicalWriteRow,
+    PhysicalWriteState, ProducerExecution, RelationCatalog, SqlInput, ValueDomain,
 };
 
 const SQL: &str = "SELECT amount FROM orders WHERE amount >= 10";
 const DIALECTS: &[&str] = &[
-    "ansi", "bigquery", "clickhouse", "databricks", "duckdb", "generic",
-    "hive", "mssql", "mysql", "postgresql", "redshift", "snowflake", "sqlite",
+    "ansi",
+    "bigquery",
+    "clickhouse",
+    "databricks",
+    "duckdb",
+    "generic",
+    "hive",
+    "mssql",
+    "mysql",
+    "postgresql",
+    "redshift",
+    "snowflake",
+    "sqlite",
 ];
 
 fn direct_catalog() -> RelationCatalog {
     let dialect = dialect_from_name("duckdb").unwrap();
     let bundle = analyze_inputs(
-        &[SqlInput::inline("CREATE TABLE orders (id INTEGER, amount INTEGER)")],
+        &[SqlInput::inline(
+            "CREATE TABLE orders (id INTEGER, amount INTEGER)",
+        )],
         "duckdb",
         dialect.as_ref(),
     )
@@ -60,8 +72,7 @@ fn dbt_catalog() -> (RelationCatalog, sql_semantic_protocol::AnalysisBundle) {
     });
     let parsed = parse_dbt_manifest(&manifest.to_string()).unwrap();
     let dialect = dialect_from_name("duckdb").unwrap();
-    let bundle =
-        analyze_dbt_manifest_with_schemas(&parsed, "duckdb", dialect.as_ref()).unwrap();
+    let bundle = analyze_dbt_manifest_with_schemas(&parsed, "duckdb", dialect.as_ref()).unwrap();
     let catalog = RelationCatalog::from_schemas(bundle.source_schemas()).unwrap();
     (catalog, bundle)
 }
@@ -77,13 +88,15 @@ fn odcs_catalog() -> RelationCatalog {
     RelationCatalog::from_schemas(bundle.source_schemas()).unwrap()
 }
 
-fn analyze(
-    catalog: &RelationCatalog,
-    name: &str,
-) -> sql_semantic_protocol::AnalysisBundle {
+fn analyze(catalog: &RelationCatalog, name: &str) -> sql_semantic_protocol::AnalysisBundle {
     let dialect = dialect_from_name(name).unwrap();
     let sql = SqlInput::inline(SQL);
-    let configured = [ConfiguredSqlInput::new("task178", &sql, name, dialect.as_ref())];
+    let configured = [ConfiguredSqlInput::new(
+        "task178",
+        &sql,
+        name,
+        dialect.as_ref(),
+    )];
     analyze_configured_inputs_with_catalog(&configured, catalog).unwrap()
 }
 
@@ -103,19 +116,23 @@ fn assert_inclusive_ten(value: &ValueDomain) {
         panic!("one interval expected: {value:?}");
     };
     let lower = range.lower().expect("inclusive 10");
-    assert_eq!(lower.value().value(), &LiteralValue::Number("10".to_string()));
+    assert_eq!(
+        lower.value().value(),
+        &LiteralValue::Number("10".to_string())
+    );
     assert!(lower.inclusive());
     assert!(range.upper().is_none());
 }
 
 fn source_row(id: Option<i64>, amount: Option<i64>) -> PhysicalWriteRow {
-    let literal = |value: Option<i64>| value.map_or(LiteralValue::Null, |v| {
-        LiteralValue::Number(v.to_string())
-    });
+    let literal = |value: Option<i64>| {
+        value.map_or(LiteralValue::Null, |v| LiteralValue::Number(v.to_string()))
+    };
     PhysicalWriteRow::new(BTreeMap::from([
         ("id".to_string(), literal(id)),
         ("amount".to_string(), literal(amount)),
-    ])).unwrap()
+    ]))
+    .unwrap()
 }
 
 #[test]
@@ -163,10 +180,19 @@ fn real_duckdb_three_valued_predicate_matches_closed_source_and_terminal_bags() 
         values.sort();
         values
     };
-    assert_eq!(query("SELECT amount FROM orders"), vec![None, Some(5), Some(10), Some(10)]);
+    assert_eq!(
+        query("SELECT amount FROM orders"),
+        vec![None, Some(5), Some(10), Some(10)]
+    );
     assert_eq!(query(SQL), vec![Some(10), Some(10)]);
-    assert_eq!(query("SELECT amount FROM orders WHERE (amount >= 10) IS FALSE"), vec![Some(5)]);
-    assert_eq!(query("SELECT amount FROM orders WHERE (amount >= 10) IS UNKNOWN"), vec![None]);
+    assert_eq!(
+        query("SELECT amount FROM orders WHERE (amount >= 10) IS FALSE"),
+        vec![Some(5)]
+    );
+    assert_eq!(
+        query("SELECT amount FROM orders WHERE (amount >= 10) IS UNKNOWN"),
+        vec![None]
+    );
 
     let bundle = analyze(&direct_catalog(), "duckdb");
     let physical = PhysicalWriteState::new(
@@ -177,7 +203,8 @@ fn real_duckdb_three_valued_predicate_matches_closed_source_and_terminal_bags() 
             source_row(Some(2), Some(5)),
             source_row(None, None),
         ],
-    ).unwrap();
+    )
+    .unwrap();
     let PhysicalOrderedLifecycleProof::Exact(exact) =
         physical_ordered_lifecycle_plan(&bundle, &[physical.clone()])
     else {
@@ -187,8 +214,8 @@ fn real_duckdb_three_valued_predicate_matches_closed_source_and_terminal_bags() 
     let [read] = exact.reads.as_slice() else {
         panic!("one complete terminal read");
     };
-    assert_eq!(read.surviving_source_ordinals, vec![0,1]);
-    assert_eq!(read.rejected_source_ordinals, vec![2,3]);
+    assert_eq!(read.surviving_source_ordinals, vec![0, 1]);
+    assert_eq!(read.rejected_source_ordinals, vec![2, 3]);
     assert_eq!(read.output.rows().len(), 2);
     assert_inclusive_ten(&typed_domain(&bundle));
 }
