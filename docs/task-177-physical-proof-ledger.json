@@ -6,11 +6,16 @@
   "source_oracles": [
     "docs/task-177-relational-bag-oracles.json",
     "docs/task-177-predicate-oracles.json",
-    "tests/task_177_cross_dialect_native_oracles.rs"
+    "tests/task_177_cross_dialect_native_oracles.rs",
+    "docs/task-177-native-expansion.json",
+    "docs/task-177-write-oracles.json",
+    "docs/task-177-predicate-environment-oracles.json",
+    "docs/task-177-schema-lifecycle-oracles.json",
+    "docs/task-177-window-oracles.json"
   ],
   "sample_count": 251,
-  "native_duckdb_complete_original_sql_samples": 125,
-  "native_duckdb_not_proven_original_sql_samples": 126,
+  "native_duckdb_complete_original_sql_samples": 214,
+  "native_duckdb_not_proven_original_sql_samples": 37,
   "six_case_sql_dbt_odcs_domain_parity": 6,
   "independent_signed_off_samples": 0,
   "two_additional_explicit_positive_impossible_goldens": "88-C177-P / 88-C177-N",
@@ -24,6 +29,11 @@
     ],
     "exact_fetch_with_ties_syntax": [
       "88-C177-S160"
+    ],
+    "native_rejected_nonterminal_originals": [
+      "88-C177-S033",
+      "88-C177-S086",
+      "88-C177-S140"
     ]
   },
   "cases": [
@@ -202,7 +212,7 @@
       "id": "88-C177-S020",
       "feature_id": "predicates.string_pattern",
       "variant": "LIKE",
-      "native_duckdb_original_sql": "not_proven",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
       "canonical_typed_adapter_parity": "not_proven",
       "native_exact_syntax": "as_in_native_evidence",
       "independent_signoff": "blocked"
@@ -211,7 +221,7 @@
       "id": "88-C177-S021",
       "feature_id": "predicates.string_pattern",
       "variant": "ILIKE",
-      "native_duckdb_original_sql": "not_proven",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
       "canonical_typed_adapter_parity": "not_proven",
       "native_exact_syntax": "as_in_native_evidence",
       "independent_signoff": "blocked"
@@ -220,7 +230,7 @@
       "id": "88-C177-S022",
       "feature_id": "predicates.string_pattern",
       "variant": "ESCAPE",
-      "native_duckdb_original_sql": "not_proven",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
       "canonical_typed_adapter_parity": "not_proven",
       "native_exact_syntax": "as_in_native_evidence",
       "independent_signoff": "blocked"
@@ -247,7 +257,7 @@
       "id": "88-C177-S025",
       "feature_id": "predicates.string_pattern",
       "variant": "prefix",
-      "native_duckdb_original_sql": "not_proven",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
       "canonical_typed_adapter_parity": "not_proven",
       "native_exact_syntax": "as_in_native_evidence",
       "independent_signoff": "blocked"
@@ -328,7 +338,7 @@
       "id": "88-C177-S034",
       "feature_id": "predicates.temporal",
       "variant": "DATE/TIME/TIMESTAMP/INTERVAL",
-      "native_duckdb_original_sql": "not_proven",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
       "canonical_typed_adapter_parity": "not_proven",
       "native_exact_syntax": "as_in_native_evidence",
       "independent_signoff": "blocked"
@@ -337,7 +347,7 @@
       "id": "88-C177-S035",
       "feature_id": "predicates.temporal",
       "variant": "timezone",
-      "native_duckdb_original_sql": "not_proven",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
       "canonical_typed_adapter_parity": "not_proven",
       "native_exact_syntax": "as_in_native_evidence",
       "independent_signoff": "blocked"
@@ -346,7 +356,7 @@
       "id": "88-C177-S036",
       "feature_id": "predicates.temporal",
       "variant": "coercion",
-      "native_duckdb_original_sql": "not_proven",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
       "canonical_typed_adapter_parity": "not_proven",
       "native_exact_syntax": "as_in_native_evidence",
       "independent_signoff": "blocked"
@@ -355,7 +365,7 @@
       "id": "88-C177-S037",
       "feature_id": "predicates.temporal",
       "variant": "DST",
-      "native_duckdb_original_sql": "not_proven",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
       "canonical_typed_adapter_parity": "not_proven",
       "native_exact_syntax": "as_in_native_evidence",
       "independent_signoff": "blocked"
@@ -373,7 +383,7 @@
       "id": "88-C177-S039",
       "feature_id": "predicates.comparison_environment",
       "variant": "padding",
-      "native_duckdb_original_sql": "not_proven",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
       "canonical_typed_adapter_parity": "not_proven",
       "native_exact_syntax": "as_in_native_evidence",
       "independent_signoff": "blocked"
@@ -391,7 +401,7 @@
       "id": "88-C177-S041",
       "feature_id": "predicates.comparison_environment",
       "variant": "signed zero",
-      "native_duckdb_original_sql": "not_proven",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
       "canonical_typed_adapter_parity": "not_proven",
       "native_exact_syntax": "as_in_native_evidence",
       "independent_signoff": "blocked"
@@ -400,7 +410,7 @@
       "id": "88-C177-S042",
       "feature_id": "predicates.comparison_environment",
       "variant": "NULL sorting",
-      "native_duckdb_original_sql": "not_proven",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
       "canonical_typed_adapter_parity": "not_proven",
       "native_exact_syntax": "as_in_native_evidence",
       "independent_signoff": "blocked"
@@ -805,7 +815,7 @@
       "id": "88-C177-S087",
       "feature_id": "sets.alignment",
       "variant": "nested sets",
-      "native_duckdb_original_sql": "not_proven",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
       "canonical_typed_adapter_parity": "not_proven",
       "native_exact_syntax": "as_in_native_evidence",
       "independent_signoff": "blocked"
@@ -832,7 +842,7 @@
       "id": "88-C177-S090",
       "feature_id": "grouping.basic",
       "variant": "SUM",
-      "native_duckdb_original_sql": "not_proven",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
       "canonical_typed_adapter_parity": "not_proven",
       "native_exact_syntax": "as_in_native_evidence",
       "independent_signoff": "blocked"
@@ -967,7 +977,7 @@
       "id": "88-C177-S105",
       "feature_id": "grouping.having",
       "variant": "HAVING COUNT/SUM/MIN/MAX/AVG with composite predicates and joined inputs",
-      "native_duckdb_original_sql": "not_proven",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
       "canonical_typed_adapter_parity": "not_proven",
       "native_exact_syntax": "as_in_native_evidence",
       "independent_signoff": "blocked"
@@ -1048,7 +1058,7 @@
       "id": "88-C177-S114",
       "feature_id": "windows.ranking",
       "variant": "PERCENT_RANK",
-      "native_duckdb_original_sql": "not_proven",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
       "canonical_typed_adapter_parity": "not_proven",
       "native_exact_syntax": "as_in_native_evidence",
       "independent_signoff": "blocked"
@@ -1057,7 +1067,7 @@
       "id": "88-C177-S115",
       "feature_id": "windows.ranking",
       "variant": "CUME_DIST",
-      "native_duckdb_original_sql": "not_proven",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
       "canonical_typed_adapter_parity": "not_proven",
       "native_exact_syntax": "as_in_native_evidence",
       "independent_signoff": "blocked"
@@ -1066,7 +1076,7 @@
       "id": "88-C177-S116",
       "feature_id": "windows.frames",
       "variant": "ROWS",
-      "native_duckdb_original_sql": "not_proven",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
       "canonical_typed_adapter_parity": "not_proven",
       "native_exact_syntax": "as_in_native_evidence",
       "independent_signoff": "blocked"
@@ -1075,7 +1085,7 @@
       "id": "88-C177-S117",
       "feature_id": "windows.frames",
       "variant": "RANGE",
-      "native_duckdb_original_sql": "not_proven",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
       "canonical_typed_adapter_parity": "not_proven",
       "native_exact_syntax": "as_in_native_evidence",
       "independent_signoff": "blocked"
@@ -1084,7 +1094,7 @@
       "id": "88-C177-S118",
       "feature_id": "windows.frames",
       "variant": "GROUPS",
-      "native_duckdb_original_sql": "not_proven",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
       "canonical_typed_adapter_parity": "not_proven",
       "native_exact_syntax": "as_in_native_evidence",
       "independent_signoff": "blocked"
@@ -1093,7 +1103,7 @@
       "id": "88-C177-S119",
       "feature_id": "windows.frames",
       "variant": "sliding/window aggregates",
-      "native_duckdb_original_sql": "not_proven",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
       "canonical_typed_adapter_parity": "not_proven",
       "native_exact_syntax": "as_in_native_evidence",
       "independent_signoff": "blocked"
@@ -1102,7 +1112,7 @@
       "id": "88-C177-S120",
       "feature_id": "windows.frames",
       "variant": "named windows",
-      "native_duckdb_original_sql": "not_proven",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
       "canonical_typed_adapter_parity": "not_proven",
       "native_exact_syntax": "as_in_native_evidence",
       "independent_signoff": "blocked"
@@ -1408,7 +1418,7 @@
       "id": "88-C177-S154",
       "feature_id": "ordering.sort",
       "variant": "ORDER BY",
-      "native_duckdb_original_sql": "not_proven",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
       "canonical_typed_adapter_parity": "not_proven",
       "native_exact_syntax": "as_in_native_evidence",
       "independent_signoff": "blocked"
@@ -1417,7 +1427,7 @@
       "id": "88-C177-S155",
       "feature_id": "ordering.sort",
       "variant": "ASC/DESC",
-      "native_duckdb_original_sql": "not_proven",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
       "canonical_typed_adapter_parity": "not_proven",
       "native_exact_syntax": "as_in_native_evidence",
       "independent_signoff": "blocked"
@@ -1426,7 +1436,7 @@
       "id": "88-C177-S156",
       "feature_id": "ordering.sort",
       "variant": "NULLS FIRST/LAST",
-      "native_duckdb_original_sql": "not_proven",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
       "canonical_typed_adapter_parity": "not_proven",
       "native_exact_syntax": "as_in_native_evidence",
       "independent_signoff": "blocked"
@@ -1435,7 +1445,7 @@
       "id": "88-C177-S157",
       "feature_id": "ordering.sort",
       "variant": "computed ordering",
-      "native_duckdb_original_sql": "not_proven",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
       "canonical_typed_adapter_parity": "not_proven",
       "native_exact_syntax": "as_in_native_evidence",
       "independent_signoff": "blocked"
@@ -1444,7 +1454,7 @@
       "id": "88-C177-S158",
       "feature_id": "ordering.sort",
       "variant": "ties",
-      "native_duckdb_original_sql": "not_proven",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
       "canonical_typed_adapter_parity": "not_proven",
       "native_exact_syntax": "as_in_native_evidence",
       "independent_signoff": "blocked"
@@ -1543,7 +1553,7 @@
       "id": "88-C177-S169",
       "feature_id": "relations.advanced_sources",
       "variant": "PIVOT/UNPIVOT",
-      "native_duckdb_original_sql": "not_proven",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
       "canonical_typed_adapter_parity": "not_proven",
       "native_exact_syntax": "as_in_native_evidence",
       "independent_signoff": "blocked"
@@ -1669,7 +1679,7 @@
       "id": "88-C177-S183",
       "feature_id": "schema.constraints",
       "variant": "PK",
-      "native_duckdb_original_sql": "not_proven",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
       "canonical_typed_adapter_parity": "not_proven",
       "native_exact_syntax": "as_in_native_evidence",
       "independent_signoff": "blocked"
@@ -1678,7 +1688,7 @@
       "id": "88-C177-S184",
       "feature_id": "schema.constraints",
       "variant": "FK",
-      "native_duckdb_original_sql": "not_proven",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
       "canonical_typed_adapter_parity": "not_proven",
       "native_exact_syntax": "as_in_native_evidence",
       "independent_signoff": "blocked"
@@ -1687,7 +1697,7 @@
       "id": "88-C177-S185",
       "feature_id": "schema.constraints",
       "variant": "UNIQUE",
-      "native_duckdb_original_sql": "not_proven",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
       "canonical_typed_adapter_parity": "not_proven",
       "native_exact_syntax": "as_in_native_evidence",
       "independent_signoff": "blocked"
@@ -1696,7 +1706,7 @@
       "id": "88-C177-S186",
       "feature_id": "schema.constraints",
       "variant": "NOT NULL",
-      "native_duckdb_original_sql": "not_proven",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
       "canonical_typed_adapter_parity": "not_proven",
       "native_exact_syntax": "as_in_native_evidence",
       "independent_signoff": "blocked"
@@ -1705,7 +1715,7 @@
       "id": "88-C177-S187",
       "feature_id": "schema.constraints",
       "variant": "CHECK",
-      "native_duckdb_original_sql": "not_proven",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
       "canonical_typed_adapter_parity": "not_proven",
       "native_exact_syntax": "as_in_native_evidence",
       "independent_signoff": "blocked"
@@ -1714,7 +1724,7 @@
       "id": "88-C177-S188",
       "feature_id": "schema.constraints",
       "variant": "DEFAULT",
-      "native_duckdb_original_sql": "not_proven",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
       "canonical_typed_adapter_parity": "not_proven",
       "native_exact_syntax": "as_in_native_evidence",
       "independent_signoff": "blocked"
@@ -1723,7 +1733,7 @@
       "id": "88-C177-S189",
       "feature_id": "schema.constraints",
       "variant": "generated columns",
-      "native_duckdb_original_sql": "not_proven",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
       "canonical_typed_adapter_parity": "not_proven",
       "native_exact_syntax": "as_in_native_evidence",
       "independent_signoff": "blocked"
@@ -1732,7 +1742,7 @@
       "id": "88-C177-S190",
       "feature_id": "schema.metadata_parity",
       "variant": "SQL DDL",
-      "native_duckdb_original_sql": "not_proven",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
       "canonical_typed_adapter_parity": "not_proven",
       "native_exact_syntax": "as_in_native_evidence",
       "independent_signoff": "blocked"
@@ -1741,7 +1751,7 @@
       "id": "88-C177-S191",
       "feature_id": "schema.metadata_parity",
       "variant": "dbt manifest/catalog",
-      "native_duckdb_original_sql": "not_proven",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
       "canonical_typed_adapter_parity": "not_proven",
       "native_exact_syntax": "as_in_native_evidence",
       "independent_signoff": "blocked"
@@ -1750,7 +1760,7 @@
       "id": "88-C177-S192",
       "feature_id": "schema.metadata_parity",
       "variant": "ODCS contract",
-      "native_duckdb_original_sql": "not_proven",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
       "canonical_typed_adapter_parity": "not_proven",
       "native_exact_syntax": "as_in_native_evidence",
       "independent_signoff": "blocked"
@@ -1759,7 +1769,7 @@
       "id": "88-C177-S193",
       "feature_id": "schema.metadata_parity",
       "variant": "absent/conflicting evidence",
-      "native_duckdb_original_sql": "not_proven",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
       "canonical_typed_adapter_parity": "not_proven",
       "native_exact_syntax": "as_in_native_evidence",
       "independent_signoff": "blocked"
@@ -1768,7 +1778,7 @@
       "id": "88-C177-S194",
       "feature_id": "dml.insert",
       "variant": "INSERT VALUES/SELECT",
-      "native_duckdb_original_sql": "not_proven",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
       "canonical_typed_adapter_parity": "not_proven",
       "native_exact_syntax": "as_in_native_evidence",
       "independent_signoff": "blocked"
@@ -1777,7 +1787,7 @@
       "id": "88-C177-S195",
       "feature_id": "dml.insert",
       "variant": "explicit/implicit columns",
-      "native_duckdb_original_sql": "not_proven",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
       "canonical_typed_adapter_parity": "not_proven",
       "native_exact_syntax": "as_in_native_evidence",
       "independent_signoff": "blocked"
@@ -1786,7 +1796,7 @@
       "id": "88-C177-S196",
       "feature_id": "dml.insert",
       "variant": "multi-row",
-      "native_duckdb_original_sql": "not_proven",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
       "canonical_typed_adapter_parity": "not_proven",
       "native_exact_syntax": "as_in_native_evidence",
       "independent_signoff": "blocked"
@@ -1795,7 +1805,7 @@
       "id": "88-C177-S197",
       "feature_id": "dml.insert",
       "variant": "RETURNING",
-      "native_duckdb_original_sql": "not_proven",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
       "canonical_typed_adapter_parity": "not_proven",
       "native_exact_syntax": "as_in_native_evidence",
       "independent_signoff": "blocked"
@@ -1804,7 +1814,7 @@
       "id": "88-C177-S198",
       "feature_id": "dml.insert_conflicts",
       "variant": "ON CONFLICT/ON DUPLICATE KEY",
-      "native_duckdb_original_sql": "not_proven",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
       "canonical_typed_adapter_parity": "not_proven",
       "native_exact_syntax": "as_in_native_evidence",
       "independent_signoff": "blocked"
@@ -1831,7 +1841,7 @@
       "id": "88-C177-S201",
       "feature_id": "dml.update",
       "variant": "UPDATE FROM/joined",
-      "native_duckdb_original_sql": "not_proven",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
       "canonical_typed_adapter_parity": "not_proven",
       "native_exact_syntax": "as_in_native_evidence",
       "independent_signoff": "blocked"
@@ -1840,7 +1850,7 @@
       "id": "88-C177-S202",
       "feature_id": "dml.update",
       "variant": "computed assignments",
-      "native_duckdb_original_sql": "not_proven",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
       "canonical_typed_adapter_parity": "not_proven",
       "native_exact_syntax": "as_in_native_evidence",
       "independent_signoff": "blocked"
@@ -1849,7 +1859,7 @@
       "id": "88-C177-S203",
       "feature_id": "dml.update",
       "variant": "correlated predicates",
-      "native_duckdb_original_sql": "not_proven",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
       "canonical_typed_adapter_parity": "not_proven",
       "native_exact_syntax": "as_in_native_evidence",
       "independent_signoff": "blocked"
@@ -1858,7 +1868,7 @@
       "id": "88-C177-S204",
       "feature_id": "dml.update",
       "variant": "RETURNING",
-      "native_duckdb_original_sql": "not_proven",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
       "canonical_typed_adapter_parity": "not_proven",
       "native_exact_syntax": "as_in_native_evidence",
       "independent_signoff": "blocked"
@@ -1867,7 +1877,7 @@
       "id": "88-C177-S205",
       "feature_id": "dml.delete",
       "variant": "DELETE WHERE/USING/joined",
-      "native_duckdb_original_sql": "not_proven",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
       "canonical_typed_adapter_parity": "not_proven",
       "native_exact_syntax": "as_in_native_evidence",
       "independent_signoff": "blocked"
@@ -1876,7 +1886,7 @@
       "id": "88-C177-S206",
       "feature_id": "dml.delete",
       "variant": "subquery",
-      "native_duckdb_original_sql": "not_proven",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
       "canonical_typed_adapter_parity": "not_proven",
       "native_exact_syntax": "as_in_native_evidence",
       "independent_signoff": "blocked"
@@ -1885,7 +1895,7 @@
       "id": "88-C177-S207",
       "feature_id": "dml.delete",
       "variant": "RETURNING",
-      "native_duckdb_original_sql": "not_proven",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
       "canonical_typed_adapter_parity": "not_proven",
       "native_exact_syntax": "as_in_native_evidence",
       "independent_signoff": "blocked"
@@ -1894,7 +1904,7 @@
       "id": "88-C177-S208",
       "feature_id": "dml.delete",
       "variant": "cascade effects",
-      "native_duckdb_original_sql": "not_proven",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
       "canonical_typed_adapter_parity": "not_proven",
       "native_exact_syntax": "as_in_native_evidence",
       "independent_signoff": "blocked"
@@ -1903,7 +1913,7 @@
       "id": "88-C177-S209",
       "feature_id": "dml.merge",
       "variant": "MERGE matched/unmatched/by source",
-      "native_duckdb_original_sql": "not_proven",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
       "canonical_typed_adapter_parity": "not_proven",
       "native_exact_syntax": "as_in_native_evidence",
       "independent_signoff": "blocked"
@@ -1912,7 +1922,7 @@
       "id": "88-C177-S210",
       "feature_id": "dml.merge",
       "variant": "ordered WHEN",
-      "native_duckdb_original_sql": "not_proven",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
       "canonical_typed_adapter_parity": "not_proven",
       "native_exact_syntax": "as_in_native_evidence",
       "independent_signoff": "blocked"
@@ -1921,7 +1931,7 @@
       "id": "88-C177-S211",
       "feature_id": "dml.merge",
       "variant": "UPDATE/INSERT/DELETE branches",
-      "native_duckdb_original_sql": "not_proven",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
       "canonical_typed_adapter_parity": "not_proven",
       "native_exact_syntax": "as_in_native_evidence",
       "independent_signoff": "blocked"
@@ -1930,7 +1940,7 @@
       "id": "88-C177-S212",
       "feature_id": "ddl.producers",
       "variant": "CREATE TABLE AS",
-      "native_duckdb_original_sql": "not_proven",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
       "canonical_typed_adapter_parity": "not_proven",
       "native_exact_syntax": "as_in_native_evidence",
       "independent_signoff": "blocked"
@@ -1939,7 +1949,7 @@
       "id": "88-C177-S213",
       "feature_id": "ddl.producers",
       "variant": "CREATE VIEW",
-      "native_duckdb_original_sql": "not_proven",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
       "canonical_typed_adapter_parity": "not_proven",
       "native_exact_syntax": "as_in_native_evidence",
       "independent_signoff": "blocked"
@@ -1948,7 +1958,7 @@
       "id": "88-C177-S214",
       "feature_id": "ddl.producers",
       "variant": "CREATE OR REPLACE VIEW/TABLE",
-      "native_duckdb_original_sql": "not_proven",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
       "canonical_typed_adapter_parity": "not_proven",
       "native_exact_syntax": "as_in_native_evidence",
       "independent_signoff": "blocked"
@@ -1957,7 +1967,7 @@
       "id": "88-C177-S215",
       "feature_id": "ddl.producers",
       "variant": "TEMPORARY",
-      "native_duckdb_original_sql": "not_proven",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
       "canonical_typed_adapter_parity": "not_proven",
       "native_exact_syntax": "as_in_native_evidence",
       "independent_signoff": "blocked"
@@ -1966,7 +1976,7 @@
       "id": "88-C177-S216",
       "feature_id": "ddl.schema_lifecycle",
       "variant": "ALTER TABLE",
-      "native_duckdb_original_sql": "not_proven",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
       "canonical_typed_adapter_parity": "not_proven",
       "native_exact_syntax": "as_in_native_evidence",
       "independent_signoff": "blocked"
@@ -1975,7 +1985,7 @@
       "id": "88-C177-S217",
       "feature_id": "ddl.schema_lifecycle",
       "variant": "DROP",
-      "native_duckdb_original_sql": "not_proven",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
       "canonical_typed_adapter_parity": "not_proven",
       "native_exact_syntax": "as_in_native_evidence",
       "independent_signoff": "blocked"
@@ -1984,7 +1994,7 @@
       "id": "88-C177-S218",
       "feature_id": "ddl.schema_lifecycle",
       "variant": "RENAME",
-      "native_duckdb_original_sql": "not_proven",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
       "canonical_typed_adapter_parity": "not_proven",
       "native_exact_syntax": "as_in_native_evidence",
       "independent_signoff": "blocked"
@@ -1993,7 +2003,7 @@
       "id": "88-C177-S219",
       "feature_id": "ddl.schema_lifecycle",
       "variant": "TRUNCATE",
-      "native_duckdb_original_sql": "not_proven",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
       "canonical_typed_adapter_parity": "not_proven",
       "native_exact_syntax": "as_in_native_evidence",
       "independent_signoff": "blocked"
@@ -2002,7 +2012,7 @@
       "id": "88-C177-S220",
       "feature_id": "ddl.schema_lifecycle",
       "variant": "defaults/constraints",
-      "native_duckdb_original_sql": "not_proven",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
       "canonical_typed_adapter_parity": "not_proven",
       "native_exact_syntax": "as_in_native_evidence",
       "independent_signoff": "blocked"
@@ -2011,7 +2021,7 @@
       "id": "88-C177-S221",
       "feature_id": "transactions.ordered_effects",
       "variant": "ordered statements",
-      "native_duckdb_original_sql": "not_proven",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
       "canonical_typed_adapter_parity": "not_proven",
       "native_exact_syntax": "as_in_native_evidence",
       "independent_signoff": "blocked"
@@ -2020,7 +2030,7 @@
       "id": "88-C177-S222",
       "feature_id": "transactions.ordered_effects",
       "variant": "snapshot visibility",
-      "native_duckdb_original_sql": "not_proven",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
       "canonical_typed_adapter_parity": "not_proven",
       "native_exact_syntax": "as_in_native_evidence",
       "independent_signoff": "blocked"
@@ -2029,7 +2039,7 @@
       "id": "88-C177-S223",
       "feature_id": "transactions.ordered_effects",
       "variant": "dependency graph",
-      "native_duckdb_original_sql": "not_proven",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
       "canonical_typed_adapter_parity": "not_proven",
       "native_exact_syntax": "as_in_native_evidence",
       "independent_signoff": "blocked"
@@ -2038,7 +2048,7 @@
       "id": "88-C177-S224",
       "feature_id": "transactions.ordered_effects",
       "variant": "rollback",
-      "native_duckdb_original_sql": "not_proven",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
       "canonical_typed_adapter_parity": "not_proven",
       "native_exact_syntax": "as_in_native_evidence",
       "independent_signoff": "blocked"
@@ -2047,7 +2057,7 @@
       "id": "88-C177-S225",
       "feature_id": "outcomes.cardinality",
       "variant": "COUNT exact/bounded",
-      "native_duckdb_original_sql": "not_proven",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
       "canonical_typed_adapter_parity": "not_proven",
       "native_exact_syntax": "as_in_native_evidence",
       "independent_signoff": "blocked"
@@ -2056,7 +2066,7 @@
       "id": "88-C177-S226",
       "feature_id": "outcomes.cardinality",
       "variant": "zero-count",
-      "native_duckdb_original_sql": "not_proven",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
       "canonical_typed_adapter_parity": "not_proven",
       "native_exact_syntax": "as_in_native_evidence",
       "independent_signoff": "blocked"
@@ -2065,7 +2075,7 @@
       "id": "88-C177-S227",
       "feature_id": "outcomes.cardinality",
       "variant": "duplicate multiplicity",
-      "native_duckdb_original_sql": "not_proven",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
       "canonical_typed_adapter_parity": "not_proven",
       "native_exact_syntax": "as_in_native_evidence",
       "independent_signoff": "blocked"
@@ -2074,7 +2084,7 @@
       "id": "88-C177-S228",
       "feature_id": "outcomes.cardinality",
       "variant": "final row counts",
-      "native_duckdb_original_sql": "not_proven",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
       "canonical_typed_adapter_parity": "not_proven",
       "native_exact_syntax": "as_in_native_evidence",
       "independent_signoff": "blocked"
@@ -2083,7 +2093,7 @@
       "id": "88-C177-S229",
       "feature_id": "outcomes.distribution",
       "variant": "value frequency",
-      "native_duckdb_original_sql": "not_proven",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
       "canonical_typed_adapter_parity": "not_proven",
       "native_exact_syntax": "as_in_native_evidence",
       "independent_signoff": "blocked"
@@ -2092,7 +2102,7 @@
       "id": "88-C177-S230",
       "feature_id": "outcomes.distribution",
       "variant": "null frequency",
-      "native_duckdb_original_sql": "not_proven",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
       "canonical_typed_adapter_parity": "not_proven",
       "native_exact_syntax": "as_in_native_evidence",
       "independent_signoff": "blocked"
@@ -2101,7 +2111,7 @@
       "id": "88-C177-S231",
       "feature_id": "outcomes.distribution",
       "variant": "group counts",
-      "native_duckdb_original_sql": "not_proven",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
       "canonical_typed_adapter_parity": "not_proven",
       "native_exact_syntax": "as_in_native_evidence",
       "independent_signoff": "blocked"
@@ -2110,7 +2120,7 @@
       "id": "88-C177-S232",
       "feature_id": "outcomes.distribution",
       "variant": "joined aggregates",
-      "native_duckdb_original_sql": "not_proven",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
       "canonical_typed_adapter_parity": "not_proven",
       "native_exact_syntax": "as_in_native_evidence",
       "independent_signoff": "blocked"
@@ -2119,7 +2129,7 @@
       "id": "88-C177-S233",
       "feature_id": "outcomes.classification",
       "variant": "multi-terminal positive/negative vectors",
-      "native_duckdb_original_sql": "not_proven",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
       "canonical_typed_adapter_parity": "not_proven",
       "native_exact_syntax": "as_in_native_evidence",
       "independent_signoff": "blocked"
@@ -2128,7 +2138,7 @@
       "id": "88-C177-S234",
       "feature_id": "outcomes.classification",
       "variant": "partial overlap",
-      "native_duckdb_original_sql": "not_proven",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
       "canonical_typed_adapter_parity": "not_proven",
       "native_exact_syntax": "as_in_native_evidence",
       "independent_signoff": "blocked"
@@ -2137,7 +2147,7 @@
       "id": "88-C177-S235",
       "feature_id": "outcomes.classification",
       "variant": "rejected absence",
-      "native_duckdb_original_sql": "not_proven",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
       "canonical_typed_adapter_parity": "not_proven",
       "native_exact_syntax": "as_in_native_evidence",
       "independent_signoff": "blocked"
@@ -2146,7 +2156,7 @@
       "id": "88-C177-S236",
       "feature_id": "outcomes.dag",
       "variant": "shared sources",
-      "native_duckdb_original_sql": "not_proven",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
       "canonical_typed_adapter_parity": "not_proven",
       "native_exact_syntax": "as_in_native_evidence",
       "independent_signoff": "blocked"
@@ -2155,7 +2165,7 @@
       "id": "88-C177-S237",
       "feature_id": "outcomes.dag",
       "variant": "composed CTE/dbt models",
-      "native_duckdb_original_sql": "not_proven",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
       "canonical_typed_adapter_parity": "not_proven",
       "native_exact_syntax": "as_in_native_evidence",
       "independent_signoff": "blocked"
@@ -2164,7 +2174,7 @@
       "id": "88-C177-S238",
       "feature_id": "outcomes.dag",
       "variant": "physical realizability",
-      "native_duckdb_original_sql": "not_proven",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
       "canonical_typed_adapter_parity": "not_proven",
       "native_exact_syntax": "as_in_native_evidence",
       "independent_signoff": "blocked"
@@ -2173,7 +2183,7 @@
       "id": "88-C177-S239",
       "feature_id": "outcomes.dag",
       "variant": "conflict",
-      "native_duckdb_original_sql": "not_proven",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
       "canonical_typed_adapter_parity": "not_proven",
       "native_exact_syntax": "as_in_native_evidence",
       "independent_signoff": "blocked"
@@ -2182,7 +2192,7 @@
       "id": "88-C177-S240",
       "feature_id": "execution.dialect_equivalence",
       "variant": "engine SQL versions",
-      "native_duckdb_original_sql": "not_proven",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
       "canonical_typed_adapter_parity": "not_proven",
       "native_exact_syntax": "as_in_native_evidence",
       "independent_signoff": "blocked"
@@ -2209,7 +2219,7 @@
       "id": "88-C177-S243",
       "feature_id": "execution.dialect_equivalence",
       "variant": "SQL result oracle",
-      "native_duckdb_original_sql": "not_proven",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
       "canonical_typed_adapter_parity": "not_proven",
       "native_exact_syntax": "as_in_native_evidence",
       "independent_signoff": "blocked"
@@ -2218,7 +2228,7 @@
       "id": "88-C177-S244",
       "feature_id": "execution.dbt_fixture",
       "variant": "dbt compile",
-      "native_duckdb_original_sql": "not_proven",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
       "canonical_typed_adapter_parity": "not_proven",
       "native_exact_syntax": "as_in_native_evidence",
       "independent_signoff": "blocked"
@@ -2227,7 +2237,7 @@
       "id": "88-C177-S245",
       "feature_id": "execution.dbt_fixture",
       "variant": "docs generate",
-      "native_duckdb_original_sql": "not_proven",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
       "canonical_typed_adapter_parity": "not_proven",
       "native_exact_syntax": "as_in_native_evidence",
       "independent_signoff": "blocked"
@@ -2236,7 +2246,7 @@
       "id": "88-C177-S246",
       "feature_id": "execution.dbt_fixture",
       "variant": "make all",
-      "native_duckdb_original_sql": "not_proven",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
       "canonical_typed_adapter_parity": "not_proven",
       "native_exact_syntax": "as_in_native_evidence",
       "independent_signoff": "blocked"
@@ -2245,7 +2255,7 @@
       "id": "88-C177-S247",
       "feature_id": "execution.dbt_fixture",
       "variant": "source and terminal output assertion",
-      "native_duckdb_original_sql": "not_proven",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
       "canonical_typed_adapter_parity": "not_proven",
       "native_exact_syntax": "as_in_native_evidence",
       "independent_signoff": "blocked"
@@ -2281,7 +2291,7 @@
       "id": "88-C177-S251",
       "feature_id": "execution.unsupported_opaque",
       "variant": "vendor operators",
-      "native_duckdb_original_sql": "not_proven",
+      "native_duckdb_original_sql": "full_source_and_terminal_bag_oracle",
       "canonical_typed_adapter_parity": "not_proven",
       "native_exact_syntax": "as_in_native_evidence",
       "independent_signoff": "blocked"
