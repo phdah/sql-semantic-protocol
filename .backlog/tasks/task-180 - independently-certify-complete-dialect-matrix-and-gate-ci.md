@@ -8,7 +8,6 @@ updated_date: '2026-11-09'
 labels: []
 milestone: m-3
 dependencies:
-  - TASK-179
   - TASK-191
 references:
   - TASK-88

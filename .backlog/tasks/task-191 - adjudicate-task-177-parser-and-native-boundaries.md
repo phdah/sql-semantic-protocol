@@ -25,6 +25,8 @@ type: feature
 
 ## Bounded scope and source of truth
 
+- **Stable fixture IDs:** `88-C191-P`, `88-C191-N`. The 13 supported dialects are an exact parser-domain set; record explicit per-cell evidence and preserve all original fixture references.
+
 - 55 exact parser-rejected SQL/dialect cells in `docs/task-177-parser-boundaries.json`.
 - 116 exact public-analyzer Unsupported SQL/dialect cells in `docs/task-177-analysis-boundaries.json`.
 - 23 original SQL samples without successful fixed native terminal/state proof in `docs/task-177-remaining-original-cases.json`. Their current breakdown is **15 conditional/rejected syntax, five nondeterministic samples, one nonterminating recursion, one RANDOM(), and one optimizer-sensitive EXPLAIN**.
