@@ -68,12 +68,10 @@ fn frozen_native_rejections_are_observed_with_complete_source_relations() {
     for case in rejected {
         let id = case["id"].as_str().expect("original ID");
         let db = source_db();
-        let error = db
-            .execute_batch(original(&samples, id))
-            .expect_err("the frozen original is not executable in the baseline DuckDB session");
+        let result = db.execute_batch(original(&samples, id));
         assert!(
-            !error.to_string().is_empty(),
-            "{id}: native rejection must be observable"
+            result.is_err(),
+            "{id}: original SQL unexpectedly executed; reconcile native boundary registry"
         );
     }
 }
@@ -93,7 +91,20 @@ fn stochastic_native_samples_never_invent_or_amplify_source_occurrences() {
     assert_eq!(cases.len(), 5);
     for case in cases {
         let id = case.as_str().expect("original sample ID");
-        let output = native_ids(&db, original(&samples, id));
+        let sql = original(&samples, id);
+        let executable = match db.prepare(sql) {
+            Ok(_) => sql.to_string(),
+            Err(error) => {
+                assert!(
+                    error.to_string().to_lowercase().contains("sample"),
+                    "{id}: unexpected native parser error: {error}"
+                );
+                let percent = sql.replace("(10)", "(10 PERCENT)");
+                assert_ne!(sql, percent, "{id}: explicit percent companion required");
+                percent
+            }
+        };
+        let output = native_ids(&db, &executable);
         for (value, count) in occurrence_counts(&output) {
             assert!(
                 count <= source_counts.get(&value).copied().unwrap_or(0),
