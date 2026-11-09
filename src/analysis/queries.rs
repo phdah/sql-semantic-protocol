@@ -553,7 +553,7 @@ pub(super) fn analyze_query(
                                 && !matches!(item, Expr::Function(function)
                                     if function.name.to_string().eq_ignore_ascii_case("ROLLUP")
                                         || function.name.to_string().eq_ignore_ascii_case("CUBE"))
-                        }))));
+                        })));
 
     // These are the only upstream row-shapes whose physical QUALIFY
     // composition is currently certified. Any unrelated row shaping fails closed.
