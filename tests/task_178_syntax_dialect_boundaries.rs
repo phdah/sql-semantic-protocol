@@ -144,7 +144,6 @@ fn native_except_and_limit_have_full_null_duplicate_output_and_nonmembership_gol
     );
 }
 
-
 #[test]
 fn top_fetch_and_limit_preserve_the_same_typed_count_and_sort_shape_without_ties() {
     let fixture = read(FIXTURE);
@@ -170,12 +169,24 @@ fn top_fetch_and_limit_preserve_the_same_typed_count_and_sort_shape_without_ties
             assert_eq!(output_left, output_right, "{id}/{name}: typed output drift");
             let shape_left = &left["inputs"][0]["statements"][0]["row_shaping"];
             let shape_right = &right["inputs"][0]["statements"][0]["row_shaping"];
-            assert!(shape_left.is_object(), "{id}/{name}: TOP or FETCH must be a typed row-selection plan");
-            assert!(shape_right.is_object(), "{id}/{name}: LIMIT reference plan missing");
+            assert!(
+                shape_left.is_object(),
+                "{id}/{name}: TOP or FETCH must be a typed row-selection plan"
+            );
+            assert!(
+                shape_right.is_object(),
+                "{id}/{name}: LIMIT reference plan missing"
+            );
             if is_ties {
-                assert_eq!(shape_left["with_ties"], true, "{id}/{name}: ties cannot be lost");
+                assert_eq!(
+                    shape_left["with_ties"], true,
+                    "{id}/{name}: ties cannot be lost"
+                );
                 assert_eq!(shape_right["with_ties"], false);
-                assert_ne!(shape_left, shape_right, "{id}/{name}: tied selection is not LIMIT");
+                assert_ne!(
+                    shape_left, shape_right,
+                    "{id}/{name}: tied selection is not LIMIT"
+                );
             } else {
                 assert_eq!(shape_left, shape_right, "{id}/{name}: TOP/FETCH with no ties must preserve the exact canonical row-selection contract");
             }
@@ -200,16 +211,17 @@ fn with_ties_is_not_limit_when_a_boundary_has_three_equal_peers() {
     };
     assert_eq!(
         values("SELECT id FROM orders ORDER BY id LIMIT 2"),
-        vec![1,1],
+        vec![1, 1],
         "LIMIT 2 selects exactly two physical row occurrences"
     );
     assert_eq!(
         values("SELECT id FROM orders QUALIFY RANK() OVER (ORDER BY id) <= 2"),
-        vec![1,1,1],
+        vec![1, 1, 1],
         "equivalent native rank control retains every tied boundary peer"
     );
     assert!(
-        db.prepare("SELECT id FROM orders ORDER BY id FETCH FIRST 2 ROWS WITH TIES").is_err(),
+        db.prepare("SELECT id FROM orders ORDER BY id FETCH FIRST 2 ROWS WITH TIES")
+            .is_err(),
         "DuckDB rejecting the original syntax does not license claim of its native execution"
     );
 }
