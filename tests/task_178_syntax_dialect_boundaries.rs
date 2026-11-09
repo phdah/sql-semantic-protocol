@@ -143,3 +143,73 @@ fn native_except_and_limit_have_full_null_duplicate_output_and_nonmembership_gol
         "pagination preserves terminal bag and exact source occurrence multiplicity"
     );
 }
+
+
+#[test]
+fn top_fetch_and_limit_preserve_the_same_typed_count_and_sort_shape_without_ties() {
+    let fixture = read(FIXTURE);
+    let cases = fixture["cases"].as_array().expect("four SQL spellings");
+    for id in ["88-C178-TOP", "88-C178-FETCH", "88-C178-FETCH-TIES"] {
+        let case = cases
+            .iter()
+            .find(|case| case["id"] == id)
+            .expect("named row selection variant");
+        let is_ties = id == "88-C178-FETCH-TIES";
+        for name in fixture["dialects"].as_array().expect("13 dialects") {
+            let name = name.as_str().expect("dialect");
+            let dialect = dialect_from_name(name).expect("public parser");
+            let analyze = |sql: &str| {
+                let bundle = analyze_sql(sql, name, dialect.as_ref())
+                    .expect("syntax recognized by all 13 parser dialects");
+                read(&to_json(&bundle))
+            };
+            let left = analyze(case["sql"].as_str().expect("source SQL"));
+            let right = analyze(case["reference"].as_str().expect("reference SQL"));
+            let output_left = &left["inputs"][0]["statements"][0]["output"];
+            let output_right = &right["inputs"][0]["statements"][0]["output"];
+            assert_eq!(output_left, output_right, "{id}/{name}: typed output drift");
+            let shape_left = &left["inputs"][0]["statements"][0]["row_shaping"];
+            let shape_right = &right["inputs"][0]["statements"][0]["row_shaping"];
+            assert!(shape_left.is_object(), "{id}/{name}: TOP or FETCH must be a typed row-selection plan");
+            assert!(shape_right.is_object(), "{id}/{name}: LIMIT reference plan missing");
+            if is_ties {
+                assert_eq!(shape_left["with_ties"], true, "{id}/{name}: ties cannot be lost");
+                assert_eq!(shape_right["with_ties"], false);
+                assert_ne!(shape_left, shape_right, "{id}/{name}: tied selection is not LIMIT");
+            } else {
+                assert_eq!(shape_left, shape_right, "{id}/{name}: TOP/FETCH with no ties must preserve the exact canonical row-selection contract");
+            }
+        }
+    }
+}
+
+#[test]
+fn with_ties_is_not_limit_when_a_boundary_has_three_equal_peers() {
+    let db = duckdb::Connection::open_in_memory().expect("DuckDB");
+    db.execute_batch("CREATE TABLE orders(id INT); INSERT INTO orders VALUES (1),(1),(1),(2);")
+        .expect("three identical physical key occurrences");
+    let values = |sql: &str| {
+        let mut stmt = db.prepare(sql).expect("native reference syntax");
+        let mut out: Vec<i64> = stmt
+            .query_map([], |row| row.get(0))
+            .expect("reference rows")
+            .map(|item| item.expect("integer key"))
+            .collect();
+        out.sort();
+        out
+    };
+    assert_eq!(
+        values("SELECT id FROM orders ORDER BY id LIMIT 2"),
+        vec![1,1],
+        "LIMIT 2 selects exactly two physical row occurrences"
+    );
+    assert_eq!(
+        values("SELECT id FROM orders QUALIFY RANK() OVER (ORDER BY id) <= 2"),
+        vec![1,1,1],
+        "equivalent native rank control retains every tied boundary peer"
+    );
+    assert!(
+        db.prepare("SELECT id FROM orders ORDER BY id FETCH FIRST 2 ROWS WITH TIES").is_err(),
+        "DuckDB rejecting the original syntax does not license claim of its native execution"
+    );
+}
