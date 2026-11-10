@@ -61,7 +61,10 @@ fn every_unproved_native_sql_variant_has_a_pinned_and_honest_negative_boundary()
         .iter()
         .map(|case| case["id"].as_str().expect("original SQL ID"))
         .collect();
-    assert_eq!(declared, unresolved, "missing native exceptions are never waived");
+    assert_eq!(
+        declared, unresolved,
+        "missing native exceptions are never waived"
+    );
     for case in registry_cases {
         let id = case["id"].as_str().expect("ID");
         let original = source["cases"]
@@ -70,7 +73,10 @@ fn every_unproved_native_sql_variant_has_a_pinned_and_honest_negative_boundary()
             .iter()
             .find(|candidate| candidate["id"] == id)
             .expect("source case cannot be renamed");
-        assert_eq!(case["sql"], original["sql"], "{id}: original SQL text was edited");
+        assert_eq!(
+            case["sql"], original["sql"],
+            "{id}: original SQL text was edited"
+        );
         assert_eq!(case["independent_signoff"], false);
         assert_eq!(case["release_approved"], false);
         assert_eq!(case["proven_native_terminal"], false);
@@ -100,7 +106,10 @@ fn every_unproved_native_sql_variant_has_a_pinned_and_honest_negative_boundary()
                 .any(|x| x == id),
             other => panic!("{id}: unsupported boundary category {other}"),
         };
-        assert!(expected, "{id}: native limitation lacks original-SQL evidence");
+        assert!(
+            expected,
+            "{id}: native limitation lacks original-SQL evidence"
+        );
     }
 }
 
