@@ -537,6 +537,9 @@ fn typed_domain_contains_native_integer(domain: &ValueDomain, literal: &serde_js
                 above_lower && below_upper
             })
         }
+        // ValueDomain is non-exhaustive for external consumers. An unknown
+        // future domain law cannot be accepted as a sound membership proof.
+        _ => false,
     }
 }
 
