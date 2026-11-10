@@ -38,10 +38,7 @@ const CASES: &[(&str, &str)] = &[
         "window",
         "SELECT ROW_NUMBER() OVER (ORDER BY id) AS rn FROM orders",
     ),
-    (
-        "pagination",
-        "SELECT id FROM orders ORDER BY id LIMIT 2",
-    ),
+    ("pagination", "SELECT id FROM orders ORDER BY id LIMIT 2"),
 ];
 
 fn direct_catalog() -> RelationCatalog {
@@ -177,7 +174,10 @@ fn all_five_portable_read_families_have_identical_direct_and_dbt_domains_in_13_d
         for name in DIALECTS {
             let expected = output_domains(&direct, name, sql);
             let from_dbt = output_domains(&dbt, name, sql);
-            assert!(!expected.is_empty(), "{family}/{name}: missing typed output columns");
+            assert!(
+                !expected.is_empty(),
+                "{family}/{name}: missing typed output columns"
+            );
             assert_eq!(
                 from_dbt, expected,
                 "{family}/{name}: compiled dbt source types changed canonical output domains"
