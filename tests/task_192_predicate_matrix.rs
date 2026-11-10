@@ -96,6 +96,7 @@ fn task_192_inventory_contains_all_original_cases_without_false_semantic_certifi
     assert!(known.is_disjoint(&new));
 
     let mut seen = BTreeSet::new();
+    let mut types = std::collections::BTreeMap::<&str, usize>::new();
     let mut cells = 0;
     for case in freeze["cases"].as_array().expect("task-owned inventory") {
         let id = field(case, "id");
@@ -130,6 +131,22 @@ fn task_192_inventory_contains_all_original_cases_without_false_semantic_certifi
             cells += 1;
         }
         assert_eq!(case["release_approved"], false);
+        let claim = &case["typed_output_expectation"];
+        let kind = claim["kind"].as_str().expect("independent typed expectation");
+        *types.entry(kind).or_default() += 1;
+        if kind == "precise_constraint" {
+            let source = prior["cases"]
+                .as_array()
+                .expect("prior exact domain goldens")
+                .iter()
+                .find(|item| item["id"] == id)
+                .expect("original independent exact predicate case");
+            assert_eq!(
+                claim["literal_domain"], source["expected_projected_domain"],
+                "{id}: precise typed interval, signed bounds, or set changed"
+            );
+            assert_eq!(claim["nullable"], false);
+        }
         assert!(
             case["source_and_terminal_duckdb_oracle"].is_object(),
             "{id}: every original case requires pinned native positive or negative evidence"
@@ -152,6 +169,10 @@ fn task_192_inventory_contains_all_original_cases_without_false_semantic_certifi
     }
     assert_eq!(seen.len(), 43);
     assert_eq!(cells, 559);
+    assert_eq!(types["precise_constraint"], 10);
+    assert_eq!(types["unconstrained_nullable_id"], 31);
+    assert_eq!(types["native_evaluation_error"], 1);
+    assert_eq!(types["unsupported_structural_cast"], 1);
 }
 
 #[test]
