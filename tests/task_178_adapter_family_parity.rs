@@ -393,3 +393,74 @@ fn all_14_frozen_window_and_pagination_variants_have_odcs_parity() {
     }
     assert_eq!(checked, 14);
 }
+
+
+/// The public API reports S083's BY NAME output alignment as an explicit
+/// unsupported boundary; it must not be counted as a typed parity success.
+/// Other frozen native set examples have complete literal DuckDB bag goldens
+/// in task_177_relational_bag_oracles.
+#[test]
+fn all_18_representable_native_set_variants_have_direct_dbt_parity() {
+    let registry: serde_json::Value = serde_json::from_str(include_str!(
+        "../docs/task-177-relational-bag-oracles.json"
+    ))
+    .expect("native set bag registry");
+    let cases = registry["cases"].as_array().expect("source originals");
+    let ids = registry["groups"]["sets"].as_array().expect("19 native set cases");
+    assert_eq!(ids.len(), 19);
+    let direct = direct_catalog();
+    let mut certified_parser_shapes = 0;
+    let mut named_boundaries = 0;
+    for id in ids {
+        let id = id.as_str().expect("stable sample");
+        let case = cases.iter().find(|item| item["id"] == id).expect("literal terminal oracle");
+        if case["canonical_output_boundary"] == "name_alignment_output_unsupported" {
+            assert_eq!(id, "88-C177-S083");
+            named_boundaries += 1;
+            continue;
+        }
+        let sql = case["sql"].as_str().expect("original SQL");
+        let dbt = dbt_catalog(sql);
+        for name in DIALECTS {
+            assert_eq!(
+                output_domains(&dbt, name, sql),
+                output_domains(&direct, name, sql),
+                "{id}/{name}: dbt evidence changed positional or multiset output domain"
+            );
+        }
+        certified_parser_shapes += 1;
+    }
+    assert_eq!(certified_parser_shapes, 18);
+    assert_eq!(named_boundaries, 1);
+}
+
+#[cfg(feature = "odcs")]
+#[test]
+fn all_18_representable_native_set_variants_have_odcs_parity() {
+    let registry: serde_json::Value = serde_json::from_str(include_str!(
+        "../docs/task-177-relational-bag-oracles.json"
+    ))
+    .expect("native set bag registry");
+    let cases = registry["cases"].as_array().expect("source SQL");
+    let direct = direct_catalog();
+    let odcs = odcs_catalog();
+    let mut checked = 0;
+    for id in registry["groups"]["sets"].as_array().expect("named variants") {
+        let id = id.as_str().expect("sample ID");
+        let case = cases.iter().find(|item| item["id"] == id).expect("native oracle");
+        if id == "88-C177-S083" {
+            assert_eq!(case["canonical_output_boundary"], "name_alignment_output_unsupported");
+            continue;
+        }
+        let sql = case["sql"].as_str().expect("original SQL");
+        for name in DIALECTS {
+            assert_eq!(
+                output_domains(&odcs, name, sql),
+                output_domains(&direct, name, sql),
+                "{id}/{name}: ODCS evidence changed output domains"
+            );
+        }
+        checked += 1;
+    }
+    assert_eq!(checked, 18);
+}
