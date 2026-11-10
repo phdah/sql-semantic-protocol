@@ -96,14 +96,14 @@ fn task_88_child_queue_preserves_a_non_circular_final_acceptance_gate() {
         .iter()
         .map(|p| p["id"].as_u64().expect("numeric task ID"))
         .collect();
-    assert_eq!(children, [177, 178, 179, 191, 180]);
+    assert_eq!(children, [177, 178, 192, 193, 194, 195, 196, 197, 179, 191, 180]);
     assert_eq!(
         parent["phases"][0]["scoped_status"],
         "Done (PR #196 merge pending)"
     );
     assert_eq!(
-        parent["phases"][3]["fixture_ids"],
+        parent["phases"][9]["fixture_ids"],
         serde_json::json!(["88-C191-P", "88-C191-N"])
     );
-    assert_eq!(parent["phases"][4]["id"], 180);
+    assert_eq!(parent["phases"][10]["id"], 180);
 }
