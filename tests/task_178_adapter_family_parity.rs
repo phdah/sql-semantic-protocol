@@ -46,7 +46,7 @@ fn direct_catalog() -> RelationCatalog {
     let ddl = analyze_inputs(
         &[SqlInput::inline(
             "CREATE TABLE orders (id INTEGER, amount INTEGER);
-             CREATE TABLE customers (id INTEGER, amount INTEGER)",
+             CREATE TABLE customers (id INTEGER, amount INTEGER);\n             CREATE TABLE products (id INTEGER)",
         )],
         "duckdb",
         dialect.as_ref(),
@@ -61,6 +61,9 @@ fn dbt_catalog(sql: &str) -> RelationCatalog {
     let mut dependencies = vec!["source.task178.orders"];
     if sql.contains("customers") {
         dependencies.push("source.task178.customers");
+    }
+    if sql.contains("products") {
+        dependencies.push("source.task178.products");
     }
     let manifest = json!({
         "metadata": {
@@ -94,6 +97,11 @@ fn dbt_catalog(sql: &str) -> RelationCatalog {
                     "id": {"name": "id", "data_type": "INTEGER"},
                     "amount": {"name": "amount", "data_type": "INTEGER"}
                 }
+            },
+            "source.task178.products": {
+                "unique_id": "source.task178.products", "resource_type": "source",
+                "name": "products", "relation_name": "products",
+                "columns": {"id": {"name": "id", "data_type": "INTEGER"}}
             }
         }
     });
@@ -135,11 +143,16 @@ schema:
         physicalType: INTEGER
       - name: amount
         physicalType: INTEGER
+  - name: products
+    physicalName: products
+    properties:
+      - name: id
+        physicalType: INTEGER
 ";
     let parsed = sql_semantic_protocol::parse_odcs_yaml(
         contract,
         "duckdb",
-        &RelationCatalog::new(&["orders", "customers"]).expect("named physical relations"),
+        &RelationCatalog::new(&["orders", "customers", "products"]).expect("named physical relations"),
     )
     .expect("contract source schema");
     RelationCatalog::from_schemas(parsed.source_schemas()).expect("contract schema")
@@ -260,6 +273,61 @@ fn all_25_frozen_predicate_variants_preserve_odcs_typed_domains() {
                 output_domains(&odcs, name, sql),
                 output_domains(&direct, name, sql),
                 "{id}/{name}: contract source facts must preserve full typed output domains"
+            );
+        }
+    }
+}
+
+
+/// Every frozen native join example has a pinned complete source and terminal
+/// bag in task_177_relational_bag_oracles. Verify that the *same* output-domain
+/// evidence survives direct DDL, dbt source metadata, and ODCS schemas.
+#[test]
+fn all_21_frozen_native_join_variants_preserve_direct_and_dbt_domains() {
+    let registry: serde_json::Value = serde_json::from_str(include_str!(
+        "../docs/task-177-relational-bag-oracles.json"
+    ))
+    .expect("independently pinned native join registry");
+    let ids = registry["groups"]["joins"].as_array().expect("21 join oracles");
+    assert_eq!(ids.len(), 21);
+    let cases = registry["cases"].as_array().expect("complete native cases");
+    let direct = direct_catalog();
+    for id in ids {
+        let id = id.as_str().expect("stable join identity");
+        let case = cases.iter().find(|item| item["id"] == id).expect("native terminal oracle");
+        let sql = case["sql"].as_str().expect("registered SQL");
+        let dbt = dbt_catalog(sql);
+        for name in DIALECTS {
+            let expected = output_domains(&direct, name, sql);
+            assert_eq!(
+                output_domains(&dbt, name, sql),
+                expected,
+                "{id}/{name}: compiled dbt source typed claims differ from SQL DDL"
+            );
+        }
+    }
+}
+
+#[cfg(feature = "odcs")]
+#[test]
+fn all_21_frozen_native_join_variants_preserve_odcs_domains() {
+    let registry: serde_json::Value = serde_json::from_str(include_str!(
+        "../docs/task-177-relational-bag-oracles.json"
+    ))
+    .expect("native join registry");
+    let ids = registry["groups"]["joins"].as_array().expect("21 join cases");
+    let cases = registry["cases"].as_array().expect("source originals");
+    let direct = direct_catalog();
+    let odcs = odcs_catalog();
+    for id in ids {
+        let id = id.as_str().expect("stable join case");
+        let sql = cases.iter().find(|item| item["id"] == id).expect("native SQL")["sql"]
+            .as_str().expect("original SQL");
+        for name in DIALECTS {
+            assert_eq!(
+                output_domains(&odcs, name, sql),
+                output_domains(&direct, name, sql),
+                "{id}/{name}: ODCS and direct source facts differ"
             );
         }
     }
