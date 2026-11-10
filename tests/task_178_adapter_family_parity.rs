@@ -332,3 +332,64 @@ fn all_21_frozen_native_join_variants_preserve_odcs_domains() {
         }
     }
 }
+
+
+/// Window and pagination transformations compose against the same typed
+/// physical sources regardless of adapter. The independently frozen original
+/// DuckDB source/output bags remain owned by task_177_relational_bag_oracles.
+#[test]
+fn all_14_frozen_window_and_pagination_variants_have_direct_dbt_parity() {
+    let registry: serde_json::Value = serde_json::from_str(include_str!(
+        "../docs/task-177-relational-bag-oracles.json"
+    ))
+    .expect("native source/terminal bag registry");
+    let cases = registry["cases"].as_array().expect("named native SQL");
+    let direct = direct_catalog();
+    let mut checked = 0;
+    for group in ["windows", "pagination"] {
+        for id in registry["groups"][group].as_array().expect("named group") {
+            let id = id.as_str().expect("stable native case");
+            let sql = cases.iter().find(|item| item["id"] == id).expect("native oracle")["sql"]
+                .as_str().expect("original SQL");
+            let dbt = dbt_catalog(sql);
+            for name in DIALECTS {
+                assert_eq!(
+                    output_domains(&dbt, name, sql),
+                    output_domains(&direct, name, sql),
+                    "{group}/{id}/{name}: dbt typing drifted from direct SQL"
+                );
+            }
+            checked += 1;
+        }
+    }
+    assert_eq!(checked, 14);
+}
+
+#[cfg(feature = "odcs")]
+#[test]
+fn all_14_frozen_window_and_pagination_variants_have_odcs_parity() {
+    let registry: serde_json::Value = serde_json::from_str(include_str!(
+        "../docs/task-177-relational-bag-oracles.json"
+    ))
+    .expect("native SQL registry");
+    let cases = registry["cases"].as_array().expect("original SQL");
+    let direct = direct_catalog();
+    let odcs = odcs_catalog();
+    let mut checked = 0;
+    for group in ["windows", "pagination"] {
+        for id in registry["groups"][group].as_array().expect("named group") {
+            let id = id.as_str().expect("native case");
+            let sql = cases.iter().find(|item| item["id"] == id).expect("native oracle")["sql"]
+                .as_str().expect("original SQL");
+            for name in DIALECTS {
+                assert_eq!(
+                    output_domains(&odcs, name, sql),
+                    output_domains(&direct, name, sql),
+                    "{group}/{id}/{name}: contract typing drifted from direct SQL"
+                );
+            }
+            checked += 1;
+        }
+    }
+    assert_eq!(checked, 14);
+}
