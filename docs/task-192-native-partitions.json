@@ -413,11 +413,17 @@
       "typed_output": "struct_cast_unknown_pending_typed_struct_domain",
       "parser_boundaries": [
         "bigquery",
-        "duckdb",
-        "hive"
+        "generic",
+        "duckdb"
       ],
-      "vendor_session_approved": false
+      "vendor_session_approved": false,
+      "parser_boundary_statuses": {
+        "bigquery": "R",
+        "generic": "R",
+        "duckdb": "D_historical_repaired_in_TASK_178"
+      }
     }
   ],
-  "signed_off": false
+  "signed_off": false,
+  "known_struct_canonical_observation": "CRCCDRCCCCCCC"
 }
