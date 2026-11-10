@@ -44,19 +44,31 @@ fn task_192_inventory_contains_all_original_cases_without_false_semantic_certifi
     let coverage = json(COVERAGE);
     assert_eq!(freeze["schema_version"], 1);
     assert_eq!(freeze["task_id"], "TASK-192");
-    assert_eq!(freeze["status"], "in_progress_v1_incomplete_semantic_acceptance");
+    assert_eq!(
+        freeze["status"],
+        "in_progress_v1_incomplete_semantic_acceptance"
+    );
     assert_eq!(freeze["positive_fixture_id"], "88-C192-P");
     assert_eq!(freeze["negative_fixture_id"], "88-C192-N");
     assert_eq!(freeze["case_count"], 43);
     assert_eq!(freeze["dialect_cell_count"], 559);
-    assert_eq!(freeze["preexisting_duckdb_truth_partition_oracle_count"], 25);
+    assert_eq!(
+        freeze["preexisting_duckdb_truth_partition_oracle_count"],
+        25
+    );
     assert_eq!(freeze["new_task_owned_duckdb_oracle_count"], 4);
     assert_eq!(freeze["unproved_native_truth_partition_case_count"], 14);
     assert_eq!(freeze["full_typed_semantic_signoff"], false);
-    assert_eq!(freeze["release_approved"], Value::Null);
+    assert_eq!(freeze["release_approved"], false);
     assert_eq!(freeze["independent_review_signed_off"], false);
-    assert_eq!(coverage["task_192_predicate_type_acceptance"]["task_done"], false);
-    assert_eq!(coverage["task_192_predicate_type_acceptance"]["independent_signoff"], false);
+    assert_eq!(
+        coverage["task_192_predicate_type_acceptance"]["task_done"],
+        false
+    );
+    assert_eq!(
+        coverage["task_192_predicate_type_acceptance"]["independent_signoff"],
+        false
+    );
 
     let dialects = freeze["dialects"].as_array().expect("public dialects");
     assert_eq!(dialects.len(), 13);
@@ -105,8 +117,7 @@ fn task_192_inventory_contains_all_original_cases_without_false_semantic_certifi
                 "{id}: cannot retroactively alter observed parser evidence"
             );
             assert_eq!(
-                observation["semantic_certification"],
-                "pending_independent_task_192_verification",
+                observation["semantic_certification"], "pending_independent_task_192_verification",
                 "{id}: parser equality is not semantic proof"
             );
             assert_eq!(observation["native_vendor_certification"], "unattested");
@@ -114,11 +125,17 @@ fn task_192_inventory_contains_all_original_cases_without_false_semantic_certifi
         }
         assert_eq!(case["release_approved"], false);
         if known.contains(id) || new.contains(id) {
-            assert!(case["source_and_terminal_duckdb_oracle"].is_object(), "{id}");
+            assert!(
+                case["source_and_terminal_duckdb_oracle"].is_object(),
+                "{id}"
+            );
         } else {
             assert!(case["source_and_terminal_duckdb_oracle"].is_null(), "{id}");
             assert!(
-                !case["missing_evidence"].as_array().expect("pending requirements").is_empty(),
+                !case["missing_evidence"]
+                    .as_array()
+                    .expect("pending requirements")
+                    .is_empty(),
                 "{id}: incomplete mandatory evidence cannot vanish"
             );
         }
@@ -151,15 +168,14 @@ fn four_original_string_patterns_have_complete_duckdb_true_false_unknown_bags() 
         .as_array()
         .expect("source rows")
         .iter()
-        .map(|row| {
-            row[1]
-                .as_str()
-                .map(ToOwned::to_owned)
-        })
+        .map(|row| row[1].as_str().map(ToOwned::to_owned))
         .collect();
     assert_eq!(actual, frozen, "duplicate string values and NULL retained");
 
-    for case in source["cases"].as_array().expect("task-owned native goldens") {
+    for case in source["cases"]
+        .as_array()
+        .expect("task-owned native goldens")
+    {
         let id = field(case, "id");
         let original = freeze["cases"]
             .as_array()
@@ -192,7 +208,11 @@ fn four_original_string_patterns_have_complete_duckdb_true_false_unknown_bags() 
             all.extend(expected);
         }
         all.sort();
-        assert_eq!(all, vec![1, 2, 3, 4, 5, 6, 7], "{id}: closed-world partition");
+        assert_eq!(
+            all,
+            vec![1, 2, 3, 4, 5, 6, 7],
+            "{id}: closed-world partition"
+        );
         let mut not_true = expected_ids(case, "false_ids");
         not_true.extend(expected_ids(case, "unknown_ids"));
         not_true.sort();
@@ -212,13 +232,11 @@ fn four_original_string_patterns_have_complete_duckdb_true_false_unknown_bags() 
             .unwrap_or_else(|error| panic!("{id}: public analysis failed: {error}"));
         let emitted = json(&to_json(&output));
         assert_eq!(
-            emitted["inputs"][0]["statements"][0]["kind"],
-            "query",
+            emitted["inputs"][0]["statements"][0]["kind"], "query",
             "{id}: query cannot be silently dropped"
         );
         assert!(
-            emitted["inputs"][0]["statements"][0]["output"]["columns"][0]["domain"]
-                .is_object(),
+            emitted["inputs"][0]["statements"][0]["output"]["columns"][0]["domain"].is_object(),
             "{id}: explicit projected domain/unknown required"
         );
     }
@@ -258,6 +276,9 @@ fn observed_portable_dialect_documents_remain_equivalent_without_claiming_native
             comparison_count += 1;
         }
         // Parser/canonical identity is an observation, not a domain proof.
-        assert!(comparison_count >= 11, "{id}: unexpected parser-law regressions");
+        assert!(
+            comparison_count >= 11,
+            "{id}: unexpected parser-law regressions"
+        );
     }
 }
