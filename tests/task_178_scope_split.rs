@@ -196,9 +196,14 @@ fn new_tasks_and_existing_final_gates_form_one_acyclic_queue() {
             content.contains(&format!("id: {task}")),
             "{task}: missing file identity"
         );
+        let expected_status = if task == "TASK-192" {
+            "status: In Progress"
+        } else {
+            "status: To Do"
+        };
         assert!(
-            content.contains("status: To Do"),
-            "{task}: unstarted task falsely marked Done"
+            content.contains(expected_status),
+            "{task}: unexpected backlog lifecycle state"
         );
         assert!(
             content.contains(&format!("  - {predecessor}")),
