@@ -4,7 +4,7 @@ title: Verify all exposed SQL dialects and dialect-specific semantic laws
 status: To Do
 assignee: []
 created_date: '2026-10-09'
-updated_date: '2026-11-09'
+updated_date: '2026-11-10'
 labels: []
 milestone: m-3
 dependencies: 
@@ -24,6 +24,12 @@ dependencies:
   - TASK-83
   - TASK-177
   - TASK-178
+  - TASK-192
+  - TASK-193
+  - TASK-194
+  - TASK-195
+  - TASK-196
+  - TASK-197
   - TASK-179
   - TASK-180
   - TASK-191
@@ -78,16 +84,27 @@ Approved [13-dialect canonical-equivalence acceptance](../../docs/coverage-signo
 
 TASK-70/108 completed the expression-specific 13-parser, 546-cell audit. The 14 reviewed conditional dialect cells and all remaining native vendor engine/session/collation requirements stay owned by TASK-88's independent global dialect-law acceptance and TASK-91's publication gate.
 
-## Bounded dependency-ordered child execution queue (2026-10-17)
+## Bounded dependency-ordered child execution queue (2026-10-17; expanded 2026-11-10)
 
 TASK-88 is an **independent parent signoff** and cannot be closed from a narrow passing CI subset. All original AC remain mandatory and unchecked until every child below is Done and merged. TASK-177's Done status is bounded to the observed parser/analyzer freeze; TASK-191 owns its outstanding parser/native exception dispositions and does not waive parent acceptance. Choose first unfinished child with satisfied upstream dependencies; no child depends on TASK-88. `docs/backlog-child-queue-plan.json` is the versioned planning inventory, and each child must register a frozen, executable task-specific acceptance matrix before semantics change.
 
 - **[TASK-177](task-177%20-%20freeze-task-66-feature-by-13-dialect-parser-coverage.md)** (1/5, bounded freeze Done, merge pending): 13 named dialects; every reviewed variant; parser accepted/unsupported statuses. Fixtures `88-C177-P`, `88-C177-N`.
-- **[TASK-178](task-178%20-%20certify-canonical-equivalence-for-shared-dialect-ast-variants.md)** (2/5): JOIN, sets, predicates, windows, DML, DDL, TOP/FETCH/MINUS variants. Fixtures `88-C178-P`, `88-C178-N`.
-- **[TASK-179](task-179%20-%20classify-conditional-session-and-vendor-execution-laws.md)** (3/5): NULL ordering; collations; implicit coercion; FLOAT/timezone; DML/transaction; name case. Fixtures `88-C179-P`, `88-C179-N`.
-- **[TASK-191](task-191%20-%20adjudicate-task-177-parser-and-native-boundaries.md)** (4/5): adjudicate 55 parser rejects, 116 analyzer Unsupported cells and 23 unresolved original native outcomes with reviewed conditional dispositions. Original fixture identities remain unchanged; TASK-178/179 still own canonical/vendor laws.
-- **[TASK-180](task-180%20-%20independently-certify-complete-dialect-matrix-and-gate-ci.md)** (5/5): all 13 dialect rows and conditionals; SQL/dbt/ODCS; physical outcomes. Fixtures `88-C180-P`, `88-C180-N`.
+- **[TASK-178](task-178%20-%20certify-canonical-equivalence-for-shared-dialect-ast-variants.md)** (original 2/5; **bounded baseline Done, PR #197 merge pending**): 163-case/13-parser *observation* inventory, representative independent DuckDB/typed/adapter oracles and fail-closed AST normalization. Original complete semantics are carried by TASK-192..197 and TASK-180, not waived.
+- **[TASK-192](task-192%20-%20certify-predicate-and-structural-type-outcomes.md)**: strongest typed predicate/structural-type and three-valued outcome proofs, 43 cases / 559 cells.
+- **[TASK-193](task-193%20-%20certify-join-and-correlated-source-instance-bags.md)**: joins/correlated source identity and full multiset positive/negative oracles, 24 cases / 312 cells.
+- **[TASK-194](task-194%20-%20certify-set-operator-bags-and-alignment.md)**: set-operator NULL/multiset and alignment oracles, 22 cases / 286 cells.
+- **[TASK-195](task-195%20-%20certify-window-grouping-and-ordering-outcomes.md)**: grouping/window/pagination strong physical output and conditional ordering evidence, 36 cases / 468 cells.
+- **[TASK-196](task-196%20-%20certify-schema-write-and-ddl-state-outcomes.md)**: schema, DML and DDL complete state and typed outcome evidence, 38 cases / 494 cells.
+- **[TASK-197](task-197%20-%20close-cross-adapter-typed-semantic-parity.md)**: cross-family SQL/dbt/ODCS typed parity and explicit nonrepresentable adapter boundaries over all 163 reused original cases.
+- **[TASK-179](task-179%20-%20classify-conditional-session-and-vendor-execution-laws.md)** (original 3/5; after TASK-197): NULL ordering; collations; implicit coercion; FLOAT/timezone; DML/transaction; name case. Fixtures `88-C179-P`, `88-C179-N`.
+- **[TASK-191](task-191%20-%20adjudicate-task-177-parser-and-native-boundaries.md)** (original 4/5; after TASK-179): adjudicate 55 parser rejects, 116 analyzer Unsupported cells and 23 unresolved original native outcomes with reviewed conditional dispositions. Original fixture identities remain unchanged; TASK-178/179 still own canonical/vendor laws.
+- **[TASK-180](task-180%20-%20independently-certify-complete-dialect-matrix-and-gate-ci.md)** (original 5/5; final independent gate): all 13 dialect rows and conditionals; SQL/dbt/ODCS; physical outcomes. Fixtures `88-C180-P`, `88-C180-N`.
 
-**Original AC ownership:** #1 -> TASK-177 freeze, TASK-191 boundaries, TASK-180 final; #2 -> TASK-178, TASK-180; #3 -> TASK-179, TASK-180; #4 -> TASK-178, TASK-179, TASK-191, TASK-180; #5 -> TASK-178, TASK-179, TASK-191, TASK-180; #6 -> TASK-178, TASK-179, TASK-180; #7 -> TASK-177 freeze, TASK-178, TASK-191, TASK-180; #8 -> TASK-178, TASK-179, TASK-191, TASK-180. TASK-177 is not the independent parent semantic signoff.
+**Original AC ownership after split:** #1 -> TASK-177 freeze, TASK-191 parser/Unsupported dispositions, TASK-180 independent final; #2 -> TASK-192..196 typed canonical families, TASK-197 adapter parity, TASK-180 final; #3 -> TASK-179 vendor/session, TASK-180 final; #4 -> TASK-192..197, TASK-179/191 conditional/native, TASK-180; #5 -> TASK-192..197, TASK-179/191, TASK-180; #6 -> TASK-192..197, TASK-179, TASK-180; #7 -> TASK-177 observed parser, TASK-178 baseline, TASK-192..197 full semantic proofs, TASK-191 exceptions, TASK-180 final; #8 -> TASK-192..197, TASK-179/191, TASK-180. TASK-178's baseline Done status does **not** certify the original complete TASK-88 matrix. [Exact ownership and original TASK-178 AC handoff](../../docs/task-178-scope-split.md).
 
 **No premature Done:** mandatory typed exactness cannot be deferred as residual; unverified cells block completion. Positive/NOT TRUE rows, nullable interval output domains, full DuckDB bags, adapter/13-dialect evidence, reviewed conditional vendor cases and final CI are necessary. TASK-91 remains a distinct release decision after TASK-88 closure.
+
+
+## TASK-178 maintainer-approved scope split (2026-11-10)
+
+PR #197 lands only the bounded portable baseline. The original 163 mandatory SQL variants across 13 parser dialects remain allocated without omissions to TASK-192..196 (43 + 24 + 22 + 36 + 38 = 163), with TASK-197 cross-adapter closure, TASK-179 vendor laws, TASK-191 parser/native exceptions and TASK-180 independent full-matrix signoff. The historical initial seven-case freeze deviation remains recorded; no unproved original-cell semantics become Exact or approved Residual. TASK-88 and TASK-91 remain **To Do** and release-blocked. Start the next implementation with TASK-192 after PR #197 merges. [Scope split](../../docs/task-178-scope-split.md).
