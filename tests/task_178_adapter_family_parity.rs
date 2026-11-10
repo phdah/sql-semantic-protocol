@@ -5,7 +5,7 @@ use serde_json::json;
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, analyze_dbt_manifest_with_schemas, analyze_inputs,
     dialect_from_name, parse_dbt_manifest, ComposedSemantics, ConfiguredSqlInput,
-    ProducerExecution, RelationCatalog, SqlInput, ValueDomain,
+    LiteralValue, ProducerExecution, RelationCatalog, SetMode, SqlInput, ValueDomain,
 };
 
 const DIALECTS: &[&str] = &[
@@ -463,4 +463,98 @@ fn all_18_representable_native_set_variants_have_odcs_parity() {
         checked += 1;
     }
     assert_eq!(checked, 18);
+}
+
+
+/// A pinned native value must satisfy every precise typed claim in the public
+/// protocol. Unknown/Unbounded states assert no membership promise, while
+/// Empty, included/excluded sets and interval inclusivity are executable
+/// obligations. Do not infer untyped NULL or scalar coercion evidence.
+fn typed_domain_contains_native_integer(domain: &ValueDomain, literal: &serde_json::Value) -> bool {
+    let native = literal.as_i64();
+    match domain {
+        ValueDomain::Unknown(_) | ValueDomain::Unbounded => true,
+        ValueDomain::Empty => false,
+        ValueDomain::Set(set) => {
+            let value = match native {
+                Some(value) => LiteralValue::Number(value.to_string()),
+                None if literal.is_null() => LiteralValue::Null,
+                None => return false,
+            };
+            let present = set.values().iter().any(|entry| entry.value() == &value);
+            match set.mode() {
+                SetMode::Include => present,
+                SetMode::Exclude => !present,
+            }
+        }
+        ValueDomain::Ranges(ranges) => {
+            let Some(value) = native.map(i128::from) else {
+                return false;
+            };
+            ranges.ranges().iter().any(|range| {
+                let below_upper = range.upper().is_none_or(|bound| {
+                    let LiteralValue::Number(raw) = bound.value().value() else { return false };
+                    let Ok(upper) = raw.parse::<i128>() else { return false };
+                    value < upper || (bound.inclusive() && value == upper)
+                });
+                let above_lower = range.lower().is_none_or(|bound| {
+                    let LiteralValue::Number(raw) = bound.value().value() else { return false };
+                    let Ok(lower) = raw.parse::<i128>() else { return false };
+                    value > lower || (bound.inclusive() && value == lower)
+                });
+                above_lower && below_upper
+            })
+        }
+    }
+}
+
+#[test]
+fn all_54_portable_native_relational_terminals_respect_each_dialect_typed_domain() {
+    let registry: serde_json::Value = serde_json::from_str(include_str!(
+        "../docs/task-177-relational-bag-oracles.json"
+    ))
+    .expect("literal whole-bag DuckDB terminals");
+    let inventory: serde_json::Value = serde_json::from_str(include_str!(
+        "../docs/task-178-full-variant-inventory.json"
+    ))
+    .expect("frozen dialect classifications");
+    let cases = registry["cases"].as_array().expect("named native oracles");
+    let direct = direct_catalog();
+    let mut evaluated = 0;
+    let mut explicit_boundaries = 0;
+    for group in ["joins", "sets", "windows", "pagination"] {
+        for id in registry["groups"][group].as_array().expect("named original samples") {
+            let id = id.as_str().expect("source identity");
+            let native = cases.iter().find(|case| case["id"] == id).expect("native golden");
+            if native["canonical_output_boundary"] == "name_alignment_output_unsupported" {
+                assert_eq!(id, "88-C177-S083");
+                explicit_boundaries += 1;
+                continue;
+            }
+            let sql = native["sql"].as_str().expect("exact original SQL");
+            let original = inventory["cases"].as_array().expect("task variant matrix")
+                .iter().find(|case| case["id"] == id).expect("same mandatory variant");
+            assert_eq!(original["sql"], sql);
+            assert_eq!(original["full_document_classification"], "CCCCCCCCCCCCC");
+            let arity = native["columns"].as_u64().expect("native terminal arity") as usize;
+            let bag = native["expected_terminal_bag"].as_array().expect("complete native bag");
+            for name in DIALECTS {
+                let domains = output_domains(&direct, name, sql);
+                assert_eq!(domains.len(), arity, "{id}/{name}: public output arity differs from physical native terminal");
+                for row in bag {
+                    let values = row.as_array().expect("literal native row");
+                    assert_eq!(values.len(), arity, "{id}: frozen physical arity mismatch");
+                    for (column, (domain, value)) in domains.iter().zip(values).enumerate() {
+                        assert!(
+                            typed_domain_contains_native_integer(domain, value),
+                            "{id}/{name}: output column {column} physically emits {value} outside its typed domain {domain:?}"
+                        );
+                    }
+                }
+            }
+            evaluated += 1;
+        }
+    }
+    assert_eq!(evaluated, 53);
+    assert_eq!(explicit_boundaries, 1);
 }
