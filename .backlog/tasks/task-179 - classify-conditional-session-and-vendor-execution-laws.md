@@ -8,7 +8,7 @@ updated_date: '2026-11-09'
 labels: []
 milestone: m-3
 dependencies:
-  - TASK-178
+  - TASK-197
 references:
   - TASK-88
   - TASK-66
@@ -19,7 +19,7 @@ type: feature
 ## Description
 
 <!-- SECTION:DESCRIPTION:BEGIN -->
-**TASK-88 child 3/5.** Classify conditional session and vendor execution laws. Implement this scope in its own PR against `main` after dependencies merge. Preserve original TASK-88 AC for separate parent signoff. Never create parent-child dependency cycles.
+**TASK-88 original child 3/5, retained after the TASK-178 scope split.** Start after TASK-197 merges, so all five finite semantic-family tasks and the cross-adapter audit have delivered their evidence. Classify conditional session and vendor execution laws. Implement this scope in its own PR against `main` after dependencies merge. Preserve original TASK-88 AC for separate parent signoff. Never create parent-child dependency cycles.
 <!-- SECTION:DESCRIPTION:END -->
 
 ## Bounded planning scope
@@ -43,3 +43,7 @@ type: feature
 ## Next
 
 Next: [TASK-191](task-191%20-%20adjudicate-task-177-parser-and-native-boundaries.md), only after completion and merge. TASK-180 is the independent final matrix gate after TASK-191.
+
+## Dependency amendment (2026-11-10)
+
+TASK-178's bounded portable baseline is completed in PR #197, but full semantic proof was extracted into TASK-192..197. TASK-179 now follows TASK-197 rather than TASK-178 directly. This does not waive any original vendor/session law or engine execution requirement. See [the ownership ledger](../../docs/task-178-scope-split.json).
