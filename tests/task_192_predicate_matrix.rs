@@ -223,3 +223,41 @@ fn four_original_string_patterns_have_complete_duckdb_true_false_unknown_bags() 
         );
     }
 }
+
+#[test]
+fn observed_portable_dialect_documents_remain_equivalent_without_claiming_native_execution() {
+    let freeze = json(FREEZE);
+    let dialects = freeze["dialects"].as_array().expect("13 dialects");
+    for case in freeze["cases"].as_array().expect("frozen cases") {
+        let id = field(case, "id");
+        let sql = field(case, "sql");
+        let mut reference: Option<Value> = None;
+        let cells = case["dialect_cells"].as_array().expect("13 observed cells");
+        let mut comparison_count = 0;
+        for (dialect, cell) in dialects.iter().zip(cells.iter()) {
+            if cell["observed_parser_canonical_status"] != "C" {
+                assert!(
+                    !cell["semantic_certification"].is_null(),
+                    "{id}: parser exception must preserve its unverified state"
+                );
+                continue;
+            }
+            let name = dialect.as_str().expect("dialect name");
+            let parser = dialect_from_name(name).expect("public dialect");
+            let protocol = analyze_sql(sql, name, parser.as_ref())
+                .unwrap_or_else(|error| panic!("{id}/{name}: expected portable parse: {error}"));
+            let mut document = json(&to_json(&protocol));
+            for input in document["inputs"].as_array_mut().expect("public inputs") {
+                input["dialect"] = Value::Null;
+            }
+            if let Some(expected) = &reference {
+                assert_eq!(&document, expected, "{id}/{name}: canonical drift");
+            } else {
+                reference = Some(document);
+            }
+            comparison_count += 1;
+        }
+        // Parser/canonical identity is an observation, not a domain proof.
+        assert!(comparison_count >= 11, "{id}: unexpected parser-law regressions");
+    }
+}
