@@ -142,33 +142,38 @@ fn actual_full_public_protocol_matches_each_frozen_observed_dialect_classificati
             let original_analyzer = parsed["canonical_analysis_matrix"][id]
                 .as_str()
                 .expect("analyzer statuses");
-            let actual = if original_parser.as_bytes()[index] == b'R' {
-                assert_eq!(original_analyzer.as_bytes()[index], b'R');
-                'R'
-            } else {
-                let dialect = dialect_from_name(name).expect("exposed SQL dialect");
-                let result = analyze_sql(sql, name, dialect.as_ref());
-                match result {
-                    Err(error) => panic!("{id}/{name}: unexpected analyzer error {error}"),
-                    Ok(protocol)
-                        if protocol.statements().iter().any(|statement| {
-                            matches!(statement, ProtocolStatement::Unsupported(_))
-                        }) =>
-                    {
-                        'U'
-                    }
-                    Ok(protocol) => {
-                        let next = document_without_input_provenance(&protocol);
-                        if let Some(expected) = &baseline {
-                            if &next == expected {
-                                'C'
-                            } else {
-                                'D'
-                            }
-                        } else {
-                            baseline = Some(next);
+            // Always execute the current parser, including historically rejected
+            // cells. Otherwise a parser regression can silently retain a stale
+            // 'R' classification without running the dialect at all.
+            let dialect = dialect_from_name(name).expect("exposed SQL dialect");
+            let parser_rejected = original_parser.as_bytes()[index] == b'R';
+            let actual = match analyze_sql(sql, name, dialect.as_ref()) {
+                Err(sql_semantic_protocol::Error::Parse(_)) if parser_rejected => {
+                    assert_eq!(original_analyzer.as_bytes()[index], b'R');
+                    'R'
+                }
+                Err(error) => panic!("{id}/{name}: unexpected parser/analyzer error {error}"),
+                Ok(_) if parser_rejected => {
+                    panic!("{id}/{name}: previously rejected SQL now parses; update the reviewed dialect boundary")
+                }
+                Ok(protocol)
+                    if protocol.statements().iter().any(|statement| {
+                        matches!(statement, ProtocolStatement::Unsupported(_))
+                    }) =>
+                {
+                    'U'
+                }
+                Ok(protocol) => {
+                    let next = document_without_input_provenance(&protocol);
+                    if let Some(expected) = &baseline {
+                        if &next == expected {
                             'C'
+                        } else {
+                            'D'
                         }
+                    } else {
+                        baseline = Some(next);
+                        'C'
                     }
                 }
             };
