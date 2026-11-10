@@ -47,3 +47,7 @@ After this task is independently verified, marked Done and merged, proceed to [T
 ## Initial state
 
 Extracted on 2026-11-10 from the previously overbroad TASK-178. There is **no implementation or semantic sign-off** for this ticket yet. Existing PR #197 supplies provisional structural observations and selected native oracles only; use those as regression inputs, not as proof of this ticket's acceptance.
+
+## TASK-192 evidence handoff (pending PR #198)
+
+The first 43 original SQL predicate/structural variants and their 559 parser-cell identities are preserved in [TASK-192's versioned freeze](../../docs/task-192-acceptance-freeze.json). [The source-rowid truth partition matrix](../../docs/task-192-native-partitions.json), [direct/dbt/ODCS parity tests](../../tests/task_192_adapter_parity.rs), [typed-domain soundness tests](../../tests/task_192_typed_soundness.rs) and [independent signoff audit](../../docs/task-192-acceptance-audit.md) are upstream candidate evidence. Do **not** treat PR #198 as merged, all typed outcomes certified, or adapter parity independently approved until its own ACs, CI, and review close. TASK-197 remains To Do and owns cross-family reconciliation against TASK-193..196 as planned.
