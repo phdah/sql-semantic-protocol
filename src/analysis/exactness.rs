@@ -166,7 +166,6 @@ pub(super) fn analyze_query_condition_exactness(
     joins: &[ProtocolJoin],
     diagnostics: &[Diagnostic],
     correlated: bool,
-    direct_row_shaping: Option<&crate::protocol::SetRowShaping>,
 ) -> ConditionExactness {
     let mut residuals = Vec::new();
 
@@ -265,57 +264,30 @@ pub(super) fn analyze_query_condition_exactness(
 
     collect_set_expr_exactness_residuals(query.body.as_ref(), "body", &mut residuals);
 
-    if let Some(shaping) = direct_row_shaping {
-        // Once the analyzer has constructed the same typed row-selection
-        // operator from TOP, FETCH or LIMIT, retain one stable *semantic*
-        // residual rather than three parser-spelling-specific identities.
-        // In particular, a row-selection operator does not make an open
-        // source's exact output bag provable merely because its limit is known.
-        // Leave non-certified TOP/PERCENT, nested pages, and vendor extensions
-        // on the existing explicit syntax-boundary path below.
-        residuals.retain(|residual| {
-            !(residual.clause() == ConditionClause::RowSetOperator
-                && residual.identity() == "body:top"
-                && residual.reason() == ResidualConditionReason::Top)
-        });
-        residuals.push(ResidualCondition::new(
-            ResidualConditionReason::Limit,
-            ConditionClause::RowSetOperator,
-            "limit",
-        ));
-        if shaping.offset > 0 {
+    if let Some(limit_clause) = &query.limit_clause {
+        let text = limit_clause.to_string().to_ascii_uppercase();
+        if text.contains("OFFSET") {
             residuals.push(ResidualCondition::new(
                 ResidualConditionReason::Offset,
                 ConditionClause::RowSetOperator,
                 "offset",
             ));
         }
-    } else {
-        if let Some(limit_clause) = &query.limit_clause {
-            let text = limit_clause.to_string().to_ascii_uppercase();
-            if text.contains("OFFSET") {
-                residuals.push(ResidualCondition::new(
-                    ResidualConditionReason::Offset,
-                    ConditionClause::RowSetOperator,
-                    "offset",
-                ));
-            }
-            if text.contains("LIMIT") || !text.contains("OFFSET") {
-                residuals.push(ResidualCondition::new(
-                    ResidualConditionReason::Limit,
-                    ConditionClause::RowSetOperator,
-                    "limit",
-                ));
-            }
-        }
-
-        if query.fetch.is_some() {
+        if text.contains("LIMIT") || !text.contains("OFFSET") {
             residuals.push(ResidualCondition::new(
-                ResidualConditionReason::Fetch,
+                ResidualConditionReason::Limit,
                 ConditionClause::RowSetOperator,
-                "fetch",
+                "limit",
             ));
         }
+    }
+
+    if query.fetch.is_some() {
+        residuals.push(ResidualCondition::new(
+            ResidualConditionReason::Fetch,
+            ConditionClause::RowSetOperator,
+            "fetch",
+        ));
     }
 
     if correlated {
@@ -797,4 +769,41 @@ pub(super) fn collect_expression_column_refs(
         | Expression::Unknown(_)
         | Expression::Unsupported(_) => {}
     }
+}
+
+
+/// Once a direct SELECT has a typed and complete row-selection descriptor,
+/// TOP, FETCH FIRST ROWS ONLY, and LIMIT share *one* canonical residual.
+/// Preserve every nested and unrelated residual; raw/non-certified syntax
+/// still reports its own reason in analyze_query_condition_exactness.
+pub(super) fn canonicalize_direct_row_selection_exactness(
+    exactness: ConditionExactness,
+    shaping: &crate::protocol::SetRowShaping,
+) -> ConditionExactness {
+    // analyze_query_condition_exactness contributes residuals only. Other
+    // source type/comparison assumptions are composed *after* this function.
+    let mut residuals = exactness.residual_conditions().to_vec();
+    residuals.retain(|residual| {
+        !(residual.clause() == ConditionClause::RowSetOperator
+            && matches!(
+                (residual.reason(), residual.identity()),
+                (ResidualConditionReason::Top, "body:top")
+                    | (ResidualConditionReason::Fetch, "fetch")
+                    | (ResidualConditionReason::Limit, "limit")
+                    | (ResidualConditionReason::Offset, "offset")
+            ))
+    });
+    residuals.push(ResidualCondition::new(
+        ResidualConditionReason::Limit,
+        ConditionClause::RowSetOperator,
+        "limit",
+    ));
+    if shaping.offset > 0 {
+        residuals.push(ResidualCondition::new(
+            ResidualConditionReason::Offset,
+            ConditionClause::RowSetOperator,
+            "offset",
+        ));
+    }
+    ConditionExactness::from_residuals(residuals)
 }
