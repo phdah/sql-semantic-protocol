@@ -59,7 +59,10 @@ fn task_192_inventory_contains_all_original_cases_without_false_semantic_certifi
     assert_eq!(freeze["new_task_owned_duckdb_oracle_count"], 4);
     assert_eq!(freeze["new_task_owned_additional_truth_partitions"], 11);
     assert_eq!(freeze["non_predicate_duckdb_evidence_count"], 3);
-    assert_eq!(freeze["native_positive_negative_or_conditional_case_count"], 43);
+    assert_eq!(
+        freeze["native_positive_negative_or_conditional_case_count"],
+        43
+    );
     assert_eq!(freeze["unproved_native_truth_partition_case_count"], 0);
     assert_eq!(freeze["full_typed_semantic_signoff"], false);
     assert_eq!(freeze["release_approved"], false);
@@ -140,7 +143,8 @@ fn task_192_inventory_contains_all_original_cases_without_false_semantic_certifi
         );
         if known.contains(id) || new.contains(id) {
             assert_eq!(
-                case["source_and_terminal_duckdb_oracle"]["complete_physical_true_false_unknown_bags"],
+                case["source_and_terminal_duckdb_oracle"]
+                    ["complete_physical_true_false_unknown_bags"],
                 true,
                 "{id}: previously proven predicate cannot lose its complete truth partition"
             );
