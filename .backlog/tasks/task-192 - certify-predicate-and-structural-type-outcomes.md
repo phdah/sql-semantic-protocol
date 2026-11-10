@@ -1,7 +1,7 @@
 ---
 id: TASK-192
 title: Certify predicate and structural-type outcomes across 13 dialects
-status: To Do
+status: In Progress
 assignee: []
 created_date: '2026-11-10'
 updated_date: '2026-11-10'
@@ -47,3 +47,9 @@ After this task is independently verified, marked Done and merged, proceed to TA
 ## Initial state
 
 Extracted on 2026-11-10 from the previously overbroad TASK-178. There is **no implementation or semantic sign-off** for this ticket yet. Existing PR #197 supplies provisional structural observations and selected native oracles only; use those as regression inputs, not as proof of this ticket's acceptance.
+
+## Incremental evidence (TASK-192 initial PR, 2026-11-10)
+
+- Versioned [43-case/559-cell task-owned registry](../../docs/task-192-acceptance-freeze.json) preserves all original SQL and observed 13-dialect parser/canonical statuses. It explicitly records which expected semantic, source/terminal and adapter cells are still **not** certified; this registry is not a complete frozen executable acceptance matrix.
+- Reuses 25 independent TASK-177 DuckDB TRUE/FALSE/UNKNOWN and terminal-bag oracles without copying their expectations. Adds four manually frozen complete-source nullable/duplicate string-pattern goldens for `LIKE`, `ILIKE`, `LIKE ... ESCAPE`, and prefix matching in [task_192_predicate_matrix.rs](../../tests/task_192_predicate_matrix.rs).
+- The public analyzer/canonical-document checks must pass exact-head CI, and native/vendor collation, timezone, NaN, overflow, STRUCT and full-adapter expected-domain matrices remain open. **No AC #1..#5 is signed off by this increment.** Keep TASK-192 In Progress until every mandatory cell has independent exact expected outcome and full verification.
