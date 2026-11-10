@@ -17,13 +17,24 @@ fn read(s: &str) -> Value {
     serde_json::from_str(s).expect("committed independently frozen JSON")
 }
 
-fn native_terminal(id: &str, prior: &Value, freeze: &Value, env: &Value, final_native: &Value, native: &Value) -> Vec<Value> {
+fn native_terminal(
+    id: &str,
+    prior: &Value,
+    freeze: &Value,
+    env: &Value,
+    final_native: &Value,
+    native: &Value,
+) -> Vec<Value> {
     let candidates = [
         prior["cases"].as_array().expect("prior truth goldens"),
         env["customer_cases"].as_array().expect("string goldens"),
         env["temporal_cases"].as_array().expect("timestamp goldens"),
-        env["floating_cases"].as_array().expect("signed zero goldens"),
-        final_native["original_integer_selects"].as_array().expect("native extra goldens"),
+        env["floating_cases"]
+            .as_array()
+            .expect("signed zero goldens"),
+        final_native["original_integer_selects"]
+            .as_array()
+            .expect("native extra goldens"),
     ];
     if let Some(expected) = candidates
         .into_iter()
@@ -32,18 +43,34 @@ fn native_terminal(id: &str, prior: &Value, freeze: &Value, env: &Value, final_n
         .map(|case| &case["expected_terminal_bag"])
     {
         return expected
-            .as_array().expect("one-column bag")
-            .iter().map(|row| row[0].clone()).collect();
+            .as_array()
+            .expect("one-column bag")
+            .iter()
+            .map(|row| row[0].clone())
+            .collect();
     }
     if id == "88-C177-S042" {
-        return native["other"].as_array().expect("native boundaries").iter()
-            .find(|case| case["id"] == id).expect("frozen sort")["expected_ordered_terminal"]
-            .as_array().expect("six ordered rows").clone();
+        return native["other"]
+            .as_array()
+            .expect("native boundaries")
+            .iter()
+            .find(|case| case["id"] == id)
+            .expect("frozen sort")["expected_ordered_terminal"]
+            .as_array()
+            .expect("six ordered rows")
+            .clone();
     }
     let pattern = &freeze["task_owned_string_pattern_duckdb_oracles"];
-    let case = pattern["cases"].as_array().expect("four string controls")
-        .iter().find(|c| c["id"] == id).expect("one of 41 original numeric terminals");
-    case["selected_ids"].as_array().expect("native selected rows").clone()
+    let case = pattern["cases"]
+        .as_array()
+        .expect("four string controls")
+        .iter()
+        .find(|c| c["id"] == id)
+        .expect("one of 41 original numeric terminals");
+    case["selected_ids"]
+        .as_array()
+        .expect("native selected rows")
+        .clone()
 }
 
 fn contains(domain: &ValueDomain, value: &Value) -> bool {
@@ -135,5 +162,8 @@ fn all_forty_one_original_native_read_terminals_respect_thirteen_dialect_domains
         }
     }
     assert_eq!(checked, 41 * 13);
-    assert!(native_rows > 1000, "all native terminal occurrences must be visited");
+    assert!(
+        native_rows > 1000,
+        "all native terminal occurrences must be visited"
+    );
 }
