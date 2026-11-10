@@ -4,8 +4,8 @@
 use serde_json::json;
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, analyze_dbt_manifest_with_schemas, analyze_inputs,
-    dialect_from_name, parse_dbt_manifest, ComposedSemantics, ConfiguredSqlInput,
-    LiteralValue, ProducerExecution, RelationCatalog, SetMode, SqlInput, ValueDomain,
+    dialect_from_name, parse_dbt_manifest, ComposedSemantics, ConfiguredSqlInput, LiteralValue,
+    ProducerExecution, RelationCatalog, SetMode, SqlInput, ValueDomain,
 };
 
 const DIALECTS: &[&str] = &[
@@ -152,7 +152,8 @@ schema:
     let parsed = sql_semantic_protocol::parse_odcs_yaml(
         contract,
         "duckdb",
-        &RelationCatalog::new(&["orders", "customers", "products"]).expect("named physical relations"),
+        &RelationCatalog::new(&["orders", "customers", "products"])
+            .expect("named physical relations"),
     )
     .expect("contract source schema");
     RelationCatalog::from_schemas(parsed.source_schemas()).expect("contract schema")
@@ -278,23 +279,26 @@ fn all_25_frozen_predicate_variants_preserve_odcs_typed_domains() {
     }
 }
 
-
 /// Every frozen native join example has a pinned complete source and terminal
 /// bag in task_177_relational_bag_oracles. Verify that the *same* output-domain
 /// evidence survives direct DDL, dbt source metadata, and ODCS schemas.
 #[test]
 fn all_21_frozen_native_join_variants_preserve_direct_and_dbt_domains() {
-    let registry: serde_json::Value = serde_json::from_str(include_str!(
-        "../docs/task-177-relational-bag-oracles.json"
-    ))
-    .expect("independently pinned native join registry");
-    let ids = registry["groups"]["joins"].as_array().expect("21 join oracles");
+    let registry: serde_json::Value =
+        serde_json::from_str(include_str!("../docs/task-177-relational-bag-oracles.json"))
+            .expect("independently pinned native join registry");
+    let ids = registry["groups"]["joins"]
+        .as_array()
+        .expect("21 join oracles");
     assert_eq!(ids.len(), 21);
     let cases = registry["cases"].as_array().expect("complete native cases");
     let direct = direct_catalog();
     for id in ids {
         let id = id.as_str().expect("stable join identity");
-        let case = cases.iter().find(|item| item["id"] == id).expect("native terminal oracle");
+        let case = cases
+            .iter()
+            .find(|item| item["id"] == id)
+            .expect("native terminal oracle");
         let sql = case["sql"].as_str().expect("registered SQL");
         let dbt = dbt_catalog(sql);
         for name in DIALECTS {
@@ -311,18 +315,23 @@ fn all_21_frozen_native_join_variants_preserve_direct_and_dbt_domains() {
 #[cfg(feature = "odcs")]
 #[test]
 fn all_21_frozen_native_join_variants_preserve_odcs_domains() {
-    let registry: serde_json::Value = serde_json::from_str(include_str!(
-        "../docs/task-177-relational-bag-oracles.json"
-    ))
-    .expect("native join registry");
-    let ids = registry["groups"]["joins"].as_array().expect("21 join cases");
+    let registry: serde_json::Value =
+        serde_json::from_str(include_str!("../docs/task-177-relational-bag-oracles.json"))
+            .expect("native join registry");
+    let ids = registry["groups"]["joins"]
+        .as_array()
+        .expect("21 join cases");
     let cases = registry["cases"].as_array().expect("source originals");
     let direct = direct_catalog();
     let odcs = odcs_catalog();
     for id in ids {
         let id = id.as_str().expect("stable join case");
-        let sql = cases.iter().find(|item| item["id"] == id).expect("native SQL")["sql"]
-            .as_str().expect("original SQL");
+        let sql = cases
+            .iter()
+            .find(|item| item["id"] == id)
+            .expect("native SQL")["sql"]
+            .as_str()
+            .expect("original SQL");
         for name in DIALECTS {
             assert_eq!(
                 output_domains(&odcs, name, sql),
@@ -333,24 +342,26 @@ fn all_21_frozen_native_join_variants_preserve_odcs_domains() {
     }
 }
 
-
 /// Window and pagination transformations compose against the same typed
 /// physical sources regardless of adapter. The independently frozen original
 /// DuckDB source/output bags remain owned by task_177_relational_bag_oracles.
 #[test]
 fn all_14_frozen_window_and_pagination_variants_have_direct_dbt_parity() {
-    let registry: serde_json::Value = serde_json::from_str(include_str!(
-        "../docs/task-177-relational-bag-oracles.json"
-    ))
-    .expect("native source/terminal bag registry");
+    let registry: serde_json::Value =
+        serde_json::from_str(include_str!("../docs/task-177-relational-bag-oracles.json"))
+            .expect("native source/terminal bag registry");
     let cases = registry["cases"].as_array().expect("named native SQL");
     let direct = direct_catalog();
     let mut checked = 0;
     for group in ["windows", "pagination"] {
         for id in registry["groups"][group].as_array().expect("named group") {
             let id = id.as_str().expect("stable native case");
-            let sql = cases.iter().find(|item| item["id"] == id).expect("native oracle")["sql"]
-                .as_str().expect("original SQL");
+            let sql = cases
+                .iter()
+                .find(|item| item["id"] == id)
+                .expect("native oracle")["sql"]
+                .as_str()
+                .expect("original SQL");
             let dbt = dbt_catalog(sql);
             for name in DIALECTS {
                 assert_eq!(
@@ -368,10 +379,9 @@ fn all_14_frozen_window_and_pagination_variants_have_direct_dbt_parity() {
 #[cfg(feature = "odcs")]
 #[test]
 fn all_14_frozen_window_and_pagination_variants_have_odcs_parity() {
-    let registry: serde_json::Value = serde_json::from_str(include_str!(
-        "../docs/task-177-relational-bag-oracles.json"
-    ))
-    .expect("native SQL registry");
+    let registry: serde_json::Value =
+        serde_json::from_str(include_str!("../docs/task-177-relational-bag-oracles.json"))
+            .expect("native SQL registry");
     let cases = registry["cases"].as_array().expect("original SQL");
     let direct = direct_catalog();
     let odcs = odcs_catalog();
@@ -379,8 +389,12 @@ fn all_14_frozen_window_and_pagination_variants_have_odcs_parity() {
     for group in ["windows", "pagination"] {
         for id in registry["groups"][group].as_array().expect("named group") {
             let id = id.as_str().expect("native case");
-            let sql = cases.iter().find(|item| item["id"] == id).expect("native oracle")["sql"]
-                .as_str().expect("original SQL");
+            let sql = cases
+                .iter()
+                .find(|item| item["id"] == id)
+                .expect("native oracle")["sql"]
+                .as_str()
+                .expect("original SQL");
             for name in DIALECTS {
                 assert_eq!(
                     output_domains(&odcs, name, sql),
@@ -394,26 +408,29 @@ fn all_14_frozen_window_and_pagination_variants_have_odcs_parity() {
     assert_eq!(checked, 14);
 }
 
-
 /// The public API reports S083's BY NAME output alignment as an explicit
 /// unsupported boundary; it must not be counted as a typed parity success.
 /// Other frozen native set examples have complete literal DuckDB bag goldens
 /// in task_177_relational_bag_oracles.
 #[test]
 fn all_18_representable_native_set_variants_have_direct_dbt_parity() {
-    let registry: serde_json::Value = serde_json::from_str(include_str!(
-        "../docs/task-177-relational-bag-oracles.json"
-    ))
-    .expect("native set bag registry");
+    let registry: serde_json::Value =
+        serde_json::from_str(include_str!("../docs/task-177-relational-bag-oracles.json"))
+            .expect("native set bag registry");
     let cases = registry["cases"].as_array().expect("source originals");
-    let ids = registry["groups"]["sets"].as_array().expect("19 native set cases");
+    let ids = registry["groups"]["sets"]
+        .as_array()
+        .expect("19 native set cases");
     assert_eq!(ids.len(), 19);
     let direct = direct_catalog();
     let mut certified_parser_shapes = 0;
     let mut named_boundaries = 0;
     for id in ids {
         let id = id.as_str().expect("stable sample");
-        let case = cases.iter().find(|item| item["id"] == id).expect("literal terminal oracle");
+        let case = cases
+            .iter()
+            .find(|item| item["id"] == id)
+            .expect("literal terminal oracle");
         if case["canonical_output_boundary"] == "name_alignment_output_unsupported" {
             assert_eq!(id, "88-C177-S083");
             named_boundaries += 1;
@@ -437,19 +454,27 @@ fn all_18_representable_native_set_variants_have_direct_dbt_parity() {
 #[cfg(feature = "odcs")]
 #[test]
 fn all_18_representable_native_set_variants_have_odcs_parity() {
-    let registry: serde_json::Value = serde_json::from_str(include_str!(
-        "../docs/task-177-relational-bag-oracles.json"
-    ))
-    .expect("native set bag registry");
+    let registry: serde_json::Value =
+        serde_json::from_str(include_str!("../docs/task-177-relational-bag-oracles.json"))
+            .expect("native set bag registry");
     let cases = registry["cases"].as_array().expect("source SQL");
     let direct = direct_catalog();
     let odcs = odcs_catalog();
     let mut checked = 0;
-    for id in registry["groups"]["sets"].as_array().expect("named variants") {
+    for id in registry["groups"]["sets"]
+        .as_array()
+        .expect("named variants")
+    {
         let id = id.as_str().expect("sample ID");
-        let case = cases.iter().find(|item| item["id"] == id).expect("native oracle");
+        let case = cases
+            .iter()
+            .find(|item| item["id"] == id)
+            .expect("native oracle");
         if id == "88-C177-S083" {
-            assert_eq!(case["canonical_output_boundary"], "name_alignment_output_unsupported");
+            assert_eq!(
+                case["canonical_output_boundary"],
+                "name_alignment_output_unsupported"
+            );
             continue;
         }
         let sql = case["sql"].as_str().expect("original SQL");
@@ -464,7 +489,6 @@ fn all_18_representable_native_set_variants_have_odcs_parity() {
     }
     assert_eq!(checked, 18);
 }
-
 
 /// A pinned native value must satisfy every precise typed claim in the public
 /// protocol. Unknown/Unbounded states assert no membership promise, while
@@ -493,13 +517,21 @@ fn typed_domain_contains_native_integer(domain: &ValueDomain, literal: &serde_js
             };
             ranges.ranges().iter().any(|range| {
                 let below_upper = range.upper().is_none_or(|bound| {
-                    let LiteralValue::Number(raw) = bound.value().value() else { return false };
-                    let Ok(upper) = raw.parse::<i128>() else { return false };
+                    let LiteralValue::Number(raw) = bound.value().value() else {
+                        return false;
+                    };
+                    let Ok(upper) = raw.parse::<i128>() else {
+                        return false;
+                    };
                     value < upper || (bound.inclusive() && value == upper)
                 });
                 let above_lower = range.lower().is_none_or(|bound| {
-                    let LiteralValue::Number(raw) = bound.value().value() else { return false };
-                    let Ok(lower) = raw.parse::<i128>() else { return false };
+                    let LiteralValue::Number(raw) = bound.value().value() else {
+                        return false;
+                    };
+                    let Ok(lower) = raw.parse::<i128>() else {
+                        return false;
+                    };
                     value > lower || (bound.inclusive() && value == lower)
                 });
                 above_lower && below_upper
@@ -510,37 +542,51 @@ fn typed_domain_contains_native_integer(domain: &ValueDomain, literal: &serde_js
 
 #[test]
 fn all_54_portable_native_relational_terminals_respect_each_dialect_typed_domain() {
-    let registry: serde_json::Value = serde_json::from_str(include_str!(
-        "../docs/task-177-relational-bag-oracles.json"
-    ))
-    .expect("literal whole-bag DuckDB terminals");
-    let inventory: serde_json::Value = serde_json::from_str(include_str!(
-        "../docs/task-178-full-variant-inventory.json"
-    ))
-    .expect("frozen dialect classifications");
+    let registry: serde_json::Value =
+        serde_json::from_str(include_str!("../docs/task-177-relational-bag-oracles.json"))
+            .expect("literal whole-bag DuckDB terminals");
+    let inventory: serde_json::Value =
+        serde_json::from_str(include_str!("../docs/task-178-full-variant-inventory.json"))
+            .expect("frozen dialect classifications");
     let cases = registry["cases"].as_array().expect("named native oracles");
     let direct = direct_catalog();
     let mut evaluated = 0;
     let mut explicit_boundaries = 0;
     for group in ["joins", "sets", "windows", "pagination"] {
-        for id in registry["groups"][group].as_array().expect("named original samples") {
+        for id in registry["groups"][group]
+            .as_array()
+            .expect("named original samples")
+        {
             let id = id.as_str().expect("source identity");
-            let native = cases.iter().find(|case| case["id"] == id).expect("native golden");
+            let native = cases
+                .iter()
+                .find(|case| case["id"] == id)
+                .expect("native golden");
             if native["canonical_output_boundary"] == "name_alignment_output_unsupported" {
                 assert_eq!(id, "88-C177-S083");
                 explicit_boundaries += 1;
                 continue;
             }
             let sql = native["sql"].as_str().expect("exact original SQL");
-            let original = inventory["cases"].as_array().expect("task variant matrix")
-                .iter().find(|case| case["id"] == id).expect("same mandatory variant");
+            let original = inventory["cases"]
+                .as_array()
+                .expect("task variant matrix")
+                .iter()
+                .find(|case| case["id"] == id)
+                .expect("same mandatory variant");
             assert_eq!(original["sql"], sql);
             assert_eq!(original["full_document_classification"], "CCCCCCCCCCCCC");
             let arity = native["columns"].as_u64().expect("native terminal arity") as usize;
-            let bag = native["expected_terminal_bag"].as_array().expect("complete native bag");
+            let bag = native["expected_terminal_bag"]
+                .as_array()
+                .expect("complete native bag");
             for name in DIALECTS {
                 let domains = output_domains(&direct, name, sql);
-                assert_eq!(domains.len(), arity, "{id}/{name}: public output arity differs from physical native terminal");
+                assert_eq!(
+                    domains.len(),
+                    arity,
+                    "{id}/{name}: public output arity differs from physical native terminal"
+                );
                 for row in bag {
                     let values = row.as_array().expect("literal native row");
                     assert_eq!(values.len(), arity, "{id}: frozen physical arity mismatch");
