@@ -1,4 +1,19 @@
 {
+  "task_192_predicate_type_acceptance": {
+    "owner": "TASK-192",
+    "parent": "TASK-88",
+    "status": "in_progress_unverified_mandatory_semantic_cells",
+    "freeze": "docs/task-192-acceptance-freeze.json",
+    "freeze_version": 1,
+    "feature_variants": 43,
+    "dialect_cells": 559,
+    "independent_prior_duckdb_partition_cases": 25,
+    "unverified_full_native_cases": 18,
+    "expected_exact_domains_frozen_for_all_cases": false,
+    "independent_signoff": false,
+    "release_approved": false,
+    "task_done": false
+  },
   "task_177_dialect_parser_acceptance": {
     "owner": "TASK-177",
     "parent": "TASK-88",
