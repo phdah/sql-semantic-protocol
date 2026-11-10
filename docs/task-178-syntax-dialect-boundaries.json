@@ -32,19 +32,25 @@
       "id": "88-C178-TOP",
       "sql": "SELECT TOP 2 id FROM orders ORDER BY id",
       "reference": "SELECT id FROM orders ORDER BY id LIMIT 2",
-      "expected_mask": "DDDDDDDDDDDDD",
+      "expected_mask": "CCCCCCCCCCCCC",
       "proof": "candidate_semantic_equivalence_with_deterministic_tie_oracle",
       "observed_from": "https://github.com/phdah/sql-semantic-protocol/actions/runs/42710748522",
-      "release_disposition": "unreviewed_no_native_vendor_certification"
+      "release_disposition": "unreviewed_no_native_vendor_certification",
+      "observed_mask_before_normalization": "DDDDDDDDDDDDD",
+      "canonical_normalization": "same exact typed row_shaping and opaque-but-sound Limit residual",
+      "vendor_execution": "unattested"
     },
     {
       "id": "88-C178-FETCH",
       "sql": "SELECT id FROM orders ORDER BY id FETCH FIRST 2 ROWS ONLY",
       "reference": "SELECT id FROM orders ORDER BY id LIMIT 2",
-      "expected_mask": "DDDDDDDDDDDDD",
+      "expected_mask": "CCCCCCCCCCCCC",
       "proof": "candidate_pagination_synonym",
       "observed_from": "https://github.com/phdah/sql-semantic-protocol/actions/runs/42710748522",
-      "release_disposition": "unreviewed_no_native_vendor_certification"
+      "release_disposition": "unreviewed_no_native_vendor_certification",
+      "observed_mask_before_normalization": "DDDDDDDDDDDDD",
+      "canonical_normalization": "same exact typed row_shaping and opaque-but-sound Limit residual",
+      "vendor_execution": "unattested"
     },
     {
       "id": "88-C178-FETCH-TIES",
@@ -66,5 +72,13 @@
     "parser_rejected": 0,
     "explicit_unsupported": 0
   },
-  "frozen_before_semantic_source_change": false
+  "frozen_before_semantic_source_change": false,
+  "expected_after_normalization": {
+    "same_full_public_document": 39,
+    "distinct_full_public_document": 0,
+    "intentionally_non_equivalent": 13,
+    "parser_rejected": 0,
+    "explicit_unsupported": 0
+  },
+  "post_fix_status": "requires_final_head_green"
 }
