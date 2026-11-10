@@ -27,7 +27,7 @@
   "case_count": 43,
   "dialect_cell_count": 559,
   "preexisting_duckdb_truth_partition_oracle_count": 25,
-  "unproved_native_truth_partition_case_count": 18,
+  "unproved_native_truth_partition_case_count": 14,
   "full_typed_semantic_signoff": false,
   "external_vendor_native_signoff": false,
   "independent_review_signed_off": false,
@@ -2139,13 +2139,19 @@
           "native_vendor_certification": "unattested"
         }
       ],
-      "source_and_terminal_duckdb_oracle": null,
+      "source_and_terminal_duckdb_oracle": {
+        "source": "docs/task-192-acceptance-freeze.json",
+        "id": "88-C177-S020",
+        "complete_physical_true_false_unknown_bags": true,
+        "expected_projected_domain": null,
+        "source_relation": "customers",
+        "original_fixture_scope": "independent_DuckDB_string_pattern"
+      },
       "missing_evidence": [
-        "typed_output_expectation",
-        "full_source_and_terminal_oracle",
-        "true_false_unknown_or_impossible_bags",
-        "adapter_equivalence",
-        "semantic_dialect_certification",
+        "strongest_typed_projected_domain",
+        "other_vendor_collation_session_laws",
+        "complete_adapter_parity",
+        "full_13_dialect_semantic_certification",
         "independent_review"
       ],
       "release_approved": false
@@ -2237,13 +2243,19 @@
           "native_vendor_certification": "unattested"
         }
       ],
-      "source_and_terminal_duckdb_oracle": null,
+      "source_and_terminal_duckdb_oracle": {
+        "source": "docs/task-192-acceptance-freeze.json",
+        "id": "88-C177-S021",
+        "complete_physical_true_false_unknown_bags": true,
+        "expected_projected_domain": null,
+        "source_relation": "customers",
+        "original_fixture_scope": "independent_DuckDB_string_pattern"
+      },
       "missing_evidence": [
-        "typed_output_expectation",
-        "full_source_and_terminal_oracle",
-        "true_false_unknown_or_impossible_bags",
-        "adapter_equivalence",
-        "semantic_dialect_certification",
+        "strongest_typed_projected_domain",
+        "other_vendor_collation_session_laws",
+        "complete_adapter_parity",
+        "full_13_dialect_semantic_certification",
         "independent_review"
       ],
       "release_approved": false
@@ -2335,13 +2347,19 @@
           "native_vendor_certification": "unattested"
         }
       ],
-      "source_and_terminal_duckdb_oracle": null,
+      "source_and_terminal_duckdb_oracle": {
+        "source": "docs/task-192-acceptance-freeze.json",
+        "id": "88-C177-S022",
+        "complete_physical_true_false_unknown_bags": true,
+        "expected_projected_domain": null,
+        "source_relation": "customers",
+        "original_fixture_scope": "independent_DuckDB_string_pattern"
+      },
       "missing_evidence": [
-        "typed_output_expectation",
-        "full_source_and_terminal_oracle",
-        "true_false_unknown_or_impossible_bags",
-        "adapter_equivalence",
-        "semantic_dialect_certification",
+        "strongest_typed_projected_domain",
+        "other_vendor_collation_session_laws",
+        "complete_adapter_parity",
+        "full_13_dialect_semantic_certification",
         "independent_review"
       ],
       "release_approved": false
@@ -2629,13 +2647,19 @@
           "native_vendor_certification": "unattested"
         }
       ],
-      "source_and_terminal_duckdb_oracle": null,
+      "source_and_terminal_duckdb_oracle": {
+        "source": "docs/task-192-acceptance-freeze.json",
+        "id": "88-C177-S025",
+        "complete_physical_true_false_unknown_bags": true,
+        "expected_projected_domain": null,
+        "source_relation": "customers",
+        "original_fixture_scope": "independent_DuckDB_string_pattern"
+      },
       "missing_evidence": [
-        "typed_output_expectation",
-        "full_source_and_terminal_oracle",
-        "true_false_unknown_or_impossible_bags",
-        "adapter_equivalence",
-        "semantic_dialect_certification",
+        "strongest_typed_projected_domain",
+        "other_vendor_collation_session_laws",
+        "complete_adapter_parity",
+        "full_13_dialect_semantic_certification",
         "independent_review"
       ],
       "release_approved": false
@@ -4428,5 +4452,110 @@
       ],
       "release_approved": false
     }
-  ]
+  ],
+  "task_owned_string_pattern_duckdb_oracles": {
+    "source_setup": "CREATE TABLE customers (id INTEGER, name VARCHAR); INSERT INTO customers VALUES (1, 'Alice'), (2, 'amy'), (3, 'A_foo'), (4, 'ABC'), (5, 'Bob'), (6, NULL), (7, 'A_foo');",
+    "source_rows": [
+      [
+        1,
+        "Alice"
+      ],
+      [
+        2,
+        "amy"
+      ],
+      [
+        3,
+        "A_foo"
+      ],
+      [
+        4,
+        "ABC"
+      ],
+      [
+        5,
+        "Bob"
+      ],
+      [
+        6,
+        null
+      ],
+      [
+        7,
+        "A_foo"
+      ]
+    ],
+    "semantics": "Only exact native DuckDB source IDs and TRUE/FALSE/UNKNOWN partition for these four fixed original SQL cases; no collation/vendor claim.",
+    "cases": [
+      {
+        "id": "88-C177-S020",
+        "predicate": "name LIKE 'A%'",
+        "selected_ids": [
+          1,
+          3,
+          4,
+          7
+        ],
+        "false_ids": [
+          2,
+          5
+        ],
+        "unknown_ids": [
+          6
+        ]
+      },
+      {
+        "id": "88-C177-S021",
+        "predicate": "name ILIKE 'a%'",
+        "selected_ids": [
+          1,
+          2,
+          3,
+          4,
+          7
+        ],
+        "false_ids": [
+          5
+        ],
+        "unknown_ids": [
+          6
+        ]
+      },
+      {
+        "id": "88-C177-S022",
+        "predicate": "name LIKE 'A!_%' ESCAPE '!'",
+        "selected_ids": [
+          3,
+          7
+        ],
+        "false_ids": [
+          1,
+          2,
+          4,
+          5
+        ],
+        "unknown_ids": [
+          6
+        ]
+      },
+      {
+        "id": "88-C177-S025",
+        "predicate": "name LIKE 'ABC%'",
+        "selected_ids": [
+          4
+        ],
+        "false_ids": [
+          1,
+          2,
+          3,
+          5,
+          7
+        ],
+        "unknown_ids": [
+          6
+        ]
+      }
+    ]
+  },
+  "new_task_owned_duckdb_oracle_count": 4
 }
