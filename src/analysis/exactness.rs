@@ -771,7 +771,6 @@ pub(super) fn collect_expression_column_refs(
     }
 }
 
-
 /// Once a direct SELECT has a typed and complete row-selection descriptor,
 /// TOP, FETCH FIRST ROWS ONLY, and LIMIT share *one* canonical residual.
 /// Preserve every nested and unrelated residual; raw/non-certified syntax
