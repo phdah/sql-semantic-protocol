@@ -52,9 +52,14 @@ fn frozen_ids(case: &Value, key: &str) -> Vec<i64> {
 }
 
 fn frozen_nullable_bag(expected: &Value) -> Vec<Option<i64>> {
-    let items: Vec<Vec<Option<i64>>> =
-        serde_json::from_value(expected.clone()).expect("complete source or terminal bag");
-    let mut values: Vec<_> = items.iter().map(|row| row[0]).collect();
+    // The source contains extra string/timestamp/float columns; this test
+    // compares the complete source-instance ID bag, not those heterogeneous values.
+    let mut values: Vec<_> = expected
+        .as_array()
+        .expect("complete source or terminal bag")
+        .iter()
+        .map(|row| row[0].as_i64())
+        .collect();
     values.sort();
     values
 }
