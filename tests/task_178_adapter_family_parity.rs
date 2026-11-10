@@ -56,6 +56,12 @@ fn direct_catalog() -> RelationCatalog {
 }
 
 fn dbt_catalog(sql: &str) -> RelationCatalog {
+    // dbt depends_on enumerates the physical relations actually read by
+    // compiled SQL. Inventing an unrelated source edge must be rejected.
+    let mut dependencies = vec!["source.task178.orders"];
+    if sql.contains("customers") {
+        dependencies.push("source.task178.customers");
+    }
     let manifest = json!({
         "metadata": {
             "dbt_schema_version": "https://schemas.getdbt.com/dbt/manifest/v12.json",
@@ -68,7 +74,7 @@ fn dbt_catalog(sql: &str) -> RelationCatalog {
                 "config": {"materialized": "view"},
                 "relation_name": "task178_read", "compiled_code": sql,
                 "depends_on": {
-                    "nodes": ["source.task178.orders", "source.task178.customers"]
+                    "nodes": dependencies
                 }
             }
         },
