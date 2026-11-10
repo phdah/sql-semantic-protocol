@@ -374,7 +374,16 @@ pub(super) fn analyze_expression_with_windows(
             // STRUCT(a, INT, b, VARCHAR) versus STRUCT(a INT, b VARCHAR).
             // Include the missing evaluation law, not the parser's display
             // spelling, in the canonical Unknown/diagnostic contract.
-            if matches!(data_type, sqlparser::ast::DataType::Struct(_, _)) {
+            if matches!(data_type, sqlparser::ast::DataType::Struct(_, _))
+                // The generic parser sometimes represents STRUCT(field type, ...)
+                // as a custom type instead of DataType::Struct. This spelling
+                // check is diagnostic-only; it does not infer value semantics.
+                || data_type
+                    .to_string()
+                    .trim_start()
+                    .to_ascii_uppercase()
+                    .starts_with("STRUCT(")
+            {
                 return unsupported_expression_with_canonical_reason(
                     "cast",
                     DiagnosticArea::Expression,
