@@ -4,9 +4,9 @@
 
 use serde_json::{json, Value};
 use sql_semantic_protocol::{
-    analyze_configured_inputs_with_catalog, analyze_dbt_manifest_with_schemas,
-    analyze_inputs, dialect_from_name, parse_dbt_manifest, ComposedSemantics,
-    ConfiguredSqlInput, RelationCatalog, SqlInput, ValueDomain,
+    analyze_configured_inputs_with_catalog, analyze_dbt_manifest_with_schemas, analyze_inputs,
+    dialect_from_name, parse_dbt_manifest, ComposedSemantics, ConfiguredSqlInput, RelationCatalog,
+    SqlInput, ValueDomain,
 };
 
 const MATRIX: &str = include_str!("../docs/task-192-acceptance-freeze.json");
@@ -106,7 +106,8 @@ schema:
         &contract,
         "duckdb",
         &RelationCatalog::new(&["orders", "customers"]).expect("two named sources"),
-    ).expect("ODCS source schema evidence");
+    )
+    .expect("ODCS source schema evidence");
     RelationCatalog::from_schemas(parsed.source_schemas()).expect("ODCS schemas")
 }
 
@@ -124,7 +125,12 @@ fn domains(catalog: &RelationCatalog, dialect_name: &str, sql: &str) -> Option<V
     let layer = bundle.layers().last().expect("one query layer");
     match layer.composed_semantics() {
         ComposedSemantics::Resolved(semantics) => Some(
-            semantics.output().columns().iter().map(|c| c.domain().clone()).collect()
+            semantics
+                .output()
+                .columns()
+                .iter()
+                .map(|c| c.domain().clone())
+                .collect(),
         ),
         _ => None,
     }
@@ -161,7 +167,10 @@ fn every_representable_original_predicate_keeps_dbt_and_direct_typed_domains() {
             let name = name.as_str().expect("dialect");
             let expected = domains(direct, name, sql);
             let actual = domains(dbt, name, sql);
-            assert!(expected.as_ref().is_some_and(|c| !c.is_empty()), "{id}/{name}: missing typed output");
+            assert!(
+                expected.as_ref().is_some_and(|c| !c.is_empty()),
+                "{id}/{name}: missing typed output"
+            );
             assert_eq!(actual, expected, "{id}/{name}: dbt source-fact parity");
             verified += 1;
         }
@@ -195,7 +204,10 @@ fn every_representable_original_predicate_keeps_odcs_and_direct_typed_domains() 
             let name = name.as_str().expect("dialect");
             let expected = domains(direct, name, sql);
             let actual = domains(odcs, name, sql);
-            assert!(expected.as_ref().is_some_and(|c| !c.is_empty()), "{id}/{name}: missing source domain");
+            assert!(
+                expected.as_ref().is_some_and(|c| !c.is_empty()),
+                "{id}/{name}: missing source domain"
+            );
             assert_eq!(actual, expected, "{id}/{name}: ODCS source-fact parity");
             verified += 1;
         }
