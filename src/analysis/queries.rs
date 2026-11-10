@@ -361,6 +361,7 @@ pub(super) fn analyze_query(
         &relation_analysis.joins,
         &diagnostics,
         false,
+        row_shaping.as_ref(),
     );
     let condition_exactness = predicate_exactness
         .merged_with(&unknown_column_domain_exactness(
