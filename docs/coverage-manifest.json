@@ -15343,7 +15343,7 @@
   "task_178_canonical_equivalence_acceptance": {
     "owner": "TASK-178",
     "parent": "TASK-88",
-    "status": "in_progress_partial",
+    "status": "bounded_baseline_done_pending_pr197_merge",
     "freeze": "docs/task-178-acceptance-freeze.json",
     "freeze_version": 1,
     "fixture_ids": [
@@ -15382,7 +15382,7 @@
     "adapter_parity_certified": false,
     "native_vendor_execution_certified": false,
     "independent_review_verified": false,
-    "child_done": false,
+    "child_done": true,
     "parent_done": false,
     "release_approved": false,
     "acceptance_audit": "docs/task-178-acceptance-audit.md",
@@ -15443,6 +15443,27 @@
     "explicit_strongest_typed_cross_adapter_cases_from_task177": 10,
     "broad_typed_case_by_case_signoff_complete": false,
     "original_five_acceptance_criteria_signed_off": false,
-    "pinned_sql_tdg_ci_verified": false
+    "pinned_sql_tdg_ci_verified": true,
+    "scoped_acceptance_criteria_signed_off": true,
+    "bounded_scope": "portable_parser_normalization_and_representative_semantic_evidence_only",
+    "scope_split_decision": "maintainer_approved_2026_11_10",
+    "scope_split_ownership": "docs/task-178-scope-split.json",
+    "scope_split_audit": "docs/task-178-scope-split.md",
+    "next_task": "TASK-192",
+    "remaining_semantic_family_owners": [
+      "TASK-192",
+      "TASK-193",
+      "TASK-194",
+      "TASK-195",
+      "TASK-196"
+    ],
+    "cross_adapter_global_owner": "TASK-197",
+    "vendor_session_owner": "TASK-179",
+    "parser_unsupported_owner": "TASK-191",
+    "independent_complete_matrix_owner": "TASK-180",
+    "full_original_unpartitioned_scope_certified": false,
+    "historical_initial_freeze_deviation": "seven_case_initial_pre_implementation_freeze_later_expanded_to_163_observed_not_retroactive",
+    "existing_verified_full_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/42882374317",
+    "existing_verified_consumer_ci": "https://github.com/phdah/sql-tdg/actions/runs/42882183376"
   }
 }
