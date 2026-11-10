@@ -28,6 +28,7 @@ type: feature
 - **Delivered here:** 7-case positive/negative DuckDB starter goldens; all 163 named original SQL cases x 13 parser dialects classified without omissions; meaning-preserving canonical variants and fail-closed unknowns; 78 original adapter/domain parity variants and 53 independently pinned DuckDB terminal/domain-containment checks.
 - **Explicitly not delivered here:** strongest exact typed and independent complete source/terminal proof for all 2,119 cells, across every original family, nor vendor/native execution attestation, unimplemented mandatory support or independent matrix reviewer approval.
 - **Original parent AC:** #2, #4, #5, #7, #8, #6 remains mandatory through TASK-192..197 and TASK-179/191/180. The retrospective seven-case freeze deviation remains recorded.
+- **Evidence gates:** Register the bounded TASK-178 completion and task ownership in `docs/coverage-manifest.json`. The existing `88-C178-P`/`88-C178-N` fixture IDs prove only selected DuckDB cases; every unproved `Residual` or unexecuted external engine claim stays explicit. All 13 project parser dialects remain represented.
 
 ## Acceptance Criteria
 
