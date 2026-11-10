@@ -4557,5 +4557,6 @@
       }
     ]
   },
-  "new_task_owned_duckdb_oracle_count": 4
+  "new_task_owned_duckdb_oracle_count": 4,
+  "release_approved": false
 }
