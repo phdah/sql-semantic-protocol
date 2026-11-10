@@ -15421,6 +15421,28 @@
     },
     "top_fetch_typed_row_shaping_oracle": "tests/task_178_syntax_dialect_boundaries.rs",
     "direct_sql_dbt_odcs_predicate_domain_oracle": "tests/task_178_adapter_typed_parity.rs",
-    "signed_off_original_ac_count": 0
+    "signed_off_original_ac_count": 0,
+    "meaning_preserving_pagination_full_document_test": "tests/task_178_pagination_canonical.rs",
+    "verified_typed_top_fetch_limit_semantic_equivalence": "https://github.com/phdah/sql-semantic-protocol/actions/runs/42781880005",
+    "pinned_13_dialect_synonym_status": {
+      "minus_except_same_full_documents": 13,
+      "top_limit_same_after_semantic_normalization": 13,
+      "fetch_limit_same_after_semantic_normalization": 13,
+      "fetch_with_ties_not_equivalent_to_limit": 13
+    },
+    "canonical_row_selection_exactness_owner": "src/analysis/exactness.rs",
+    "explicit_original_duckdb_nonterminal_registry": "docs/task-178-native-boundary-adjudications.json",
+    "explicit_original_duckdb_nonterminal_test": "tests/task_178_native_boundary_adjudications.rs",
+    "native_original_sql_complete_in_task_scope": 149,
+    "native_original_sql_nonterminal_in_task_scope": 14,
+    "native_nonterminal_by_class": {
+      "native_rejected": 8,
+      "native_evaluation_error": 1,
+      "nondeterministic_sampling": 5
+    },
+    "explicit_strongest_typed_cross_adapter_cases_from_task177": 10,
+    "broad_typed_case_by_case_signoff_complete": false,
+    "original_five_acceptance_criteria_signed_off": false,
+    "pinned_sql_tdg_ci_verified": false
   }
 }
