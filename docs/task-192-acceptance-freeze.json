@@ -1,0 +1,4432 @@
+{
+  "schema_version": 1,
+  "task_id": "TASK-192",
+  "parent": "TASK-88",
+  "status": "in_progress_v1_incomplete_semantic_acceptance",
+  "acceptance_contract": "All original cases and parser outcomes are fixed; explicit missing evidence blocks Done. This is NOT a signed-off 43x13 domain/physical matrix.",
+  "source_inventory": "docs/task-178-full-variant-inventory.json",
+  "source_observed_dialects": "docs/task-177-equivalence-snapshot.json",
+  "preexisting_native_oracles": "docs/task-177-predicate-oracles.json",
+  "positive_fixture_id": "88-C192-P",
+  "negative_fixture_id": "88-C192-N",
+  "dialects": [
+    "ansi",
+    "bigquery",
+    "clickhouse",
+    "databricks",
+    "duckdb",
+    "generic",
+    "hive",
+    "mssql",
+    "mysql",
+    "postgresql",
+    "redshift",
+    "snowflake",
+    "sqlite"
+  ],
+  "case_count": 43,
+  "dialect_cell_count": 559,
+  "preexisting_duckdb_truth_partition_oracle_count": 25,
+  "unproved_native_truth_partition_case_count": 18,
+  "full_typed_semantic_signoff": false,
+  "external_vendor_native_signoff": false,
+  "independent_review_signed_off": false,
+  "original_task_178_acceptance_unblocked": false,
+  "cases": [
+    {
+      "id": "88-C177-S001",
+      "feature_id": "predicates.integer_ranges",
+      "variant": "=",
+      "sql": "SELECT amount FROM orders WHERE amount = 10",
+      "source_case_id": "88-C177-S001",
+      "canonical_observation": "CCCCCCCCCCCCC",
+      "dialect_cells": [
+        {
+          "dialect": "ansi",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "bigquery",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "clickhouse",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "databricks",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "duckdb",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "generic",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "hive",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "mssql",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "mysql",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "postgresql",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "redshift",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "snowflake",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "sqlite",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        }
+      ],
+      "source_and_terminal_duckdb_oracle": {
+        "source": "docs/task-177-predicate-oracles.json",
+        "id": "88-C177-S001",
+        "complete_physical_true_false_unknown_bags": true,
+        "expected_projected_domain": {
+          "kind": "set_include",
+          "values": [
+            10
+          ]
+        },
+        "source_relation": "orders",
+        "original_fixture_scope": "independent_DuckDB_only"
+      },
+      "missing_evidence": [
+        "all_dialect_typed_outcome_matrix",
+        "independent_task_192_review",
+        "vendor_session_boundary_disposition"
+      ],
+      "release_approved": false
+    },
+    {
+      "id": "88-C177-S002",
+      "feature_id": "predicates.integer_ranges",
+      "variant": "<>",
+      "sql": "SELECT amount FROM orders WHERE amount <> 10",
+      "source_case_id": "88-C177-S002",
+      "canonical_observation": "CCCCCCCCCCCCC",
+      "dialect_cells": [
+        {
+          "dialect": "ansi",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "bigquery",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "clickhouse",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "databricks",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "duckdb",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "generic",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "hive",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "mssql",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "mysql",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "postgresql",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "redshift",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "snowflake",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "sqlite",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        }
+      ],
+      "source_and_terminal_duckdb_oracle": {
+        "source": "docs/task-177-predicate-oracles.json",
+        "id": "88-C177-S002",
+        "complete_physical_true_false_unknown_bags": true,
+        "expected_projected_domain": {
+          "kind": "set_exclude",
+          "values": [
+            10,
+            null
+          ]
+        },
+        "source_relation": "orders",
+        "original_fixture_scope": "independent_DuckDB_only"
+      },
+      "missing_evidence": [
+        "all_dialect_typed_outcome_matrix",
+        "independent_task_192_review",
+        "vendor_session_boundary_disposition"
+      ],
+      "release_approved": false
+    },
+    {
+      "id": "88-C177-S003",
+      "feature_id": "predicates.integer_ranges",
+      "variant": "<",
+      "sql": "SELECT amount FROM orders WHERE amount < 10",
+      "source_case_id": "88-C177-S003",
+      "canonical_observation": "CCCCCCCCCCCCC",
+      "dialect_cells": [
+        {
+          "dialect": "ansi",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "bigquery",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "clickhouse",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "databricks",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "duckdb",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "generic",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "hive",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "mssql",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "mysql",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "postgresql",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "redshift",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "snowflake",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "sqlite",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        }
+      ],
+      "source_and_terminal_duckdb_oracle": {
+        "source": "docs/task-177-predicate-oracles.json",
+        "id": "88-C177-S003",
+        "complete_physical_true_false_unknown_bags": true,
+        "expected_projected_domain": {
+          "lower": null,
+          "upper": [
+            10,
+            false
+          ],
+          "kind": "range"
+        },
+        "source_relation": "orders",
+        "original_fixture_scope": "independent_DuckDB_only"
+      },
+      "missing_evidence": [
+        "all_dialect_typed_outcome_matrix",
+        "independent_task_192_review",
+        "vendor_session_boundary_disposition"
+      ],
+      "release_approved": false
+    },
+    {
+      "id": "88-C177-S004",
+      "feature_id": "predicates.integer_ranges",
+      "variant": "<=",
+      "sql": "SELECT amount FROM orders WHERE amount <= 10",
+      "source_case_id": "88-C177-S004",
+      "canonical_observation": "CCCCCCCCCCCCC",
+      "dialect_cells": [
+        {
+          "dialect": "ansi",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "bigquery",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "clickhouse",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "databricks",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "duckdb",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "generic",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "hive",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "mssql",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "mysql",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "postgresql",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "redshift",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "snowflake",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "sqlite",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        }
+      ],
+      "source_and_terminal_duckdb_oracle": {
+        "source": "docs/task-177-predicate-oracles.json",
+        "id": "88-C177-S004",
+        "complete_physical_true_false_unknown_bags": true,
+        "expected_projected_domain": {
+          "lower": null,
+          "upper": [
+            10,
+            true
+          ],
+          "kind": "range"
+        },
+        "source_relation": "orders",
+        "original_fixture_scope": "independent_DuckDB_only"
+      },
+      "missing_evidence": [
+        "all_dialect_typed_outcome_matrix",
+        "independent_task_192_review",
+        "vendor_session_boundary_disposition"
+      ],
+      "release_approved": false
+    },
+    {
+      "id": "88-C177-S005",
+      "feature_id": "predicates.integer_ranges",
+      "variant": ">",
+      "sql": "SELECT amount FROM orders WHERE amount > 10",
+      "source_case_id": "88-C177-S005",
+      "canonical_observation": "CCCCCCCCCCCCC",
+      "dialect_cells": [
+        {
+          "dialect": "ansi",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "bigquery",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "clickhouse",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "databricks",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "duckdb",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "generic",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "hive",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "mssql",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "mysql",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "postgresql",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "redshift",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "snowflake",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "sqlite",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        }
+      ],
+      "source_and_terminal_duckdb_oracle": {
+        "source": "docs/task-177-predicate-oracles.json",
+        "id": "88-C177-S005",
+        "complete_physical_true_false_unknown_bags": true,
+        "expected_projected_domain": {
+          "lower": [
+            10,
+            false
+          ],
+          "upper": null,
+          "kind": "range"
+        },
+        "source_relation": "orders",
+        "original_fixture_scope": "independent_DuckDB_only"
+      },
+      "missing_evidence": [
+        "all_dialect_typed_outcome_matrix",
+        "independent_task_192_review",
+        "vendor_session_boundary_disposition"
+      ],
+      "release_approved": false
+    },
+    {
+      "id": "88-C177-S006",
+      "feature_id": "predicates.integer_ranges",
+      "variant": ">=",
+      "sql": "SELECT amount FROM orders WHERE amount >= 10",
+      "source_case_id": "88-C177-S006",
+      "canonical_observation": "CCCCCCCCCCCCC",
+      "dialect_cells": [
+        {
+          "dialect": "ansi",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "bigquery",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "clickhouse",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "databricks",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "duckdb",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "generic",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "hive",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "mssql",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "mysql",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "postgresql",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "redshift",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "snowflake",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "sqlite",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        }
+      ],
+      "source_and_terminal_duckdb_oracle": {
+        "source": "docs/task-177-predicate-oracles.json",
+        "id": "88-C177-S006",
+        "complete_physical_true_false_unknown_bags": true,
+        "expected_projected_domain": {
+          "lower": [
+            10,
+            true
+          ],
+          "upper": null,
+          "kind": "range"
+        },
+        "source_relation": "orders",
+        "original_fixture_scope": "independent_DuckDB_only"
+      },
+      "missing_evidence": [
+        "all_dialect_typed_outcome_matrix",
+        "independent_task_192_review",
+        "vendor_session_boundary_disposition"
+      ],
+      "release_approved": false
+    },
+    {
+      "id": "88-C177-S007",
+      "feature_id": "predicates.integer_ranges",
+      "variant": "BETWEEN",
+      "sql": "SELECT amount FROM orders WHERE amount BETWEEN 1 AND 10",
+      "source_case_id": "88-C177-S007",
+      "canonical_observation": "CCCCCCCCCCCCC",
+      "dialect_cells": [
+        {
+          "dialect": "ansi",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "bigquery",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "clickhouse",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "databricks",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "duckdb",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "generic",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "hive",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "mssql",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "mysql",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "postgresql",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "redshift",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "snowflake",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "sqlite",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        }
+      ],
+      "source_and_terminal_duckdb_oracle": {
+        "source": "docs/task-177-predicate-oracles.json",
+        "id": "88-C177-S007",
+        "complete_physical_true_false_unknown_bags": true,
+        "expected_projected_domain": {
+          "lower": [
+            1,
+            true
+          ],
+          "upper": [
+            10,
+            true
+          ],
+          "kind": "range"
+        },
+        "source_relation": "orders",
+        "original_fixture_scope": "independent_DuckDB_only"
+      },
+      "missing_evidence": [
+        "all_dialect_typed_outcome_matrix",
+        "independent_task_192_review",
+        "vendor_session_boundary_disposition"
+      ],
+      "release_approved": false
+    },
+    {
+      "id": "88-C177-S008",
+      "feature_id": "predicates.integer_ranges",
+      "variant": "NOT BETWEEN",
+      "sql": "SELECT amount FROM orders WHERE amount NOT BETWEEN 1 AND 10",
+      "source_case_id": "88-C177-S008",
+      "canonical_observation": "CCCCCCCCCCCCC",
+      "dialect_cells": [
+        {
+          "dialect": "ansi",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "bigquery",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "clickhouse",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "databricks",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "duckdb",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "generic",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "hive",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "mssql",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "mysql",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "postgresql",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "redshift",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "snowflake",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "sqlite",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        }
+      ],
+      "source_and_terminal_duckdb_oracle": {
+        "source": "docs/task-177-predicate-oracles.json",
+        "id": "88-C177-S008",
+        "complete_physical_true_false_unknown_bags": true,
+        "expected_projected_domain": {
+          "kind": "range_union",
+          "ranges": [
+            {
+              "lower": null,
+              "upper": [
+                1,
+                false
+              ]
+            },
+            {
+              "lower": [
+                10,
+                false
+              ],
+              "upper": null
+            }
+          ]
+        },
+        "source_relation": "orders",
+        "original_fixture_scope": "independent_DuckDB_only"
+      },
+      "missing_evidence": [
+        "all_dialect_typed_outcome_matrix",
+        "independent_task_192_review",
+        "vendor_session_boundary_disposition"
+      ],
+      "release_approved": false
+    },
+    {
+      "id": "88-C177-S009",
+      "feature_id": "predicates.boolean_logic",
+      "variant": "AND",
+      "sql": "SELECT id FROM orders WHERE amount > 1 AND id > 0",
+      "source_case_id": "88-C177-S009",
+      "canonical_observation": "CCCCCCCCCCCCC",
+      "dialect_cells": [
+        {
+          "dialect": "ansi",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "bigquery",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "clickhouse",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "databricks",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "duckdb",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "generic",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "hive",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "mssql",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "mysql",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "postgresql",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "redshift",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "snowflake",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "sqlite",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        }
+      ],
+      "source_and_terminal_duckdb_oracle": {
+        "source": "docs/task-177-predicate-oracles.json",
+        "id": "88-C177-S009",
+        "complete_physical_true_false_unknown_bags": true,
+        "expected_projected_domain": {
+          "kind": "range",
+          "lower": [
+            0,
+            false
+          ],
+          "upper": null
+        },
+        "source_relation": "orders",
+        "original_fixture_scope": "independent_DuckDB_only"
+      },
+      "missing_evidence": [
+        "all_dialect_typed_outcome_matrix",
+        "independent_task_192_review",
+        "vendor_session_boundary_disposition"
+      ],
+      "release_approved": false
+    },
+    {
+      "id": "88-C177-S010",
+      "feature_id": "predicates.boolean_logic",
+      "variant": "OR",
+      "sql": "SELECT id FROM orders WHERE amount > 1 OR id > 0",
+      "source_case_id": "88-C177-S010",
+      "canonical_observation": "CCCCCCCCCCCCC",
+      "dialect_cells": [
+        {
+          "dialect": "ansi",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "bigquery",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "clickhouse",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "databricks",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "duckdb",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "generic",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "hive",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "mssql",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "mysql",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "postgresql",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "redshift",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "snowflake",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "sqlite",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        }
+      ],
+      "source_and_terminal_duckdb_oracle": {
+        "source": "docs/task-177-predicate-oracles.json",
+        "id": "88-C177-S010",
+        "complete_physical_true_false_unknown_bags": true,
+        "expected_projected_domain": null,
+        "source_relation": "orders",
+        "original_fixture_scope": "independent_DuckDB_only"
+      },
+      "missing_evidence": [
+        "all_dialect_typed_outcome_matrix",
+        "independent_task_192_review",
+        "vendor_session_boundary_disposition"
+      ],
+      "release_approved": false
+    },
+    {
+      "id": "88-C177-S011",
+      "feature_id": "predicates.boolean_logic",
+      "variant": "NOT",
+      "sql": "SELECT id FROM orders WHERE NOT (amount > 1)",
+      "source_case_id": "88-C177-S011",
+      "canonical_observation": "CCCCCCCCCCCCC",
+      "dialect_cells": [
+        {
+          "dialect": "ansi",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "bigquery",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "clickhouse",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "databricks",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "duckdb",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "generic",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "hive",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "mssql",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "mysql",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "postgresql",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "redshift",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "snowflake",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "sqlite",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        }
+      ],
+      "source_and_terminal_duckdb_oracle": {
+        "source": "docs/task-177-predicate-oracles.json",
+        "id": "88-C177-S011",
+        "complete_physical_true_false_unknown_bags": true,
+        "expected_projected_domain": null,
+        "source_relation": "orders",
+        "original_fixture_scope": "independent_DuckDB_only"
+      },
+      "missing_evidence": [
+        "all_dialect_typed_outcome_matrix",
+        "independent_task_192_review",
+        "vendor_session_boundary_disposition"
+      ],
+      "release_approved": false
+    },
+    {
+      "id": "88-C177-S012",
+      "feature_id": "predicates.boolean_logic",
+      "variant": "parenthesized",
+      "sql": "SELECT id FROM orders WHERE (amount > 1 OR amount IS NULL) AND id > 0",
+      "source_case_id": "88-C177-S012",
+      "canonical_observation": "CCCCCCCCCCCCC",
+      "dialect_cells": [
+        {
+          "dialect": "ansi",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "bigquery",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "clickhouse",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "databricks",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "duckdb",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "generic",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "hive",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "mssql",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "mysql",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "postgresql",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "redshift",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "snowflake",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "sqlite",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        }
+      ],
+      "source_and_terminal_duckdb_oracle": {
+        "source": "docs/task-177-predicate-oracles.json",
+        "id": "88-C177-S012",
+        "complete_physical_true_false_unknown_bags": true,
+        "expected_projected_domain": {
+          "kind": "range",
+          "lower": [
+            0,
+            false
+          ],
+          "upper": null
+        },
+        "source_relation": "orders",
+        "original_fixture_scope": "independent_DuckDB_only"
+      },
+      "missing_evidence": [
+        "all_dialect_typed_outcome_matrix",
+        "independent_task_192_review",
+        "vendor_session_boundary_disposition"
+      ],
+      "release_approved": false
+    },
+    {
+      "id": "88-C177-S013",
+      "feature_id": "predicates.boolean_logic",
+      "variant": "correlated column truth",
+      "sql": "SELECT o.id FROM orders o WHERE EXISTS (SELECT 1 FROM customers c WHERE c.id = o.id)",
+      "source_case_id": "88-C177-S013",
+      "canonical_observation": "CCCCCCCCCCCCC",
+      "dialect_cells": [
+        {
+          "dialect": "ansi",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "bigquery",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "clickhouse",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "databricks",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "duckdb",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "generic",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "hive",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "mssql",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "mysql",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "postgresql",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "redshift",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "snowflake",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "sqlite",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        }
+      ],
+      "source_and_terminal_duckdb_oracle": {
+        "source": "docs/task-177-predicate-oracles.json",
+        "id": "88-C177-S013",
+        "complete_physical_true_false_unknown_bags": true,
+        "expected_projected_domain": null,
+        "source_relation": "orders o",
+        "original_fixture_scope": "independent_DuckDB_only"
+      },
+      "missing_evidence": [
+        "all_dialect_typed_outcome_matrix",
+        "independent_task_192_review",
+        "vendor_session_boundary_disposition"
+      ],
+      "release_approved": false
+    },
+    {
+      "id": "88-C177-S014",
+      "feature_id": "predicates.null_truth",
+      "variant": "IS NULL",
+      "sql": "SELECT id FROM orders WHERE amount IS NULL",
+      "source_case_id": "88-C177-S014",
+      "canonical_observation": "CCCCCCCCCCCCC",
+      "dialect_cells": [
+        {
+          "dialect": "ansi",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "bigquery",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "clickhouse",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "databricks",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "duckdb",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "generic",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "hive",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "mssql",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "mysql",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "postgresql",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "redshift",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "snowflake",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "sqlite",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        }
+      ],
+      "source_and_terminal_duckdb_oracle": {
+        "source": "docs/task-177-predicate-oracles.json",
+        "id": "88-C177-S014",
+        "complete_physical_true_false_unknown_bags": true,
+        "expected_projected_domain": null,
+        "source_relation": "orders",
+        "original_fixture_scope": "independent_DuckDB_only"
+      },
+      "missing_evidence": [
+        "all_dialect_typed_outcome_matrix",
+        "independent_task_192_review",
+        "vendor_session_boundary_disposition"
+      ],
+      "release_approved": false
+    },
+    {
+      "id": "88-C177-S015",
+      "feature_id": "predicates.null_truth",
+      "variant": "IS NOT NULL",
+      "sql": "SELECT id FROM orders WHERE amount IS NOT NULL",
+      "source_case_id": "88-C177-S015",
+      "canonical_observation": "CCCCCCCCCCCCC",
+      "dialect_cells": [
+        {
+          "dialect": "ansi",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "bigquery",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "clickhouse",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "databricks",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "duckdb",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "generic",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "hive",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "mssql",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "mysql",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "postgresql",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "redshift",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "snowflake",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "sqlite",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        }
+      ],
+      "source_and_terminal_duckdb_oracle": {
+        "source": "docs/task-177-predicate-oracles.json",
+        "id": "88-C177-S015",
+        "complete_physical_true_false_unknown_bags": true,
+        "expected_projected_domain": null,
+        "source_relation": "orders",
+        "original_fixture_scope": "independent_DuckDB_only"
+      },
+      "missing_evidence": [
+        "all_dialect_typed_outcome_matrix",
+        "independent_task_192_review",
+        "vendor_session_boundary_disposition"
+      ],
+      "release_approved": false
+    },
+    {
+      "id": "88-C177-S016",
+      "feature_id": "predicates.null_truth",
+      "variant": "IS TRUE",
+      "sql": "SELECT id FROM orders WHERE amount > 0 IS TRUE",
+      "source_case_id": "88-C177-S016",
+      "canonical_observation": "CCCCCCCCCCCCC",
+      "dialect_cells": [
+        {
+          "dialect": "ansi",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "bigquery",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "clickhouse",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "databricks",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "duckdb",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "generic",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "hive",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "mssql",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "mysql",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "postgresql",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "redshift",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "snowflake",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "sqlite",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        }
+      ],
+      "source_and_terminal_duckdb_oracle": {
+        "source": "docs/task-177-predicate-oracles.json",
+        "id": "88-C177-S016",
+        "complete_physical_true_false_unknown_bags": true,
+        "expected_projected_domain": null,
+        "source_relation": "orders",
+        "original_fixture_scope": "independent_DuckDB_only"
+      },
+      "missing_evidence": [
+        "all_dialect_typed_outcome_matrix",
+        "independent_task_192_review",
+        "vendor_session_boundary_disposition"
+      ],
+      "release_approved": false
+    },
+    {
+      "id": "88-C177-S017",
+      "feature_id": "predicates.null_truth",
+      "variant": "IS FALSE",
+      "sql": "SELECT id FROM orders WHERE amount > 0 IS FALSE",
+      "source_case_id": "88-C177-S017",
+      "canonical_observation": "CCCCCCCCCCCCC",
+      "dialect_cells": [
+        {
+          "dialect": "ansi",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "bigquery",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "clickhouse",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "databricks",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "duckdb",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "generic",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "hive",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "mssql",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "mysql",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "postgresql",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "redshift",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "snowflake",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "sqlite",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        }
+      ],
+      "source_and_terminal_duckdb_oracle": {
+        "source": "docs/task-177-predicate-oracles.json",
+        "id": "88-C177-S017",
+        "complete_physical_true_false_unknown_bags": true,
+        "expected_projected_domain": null,
+        "source_relation": "orders",
+        "original_fixture_scope": "independent_DuckDB_only"
+      },
+      "missing_evidence": [
+        "all_dialect_typed_outcome_matrix",
+        "independent_task_192_review",
+        "vendor_session_boundary_disposition"
+      ],
+      "release_approved": false
+    },
+    {
+      "id": "88-C177-S018",
+      "feature_id": "predicates.null_truth",
+      "variant": "UNKNOWN",
+      "sql": "SELECT id FROM orders WHERE amount > 0 IS UNKNOWN",
+      "source_case_id": "88-C177-S018",
+      "canonical_observation": "CCCCCCCCCCCCC",
+      "dialect_cells": [
+        {
+          "dialect": "ansi",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "bigquery",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "clickhouse",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "databricks",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "duckdb",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "generic",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "hive",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "mssql",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "mysql",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "postgresql",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "redshift",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "snowflake",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "sqlite",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        }
+      ],
+      "source_and_terminal_duckdb_oracle": {
+        "source": "docs/task-177-predicate-oracles.json",
+        "id": "88-C177-S018",
+        "complete_physical_true_false_unknown_bags": true,
+        "expected_projected_domain": null,
+        "source_relation": "orders",
+        "original_fixture_scope": "independent_DuckDB_only"
+      },
+      "missing_evidence": [
+        "all_dialect_typed_outcome_matrix",
+        "independent_task_192_review",
+        "vendor_session_boundary_disposition"
+      ],
+      "release_approved": false
+    },
+    {
+      "id": "88-C177-S019",
+      "feature_id": "predicates.null_truth",
+      "variant": "IN with NULL",
+      "sql": "SELECT id FROM orders WHERE amount IN (1, NULL)",
+      "source_case_id": "88-C177-S019",
+      "canonical_observation": "CCCCCCCCCCCCC",
+      "dialect_cells": [
+        {
+          "dialect": "ansi",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "bigquery",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "clickhouse",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "databricks",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "duckdb",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "generic",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "hive",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "mssql",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "mysql",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "postgresql",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "redshift",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "snowflake",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "sqlite",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        }
+      ],
+      "source_and_terminal_duckdb_oracle": {
+        "source": "docs/task-177-predicate-oracles.json",
+        "id": "88-C177-S019",
+        "complete_physical_true_false_unknown_bags": true,
+        "expected_projected_domain": null,
+        "source_relation": "orders",
+        "original_fixture_scope": "independent_DuckDB_only"
+      },
+      "missing_evidence": [
+        "all_dialect_typed_outcome_matrix",
+        "independent_task_192_review",
+        "vendor_session_boundary_disposition"
+      ],
+      "release_approved": false
+    },
+    {
+      "id": "88-C177-S020",
+      "feature_id": "predicates.string_pattern",
+      "variant": "LIKE",
+      "sql": "SELECT id FROM customers WHERE name LIKE 'A%'",
+      "source_case_id": "88-C177-S020",
+      "canonical_observation": "CCCCCCCCCCCCC",
+      "dialect_cells": [
+        {
+          "dialect": "ansi",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "bigquery",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "clickhouse",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "databricks",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "duckdb",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "generic",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "hive",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "mssql",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "mysql",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "postgresql",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "redshift",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "snowflake",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "sqlite",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        }
+      ],
+      "source_and_terminal_duckdb_oracle": null,
+      "missing_evidence": [
+        "typed_output_expectation",
+        "full_source_and_terminal_oracle",
+        "true_false_unknown_or_impossible_bags",
+        "adapter_equivalence",
+        "semantic_dialect_certification",
+        "independent_review"
+      ],
+      "release_approved": false
+    },
+    {
+      "id": "88-C177-S021",
+      "feature_id": "predicates.string_pattern",
+      "variant": "ILIKE",
+      "sql": "SELECT id FROM customers WHERE name ILIKE 'a%'",
+      "source_case_id": "88-C177-S021",
+      "canonical_observation": "CCCCCCCCCCCCC",
+      "dialect_cells": [
+        {
+          "dialect": "ansi",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "bigquery",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "clickhouse",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "databricks",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "duckdb",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "generic",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "hive",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "mssql",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "mysql",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "postgresql",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "redshift",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "snowflake",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "sqlite",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        }
+      ],
+      "source_and_terminal_duckdb_oracle": null,
+      "missing_evidence": [
+        "typed_output_expectation",
+        "full_source_and_terminal_oracle",
+        "true_false_unknown_or_impossible_bags",
+        "adapter_equivalence",
+        "semantic_dialect_certification",
+        "independent_review"
+      ],
+      "release_approved": false
+    },
+    {
+      "id": "88-C177-S022",
+      "feature_id": "predicates.string_pattern",
+      "variant": "ESCAPE",
+      "sql": "SELECT id FROM customers WHERE name LIKE 'A!_%' ESCAPE '!'",
+      "source_case_id": "88-C177-S022",
+      "canonical_observation": "CCCCCCCCCCCCC",
+      "dialect_cells": [
+        {
+          "dialect": "ansi",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "bigquery",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "clickhouse",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "databricks",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "duckdb",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "generic",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "hive",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "mssql",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "mysql",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "postgresql",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "redshift",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "snowflake",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "sqlite",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        }
+      ],
+      "source_and_terminal_duckdb_oracle": null,
+      "missing_evidence": [
+        "typed_output_expectation",
+        "full_source_and_terminal_oracle",
+        "true_false_unknown_or_impossible_bags",
+        "adapter_equivalence",
+        "semantic_dialect_certification",
+        "independent_review"
+      ],
+      "release_approved": false
+    },
+    {
+      "id": "88-C177-S023",
+      "feature_id": "predicates.string_pattern",
+      "variant": "SIMILAR TO",
+      "sql": "SELECT id FROM customers WHERE name SIMILAR TO '(A|B)%'",
+      "source_case_id": "88-C177-S023",
+      "canonical_observation": "CCCCCCCCCCCCC",
+      "dialect_cells": [
+        {
+          "dialect": "ansi",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "bigquery",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "clickhouse",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "databricks",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "duckdb",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "generic",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "hive",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "mssql",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "mysql",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "postgresql",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "redshift",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "snowflake",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "sqlite",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        }
+      ],
+      "source_and_terminal_duckdb_oracle": null,
+      "missing_evidence": [
+        "typed_output_expectation",
+        "full_source_and_terminal_oracle",
+        "true_false_unknown_or_impossible_bags",
+        "adapter_equivalence",
+        "semantic_dialect_certification",
+        "independent_review"
+      ],
+      "release_approved": false
+    },
+    {
+      "id": "88-C177-S024",
+      "feature_id": "predicates.string_pattern",
+      "variant": "regex",
+      "sql": "SELECT id FROM customers WHERE name ~ '^A'",
+      "source_case_id": "88-C177-S024",
+      "canonical_observation": "CCCCCCCCCCCCC",
+      "dialect_cells": [
+        {
+          "dialect": "ansi",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "bigquery",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "clickhouse",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "databricks",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "duckdb",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "generic",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "hive",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "mssql",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "mysql",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "postgresql",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "redshift",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "snowflake",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "sqlite",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        }
+      ],
+      "source_and_terminal_duckdb_oracle": null,
+      "missing_evidence": [
+        "typed_output_expectation",
+        "full_source_and_terminal_oracle",
+        "true_false_unknown_or_impossible_bags",
+        "adapter_equivalence",
+        "semantic_dialect_certification",
+        "independent_review"
+      ],
+      "release_approved": false
+    },
+    {
+      "id": "88-C177-S025",
+      "feature_id": "predicates.string_pattern",
+      "variant": "prefix",
+      "sql": "SELECT id FROM customers WHERE name LIKE 'ABC%'",
+      "source_case_id": "88-C177-S025",
+      "canonical_observation": "CCCCCCCCCCCCC",
+      "dialect_cells": [
+        {
+          "dialect": "ansi",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "bigquery",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "clickhouse",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "databricks",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "duckdb",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "generic",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "hive",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "mssql",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "mysql",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "postgresql",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "redshift",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "snowflake",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "sqlite",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        }
+      ],
+      "source_and_terminal_duckdb_oracle": null,
+      "missing_evidence": [
+        "typed_output_expectation",
+        "full_source_and_terminal_oracle",
+        "true_false_unknown_or_impossible_bags",
+        "adapter_equivalence",
+        "semantic_dialect_certification",
+        "independent_review"
+      ],
+      "release_approved": false
+    },
+    {
+      "id": "88-C177-S026",
+      "feature_id": "predicates.string_pattern",
+      "variant": "collations",
+      "sql": "SELECT id FROM customers WHERE name COLLATE en_US = 'a'",
+      "source_case_id": "88-C177-S026",
+      "canonical_observation": "CCCCCCCCCCCCC",
+      "dialect_cells": [
+        {
+          "dialect": "ansi",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "bigquery",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "clickhouse",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "databricks",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "duckdb",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "generic",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "hive",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "mssql",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "mysql",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "postgresql",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "redshift",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "snowflake",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "sqlite",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        }
+      ],
+      "source_and_terminal_duckdb_oracle": null,
+      "missing_evidence": [
+        "typed_output_expectation",
+        "full_source_and_terminal_oracle",
+        "true_false_unknown_or_impossible_bags",
+        "adapter_equivalence",
+        "semantic_dialect_certification",
+        "independent_review"
+      ],
+      "release_approved": false
+    },
+    {
+      "id": "88-C177-S027",
+      "feature_id": "predicates.computed",
+      "variant": "arithmetic",
+      "sql": "SELECT id FROM orders WHERE amount + 2 > 10",
+      "source_case_id": "88-C177-S027",
+      "canonical_observation": "CCCCCCCCCCCCC",
+      "dialect_cells": [
+        {
+          "dialect": "ansi",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "bigquery",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "clickhouse",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "databricks",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "duckdb",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "generic",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "hive",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "mssql",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "mysql",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "postgresql",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "redshift",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "snowflake",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "sqlite",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        }
+      ],
+      "source_and_terminal_duckdb_oracle": {
+        "source": "docs/task-177-predicate-oracles.json",
+        "id": "88-C177-S027",
+        "complete_physical_true_false_unknown_bags": true,
+        "expected_projected_domain": null,
+        "source_relation": "orders",
+        "original_fixture_scope": "independent_DuckDB_only"
+      },
+      "missing_evidence": [
+        "all_dialect_typed_outcome_matrix",
+        "independent_task_192_review",
+        "vendor_session_boundary_disposition"
+      ],
+      "release_approved": false
+    },
+    {
+      "id": "88-C177-S028",
+      "feature_id": "predicates.computed",
+      "variant": "casts",
+      "sql": "SELECT id FROM orders WHERE CAST(amount AS BIGINT) > 10",
+      "source_case_id": "88-C177-S028",
+      "canonical_observation": "CCCCCCCCCCCCC",
+      "dialect_cells": [
+        {
+          "dialect": "ansi",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "bigquery",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "clickhouse",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "databricks",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "duckdb",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "generic",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "hive",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "mssql",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "mysql",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "postgresql",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "redshift",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "snowflake",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "sqlite",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        }
+      ],
+      "source_and_terminal_duckdb_oracle": {
+        "source": "docs/task-177-predicate-oracles.json",
+        "id": "88-C177-S028",
+        "complete_physical_true_false_unknown_bags": true,
+        "expected_projected_domain": null,
+        "source_relation": "orders",
+        "original_fixture_scope": "independent_DuckDB_only"
+      },
+      "missing_evidence": [
+        "all_dialect_typed_outcome_matrix",
+        "independent_task_192_review",
+        "vendor_session_boundary_disposition"
+      ],
+      "release_approved": false
+    },
+    {
+      "id": "88-C177-S029",
+      "feature_id": "predicates.computed",
+      "variant": "CASE",
+      "sql": "SELECT id FROM orders WHERE CASE WHEN amount > 5 THEN 1 ELSE 0 END = 1",
+      "source_case_id": "88-C177-S029",
+      "canonical_observation": "CCCCCCCCCCCCC",
+      "dialect_cells": [
+        {
+          "dialect": "ansi",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "bigquery",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "clickhouse",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "databricks",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "duckdb",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "generic",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "hive",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "mssql",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "mysql",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "postgresql",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "redshift",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "snowflake",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "sqlite",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        }
+      ],
+      "source_and_terminal_duckdb_oracle": {
+        "source": "docs/task-177-predicate-oracles.json",
+        "id": "88-C177-S029",
+        "complete_physical_true_false_unknown_bags": true,
+        "expected_projected_domain": null,
+        "source_relation": "orders",
+        "original_fixture_scope": "independent_DuckDB_only"
+      },
+      "missing_evidence": [
+        "all_dialect_typed_outcome_matrix",
+        "independent_task_192_review",
+        "vendor_session_boundary_disposition"
+      ],
+      "release_approved": false
+    },
+    {
+      "id": "88-C177-S030",
+      "feature_id": "predicates.computed",
+      "variant": "COALESCE",
+      "sql": "SELECT id FROM orders WHERE COALESCE(amount, 0) >= 0",
+      "source_case_id": "88-C177-S030",
+      "canonical_observation": "CCCCCCCCCCCCC",
+      "dialect_cells": [
+        {
+          "dialect": "ansi",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "bigquery",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "clickhouse",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "databricks",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "duckdb",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "generic",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "hive",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "mssql",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "mysql",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "postgresql",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "redshift",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "snowflake",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "sqlite",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        }
+      ],
+      "source_and_terminal_duckdb_oracle": {
+        "source": "docs/task-177-predicate-oracles.json",
+        "id": "88-C177-S030",
+        "complete_physical_true_false_unknown_bags": true,
+        "expected_projected_domain": null,
+        "source_relation": "orders",
+        "original_fixture_scope": "independent_DuckDB_only"
+      },
+      "missing_evidence": [
+        "all_dialect_typed_outcome_matrix",
+        "independent_task_192_review",
+        "vendor_session_boundary_disposition"
+      ],
+      "release_approved": false
+    },
+    {
+      "id": "88-C177-S031",
+      "feature_id": "predicates.computed",
+      "variant": "NULLIF",
+      "sql": "SELECT id FROM orders WHERE NULLIF(amount, 0) IS NULL",
+      "source_case_id": "88-C177-S031",
+      "canonical_observation": "CCCCCCCCCCCCC",
+      "dialect_cells": [
+        {
+          "dialect": "ansi",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "bigquery",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "clickhouse",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "databricks",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "duckdb",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "generic",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "hive",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "mssql",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "mysql",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "postgresql",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "redshift",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "snowflake",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "sqlite",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        }
+      ],
+      "source_and_terminal_duckdb_oracle": {
+        "source": "docs/task-177-predicate-oracles.json",
+        "id": "88-C177-S031",
+        "complete_physical_true_false_unknown_bags": true,
+        "expected_projected_domain": null,
+        "source_relation": "orders",
+        "original_fixture_scope": "independent_DuckDB_only"
+      },
+      "missing_evidence": [
+        "all_dialect_typed_outcome_matrix",
+        "independent_task_192_review",
+        "vendor_session_boundary_disposition"
+      ],
+      "release_approved": false
+    },
+    {
+      "id": "88-C177-S032",
+      "feature_id": "predicates.computed",
+      "variant": "scalar functions",
+      "sql": "SELECT id FROM orders WHERE ABS(amount) > 2",
+      "source_case_id": "88-C177-S032",
+      "canonical_observation": "CCCCCCCCCCCCC",
+      "dialect_cells": [
+        {
+          "dialect": "ansi",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "bigquery",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "clickhouse",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "databricks",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "duckdb",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "generic",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "hive",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "mssql",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "mysql",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "postgresql",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "redshift",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "snowflake",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "sqlite",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        }
+      ],
+      "source_and_terminal_duckdb_oracle": {
+        "source": "docs/task-177-predicate-oracles.json",
+        "id": "88-C177-S032",
+        "complete_physical_true_false_unknown_bags": true,
+        "expected_projected_domain": null,
+        "source_relation": "orders",
+        "original_fixture_scope": "independent_DuckDB_only"
+      },
+      "missing_evidence": [
+        "all_dialect_typed_outcome_matrix",
+        "independent_task_192_review",
+        "vendor_session_boundary_disposition"
+      ],
+      "release_approved": false
+    },
+    {
+      "id": "88-C177-S033",
+      "feature_id": "predicates.computed",
+      "variant": "overflow",
+      "sql": "SELECT 9223372036854775807 + 1 AS overflow_case",
+      "source_case_id": "88-C177-S033",
+      "canonical_observation": "CCCCCCCCCCCCC",
+      "dialect_cells": [
+        {
+          "dialect": "ansi",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "bigquery",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "clickhouse",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "databricks",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "duckdb",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "generic",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "hive",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "mssql",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "mysql",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "postgresql",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "redshift",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "snowflake",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "sqlite",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        }
+      ],
+      "source_and_terminal_duckdb_oracle": null,
+      "missing_evidence": [
+        "typed_output_expectation",
+        "full_source_and_terminal_oracle",
+        "true_false_unknown_or_impossible_bags",
+        "adapter_equivalence",
+        "semantic_dialect_certification",
+        "independent_review"
+      ],
+      "release_approved": false
+    },
+    {
+      "id": "88-C177-S034",
+      "feature_id": "predicates.temporal",
+      "variant": "DATE/TIME/TIMESTAMP/INTERVAL",
+      "sql": "SELECT id FROM orders WHERE created_at >= TIMESTAMP '2020-01-01 00:00:00' + INTERVAL '1' DAY",
+      "source_case_id": "88-C177-S034",
+      "canonical_observation": "CCCCCCCCCCCCC",
+      "dialect_cells": [
+        {
+          "dialect": "ansi",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "bigquery",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "clickhouse",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "databricks",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "duckdb",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "generic",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "hive",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "mssql",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "mysql",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "postgresql",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "redshift",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "snowflake",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "sqlite",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        }
+      ],
+      "source_and_terminal_duckdb_oracle": null,
+      "missing_evidence": [
+        "typed_output_expectation",
+        "full_source_and_terminal_oracle",
+        "true_false_unknown_or_impossible_bags",
+        "adapter_equivalence",
+        "semantic_dialect_certification",
+        "independent_review"
+      ],
+      "release_approved": false
+    },
+    {
+      "id": "88-C177-S035",
+      "feature_id": "predicates.temporal",
+      "variant": "timezone",
+      "sql": "SELECT id FROM orders WHERE created_at AT TIME ZONE 'UTC' > TIMESTAMP '2020-01-01 00:00:00'",
+      "source_case_id": "88-C177-S035",
+      "canonical_observation": "CCCCCCCCCCCCC",
+      "dialect_cells": [
+        {
+          "dialect": "ansi",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "bigquery",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "clickhouse",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "databricks",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "duckdb",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "generic",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "hive",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "mssql",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "mysql",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "postgresql",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "redshift",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "snowflake",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "sqlite",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        }
+      ],
+      "source_and_terminal_duckdb_oracle": null,
+      "missing_evidence": [
+        "typed_output_expectation",
+        "full_source_and_terminal_oracle",
+        "true_false_unknown_or_impossible_bags",
+        "adapter_equivalence",
+        "semantic_dialect_certification",
+        "independent_review"
+      ],
+      "release_approved": false
+    },
+    {
+      "id": "88-C177-S036",
+      "feature_id": "predicates.temporal",
+      "variant": "coercion",
+      "sql": "SELECT id FROM orders WHERE CAST(created_at AS DATE) = DATE '2020-01-01'",
+      "source_case_id": "88-C177-S036",
+      "canonical_observation": "CCCCCCCCCCCCC",
+      "dialect_cells": [
+        {
+          "dialect": "ansi",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "bigquery",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "clickhouse",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "databricks",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "duckdb",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "generic",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "hive",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "mssql",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "mysql",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "postgresql",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "redshift",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "snowflake",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "sqlite",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        }
+      ],
+      "source_and_terminal_duckdb_oracle": null,
+      "missing_evidence": [
+        "typed_output_expectation",
+        "full_source_and_terminal_oracle",
+        "true_false_unknown_or_impossible_bags",
+        "adapter_equivalence",
+        "semantic_dialect_certification",
+        "independent_review"
+      ],
+      "release_approved": false
+    },
+    {
+      "id": "88-C177-S037",
+      "feature_id": "predicates.temporal",
+      "variant": "DST",
+      "sql": "SELECT id FROM orders WHERE created_at BETWEEN TIMESTAMP '2020-03-08 01:00:00' AND TIMESTAMP '2020-03-08 03:00:00'",
+      "source_case_id": "88-C177-S037",
+      "canonical_observation": "CCCCCCCCCCCCC",
+      "dialect_cells": [
+        {
+          "dialect": "ansi",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "bigquery",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "clickhouse",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "databricks",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "duckdb",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "generic",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "hive",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "mssql",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "mysql",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "postgresql",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "redshift",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "snowflake",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "sqlite",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        }
+      ],
+      "source_and_terminal_duckdb_oracle": null,
+      "missing_evidence": [
+        "typed_output_expectation",
+        "full_source_and_terminal_oracle",
+        "true_false_unknown_or_impossible_bags",
+        "adapter_equivalence",
+        "semantic_dialect_certification",
+        "independent_review"
+      ],
+      "release_approved": false
+    },
+    {
+      "id": "88-C177-S038",
+      "feature_id": "predicates.comparison_environment",
+      "variant": "binary/locale collation",
+      "sql": "SELECT id FROM customers WHERE name COLLATE en_US = 'abc'",
+      "source_case_id": "88-C177-S038",
+      "canonical_observation": "CCCCCCCCCCCCC",
+      "dialect_cells": [
+        {
+          "dialect": "ansi",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "bigquery",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "clickhouse",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "databricks",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "duckdb",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "generic",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "hive",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "mssql",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "mysql",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "postgresql",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "redshift",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "snowflake",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "sqlite",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        }
+      ],
+      "source_and_terminal_duckdb_oracle": null,
+      "missing_evidence": [
+        "typed_output_expectation",
+        "full_source_and_terminal_oracle",
+        "true_false_unknown_or_impossible_bags",
+        "adapter_equivalence",
+        "semantic_dialect_certification",
+        "independent_review"
+      ],
+      "release_approved": false
+    },
+    {
+      "id": "88-C177-S039",
+      "feature_id": "predicates.comparison_environment",
+      "variant": "padding",
+      "sql": "SELECT id FROM customers WHERE name = 'abc '",
+      "source_case_id": "88-C177-S039",
+      "canonical_observation": "CCCCCCCCCCCCC",
+      "dialect_cells": [
+        {
+          "dialect": "ansi",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "bigquery",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "clickhouse",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "databricks",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "duckdb",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "generic",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "hive",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "mssql",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "mysql",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "postgresql",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "redshift",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "snowflake",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "sqlite",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        }
+      ],
+      "source_and_terminal_duckdb_oracle": null,
+      "missing_evidence": [
+        "typed_output_expectation",
+        "full_source_and_terminal_oracle",
+        "true_false_unknown_or_impossible_bags",
+        "adapter_equivalence",
+        "semantic_dialect_certification",
+        "independent_review"
+      ],
+      "release_approved": false
+    },
+    {
+      "id": "88-C177-S040",
+      "feature_id": "predicates.comparison_environment",
+      "variant": "NaN",
+      "sql": "SELECT id FROM orders WHERE amount = 'NaN'",
+      "source_case_id": "88-C177-S040",
+      "canonical_observation": "CCCCCCCCCCCCC",
+      "dialect_cells": [
+        {
+          "dialect": "ansi",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "bigquery",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "clickhouse",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "databricks",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "duckdb",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "generic",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "hive",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "mssql",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "mysql",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "postgresql",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "redshift",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "snowflake",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "sqlite",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        }
+      ],
+      "source_and_terminal_duckdb_oracle": null,
+      "missing_evidence": [
+        "typed_output_expectation",
+        "full_source_and_terminal_oracle",
+        "true_false_unknown_or_impossible_bags",
+        "adapter_equivalence",
+        "semantic_dialect_certification",
+        "independent_review"
+      ],
+      "release_approved": false
+    },
+    {
+      "id": "88-C177-S041",
+      "feature_id": "predicates.comparison_environment",
+      "variant": "signed zero",
+      "sql": "SELECT id FROM orders WHERE amount = -0.0",
+      "source_case_id": "88-C177-S041",
+      "canonical_observation": "CCCCCCCCCCCCC",
+      "dialect_cells": [
+        {
+          "dialect": "ansi",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "bigquery",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "clickhouse",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "databricks",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "duckdb",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "generic",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "hive",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "mssql",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "mysql",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "postgresql",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "redshift",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "snowflake",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "sqlite",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        }
+      ],
+      "source_and_terminal_duckdb_oracle": null,
+      "missing_evidence": [
+        "typed_output_expectation",
+        "full_source_and_terminal_oracle",
+        "true_false_unknown_or_impossible_bags",
+        "adapter_equivalence",
+        "semantic_dialect_certification",
+        "independent_review"
+      ],
+      "release_approved": false
+    },
+    {
+      "id": "88-C177-S042",
+      "feature_id": "predicates.comparison_environment",
+      "variant": "NULL sorting",
+      "sql": "SELECT id FROM orders ORDER BY amount NULLS LAST",
+      "source_case_id": "88-C177-S042",
+      "canonical_observation": "CCCCCCCCCCCCC",
+      "dialect_cells": [
+        {
+          "dialect": "ansi",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "bigquery",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "clickhouse",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "databricks",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "duckdb",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "generic",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "hive",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "mssql",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "mysql",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "postgresql",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "redshift",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "snowflake",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "sqlite",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        }
+      ],
+      "source_and_terminal_duckdb_oracle": null,
+      "missing_evidence": [
+        "typed_output_expectation",
+        "full_source_and_terminal_oracle",
+        "true_false_unknown_or_impossible_bags",
+        "adapter_equivalence",
+        "semantic_dialect_certification",
+        "independent_review"
+      ],
+      "release_approved": false
+    },
+    {
+      "id": "88-C177-S179",
+      "feature_id": "types.structural",
+      "variant": "struct",
+      "sql": "SELECT CAST(ROW(1, 'a') AS STRUCT(a INT, b VARCHAR)) AS v",
+      "source_case_id": "88-C177-S179",
+      "canonical_observation": "CRCCDRCCCCCCC",
+      "dialect_cells": [
+        {
+          "dialect": "ansi",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "bigquery",
+          "observed_parser_canonical_status": "R",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "clickhouse",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "databricks",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "duckdb",
+          "observed_parser_canonical_status": "D",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "generic",
+          "observed_parser_canonical_status": "R",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "hive",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "mssql",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "mysql",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "postgresql",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "redshift",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "snowflake",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        },
+        {
+          "dialect": "sqlite",
+          "observed_parser_canonical_status": "C",
+          "semantic_certification": "pending_independent_task_192_verification",
+          "native_vendor_certification": "unattested"
+        }
+      ],
+      "source_and_terminal_duckdb_oracle": null,
+      "missing_evidence": [
+        "typed_output_expectation",
+        "full_source_and_terminal_oracle",
+        "true_false_unknown_or_impossible_bags",
+        "adapter_equivalence",
+        "semantic_dialect_certification",
+        "independent_review"
+      ],
+      "release_approved": false
+    }
+  ]
+}
