@@ -173,7 +173,10 @@ fn projections_unrelated_to_predicate_columns_never_gain_invented_id_bounds() {
     let freeze = read(FREEZE);
     let dialects = freeze["dialects"].as_array().expect("all thirteen parsers");
     let mut cases = 0;
-    for case in freeze["cases"].as_array().expect("original predicate variants") {
+    for case in freeze["cases"]
+        .as_array()
+        .expect("original predicate variants")
+    {
         let id = case["id"].as_str().expect("stable original ID");
         // S001..S008 project the filtered amount. S009/S012 have a direct
         // conjunctive id>0 proof. S033 and S179 are non-source scalar cases.
