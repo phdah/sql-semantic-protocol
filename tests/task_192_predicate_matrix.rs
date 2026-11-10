@@ -275,10 +275,13 @@ fn observed_portable_dialect_documents_remain_equivalent_without_claiming_native
             }
             comparison_count += 1;
         }
-        // Parser/canonical identity is an observation, not a domain proof.
-        assert!(
-            comparison_count >= 11,
-            "{id}: unexpected parser-law regressions"
+        // Predicate spellings are portable to all 13 parsers. The
+        // structural CAST has three explicit parser/AST boundaries; the
+        // other ten canonical documents must still agree exactly.
+        let expected_count = if id == "88-C177-S179" { 10 } else { 13 };
+        assert_eq!(
+            comparison_count, expected_count,
+            "{id}: observed portable dialect count drifted"
         );
     }
 }
