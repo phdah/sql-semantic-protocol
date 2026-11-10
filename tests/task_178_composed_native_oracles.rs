@@ -33,15 +33,32 @@ const WRITE: &str = "
     JOIN customers c ON o.id = c.id WHERE o.amount >= 10
 ";
 const DIALECTS: &[&str] = &[
-    "ansi", "bigquery", "clickhouse", "databricks", "duckdb", "generic",
-    "hive", "mssql", "mysql", "postgresql", "redshift", "snowflake", "sqlite",
+    "ansi",
+    "bigquery",
+    "clickhouse",
+    "databricks",
+    "duckdb",
+    "generic",
+    "hive",
+    "mssql",
+    "mysql",
+    "postgresql",
+    "redshift",
+    "snowflake",
+    "sqlite",
 ];
 
 fn bag(db: &Connection, sql: &str, columns: usize) -> Vec<Vec<Option<i64>>> {
-    let mut statement = db.prepare(sql).expect("independently executable DuckDB SQL");
-    let rows = statement.query_map([], |row| {
-        (0..columns).map(|i| row.get::<_, Option<i64>>(i)).collect::<Result<Vec<_>, _>>()
-    }).expect("native terminal");
+    let mut statement = db
+        .prepare(sql)
+        .expect("independently executable DuckDB SQL");
+    let rows = statement
+        .query_map([], |row| {
+            (0..columns)
+                .map(|i| row.get::<_, Option<i64>>(i))
+                .collect::<Result<Vec<_>, _>>()
+        })
+        .expect("native terminal");
     let mut values: Vec<_> = rows.map(|row| row.expect("full physical row")).collect();
     values.sort();
     values
@@ -51,25 +68,57 @@ fn bag(db: &Connection, sql: &str, columns: usize) -> Vec<Vec<Option<i64>>> {
 fn join_union_preserves_duplicate_null_and_rejected_membership() {
     let db = Connection::open_in_memory().expect("DuckDB");
     db.execute_batch(SOURCE_SETUP).expect("physical source");
-    assert_eq!(bag(&db, "SELECT id,amount FROM orders", 2),
-        vec![vec![None,None], vec![Some(1),Some(10)], vec![Some(1),Some(10)], vec![Some(2),Some(5)]]);
-    assert_eq!(bag(&db, "SELECT id FROM customers", 1),
-        vec![vec![None], vec![Some(1)], vec![Some(1)], vec![Some(3)]]);
-    assert_eq!(bag(&db, JOIN_SET, 1),
-        vec![vec![None], vec![Some(1)], vec![Some(1)], vec![Some(1)], vec![Some(1)]],
-        "two equal orders crossed with two equal customers plus a NULL branch");
     assert_eq!(
-        bag(&db, "SELECT id FROM orders WHERE (amount >= 10) IS NOT TRUE", 1),
+        bag(&db, "SELECT id,amount FROM orders", 2),
+        vec![
+            vec![None, None],
+            vec![Some(1), Some(10)],
+            vec![Some(1), Some(10)],
+            vec![Some(2), Some(5)]
+        ]
+    );
+    assert_eq!(
+        bag(&db, "SELECT id FROM customers", 1),
+        vec![vec![None], vec![Some(1)], vec![Some(1)], vec![Some(3)]]
+    );
+    assert_eq!(
+        bag(&db, JOIN_SET, 1),
+        vec![
+            vec![None],
+            vec![Some(1)],
+            vec![Some(1)],
+            vec![Some(1)],
+            vec![Some(1)]
+        ],
+        "two equal orders crossed with two equal customers plus a NULL branch"
+    );
+    assert_eq!(
+        bag(
+            &db,
+            "SELECT id FROM orders WHERE (amount >= 10) IS NOT TRUE",
+            1
+        ),
         vec![vec![None], vec![Some(2)]],
-        "FALSE and UNKNOWN are both rejected without collapsing NULL");
+        "FALSE and UNKNOWN are both rejected without collapsing NULL"
+    );
     assert_eq!(
-        bag(&db, "SELECT o.id FROM orders o JOIN customers c ON o.id = c.id WHERE o.amount < 10", 1),
+        bag(
+            &db,
+            "SELECT o.id FROM orders o JOIN customers c ON o.id = c.id WHERE o.amount < 10",
+            1
+        ),
         Vec::<Vec<Option<i64>>>::new(),
-        "no independent witness may be fabricated from an absent joined key");
+        "no independent witness may be fabricated from an absent joined key"
+    );
     assert_eq!(
-        bag(&db, "SELECT id FROM orders EXCEPT SELECT id FROM customers", 1),
+        bag(
+            &db,
+            "SELECT id FROM orders EXCEPT SELECT id FROM customers",
+            1
+        ),
         vec![vec![Some(2)]],
-        "set subtraction treats duplicate NULL tuples as equal");
+        "set subtraction treats duplicate NULL tuples as equal"
+    );
 }
 
 #[test]
@@ -77,11 +126,18 @@ fn window_page_partitions_positive_and_rejected_physical_occurrences() {
     let db = Connection::open_in_memory().expect("DuckDB");
     db.execute_batch(SOURCE_SETUP).expect("physical source");
     assert_eq!(bag(&db, WINDOW_PAGE, 1), vec![vec![Some(1)], vec![Some(2)]]);
-    assert_eq!(bag(&db, "
+    assert_eq!(
+        bag(
+            &db,
+            "
         SELECT rn FROM (
           SELECT ROW_NUMBER() OVER (ORDER BY id NULLS LAST) AS rn FROM orders
         ) ranked WHERE rn > 2
-    ", 1), vec![vec![Some(3)], vec![Some(4)]]);
+    ",
+            1
+        ),
+        vec![vec![Some(3)], vec![Some(4)]]
+    );
 }
 
 #[test]
@@ -90,12 +146,22 @@ fn joined_insert_mutates_only_target_and_retains_complete_source_bags() {
     db.execute_batch(SOURCE_SETUP).expect("physical source");
     let original_orders = bag(&db, "SELECT id,amount FROM orders", 2);
     let original_customers = bag(&db, "SELECT id FROM customers", 1);
-    assert_eq!(bag(&db, "SELECT id,amount FROM archive", 2), vec![vec![Some(-1),Some(0)]]);
+    assert_eq!(
+        bag(&db, "SELECT id,amount FROM archive", 2),
+        vec![vec![Some(-1), Some(0)]]
+    );
     db.execute_batch(WRITE).expect("native joined insert");
-    assert_eq!(bag(&db, "SELECT id,amount FROM archive", 2),
-        vec![vec![Some(-1),Some(0)], vec![Some(1),Some(10)], vec![Some(1),Some(10)],
-             vec![Some(1),Some(10)], vec![Some(1),Some(10)]],
-        "the complete final state includes the existing row and four multiplicative inserts");
+    assert_eq!(
+        bag(&db, "SELECT id,amount FROM archive", 2),
+        vec![
+            vec![Some(-1), Some(0)],
+            vec![Some(1), Some(10)],
+            vec![Some(1), Some(10)],
+            vec![Some(1), Some(10)],
+            vec![Some(1), Some(10)]
+        ],
+        "the complete final state includes the existing row and four multiplicative inserts"
+    );
     assert_eq!(bag(&db, "SELECT id,amount FROM orders", 2), original_orders);
     assert_eq!(bag(&db, "SELECT id FROM customers", 1), original_customers);
 }
@@ -106,18 +172,26 @@ fn composed_portable_sql_keeps_full_public_protocol_across_13_parser_dialects() 
         let mut reference: Option<Value> = None;
         for name in DIALECTS {
             let dialect = dialect_from_name(name).expect("exposed parser");
-            let protocol = analyze_sql(sql, name, dialect.as_ref())
-                .unwrap_or_else(|err| panic!("{name}: portable composed SQL parsing failed: {err}"));
+            let protocol = analyze_sql(sql, name, dialect.as_ref()).unwrap_or_else(|err| {
+                panic!("{name}: portable composed SQL parsing failed: {err}")
+            });
             assert!(
-                protocol.statements().iter().all(|stmt| !matches!(stmt, ProtocolStatement::Unsupported(_))),
+                protocol
+                    .statements()
+                    .iter()
+                    .all(|stmt| !matches!(stmt, ProtocolStatement::Unsupported(_))),
                 "{name}: portable SQL cannot silently become an unsupported statement"
             );
-            let mut next: Value = serde_json::from_str(&to_json(&protocol)).expect("complete protocol");
+            let mut next: Value =
+                serde_json::from_str(&to_json(&protocol)).expect("complete protocol");
             for input in next["inputs"].as_array_mut().expect("input") {
                 input["dialect"] = Value::Null;
             }
             match &reference {
-                Some(expected) => assert_eq!(&next, expected, "{name}: composition changed the public semantic contract"),
+                Some(expected) => assert_eq!(
+                    &next, expected,
+                    "{name}: composition changed the public semantic contract"
+                ),
                 None => reference = Some(next),
             }
         }
