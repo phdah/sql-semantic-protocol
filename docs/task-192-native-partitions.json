@@ -1,0 +1,423 @@
+{
+  "schema_version": 1,
+  "task_id": "TASK-192",
+  "status": "independent_duckdb_finite_case_evidence_only",
+  "case_count": 14,
+  "physical_partition_case_count": 11,
+  "negative_evaluation_case_count": 1,
+  "ordered_output_case_count": 1,
+  "struct_scalar_case_count": 1,
+  "prior_original_sql": "docs/task-177-parser-samples.json",
+  "prior_input_and_terminals": [
+    "docs/task-177-predicate-environment-oracles.json",
+    "docs/task-177-final-native-deterministic.json",
+    "docs/task-177-native-expansion.json",
+    "tests/task_177_cross_dialect_native_oracles.rs"
+  ],
+  "native_engine": "DuckDB",
+  "source_row_identity": "DuckDB read-only rowid ordinal from pinned insert order; duplicate business IDs remain distinct physical row instances",
+  "session_condition": "Original temporal source sets TimeZone to UTC, collation only observed in DuckDB; no other vendor/session attestation",
+  "source_groups": {
+    "customer": {
+      "source": "docs/task-177-predicate-environment-oracles.json",
+      "setup": "customer_source_setup",
+      "bag": "customer_source_bag",
+      "relation": "customers",
+      "row_count": 10
+    },
+    "temporal": {
+      "source": "docs/task-177-predicate-environment-oracles.json",
+      "setup": "temporal_source_setup",
+      "bag": "temporal_source_bag",
+      "relation": "orders",
+      "row_count": 7
+    },
+    "nan": {
+      "source": "docs/task-177-final-native-deterministic.json",
+      "setup": "nan_source_setup",
+      "bag": "nan_source_id_bag",
+      "relation": "orders",
+      "row_count": 5
+    },
+    "signed_zero": {
+      "source": "docs/task-177-predicate-environment-oracles.json",
+      "setup": "floating_source_setup",
+      "bag": "floating_source_bag",
+      "relation": "orders",
+      "row_count": 4
+    }
+  },
+  "predicates": [
+    {
+      "id": "88-C177-S023",
+      "group": "customer",
+      "predicate": "name SIMILAR TO '(A|B)%'",
+      "expected_true_rowids": [
+        9
+      ],
+      "expected_false_rowids": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        7,
+        8
+      ],
+      "expected_unknown_rowids": [
+        6
+      ],
+      "expected_not_true_rowids": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "terminal_source": "original_pinned_duckdb_terminals",
+      "typed_output": "id unbounded without independently certified constraint; preserve implicit NULL for temporal projection",
+      "vendor_session_approved": false
+    },
+    {
+      "id": "88-C177-S024",
+      "group": "customer",
+      "predicate": "name ~ '^A'",
+      "expected_true_rowids": [],
+      "expected_false_rowids": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        7,
+        8,
+        9
+      ],
+      "expected_unknown_rowids": [
+        6
+      ],
+      "expected_not_true_rowids": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ],
+      "terminal_source": "original_pinned_duckdb_terminals",
+      "typed_output": "id unbounded without independently certified constraint; preserve implicit NULL for temporal projection",
+      "vendor_session_approved": false
+    },
+    {
+      "id": "88-C177-S026",
+      "group": "customer",
+      "predicate": "name COLLATE en_US = 'a'",
+      "expected_true_rowids": [],
+      "expected_false_rowids": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        7,
+        8,
+        9
+      ],
+      "expected_unknown_rowids": [
+        6
+      ],
+      "expected_not_true_rowids": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ],
+      "terminal_source": "original_pinned_duckdb_terminals",
+      "typed_output": "id unbounded without independently certified constraint; preserve implicit NULL for temporal projection",
+      "vendor_session_approved": false
+    },
+    {
+      "id": "88-C177-S038",
+      "group": "customer",
+      "predicate": "name COLLATE en_US = 'abc'",
+      "expected_true_rowids": [
+        5
+      ],
+      "expected_false_rowids": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        7,
+        8,
+        9
+      ],
+      "expected_unknown_rowids": [
+        6
+      ],
+      "expected_not_true_rowids": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        6,
+        7,
+        8,
+        9
+      ],
+      "terminal_source": "original_pinned_duckdb_terminals",
+      "typed_output": "id unbounded without independently certified constraint; preserve implicit NULL for temporal projection",
+      "vendor_session_approved": false
+    },
+    {
+      "id": "88-C177-S039",
+      "group": "customer",
+      "predicate": "name = 'abc '",
+      "expected_true_rowids": [
+        8
+      ],
+      "expected_false_rowids": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        7,
+        9
+      ],
+      "expected_unknown_rowids": [
+        6
+      ],
+      "expected_not_true_rowids": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        9
+      ],
+      "terminal_source": "original_pinned_duckdb_terminals",
+      "typed_output": "id unbounded without independently certified constraint; preserve implicit NULL for temporal projection",
+      "vendor_session_approved": false
+    },
+    {
+      "id": "88-C177-S034",
+      "group": "temporal",
+      "predicate": "created_at >= TIMESTAMP '2020-01-01 00:00:00' + INTERVAL '1' DAY",
+      "expected_true_rowids": [
+        1,
+        2,
+        3,
+        4,
+        6
+      ],
+      "expected_false_rowids": [
+        0
+      ],
+      "expected_unknown_rowids": [
+        5
+      ],
+      "expected_not_true_rowids": [
+        0,
+        5
+      ],
+      "terminal_source": "original_pinned_duckdb_terminals",
+      "typed_output": "id unbounded without independently certified constraint; preserve implicit NULL for temporal projection",
+      "vendor_session_approved": false
+    },
+    {
+      "id": "88-C177-S035",
+      "group": "temporal",
+      "predicate": "created_at AT TIME ZONE 'UTC' > TIMESTAMP '2020-01-01 00:00:00'",
+      "expected_true_rowids": [
+        1,
+        2,
+        3,
+        4,
+        6
+      ],
+      "expected_false_rowids": [
+        0
+      ],
+      "expected_unknown_rowids": [
+        5
+      ],
+      "expected_not_true_rowids": [
+        0,
+        5
+      ],
+      "terminal_source": "original_pinned_duckdb_terminals",
+      "typed_output": "id unbounded without independently certified constraint; preserve implicit NULL for temporal projection",
+      "vendor_session_approved": false
+    },
+    {
+      "id": "88-C177-S036",
+      "group": "temporal",
+      "predicate": "CAST(created_at AS DATE) = DATE '2020-01-01'",
+      "expected_true_rowids": [
+        0
+      ],
+      "expected_false_rowids": [
+        1,
+        2,
+        3,
+        4,
+        6
+      ],
+      "expected_unknown_rowids": [
+        5
+      ],
+      "expected_not_true_rowids": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "terminal_source": "original_pinned_duckdb_terminals",
+      "typed_output": "id unbounded without independently certified constraint; preserve implicit NULL for temporal projection",
+      "vendor_session_approved": false
+    },
+    {
+      "id": "88-C177-S037",
+      "group": "temporal",
+      "predicate": "created_at BETWEEN TIMESTAMP '2020-03-08 01:00:00' AND TIMESTAMP '2020-03-08 03:00:00'",
+      "expected_true_rowids": [
+        3,
+        6
+      ],
+      "expected_false_rowids": [
+        0,
+        1,
+        2,
+        4
+      ],
+      "expected_unknown_rowids": [
+        5
+      ],
+      "expected_not_true_rowids": [
+        0,
+        1,
+        2,
+        4,
+        5
+      ],
+      "terminal_source": "original_pinned_duckdb_terminals",
+      "typed_output": "id unbounded without independently certified constraint; preserve implicit NULL for temporal projection",
+      "vendor_session_approved": false
+    },
+    {
+      "id": "88-C177-S040",
+      "group": "nan",
+      "predicate": "amount = 'NaN'",
+      "expected_true_rowids": [
+        0,
+        1
+      ],
+      "expected_false_rowids": [
+        2,
+        4
+      ],
+      "expected_unknown_rowids": [
+        3
+      ],
+      "expected_not_true_rowids": [
+        2,
+        3,
+        4
+      ],
+      "terminal_source": "original_pinned_duckdb_terminals",
+      "typed_output": "id unbounded without independently certified constraint; preserve implicit NULL for temporal projection",
+      "vendor_session_approved": false
+    },
+    {
+      "id": "88-C177-S041",
+      "group": "signed_zero",
+      "predicate": "amount = -0.0",
+      "expected_true_rowids": [
+        0,
+        1
+      ],
+      "expected_false_rowids": [
+        2
+      ],
+      "expected_unknown_rowids": [
+        3
+      ],
+      "expected_not_true_rowids": [
+        2,
+        3
+      ],
+      "terminal_source": "original_pinned_duckdb_terminals",
+      "typed_output": "id unbounded without independently certified constraint; preserve implicit NULL for temporal projection",
+      "vendor_session_approved": false
+    }
+  ],
+  "other": [
+    {
+      "id": "88-C177-S033",
+      "proof": "native_fixed_width_arithmetic_overflow",
+      "expected": "evaluation_error",
+      "source_cardinality": 0,
+      "terminal": "no_successful_terminal",
+      "typed_output": "explicit_unknown_or_unsupported"
+    },
+    {
+      "id": "88-C177-S042",
+      "proof": "total_nullable_ordering",
+      "source": "docs/task-177-native-expansion.json",
+      "expected_ordered_terminal": [
+        4,
+        1,
+        1,
+        null,
+        2,
+        3
+      ],
+      "source_cardinality": 6,
+      "typed_output": "id unbounded; ordering does not constrain values"
+    },
+    {
+      "id": "88-C177-S179",
+      "proof": "single_struct_scalar",
+      "expected_fields": {
+        "a": 1,
+        "b": "a"
+      },
+      "source_cardinality": 0,
+      "terminal_cardinality": 1,
+      "typed_output": "struct_cast_unknown_pending_typed_struct_domain",
+      "parser_boundaries": [
+        "bigquery",
+        "duckdb",
+        "hive"
+      ],
+      "vendor_session_approved": false
+    }
+  ],
+  "signed_off": false
+}
