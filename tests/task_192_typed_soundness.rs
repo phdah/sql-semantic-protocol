@@ -167,3 +167,47 @@ fn all_forty_one_original_native_read_terminals_respect_thirteen_dialect_domains
         "all native terminal occurrences must be visited"
     );
 }
+
+#[test]
+fn projections_unrelated_to_predicate_columns_never_gain_invented_id_bounds() {
+    let freeze = read(FREEZE);
+    let dialects = freeze["dialects"].as_array().expect("all thirteen parsers");
+    let mut cases = 0;
+    for case in freeze["cases"].as_array().expect("original predicate variants") {
+        let id = case["id"].as_str().expect("stable original ID");
+        // S001..S008 project the filtered amount. S009/S012 have a direct
+        // conjunctive id>0 proof. S033 and S179 are non-source scalar cases.
+        let number: usize = id
+            .rsplit('-')
+            .next()
+            .expect("original fixture suffix")
+            .trim_start_matches('S')
+            .parse()
+            .expect("original fixture number");
+        if (1..=9).contains(&number) || number == 12 || number == 33 || number == 179 {
+            continue;
+        }
+        // OR and correlated membership may select some id values but without
+        // authoritative source data cannot prove a finite id interval/set.
+        let sql = case["sql"].as_str().expect("original SQL");
+        for name in dialects {
+            let name = name.as_str().expect("dialect");
+            let parser = dialect_from_name(name).expect("public dialect");
+            let protocol = analyze_sql(sql, name, parser.as_ref())
+                .unwrap_or_else(|error| panic!("{id}/{name}: {error}"));
+            let [ProtocolStatement::Query(query)] = protocol.statements() else {
+                panic!("{id}/{name}: expected one query");
+            };
+            let [column] = query.output().columns() else {
+                panic!("{id}/{name}: one output id");
+            };
+            assert!(
+                matches!(column.domain(), ValueDomain::Unbounded | ValueDomain::Unknown(_)),
+                "{id}/{name}: cannot invent a finite id domain from unrelated predicate evidence: {:?}",
+                column.domain()
+            );
+        }
+        cases += 1;
+    }
+    assert_eq!(cases, 31);
+}
