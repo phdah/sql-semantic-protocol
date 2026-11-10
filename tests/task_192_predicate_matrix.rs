@@ -132,7 +132,9 @@ fn task_192_inventory_contains_all_original_cases_without_false_semantic_certifi
         }
         assert_eq!(case["release_approved"], false);
         let claim = &case["typed_output_expectation"];
-        let kind = claim["kind"].as_str().expect("independent typed expectation");
+        let kind = claim["kind"]
+            .as_str()
+            .expect("independent typed expectation");
         *types.entry(kind).or_default() += 1;
         if kind == "precise_constraint" {
             let source = prior["cases"]
