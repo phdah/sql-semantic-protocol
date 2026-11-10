@@ -138,7 +138,19 @@
         "independent_task_192_review",
         "vendor_session_boundary_disposition"
       ],
-      "release_approved": false
+      "release_approved": false,
+      "typed_output_expectation": {
+        "kind": "precise_constraint",
+        "literal_domain": {
+          "kind": "set_include",
+          "values": [
+            10
+          ]
+        },
+        "nullable": false,
+        "source": "docs/task-177-predicate-oracles.json",
+        "signoff": "requires_original_exact_oracle_and_all_13_dialects"
+      }
     },
     {
       "id": "88-C177-S002",
@@ -246,7 +258,20 @@
         "independent_task_192_review",
         "vendor_session_boundary_disposition"
       ],
-      "release_approved": false
+      "release_approved": false,
+      "typed_output_expectation": {
+        "kind": "precise_constraint",
+        "literal_domain": {
+          "kind": "set_exclude",
+          "values": [
+            10,
+            null
+          ]
+        },
+        "nullable": false,
+        "source": "docs/task-177-predicate-oracles.json",
+        "signoff": "requires_original_exact_oracle_and_all_13_dialects"
+      }
     },
     {
       "id": "88-C177-S003",
@@ -355,7 +380,21 @@
         "independent_task_192_review",
         "vendor_session_boundary_disposition"
       ],
-      "release_approved": false
+      "release_approved": false,
+      "typed_output_expectation": {
+        "kind": "precise_constraint",
+        "literal_domain": {
+          "lower": null,
+          "upper": [
+            10,
+            false
+          ],
+          "kind": "range"
+        },
+        "nullable": false,
+        "source": "docs/task-177-predicate-oracles.json",
+        "signoff": "requires_original_exact_oracle_and_all_13_dialects"
+      }
     },
     {
       "id": "88-C177-S004",
@@ -464,7 +503,21 @@
         "independent_task_192_review",
         "vendor_session_boundary_disposition"
       ],
-      "release_approved": false
+      "release_approved": false,
+      "typed_output_expectation": {
+        "kind": "precise_constraint",
+        "literal_domain": {
+          "lower": null,
+          "upper": [
+            10,
+            true
+          ],
+          "kind": "range"
+        },
+        "nullable": false,
+        "source": "docs/task-177-predicate-oracles.json",
+        "signoff": "requires_original_exact_oracle_and_all_13_dialects"
+      }
     },
     {
       "id": "88-C177-S005",
@@ -573,7 +626,21 @@
         "independent_task_192_review",
         "vendor_session_boundary_disposition"
       ],
-      "release_approved": false
+      "release_approved": false,
+      "typed_output_expectation": {
+        "kind": "precise_constraint",
+        "literal_domain": {
+          "lower": [
+            10,
+            false
+          ],
+          "upper": null,
+          "kind": "range"
+        },
+        "nullable": false,
+        "source": "docs/task-177-predicate-oracles.json",
+        "signoff": "requires_original_exact_oracle_and_all_13_dialects"
+      }
     },
     {
       "id": "88-C177-S006",
@@ -682,7 +749,21 @@
         "independent_task_192_review",
         "vendor_session_boundary_disposition"
       ],
-      "release_approved": false
+      "release_approved": false,
+      "typed_output_expectation": {
+        "kind": "precise_constraint",
+        "literal_domain": {
+          "lower": [
+            10,
+            true
+          ],
+          "upper": null,
+          "kind": "range"
+        },
+        "nullable": false,
+        "source": "docs/task-177-predicate-oracles.json",
+        "signoff": "requires_original_exact_oracle_and_all_13_dialects"
+      }
     },
     {
       "id": "88-C177-S007",
@@ -794,7 +875,24 @@
         "independent_task_192_review",
         "vendor_session_boundary_disposition"
       ],
-      "release_approved": false
+      "release_approved": false,
+      "typed_output_expectation": {
+        "kind": "precise_constraint",
+        "literal_domain": {
+          "lower": [
+            1,
+            true
+          ],
+          "upper": [
+            10,
+            true
+          ],
+          "kind": "range"
+        },
+        "nullable": false,
+        "source": "docs/task-177-predicate-oracles.json",
+        "signoff": "requires_original_exact_oracle_and_all_13_dialects"
+      }
     },
     {
       "id": "88-C177-S008",
@@ -914,7 +1012,32 @@
         "independent_task_192_review",
         "vendor_session_boundary_disposition"
       ],
-      "release_approved": false
+      "release_approved": false,
+      "typed_output_expectation": {
+        "kind": "precise_constraint",
+        "literal_domain": {
+          "kind": "range_union",
+          "ranges": [
+            {
+              "lower": null,
+              "upper": [
+                1,
+                false
+              ]
+            },
+            {
+              "lower": [
+                10,
+                false
+              ],
+              "upper": null
+            }
+          ]
+        },
+        "nullable": false,
+        "source": "docs/task-177-predicate-oracles.json",
+        "signoff": "requires_original_exact_oracle_and_all_13_dialects"
+      }
     },
     {
       "id": "88-C177-S009",
@@ -1023,7 +1146,21 @@
         "independent_task_192_review",
         "vendor_session_boundary_disposition"
       ],
-      "release_approved": false
+      "release_approved": false,
+      "typed_output_expectation": {
+        "kind": "precise_constraint",
+        "literal_domain": {
+          "kind": "range",
+          "lower": [
+            0,
+            false
+          ],
+          "upper": null
+        },
+        "nullable": false,
+        "source": "docs/task-177-predicate-oracles.json",
+        "signoff": "requires_original_exact_oracle_and_all_13_dialects"
+      }
     },
     {
       "id": "88-C177-S010",
@@ -1125,7 +1262,15 @@
         "independent_task_192_review",
         "vendor_session_boundary_disposition"
       ],
-      "release_approved": false
+      "release_approved": false,
+      "typed_output_expectation": {
+        "kind": "unconstrained_nullable_id",
+        "value_type": "integer",
+        "null_allowed": true,
+        "finite_range_or_set_proven": false,
+        "reason": "no_independent_positive_id_constraint_across_all_admissible_source_bags",
+        "signoff": "unbounded_or_explicit_unknown_until_other_evidence_approved"
+      }
     },
     {
       "id": "88-C177-S011",
@@ -1227,7 +1372,15 @@
         "independent_task_192_review",
         "vendor_session_boundary_disposition"
       ],
-      "release_approved": false
+      "release_approved": false,
+      "typed_output_expectation": {
+        "kind": "unconstrained_nullable_id",
+        "value_type": "integer",
+        "null_allowed": true,
+        "finite_range_or_set_proven": false,
+        "reason": "no_independent_positive_id_constraint_across_all_admissible_source_bags",
+        "signoff": "unbounded_or_explicit_unknown_until_other_evidence_approved"
+      }
     },
     {
       "id": "88-C177-S012",
@@ -1336,7 +1489,21 @@
         "independent_task_192_review",
         "vendor_session_boundary_disposition"
       ],
-      "release_approved": false
+      "release_approved": false,
+      "typed_output_expectation": {
+        "kind": "precise_constraint",
+        "literal_domain": {
+          "kind": "range",
+          "lower": [
+            0,
+            false
+          ],
+          "upper": null
+        },
+        "nullable": false,
+        "source": "docs/task-177-predicate-oracles.json",
+        "signoff": "requires_original_exact_oracle_and_all_13_dialects"
+      }
     },
     {
       "id": "88-C177-S013",
@@ -1438,7 +1605,15 @@
         "independent_task_192_review",
         "vendor_session_boundary_disposition"
       ],
-      "release_approved": false
+      "release_approved": false,
+      "typed_output_expectation": {
+        "kind": "unconstrained_nullable_id",
+        "value_type": "integer",
+        "null_allowed": true,
+        "finite_range_or_set_proven": false,
+        "reason": "no_independent_positive_id_constraint_across_all_admissible_source_bags",
+        "signoff": "unbounded_or_explicit_unknown_until_other_evidence_approved"
+      }
     },
     {
       "id": "88-C177-S014",
@@ -1540,7 +1715,15 @@
         "independent_task_192_review",
         "vendor_session_boundary_disposition"
       ],
-      "release_approved": false
+      "release_approved": false,
+      "typed_output_expectation": {
+        "kind": "unconstrained_nullable_id",
+        "value_type": "integer",
+        "null_allowed": true,
+        "finite_range_or_set_proven": false,
+        "reason": "no_independent_positive_id_constraint_across_all_admissible_source_bags",
+        "signoff": "unbounded_or_explicit_unknown_until_other_evidence_approved"
+      }
     },
     {
       "id": "88-C177-S015",
@@ -1642,7 +1825,15 @@
         "independent_task_192_review",
         "vendor_session_boundary_disposition"
       ],
-      "release_approved": false
+      "release_approved": false,
+      "typed_output_expectation": {
+        "kind": "unconstrained_nullable_id",
+        "value_type": "integer",
+        "null_allowed": true,
+        "finite_range_or_set_proven": false,
+        "reason": "no_independent_positive_id_constraint_across_all_admissible_source_bags",
+        "signoff": "unbounded_or_explicit_unknown_until_other_evidence_approved"
+      }
     },
     {
       "id": "88-C177-S016",
@@ -1744,7 +1935,15 @@
         "independent_task_192_review",
         "vendor_session_boundary_disposition"
       ],
-      "release_approved": false
+      "release_approved": false,
+      "typed_output_expectation": {
+        "kind": "unconstrained_nullable_id",
+        "value_type": "integer",
+        "null_allowed": true,
+        "finite_range_or_set_proven": false,
+        "reason": "no_independent_positive_id_constraint_across_all_admissible_source_bags",
+        "signoff": "unbounded_or_explicit_unknown_until_other_evidence_approved"
+      }
     },
     {
       "id": "88-C177-S017",
@@ -1846,7 +2045,15 @@
         "independent_task_192_review",
         "vendor_session_boundary_disposition"
       ],
-      "release_approved": false
+      "release_approved": false,
+      "typed_output_expectation": {
+        "kind": "unconstrained_nullable_id",
+        "value_type": "integer",
+        "null_allowed": true,
+        "finite_range_or_set_proven": false,
+        "reason": "no_independent_positive_id_constraint_across_all_admissible_source_bags",
+        "signoff": "unbounded_or_explicit_unknown_until_other_evidence_approved"
+      }
     },
     {
       "id": "88-C177-S018",
@@ -1948,7 +2155,15 @@
         "independent_task_192_review",
         "vendor_session_boundary_disposition"
       ],
-      "release_approved": false
+      "release_approved": false,
+      "typed_output_expectation": {
+        "kind": "unconstrained_nullable_id",
+        "value_type": "integer",
+        "null_allowed": true,
+        "finite_range_or_set_proven": false,
+        "reason": "no_independent_positive_id_constraint_across_all_admissible_source_bags",
+        "signoff": "unbounded_or_explicit_unknown_until_other_evidence_approved"
+      }
     },
     {
       "id": "88-C177-S019",
@@ -2050,7 +2265,15 @@
         "independent_task_192_review",
         "vendor_session_boundary_disposition"
       ],
-      "release_approved": false
+      "release_approved": false,
+      "typed_output_expectation": {
+        "kind": "unconstrained_nullable_id",
+        "value_type": "integer",
+        "null_allowed": true,
+        "finite_range_or_set_proven": false,
+        "reason": "no_independent_positive_id_constraint_across_all_admissible_source_bags",
+        "signoff": "unbounded_or_explicit_unknown_until_other_evidence_approved"
+      }
     },
     {
       "id": "88-C177-S020",
@@ -2154,7 +2377,15 @@
         "full_13_dialect_semantic_certification",
         "independent_review"
       ],
-      "release_approved": false
+      "release_approved": false,
+      "typed_output_expectation": {
+        "kind": "unconstrained_nullable_id",
+        "value_type": "integer",
+        "null_allowed": true,
+        "finite_range_or_set_proven": false,
+        "reason": "no_independent_positive_id_constraint_across_all_admissible_source_bags",
+        "signoff": "unbounded_or_explicit_unknown_until_other_evidence_approved"
+      }
     },
     {
       "id": "88-C177-S021",
@@ -2258,7 +2489,15 @@
         "full_13_dialect_semantic_certification",
         "independent_review"
       ],
-      "release_approved": false
+      "release_approved": false,
+      "typed_output_expectation": {
+        "kind": "unconstrained_nullable_id",
+        "value_type": "integer",
+        "null_allowed": true,
+        "finite_range_or_set_proven": false,
+        "reason": "no_independent_positive_id_constraint_across_all_admissible_source_bags",
+        "signoff": "unbounded_or_explicit_unknown_until_other_evidence_approved"
+      }
     },
     {
       "id": "88-C177-S022",
@@ -2362,7 +2601,15 @@
         "full_13_dialect_semantic_certification",
         "independent_review"
       ],
-      "release_approved": false
+      "release_approved": false,
+      "typed_output_expectation": {
+        "kind": "unconstrained_nullable_id",
+        "value_type": "integer",
+        "null_allowed": true,
+        "finite_range_or_set_proven": false,
+        "reason": "no_independent_positive_id_constraint_across_all_admissible_source_bags",
+        "signoff": "unbounded_or_explicit_unknown_until_other_evidence_approved"
+      }
     },
     {
       "id": "88-C177-S023",
@@ -2465,7 +2712,15 @@
         "direct_dbt_odcs_adapter_cells",
         "independent_TASK_192_review"
       ],
-      "release_approved": false
+      "release_approved": false,
+      "typed_output_expectation": {
+        "kind": "unconstrained_nullable_id",
+        "value_type": "integer",
+        "null_allowed": true,
+        "finite_range_or_set_proven": false,
+        "reason": "no_independent_positive_id_constraint_across_all_admissible_source_bags",
+        "signoff": "unbounded_or_explicit_unknown_until_other_evidence_approved"
+      }
     },
     {
       "id": "88-C177-S024",
@@ -2568,7 +2823,15 @@
         "direct_dbt_odcs_adapter_cells",
         "independent_TASK_192_review"
       ],
-      "release_approved": false
+      "release_approved": false,
+      "typed_output_expectation": {
+        "kind": "unconstrained_nullable_id",
+        "value_type": "integer",
+        "null_allowed": true,
+        "finite_range_or_set_proven": false,
+        "reason": "no_independent_positive_id_constraint_across_all_admissible_source_bags",
+        "signoff": "unbounded_or_explicit_unknown_until_other_evidence_approved"
+      }
     },
     {
       "id": "88-C177-S025",
@@ -2672,7 +2935,15 @@
         "full_13_dialect_semantic_certification",
         "independent_review"
       ],
-      "release_approved": false
+      "release_approved": false,
+      "typed_output_expectation": {
+        "kind": "unconstrained_nullable_id",
+        "value_type": "integer",
+        "null_allowed": true,
+        "finite_range_or_set_proven": false,
+        "reason": "no_independent_positive_id_constraint_across_all_admissible_source_bags",
+        "signoff": "unbounded_or_explicit_unknown_until_other_evidence_approved"
+      }
     },
     {
       "id": "88-C177-S026",
@@ -2775,7 +3046,15 @@
         "direct_dbt_odcs_adapter_cells",
         "independent_TASK_192_review"
       ],
-      "release_approved": false
+      "release_approved": false,
+      "typed_output_expectation": {
+        "kind": "unconstrained_nullable_id",
+        "value_type": "integer",
+        "null_allowed": true,
+        "finite_range_or_set_proven": false,
+        "reason": "no_independent_positive_id_constraint_across_all_admissible_source_bags",
+        "signoff": "unbounded_or_explicit_unknown_until_other_evidence_approved"
+      }
     },
     {
       "id": "88-C177-S027",
@@ -2877,7 +3156,15 @@
         "independent_task_192_review",
         "vendor_session_boundary_disposition"
       ],
-      "release_approved": false
+      "release_approved": false,
+      "typed_output_expectation": {
+        "kind": "unconstrained_nullable_id",
+        "value_type": "integer",
+        "null_allowed": true,
+        "finite_range_or_set_proven": false,
+        "reason": "no_independent_positive_id_constraint_across_all_admissible_source_bags",
+        "signoff": "unbounded_or_explicit_unknown_until_other_evidence_approved"
+      }
     },
     {
       "id": "88-C177-S028",
@@ -2979,7 +3266,15 @@
         "independent_task_192_review",
         "vendor_session_boundary_disposition"
       ],
-      "release_approved": false
+      "release_approved": false,
+      "typed_output_expectation": {
+        "kind": "unconstrained_nullable_id",
+        "value_type": "integer",
+        "null_allowed": true,
+        "finite_range_or_set_proven": false,
+        "reason": "no_independent_positive_id_constraint_across_all_admissible_source_bags",
+        "signoff": "unbounded_or_explicit_unknown_until_other_evidence_approved"
+      }
     },
     {
       "id": "88-C177-S029",
@@ -3081,7 +3376,15 @@
         "independent_task_192_review",
         "vendor_session_boundary_disposition"
       ],
-      "release_approved": false
+      "release_approved": false,
+      "typed_output_expectation": {
+        "kind": "unconstrained_nullable_id",
+        "value_type": "integer",
+        "null_allowed": true,
+        "finite_range_or_set_proven": false,
+        "reason": "no_independent_positive_id_constraint_across_all_admissible_source_bags",
+        "signoff": "unbounded_or_explicit_unknown_until_other_evidence_approved"
+      }
     },
     {
       "id": "88-C177-S030",
@@ -3183,7 +3486,15 @@
         "independent_task_192_review",
         "vendor_session_boundary_disposition"
       ],
-      "release_approved": false
+      "release_approved": false,
+      "typed_output_expectation": {
+        "kind": "unconstrained_nullable_id",
+        "value_type": "integer",
+        "null_allowed": true,
+        "finite_range_or_set_proven": false,
+        "reason": "no_independent_positive_id_constraint_across_all_admissible_source_bags",
+        "signoff": "unbounded_or_explicit_unknown_until_other_evidence_approved"
+      }
     },
     {
       "id": "88-C177-S031",
@@ -3285,7 +3596,15 @@
         "independent_task_192_review",
         "vendor_session_boundary_disposition"
       ],
-      "release_approved": false
+      "release_approved": false,
+      "typed_output_expectation": {
+        "kind": "unconstrained_nullable_id",
+        "value_type": "integer",
+        "null_allowed": true,
+        "finite_range_or_set_proven": false,
+        "reason": "no_independent_positive_id_constraint_across_all_admissible_source_bags",
+        "signoff": "unbounded_or_explicit_unknown_until_other_evidence_approved"
+      }
     },
     {
       "id": "88-C177-S032",
@@ -3387,7 +3706,15 @@
         "independent_task_192_review",
         "vendor_session_boundary_disposition"
       ],
-      "release_approved": false
+      "release_approved": false,
+      "typed_output_expectation": {
+        "kind": "unconstrained_nullable_id",
+        "value_type": "integer",
+        "null_allowed": true,
+        "finite_range_or_set_proven": false,
+        "reason": "no_independent_positive_id_constraint_across_all_admissible_source_bags",
+        "signoff": "unbounded_or_explicit_unknown_until_other_evidence_approved"
+      }
     },
     {
       "id": "88-C177-S033",
@@ -3489,7 +3816,13 @@
         "vendor_session_law_owner_TASK_179",
         "independent_TASK_192_review"
       ],
-      "release_approved": false
+      "release_approved": false,
+      "typed_output_expectation": {
+        "kind": "native_evaluation_error",
+        "terminal_cardinality": null,
+        "positive_native_execution": false,
+        "reason": "signed_fixed_width_overflow"
+      }
     },
     {
       "id": "88-C177-S034",
@@ -3592,7 +3925,15 @@
         "direct_dbt_odcs_adapter_cells",
         "independent_TASK_192_review"
       ],
-      "release_approved": false
+      "release_approved": false,
+      "typed_output_expectation": {
+        "kind": "unconstrained_nullable_id",
+        "value_type": "integer",
+        "null_allowed": true,
+        "finite_range_or_set_proven": false,
+        "reason": "no_independent_positive_id_constraint_across_all_admissible_source_bags",
+        "signoff": "unbounded_or_explicit_unknown_until_other_evidence_approved"
+      }
     },
     {
       "id": "88-C177-S035",
@@ -3695,7 +4036,15 @@
         "direct_dbt_odcs_adapter_cells",
         "independent_TASK_192_review"
       ],
-      "release_approved": false
+      "release_approved": false,
+      "typed_output_expectation": {
+        "kind": "unconstrained_nullable_id",
+        "value_type": "integer",
+        "null_allowed": true,
+        "finite_range_or_set_proven": false,
+        "reason": "no_independent_positive_id_constraint_across_all_admissible_source_bags",
+        "signoff": "unbounded_or_explicit_unknown_until_other_evidence_approved"
+      }
     },
     {
       "id": "88-C177-S036",
@@ -3798,7 +4147,15 @@
         "direct_dbt_odcs_adapter_cells",
         "independent_TASK_192_review"
       ],
-      "release_approved": false
+      "release_approved": false,
+      "typed_output_expectation": {
+        "kind": "unconstrained_nullable_id",
+        "value_type": "integer",
+        "null_allowed": true,
+        "finite_range_or_set_proven": false,
+        "reason": "no_independent_positive_id_constraint_across_all_admissible_source_bags",
+        "signoff": "unbounded_or_explicit_unknown_until_other_evidence_approved"
+      }
     },
     {
       "id": "88-C177-S037",
@@ -3901,7 +4258,15 @@
         "direct_dbt_odcs_adapter_cells",
         "independent_TASK_192_review"
       ],
-      "release_approved": false
+      "release_approved": false,
+      "typed_output_expectation": {
+        "kind": "unconstrained_nullable_id",
+        "value_type": "integer",
+        "null_allowed": true,
+        "finite_range_or_set_proven": false,
+        "reason": "no_independent_positive_id_constraint_across_all_admissible_source_bags",
+        "signoff": "unbounded_or_explicit_unknown_until_other_evidence_approved"
+      }
     },
     {
       "id": "88-C177-S038",
@@ -4004,7 +4369,15 @@
         "direct_dbt_odcs_adapter_cells",
         "independent_TASK_192_review"
       ],
-      "release_approved": false
+      "release_approved": false,
+      "typed_output_expectation": {
+        "kind": "unconstrained_nullable_id",
+        "value_type": "integer",
+        "null_allowed": true,
+        "finite_range_or_set_proven": false,
+        "reason": "no_independent_positive_id_constraint_across_all_admissible_source_bags",
+        "signoff": "unbounded_or_explicit_unknown_until_other_evidence_approved"
+      }
     },
     {
       "id": "88-C177-S039",
@@ -4107,7 +4480,15 @@
         "direct_dbt_odcs_adapter_cells",
         "independent_TASK_192_review"
       ],
-      "release_approved": false
+      "release_approved": false,
+      "typed_output_expectation": {
+        "kind": "unconstrained_nullable_id",
+        "value_type": "integer",
+        "null_allowed": true,
+        "finite_range_or_set_proven": false,
+        "reason": "no_independent_positive_id_constraint_across_all_admissible_source_bags",
+        "signoff": "unbounded_or_explicit_unknown_until_other_evidence_approved"
+      }
     },
     {
       "id": "88-C177-S040",
@@ -4210,7 +4591,15 @@
         "direct_dbt_odcs_adapter_cells",
         "independent_TASK_192_review"
       ],
-      "release_approved": false
+      "release_approved": false,
+      "typed_output_expectation": {
+        "kind": "unconstrained_nullable_id",
+        "value_type": "integer",
+        "null_allowed": true,
+        "finite_range_or_set_proven": false,
+        "reason": "no_independent_positive_id_constraint_across_all_admissible_source_bags",
+        "signoff": "unbounded_or_explicit_unknown_until_other_evidence_approved"
+      }
     },
     {
       "id": "88-C177-S041",
@@ -4313,7 +4702,15 @@
         "direct_dbt_odcs_adapter_cells",
         "independent_TASK_192_review"
       ],
-      "release_approved": false
+      "release_approved": false,
+      "typed_output_expectation": {
+        "kind": "unconstrained_nullable_id",
+        "value_type": "integer",
+        "null_allowed": true,
+        "finite_range_or_set_proven": false,
+        "reason": "no_independent_positive_id_constraint_across_all_admissible_source_bags",
+        "signoff": "unbounded_or_explicit_unknown_until_other_evidence_approved"
+      }
     },
     {
       "id": "88-C177-S042",
@@ -4415,7 +4812,15 @@
         "vendor_session_law_owner_TASK_179",
         "independent_TASK_192_review"
       ],
-      "release_approved": false
+      "release_approved": false,
+      "typed_output_expectation": {
+        "kind": "unconstrained_nullable_id",
+        "value_type": "integer",
+        "null_allowed": true,
+        "finite_range_or_set_proven": false,
+        "reason": "no_independent_positive_id_constraint_across_all_admissible_source_bags",
+        "signoff": "unbounded_or_explicit_unknown_until_other_evidence_approved"
+      }
     },
     {
       "id": "88-C177-S179",
@@ -4517,7 +4922,13 @@
         "vendor_session_law_owner_TASK_179",
         "independent_TASK_192_review"
       ],
-      "release_approved": false
+      "release_approved": false,
+      "typed_output_expectation": {
+        "kind": "unsupported_structural_cast",
+        "output_type": "struct",
+        "positive_native_execution": true,
+        "typed_protocol_domain": "unknown_pending_TASK_191"
+      }
     }
   ],
   "task_owned_string_pattern_duckdb_oracles": {
@@ -4630,5 +5041,13 @@
   "non_predicate_duckdb_evidence_count": 3,
   "native_positive_negative_or_conditional_case_count": 43,
   "native_scope_limit": "40 query predicates with exact DuckDB TRUE/FALSE/UNKNOWN oracles, plus one overflow error, one ordered NULL terminal and one typed STRUCT scalar; no external vendor/session claim",
-  "additional_native_oracles": "docs/task-192-native-partitions.json"
+  "additional_native_oracles": "docs/task-192-native-partitions.json",
+  "typed_output_expectation_categories": {
+    "precise_constraint": 10,
+    "unconstrained_nullable_id": 31,
+    "native_evaluation_error": 1,
+    "unsupported_structural_cast": 1
+  },
+  "typed_expectation_cells_frozen": 559,
+  "typed_expected_outcome_provenance": "10 independently authored exact primitive scalar domains, 31 independent unconstrained ID projection shapes, one native overflow error and one unsupported canonical struct; still require independent review and full dialect/adapter signoff"
 }
