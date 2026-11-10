@@ -214,3 +214,53 @@ fn all_five_portable_read_families_preserve_odcs_source_type_parity() {
         }
     }
 }
+
+
+/// Cross-adapter replay of the independently frozen 25-case physical predicate
+/// suite. The original native SQL, NULL/FALSE/TRUE source partitions and exact
+/// bounds are checked by task_177_predicate_oracles; this checks that equivalent
+/// typed source evidence is not lost at the direct/dbt/ODCS ingestion boundary.
+#[test]
+fn all_25_frozen_predicate_variants_preserve_direct_and_dbt_typed_domains() {
+    let fixture: serde_json::Value = serde_json::from_str(include_str!(
+        "../docs/task-177-predicate-oracles.json"
+    ))
+    .expect("independent original physical predicate oracle registry");
+    assert_eq!(fixture["case_count"], 25);
+    let direct = direct_catalog();
+    for case in fixture["cases"].as_array().expect("25 named original variants") {
+        let id = case["id"].as_str().expect("stable native sample");
+        let sql = case["sql"].as_str().expect("original SQL");
+        let dbt = dbt_catalog(sql);
+        for name in DIALECTS {
+            let expected = output_domains(&direct, name, sql);
+            assert_eq!(
+                output_domains(&dbt, name, sql),
+                expected,
+                "{id}/{name}: compiled dbt typed facts must preserve all output domain claims"
+            );
+        }
+    }
+}
+
+#[cfg(feature = "odcs")]
+#[test]
+fn all_25_frozen_predicate_variants_preserve_odcs_typed_domains() {
+    let fixture: serde_json::Value = serde_json::from_str(include_str!(
+        "../docs/task-177-predicate-oracles.json"
+    ))
+    .expect("independent original physical predicate oracle registry");
+    let direct = direct_catalog();
+    let odcs = odcs_catalog();
+    for case in fixture["cases"].as_array().expect("25 original variants") {
+        let id = case["id"].as_str().expect("stable source sample");
+        let sql = case["sql"].as_str().expect("original SQL");
+        for name in DIALECTS {
+            assert_eq!(
+                output_domains(&odcs, name, sql),
+                output_domains(&direct, name, sql),
+                "{id}/{name}: contract source facts must preserve full typed output domains"
+            );
+        }
+    }
+}
