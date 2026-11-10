@@ -281,7 +281,7 @@ pub(super) fn analyze_query_condition_exactness(
         residuals.push(ResidualCondition::new(
             ResidualConditionReason::Limit,
             ConditionClause::RowSetOperator,
-            "row_shaping",
+            "limit",
         ));
         if shaping.offset > 0 {
             residuals.push(ResidualCondition::new(
