@@ -50,3 +50,11 @@ No missing mandatory core semantic behavior is an approved Residual.
 Only mark TASK-192 Done after every AC #1..#5 has direct executable evidence
 and independent verification against the frozen SQL, type, source and terminal
 matrices, plus passing exact-head CI.
+
+## Additional typed-policy evidence
+
+`docs/task-192-acceptance-freeze.json` now assigns every original variant an independent expected-output policy: 10 exact scalar set/interval and bound-direction examples (S001–S009 and S012), 31 unconstrained nullable `id` projections, one native fixed-width overflow error (S033), and one conservative STRUCT CAST boundary (S179). These policies cover all 559 parser cells as an invariant floor, but parser coverage must not be confused with independently certified strongest typed semantics.
+
+`tests/task_192_typed_soundness.rs` checks that all 41 successful original numeric terminals fit the emitted domains on every parser, including NULLs, duplicates and signed values, and ensures no unsupported finite `id` restriction is inferred from predicates on other source columns. The test is evidence of soundness on the pinned native samples, **not** completeness over arbitrary source bags.
+
+The temporary [sql-tdg consumer compatibility PR #49](https://github.com/phdah/sql-tdg/pull/49) has an exact protocol commit pin for CI only. The main consumer's published dependency must remain unchanged.
