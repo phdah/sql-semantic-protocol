@@ -1,0 +1,277 @@
+{
+  "schema_version": 1,
+  "task_id": "TASK-178",
+  "source_frozen_historical_observation": "docs/task-177-equivalence-snapshot.json",
+  "source_historical_drift_registry": "docs/task-177-canonical-drift-boundaries.json",
+  "change_type": "reviewed_candidate_semantic_normalization_overlay_do_not_rewrite_TASK177",
+  "observed_original_drift_cells": 23,
+  "expected_resolved_public_document_drift_cells": 22,
+  "expected_remaining_public_document_drift_cells": 1,
+  "resolved_grouping_cells": [
+    {
+      "id": "88-C177-S100-bigquery",
+      "case_id": "88-C177-S100",
+      "dialect": "bigquery",
+      "old_status": "D",
+      "expected_new_status": "C",
+      "bug": "sqlparser function versus grouping AST representation emitted incompatible zero-row proof",
+      "fix": "src/analysis/aggregation.rs grouping_function_variant",
+      "native_vendor_execution": "not_certified",
+      "independent_semantic_signoff": "pending"
+    },
+    {
+      "id": "88-C177-S100-clickhouse",
+      "case_id": "88-C177-S100",
+      "dialect": "clickhouse",
+      "old_status": "D",
+      "expected_new_status": "C",
+      "bug": "sqlparser function versus grouping AST representation emitted incompatible zero-row proof",
+      "fix": "src/analysis/aggregation.rs grouping_function_variant",
+      "native_vendor_execution": "not_certified",
+      "independent_semantic_signoff": "pending"
+    },
+    {
+      "id": "88-C177-S100-databricks",
+      "case_id": "88-C177-S100",
+      "dialect": "databricks",
+      "old_status": "D",
+      "expected_new_status": "C",
+      "bug": "sqlparser function versus grouping AST representation emitted incompatible zero-row proof",
+      "fix": "src/analysis/aggregation.rs grouping_function_variant",
+      "native_vendor_execution": "not_certified",
+      "independent_semantic_signoff": "pending"
+    },
+    {
+      "id": "88-C177-S100-duckdb",
+      "case_id": "88-C177-S100",
+      "dialect": "duckdb",
+      "old_status": "D",
+      "expected_new_status": "C",
+      "bug": "sqlparser function versus grouping AST representation emitted incompatible zero-row proof",
+      "fix": "src/analysis/aggregation.rs grouping_function_variant",
+      "native_vendor_execution": "not_certified",
+      "independent_semantic_signoff": "pending"
+    },
+    {
+      "id": "88-C177-S100-generic",
+      "case_id": "88-C177-S100",
+      "dialect": "generic",
+      "old_status": "D",
+      "expected_new_status": "C",
+      "bug": "sqlparser function versus grouping AST representation emitted incompatible zero-row proof",
+      "fix": "src/analysis/aggregation.rs grouping_function_variant",
+      "native_vendor_execution": "not_certified",
+      "independent_semantic_signoff": "pending"
+    },
+    {
+      "id": "88-C177-S100-postgresql",
+      "case_id": "88-C177-S100",
+      "dialect": "postgresql",
+      "old_status": "D",
+      "expected_new_status": "C",
+      "bug": "sqlparser function versus grouping AST representation emitted incompatible zero-row proof",
+      "fix": "src/analysis/aggregation.rs grouping_function_variant",
+      "native_vendor_execution": "not_certified",
+      "independent_semantic_signoff": "pending"
+    },
+    {
+      "id": "88-C177-S100-snowflake",
+      "case_id": "88-C177-S100",
+      "dialect": "snowflake",
+      "old_status": "D",
+      "expected_new_status": "C",
+      "bug": "sqlparser function versus grouping AST representation emitted incompatible zero-row proof",
+      "fix": "src/analysis/aggregation.rs grouping_function_variant",
+      "native_vendor_execution": "not_certified",
+      "independent_semantic_signoff": "pending"
+    },
+    {
+      "id": "88-C177-S101-bigquery",
+      "case_id": "88-C177-S101",
+      "dialect": "bigquery",
+      "old_status": "D",
+      "expected_new_status": "C",
+      "bug": "sqlparser function versus grouping AST representation emitted incompatible zero-row proof",
+      "fix": "src/analysis/aggregation.rs grouping_function_variant",
+      "native_vendor_execution": "not_certified",
+      "independent_semantic_signoff": "pending"
+    },
+    {
+      "id": "88-C177-S101-clickhouse",
+      "case_id": "88-C177-S101",
+      "dialect": "clickhouse",
+      "old_status": "D",
+      "expected_new_status": "C",
+      "bug": "sqlparser function versus grouping AST representation emitted incompatible zero-row proof",
+      "fix": "src/analysis/aggregation.rs grouping_function_variant",
+      "native_vendor_execution": "not_certified",
+      "independent_semantic_signoff": "pending"
+    },
+    {
+      "id": "88-C177-S101-databricks",
+      "case_id": "88-C177-S101",
+      "dialect": "databricks",
+      "old_status": "D",
+      "expected_new_status": "C",
+      "bug": "sqlparser function versus grouping AST representation emitted incompatible zero-row proof",
+      "fix": "src/analysis/aggregation.rs grouping_function_variant",
+      "native_vendor_execution": "not_certified",
+      "independent_semantic_signoff": "pending"
+    },
+    {
+      "id": "88-C177-S101-duckdb",
+      "case_id": "88-C177-S101",
+      "dialect": "duckdb",
+      "old_status": "D",
+      "expected_new_status": "C",
+      "bug": "sqlparser function versus grouping AST representation emitted incompatible zero-row proof",
+      "fix": "src/analysis/aggregation.rs grouping_function_variant",
+      "native_vendor_execution": "not_certified",
+      "independent_semantic_signoff": "pending"
+    },
+    {
+      "id": "88-C177-S101-generic",
+      "case_id": "88-C177-S101",
+      "dialect": "generic",
+      "old_status": "D",
+      "expected_new_status": "C",
+      "bug": "sqlparser function versus grouping AST representation emitted incompatible zero-row proof",
+      "fix": "src/analysis/aggregation.rs grouping_function_variant",
+      "native_vendor_execution": "not_certified",
+      "independent_semantic_signoff": "pending"
+    },
+    {
+      "id": "88-C177-S101-postgresql",
+      "case_id": "88-C177-S101",
+      "dialect": "postgresql",
+      "old_status": "D",
+      "expected_new_status": "C",
+      "bug": "sqlparser function versus grouping AST representation emitted incompatible zero-row proof",
+      "fix": "src/analysis/aggregation.rs grouping_function_variant",
+      "native_vendor_execution": "not_certified",
+      "independent_semantic_signoff": "pending"
+    },
+    {
+      "id": "88-C177-S101-snowflake",
+      "case_id": "88-C177-S101",
+      "dialect": "snowflake",
+      "old_status": "D",
+      "expected_new_status": "C",
+      "bug": "sqlparser function versus grouping AST representation emitted incompatible zero-row proof",
+      "fix": "src/analysis/aggregation.rs grouping_function_variant",
+      "native_vendor_execution": "not_certified",
+      "independent_semantic_signoff": "pending"
+    },
+    {
+      "id": "88-C177-S104-bigquery",
+      "case_id": "88-C177-S104",
+      "dialect": "bigquery",
+      "old_status": "D",
+      "expected_new_status": "C",
+      "bug": "sqlparser function versus grouping AST representation emitted incompatible zero-row proof",
+      "fix": "src/analysis/aggregation.rs grouping_function_variant",
+      "native_vendor_execution": "not_certified",
+      "independent_semantic_signoff": "pending"
+    },
+    {
+      "id": "88-C177-S104-clickhouse",
+      "case_id": "88-C177-S104",
+      "dialect": "clickhouse",
+      "old_status": "D",
+      "expected_new_status": "C",
+      "bug": "sqlparser function versus grouping AST representation emitted incompatible zero-row proof",
+      "fix": "src/analysis/aggregation.rs grouping_function_variant",
+      "native_vendor_execution": "not_certified",
+      "independent_semantic_signoff": "pending"
+    },
+    {
+      "id": "88-C177-S104-databricks",
+      "case_id": "88-C177-S104",
+      "dialect": "databricks",
+      "old_status": "D",
+      "expected_new_status": "C",
+      "bug": "sqlparser function versus grouping AST representation emitted incompatible zero-row proof",
+      "fix": "src/analysis/aggregation.rs grouping_function_variant",
+      "native_vendor_execution": "not_certified",
+      "independent_semantic_signoff": "pending"
+    },
+    {
+      "id": "88-C177-S104-duckdb",
+      "case_id": "88-C177-S104",
+      "dialect": "duckdb",
+      "old_status": "D",
+      "expected_new_status": "C",
+      "bug": "sqlparser function versus grouping AST representation emitted incompatible zero-row proof",
+      "fix": "src/analysis/aggregation.rs grouping_function_variant",
+      "native_vendor_execution": "not_certified",
+      "independent_semantic_signoff": "pending"
+    },
+    {
+      "id": "88-C177-S104-generic",
+      "case_id": "88-C177-S104",
+      "dialect": "generic",
+      "old_status": "D",
+      "expected_new_status": "C",
+      "bug": "sqlparser function versus grouping AST representation emitted incompatible zero-row proof",
+      "fix": "src/analysis/aggregation.rs grouping_function_variant",
+      "native_vendor_execution": "not_certified",
+      "independent_semantic_signoff": "pending"
+    },
+    {
+      "id": "88-C177-S104-postgresql",
+      "case_id": "88-C177-S104",
+      "dialect": "postgresql",
+      "old_status": "D",
+      "expected_new_status": "C",
+      "bug": "sqlparser function versus grouping AST representation emitted incompatible zero-row proof",
+      "fix": "src/analysis/aggregation.rs grouping_function_variant",
+      "native_vendor_execution": "not_certified",
+      "independent_semantic_signoff": "pending"
+    },
+    {
+      "id": "88-C177-S104-snowflake",
+      "case_id": "88-C177-S104",
+      "dialect": "snowflake",
+      "old_status": "D",
+      "expected_new_status": "C",
+      "bug": "sqlparser function versus grouping AST representation emitted incompatible zero-row proof",
+      "fix": "src/analysis/aggregation.rs grouping_function_variant",
+      "native_vendor_execution": "not_certified",
+      "independent_semantic_signoff": "pending"
+    },
+    {
+      "id": "88-C177-S179-duckdb",
+      "case_id": "88-C177-S179",
+      "dialect": "duckdb",
+      "old_status": "D",
+      "expected_new_status": "C",
+      "bug": "unsupported STRUCT CAST diagnostics interpolate SQLparser dialect-dependent AST type display",
+      "fix": "src/analysis/expressions.rs stable unsupported STRUCT CAST reason",
+      "native_vendor_execution": "not_certified",
+      "independent_semantic_signoff": "pending"
+    }
+  ],
+  "remaining_boundaries": [
+    {
+      "id": "88-C177-S152-mssql",
+      "case_id": "88-C177-S152",
+      "reason": "MSSQL parser represents unquoted TRUE as a source column rather than an ANSI boolean literal in ON; reinterpreting it as TRUE would be unsound",
+      "expected_status": "D",
+      "next_owner": "TASK-178",
+      "independent_semantic_signoff": "pending",
+      "classification": "conditional_dialect_truth_identifier_boundary"
+    }
+  ],
+  "expected_full_251_case_public_status_counts": {
+    "same_full_protocol": 3091,
+    "distinct_protocol": 1,
+    "explicit_unsupported": 116,
+    "parser_rejected": 55,
+    "analysis_error": 0
+  },
+  "duckt_native_grouping_oracles": "tests/task_177_cross_dialect_native_oracles.rs",
+  "changed_semantics_regression": "tests/task_178_grouping_ast_equivalence.rs and tests/task_178_remaining_drift.rs",
+  "vendor_execution_certified": false,
+  "independent_review_verified": false,
+  "release_approved": false
+}

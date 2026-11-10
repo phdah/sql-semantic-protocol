@@ -362,6 +362,10 @@ pub(super) fn analyze_query(
         &diagnostics,
         false,
     );
+    let predicate_exactness = match row_shaping.as_ref() {
+        Some(shaping) => canonicalize_direct_row_selection_exactness(predicate_exactness, shaping),
+        None => predicate_exactness,
+    };
     let condition_exactness = predicate_exactness
         .merged_with(&unknown_column_domain_exactness(
             &column_domains,
@@ -539,12 +543,21 @@ pub(super) fn analyze_query(
     let group_rows_match_surviving_groups = query.limit_clause.is_none()
         && query.fetch.is_none()
         && matches!(query.body.as_ref(), SetExpr::Select(select)
-            if select.distinct.is_none()
-                && select.qualify.is_none()
-                && select.top.is_none()
-                && matches!(&select.group_by, GroupByExpr::Expressions(items, modifiers)
-                    if !items.is_empty() && modifiers.is_empty()
-                        && items.iter().all(|item| !matches!(item, Expr::GroupingSets(_) | Expr::Cube(_) | Expr::Rollup(_)))));
+        if select.distinct.is_none()
+            && select.qualify.is_none()
+            && select.top.is_none()
+            && matches!(&select.group_by, GroupByExpr::Expressions(items, modifiers)
+                if !items.is_empty() && modifiers.is_empty()
+                    && items.iter().all(|item| {
+                        // sqlparser represents the same GROUP BY ROLLUP/CUBE
+                        // as dedicated nodes in some dialects and functions
+                        // in others. Neither proves ordinary one-row-per-key
+                        // grouping, even after semantic normalization.
+                        !matches!(item, Expr::GroupingSets(_) | Expr::Cube(_) | Expr::Rollup(_))
+                            && !matches!(item, Expr::Function(function)
+                                if function.name.to_string().eq_ignore_ascii_case("ROLLUP")
+                                    || function.name.to_string().eq_ignore_ascii_case("CUBE"))
+                    })));
 
     // These are the only upstream row-shapes whose physical QUALIFY
     // composition is currently certified. Any unrelated row shaping fails closed.

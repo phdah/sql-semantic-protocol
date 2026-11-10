@@ -1,0 +1,84 @@
+{
+  "schema_version": 1,
+  "task_id": "TASK-178",
+  "owner": "TASK-178",
+  "dialects": [
+    "ansi",
+    "bigquery",
+    "clickhouse",
+    "databricks",
+    "duckdb",
+    "generic",
+    "hive",
+    "mssql",
+    "mysql",
+    "postgresql",
+    "redshift",
+    "snowflake",
+    "sqlite"
+  ],
+  "classification": "C=full public semantics exactly equal; D=structural semantic drift; U=unsupported; R=parser rejection; N=deliberately not equivalent (WITH TIES)",
+  "cases": [
+    {
+      "id": "88-C178-MINUS",
+      "sql": "SELECT id FROM orders MINUS SELECT id FROM customers",
+      "reference": "SELECT id FROM orders EXCEPT SELECT id FROM customers",
+      "expected_mask": "CCCCCCCCCCCCC",
+      "proof": "conditional_vendor_synonym_with_NULL",
+      "observed_from": "https://github.com/phdah/sql-semantic-protocol/actions/runs/42710748522",
+      "release_disposition": "unreviewed_no_native_vendor_certification"
+    },
+    {
+      "id": "88-C178-TOP",
+      "sql": "SELECT TOP 2 id FROM orders ORDER BY id",
+      "reference": "SELECT id FROM orders ORDER BY id LIMIT 2",
+      "expected_mask": "CCCCCCCCCCCCC",
+      "proof": "candidate_semantic_equivalence_with_deterministic_tie_oracle",
+      "observed_from": "https://github.com/phdah/sql-semantic-protocol/actions/runs/42710748522",
+      "release_disposition": "unreviewed_no_native_vendor_certification",
+      "observed_mask_before_normalization": "DDDDDDDDDDDDD",
+      "canonical_normalization": "same exact typed row_shaping and opaque-but-sound Limit residual",
+      "vendor_execution": "unattested"
+    },
+    {
+      "id": "88-C178-FETCH",
+      "sql": "SELECT id FROM orders ORDER BY id FETCH FIRST 2 ROWS ONLY",
+      "reference": "SELECT id FROM orders ORDER BY id LIMIT 2",
+      "expected_mask": "CCCCCCCCCCCCC",
+      "proof": "candidate_pagination_synonym",
+      "observed_from": "https://github.com/phdah/sql-semantic-protocol/actions/runs/42710748522",
+      "release_disposition": "unreviewed_no_native_vendor_certification",
+      "observed_mask_before_normalization": "DDDDDDDDDDDDD",
+      "canonical_normalization": "same exact typed row_shaping and opaque-but-sound Limit residual",
+      "vendor_execution": "unattested"
+    },
+    {
+      "id": "88-C178-FETCH-TIES",
+      "sql": "SELECT id FROM orders ORDER BY id FETCH FIRST 2 ROWS WITH TIES",
+      "reference": "SELECT id FROM orders ORDER BY id LIMIT 2",
+      "expected_mask": "NNNNNNNNNNNNN",
+      "proof": "NOT_equivalent_when_tied_boundary",
+      "observed_from": "https://github.com/phdah/sql-semantic-protocol/actions/runs/42710748522",
+      "release_disposition": "unreviewed_no_native_vendor_certification"
+    }
+  ],
+  "not_exact_native_execution": "DuckDB original FETCH WITH TIES rejected; alternative SQL does not certify original syntax",
+  "release_approved": false,
+  "status": "frozen_ci_observed_semantic_structure_not_vendor_native_signoff",
+  "observed_summary": {
+    "same_full_document": 13,
+    "distinct_full_document": 26,
+    "intentionally_non_equivalent": 13,
+    "parser_rejected": 0,
+    "explicit_unsupported": 0
+  },
+  "frozen_before_semantic_source_change": false,
+  "expected_after_normalization": {
+    "same_full_public_document": 39,
+    "distinct_full_public_document": 0,
+    "intentionally_non_equivalent": 13,
+    "parser_rejected": 0,
+    "explicit_unsupported": 0
+  },
+  "post_fix_status": "requires_final_head_green"
+}

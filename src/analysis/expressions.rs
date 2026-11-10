@@ -369,6 +369,29 @@ pub(super) fn analyze_expression_with_windows(
             format: None,
         } => {
             let operand = analyze_expression_with_windows(expr, named_windows, diagnostics);
+            // SQLparser 0.58 emits different display forms for the same
+            // STRUCT datatype in e.g. ANSI vs DuckDB:
+            // STRUCT(a, INT, b, VARCHAR) versus STRUCT(a INT, b VARCHAR).
+            // Include the missing evaluation law, not the parser's display
+            // spelling, in the canonical Unknown/diagnostic contract.
+            let struct_target = match data_type {
+                sqlparser::ast::DataType::Struct(_, _) => true,
+                // Some dialect parsers represent STRUCT fields as Custom type
+                // arguments. Match the *AST type name*, not rendered SQL text,
+                // and retain exactly the same unsupported typed outcome.
+                sqlparser::ast::DataType::Custom(name, _) => {
+                    name.to_string().eq_ignore_ascii_case("STRUCT")
+                }
+                _ => false,
+            };
+            if struct_target {
+                return unsupported_expression_with_canonical_reason(
+                    "cast",
+                    DiagnosticArea::Expression,
+                    diagnostics,
+                    "cast to STRUCT is parsed but nested field values, types, arity and conversion laws are not certified".to_string(),
+                );
+            }
             normalize_temporal_identity_cast(kind, data_type, &operand)
                 .or_else(|| normalize_signed_integer_cast(kind, data_type, operand))
                 .unwrap_or_else(|| {

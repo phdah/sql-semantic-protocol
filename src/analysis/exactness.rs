@@ -770,3 +770,39 @@ pub(super) fn collect_expression_column_refs(
         | Expression::Unsupported(_) => {}
     }
 }
+
+/// Once a direct SELECT has a typed and complete row-selection descriptor,
+/// TOP, FETCH FIRST ROWS ONLY, and LIMIT share *one* canonical residual.
+/// Preserve every nested and unrelated residual; raw/non-certified syntax
+/// still reports its own reason in analyze_query_condition_exactness.
+pub(super) fn canonicalize_direct_row_selection_exactness(
+    exactness: ConditionExactness,
+    shaping: &crate::protocol::SetRowShaping,
+) -> ConditionExactness {
+    // analyze_query_condition_exactness contributes residuals only. Other
+    // source type/comparison assumptions are composed *after* this function.
+    let mut residuals = exactness.residual_conditions().to_vec();
+    residuals.retain(|residual| {
+        !(residual.clause() == ConditionClause::RowSetOperator
+            && matches!(
+                (residual.reason(), residual.identity()),
+                (ResidualConditionReason::Top, "body:top")
+                    | (ResidualConditionReason::Fetch, "fetch")
+                    | (ResidualConditionReason::Limit, "limit")
+                    | (ResidualConditionReason::Offset, "offset")
+            ))
+    });
+    residuals.push(ResidualCondition::new(
+        ResidualConditionReason::Limit,
+        ConditionClause::RowSetOperator,
+        "limit",
+    ));
+    if shaping.offset > 0 {
+        residuals.push(ResidualCondition::new(
+            ResidualConditionReason::Offset,
+            ConditionClause::RowSetOperator,
+            "offset",
+        ));
+    }
+    ConditionExactness::from_residuals(residuals)
+}

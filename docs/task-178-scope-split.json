@@ -1,0 +1,121 @@
+{
+  "schema_version": 1,
+  "task_id": "TASK-178",
+  "decision_date": "2026-11-10",
+  "decision": "maintainer_requested_scope_split",
+  "scope": "bounded_portable_equivalence_baseline_only",
+  "global_approval": false,
+  "parent_task": "TASK-88",
+  "release_task": "TASK-91",
+  "original_contract": "Original TASK-178 acceptance #1..#5 is carried into TASK-192..197 plus existing TASK-179, TASK-191, TASK-180. No unverified cell becomes approved by re-scoping.",
+  "original_freeze_process_deviation": "The first TASK-178 v1 matrix had 7 cases rather than a complete pre-implementation freeze. The subsequent 163-case inventory is an observed classification ledger, not retroactively certified.",
+  "original_inventory": "docs/task-178-full-variant-inventory.json",
+  "original_native_ledger": "docs/task-177-physical-proof-ledger.json",
+  "bounded_baseline_fixtures": [
+    "docs/task-178-acceptance-freeze.json",
+    "docs/task-178-canonical-reconciliation.json",
+    "docs/task-178-syntax-dialect-boundaries.json"
+  ],
+  "bounded_delivery": "TASK-178",
+  "reviewed_parser_dialects": 13,
+  "variant_count": 163,
+  "parser_cells": 2119,
+  "independently_certified_semantic_cells": 0,
+  "category_owners": {
+    "predicates": "TASK-192",
+    "types": "TASK-192",
+    "joins": "TASK-193",
+    "scopes": "TASK-193",
+    "sets": "TASK-194",
+    "grouping": "TASK-195",
+    "windows": "TASK-195",
+    "ordering": "TASK-195",
+    "schema": "TASK-196",
+    "dml": "TASK-196",
+    "ddl": "TASK-196"
+  },
+  "task_variant_counts": {
+    "TASK-192": 43,
+    "TASK-193": 24,
+    "TASK-194": 22,
+    "TASK-195": 36,
+    "TASK-196": 38
+  },
+  "cross_family_adapter_parity": "TASK-197",
+  "vendor_session_laws": "TASK-179",
+  "parser_and_unsupported_dispositions": "TASK-191",
+  "final_independent_matrix_signoff": "TASK-180",
+  "original_ac_handoff": {
+    "1": [
+      "TASK-192",
+      "TASK-193",
+      "TASK-194",
+      "TASK-195",
+      "TASK-196",
+      "TASK-180"
+    ],
+    "2": [
+      "TASK-192",
+      "TASK-193",
+      "TASK-194",
+      "TASK-195",
+      "TASK-196",
+      "TASK-180"
+    ],
+    "3": [
+      "TASK-192",
+      "TASK-193",
+      "TASK-194",
+      "TASK-195",
+      "TASK-196",
+      "TASK-180"
+    ],
+    "4": [
+      "TASK-192",
+      "TASK-193",
+      "TASK-194",
+      "TASK-195",
+      "TASK-196",
+      "TASK-197",
+      "TASK-179",
+      "TASK-191",
+      "TASK-180"
+    ],
+    "5": [
+      "TASK-192",
+      "TASK-193",
+      "TASK-194",
+      "TASK-195",
+      "TASK-196",
+      "TASK-197",
+      "TASK-180"
+    ]
+  },
+  "original_parent_ac_must_remain_open": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8
+  ],
+  "next_task": "TASK-192",
+  "mandatory_core_reclassification_to_residual_allowed": false,
+  "evidence_limits": {
+    "parser_status_is_not_semantic_proof": true,
+    "duckdb_oracle_is_not_vendor_execution": true,
+    "typed_domain_containment_is_not_strongest_domain_certification": true,
+    "unsupported_native_syntax_is_not_successful_terminal": true,
+    "author_self_review_is_not_independent_approval": true,
+    "pinned_consumer_ci_is_not_release_approval": true
+  },
+  "completion": {
+    "task178_bounded_baseline_signoff": true,
+    "global_semantic_matrix_certified": false,
+    "all_original_task178_ac_certified": false,
+    "parent_task88_done": false,
+    "release_approved": false
+  }
+}

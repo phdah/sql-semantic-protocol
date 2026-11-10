@@ -1,0 +1,135 @@
+{
+  "schema_version": 1,
+  "task_id": "TASK-178",
+  "status": "unreviewed_semantic_synonym_candidate_matrix",
+  "dialects": [
+    "ansi",
+    "bigquery",
+    "clickhouse",
+    "databricks",
+    "duckdb",
+    "generic",
+    "hive",
+    "mssql",
+    "mysql",
+    "postgresql",
+    "redshift",
+    "snowflake",
+    "sqlite"
+  ],
+  "source_setup": "docs/task-178-acceptance-freeze.json",
+  "exact_synonym_cases": [
+    {
+      "id": "88-C178-SYN-JOIN",
+      "family": "joins",
+      "left": "SELECT l.id FROM orders l INNER JOIN customers r ON l.id = r.id",
+      "right": "SELECT l.id FROM orders l JOIN customers r ON l.id = r.id",
+      "expected_terminal_bag": [
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ]
+      ],
+      "expected_source_bag": "docs/task-178-acceptance-freeze.json",
+      "mandatory_semantic_proof": "full_document",
+      "reason": "JOIN and INNER JOIN with the same ON and projection are the same portable join, not a different physical relation"
+    },
+    {
+      "id": "88-C178-SYN-SET",
+      "family": "sets",
+      "left": "SELECT id FROM orders UNION SELECT id FROM customers",
+      "right": "SELECT id FROM orders UNION DISTINCT SELECT id FROM customers",
+      "expected_terminal_bag": [
+        [
+          null
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          3
+        ]
+      ],
+      "expected_source_bag": "docs/task-178-acceptance-freeze.json",
+      "mandatory_semantic_proof": "full_document",
+      "reason": "Default UNION is DISTINCT, including SQL NULL equality, and ignores duplicate source occurrences"
+    },
+    {
+      "id": "88-C178-SYN-PRED",
+      "family": "predicates",
+      "left": "SELECT amount FROM orders WHERE amount <> 10",
+      "right": "SELECT amount FROM orders WHERE amount != 10",
+      "expected_terminal_bag": [
+        [
+          5
+        ]
+      ],
+      "expected_source_bag": "docs/task-178-acceptance-freeze.json",
+      "mandatory_semantic_proof": "full_document",
+      "reason": "Canonical not-equals spelling preserves the FALSE and UNKNOWN partitions"
+    }
+  ],
+  "explicit_noncertified_or_non_equivalent_cases": [
+    {
+      "id": "88-C178-SYN-TOP",
+      "family": "ordering",
+      "left": "SELECT TOP 2 id FROM orders ORDER BY id",
+      "right": "SELECT id FROM orders ORDER BY id LIMIT 2",
+      "classification": "dialect_parser_and_native_unverified",
+      "required_evidence": "For each dialect both variants must be accepted with same exact output order/count, attested NULL and tied-order semantics"
+    },
+    {
+      "id": "88-C178-SYN-FETCH",
+      "family": "ordering",
+      "left": "SELECT id FROM orders ORDER BY id FETCH FIRST 2 ROWS WITH TIES",
+      "right": "SELECT id FROM orders ORDER BY id LIMIT 2",
+      "classification": "NOT_equivalent_with_ties_when_boundary_peers",
+      "required_evidence": "Qualify ordering with peer ties, show 2-with-ties output may exceed 2, and record DuckDB original SQL rejection"
+    },
+    {
+      "id": "88-C178-SYN-MINUS",
+      "family": "sets",
+      "left": "SELECT id FROM orders MINUS SELECT id FROM customers",
+      "right": "SELECT id FROM orders EXCEPT SELECT id FROM customers",
+      "classification": "parser_native_unverified",
+      "required_evidence": "Explicit per-dialect parser meaning and first-party executed bag for MINUS; no silent EXCEPT alias claim"
+    },
+    {
+      "id": "88-C178-SYN-WINDOW",
+      "family": "windows",
+      "left": "SELECT ROW_NUMBER() OVER (ORDER BY id) FROM orders",
+      "right": "SELECT ROW_NUMBER() OVER (ORDER BY id ASC) FROM orders",
+      "classification": "expected_portable_with_explicit_tie_boundary",
+      "required_evidence": "Full result multiset and deterministic ordinal ordering where source id tied"
+    },
+    {
+      "id": "88-C178-SYN-INSERT",
+      "family": "dml",
+      "left": "INSERT INTO orders (id, amount) VALUES (1, 10)",
+      "right": "INSERT INTO orders (id, amount) VALUES (1, 10), (2, 20)",
+      "classification": "NOT_equivalent",
+      "required_evidence": "Paired negative control proves distinct row-state mutations, not mere parser-same"
+    },
+    {
+      "id": "88-C178-SYN-DDL",
+      "family": "ddl",
+      "left": "CREATE TABLE t AS SELECT id FROM customers",
+      "right": "CREATE VIEW t AS SELECT id FROM customers",
+      "classification": "NOT_equivalent",
+      "required_evidence": "View is virtual, table materialized; equal SELECT output not equal state/write effects"
+    }
+  ],
+  "release_approved": false,
+  "independent_signoff": false
+}

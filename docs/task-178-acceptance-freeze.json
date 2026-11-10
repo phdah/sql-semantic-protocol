@@ -1,0 +1,602 @@
+{
+  "schema_version": 1,
+  "task_id": "TASK-178",
+  "parent": "TASK-88",
+  "status": "in_progress",
+  "frozen_on": "2026-11-09",
+  "provenance": "TASK-177 original SQL sample identities and its observed all-13 canonical snapshot; full individual semantics require independent proof",
+  "positive_fixture_id": "88-C178-P",
+  "negative_fixture_id": "88-C178-N",
+  "dialects": [
+    "ansi",
+    "bigquery",
+    "clickhouse",
+    "databricks",
+    "duckdb",
+    "generic",
+    "hive",
+    "mssql",
+    "mysql",
+    "postgresql",
+    "redshift",
+    "snowflake",
+    "sqlite"
+  ],
+  "source_setup": "CREATE TABLE orders (id INTEGER, amount INTEGER); INSERT INTO orders VALUES (1,10),(1,10),(2,5),(NULL,NULL); CREATE TABLE customers (id INTEGER, amount INTEGER); INSERT INTO customers VALUES (1,7),(1,8),(3,9),(NULL,NULL);",
+  "source_bags": {
+    "orders": [
+      [
+        null,
+        null
+      ],
+      [
+        1,
+        10
+      ],
+      [
+        1,
+        10
+      ],
+      [
+        2,
+        5
+      ]
+    ],
+    "customers": [
+      [
+        null,
+        null
+      ],
+      [
+        1,
+        7
+      ],
+      [
+        1,
+        8
+      ],
+      [
+        3,
+        9
+      ]
+    ]
+  },
+  "ddl_source_setup": "CREATE TABLE customers (id INTEGER, amount INTEGER); INSERT INTO customers VALUES (1,7),(1,8),(3,9),(NULL,NULL);",
+  "mandatory_families": [
+    "predicate",
+    "join",
+    "set",
+    "window",
+    "pagination",
+    "dml",
+    "ddl"
+  ],
+  "cases": [
+    {
+      "id": "88-C178-PREDICATE",
+      "family": "predicate",
+      "source_sample_id": "88-C177-S006",
+      "sql": "SELECT amount FROM orders WHERE amount >= 10",
+      "feature_id": "predicates.integer_ranges",
+      "variant": ">=",
+      "source_instance_ids": [
+        "orders",
+        "customers"
+      ],
+      "expected_terminal_bag": [
+        [
+          10
+        ],
+        [
+          10
+        ]
+      ],
+      "expected_positive_bag": [
+        [
+          10
+        ],
+        [
+          10
+        ]
+      ],
+      "expected_rejected_bag": [
+        [
+          5
+        ]
+      ],
+      "expected_unknown_bag": [
+        [
+          null
+        ]
+      ],
+      "expected_projected_domain": {
+        "kind": "range",
+        "lower": [
+          10,
+          true
+        ],
+        "upper": null
+      },
+      "parser_dialects": [
+        "ansi",
+        "bigquery",
+        "clickhouse",
+        "databricks",
+        "duckdb",
+        "generic",
+        "hive",
+        "mssql",
+        "mysql",
+        "postgresql",
+        "redshift",
+        "snowflake",
+        "sqlite"
+      ],
+      "typed_outcome_proof": "partial_no_catalog_enforcement",
+      "duckdb_engine_version": "1.10506.0",
+      "vendor_execution": "unattested",
+      "adapter_parity": "not_yet_certified",
+      "independent_signoff": false
+    },
+    {
+      "id": "88-C178-JOIN",
+      "family": "join",
+      "source_sample_id": "88-C177-S043",
+      "sql": "SELECT l.id FROM orders l INNER JOIN customers r ON l.id = r.id",
+      "feature_id": "joins.inner",
+      "variant": "ON equality",
+      "source_instance_ids": [
+        "orders",
+        "customers"
+      ],
+      "expected_terminal_bag": [
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ]
+      ],
+      "expected_positive_bag": [
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ]
+      ],
+      "expected_rejected_bag": [
+        [
+          null
+        ],
+        [
+          2
+        ]
+      ],
+      "expected_unknown_bag": [],
+      "parser_dialects": [
+        "ansi",
+        "bigquery",
+        "clickhouse",
+        "databricks",
+        "duckdb",
+        "generic",
+        "hive",
+        "mssql",
+        "mysql",
+        "postgresql",
+        "redshift",
+        "snowflake",
+        "sqlite"
+      ],
+      "typed_outcome_proof": "partial_no_catalog_enforcement",
+      "duckdb_engine_version": "1.10506.0",
+      "vendor_execution": "unattested",
+      "adapter_parity": "not_yet_certified",
+      "independent_signoff": false
+    },
+    {
+      "id": "88-C178-SET",
+      "family": "set",
+      "source_sample_id": "88-C177-S066",
+      "sql": "SELECT id FROM orders UNION ALL SELECT id FROM customers",
+      "feature_id": "sets.union_all",
+      "variant": "UNION ALL",
+      "source_instance_ids": [
+        "orders",
+        "customers"
+      ],
+      "expected_terminal_bag": [
+        [
+          null
+        ],
+        [
+          null
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          3
+        ]
+      ],
+      "expected_positive_bag": [
+        [
+          null
+        ],
+        [
+          null
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          3
+        ]
+      ],
+      "expected_rejected_bag": [],
+      "expected_unknown_bag": [],
+      "parser_dialects": [
+        "ansi",
+        "bigquery",
+        "clickhouse",
+        "databricks",
+        "duckdb",
+        "generic",
+        "hive",
+        "mssql",
+        "mysql",
+        "postgresql",
+        "redshift",
+        "snowflake",
+        "sqlite"
+      ],
+      "typed_outcome_proof": "partial_no_catalog_enforcement",
+      "duckdb_engine_version": "1.10506.0",
+      "vendor_execution": "unattested",
+      "adapter_parity": "not_yet_certified",
+      "independent_signoff": false
+    },
+    {
+      "id": "88-C178-WINDOW",
+      "family": "window",
+      "source_sample_id": "88-C177-S106",
+      "sql": "SELECT ROW_NUMBER() OVER (ORDER BY id) FROM orders",
+      "feature_id": "windows.row_number",
+      "variant": "ROW_NUMBER",
+      "source_instance_ids": [
+        "orders",
+        "customers"
+      ],
+      "expected_terminal_bag": [
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          3
+        ],
+        [
+          4
+        ]
+      ],
+      "expected_positive_bag": [
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          3
+        ],
+        [
+          4
+        ]
+      ],
+      "expected_rejected_bag": [],
+      "expected_unknown_bag": [],
+      "parser_dialects": [
+        "ansi",
+        "bigquery",
+        "clickhouse",
+        "databricks",
+        "duckdb",
+        "generic",
+        "hive",
+        "mssql",
+        "mysql",
+        "postgresql",
+        "redshift",
+        "snowflake",
+        "sqlite"
+      ],
+      "typed_outcome_proof": "partial_no_catalog_enforcement",
+      "duckdb_engine_version": "1.10506.0",
+      "vendor_execution": "unattested",
+      "adapter_parity": "not_yet_certified",
+      "independent_signoff": false
+    },
+    {
+      "id": "88-C178-PAGINATION",
+      "family": "pagination",
+      "source_sample_id": "88-C177-S159",
+      "sql": "SELECT id FROM orders ORDER BY id LIMIT 2 OFFSET 1",
+      "feature_id": "ordering.pagination",
+      "variant": "LIMIT/OFFSET",
+      "source_instance_ids": [
+        "orders",
+        "customers"
+      ],
+      "expected_terminal_bag": [
+        [
+          1
+        ],
+        [
+          2
+        ]
+      ],
+      "expected_positive_bag": [
+        [
+          1
+        ],
+        [
+          2
+        ]
+      ],
+      "expected_rejected_bag": [
+        [
+          1
+        ],
+        [
+          null
+        ]
+      ],
+      "expected_unknown_bag": [],
+      "parser_dialects": [
+        "ansi",
+        "bigquery",
+        "clickhouse",
+        "databricks",
+        "duckdb",
+        "generic",
+        "hive",
+        "mssql",
+        "mysql",
+        "postgresql",
+        "redshift",
+        "snowflake",
+        "sqlite"
+      ],
+      "typed_outcome_proof": "partial_no_catalog_enforcement",
+      "duckdb_engine_version": "1.10506.0",
+      "vendor_execution": "unattested",
+      "adapter_parity": "not_yet_certified",
+      "independent_signoff": false
+    },
+    {
+      "id": "88-C178-DML",
+      "family": "dml",
+      "source_sample_id": "88-C177-S194",
+      "sql": "INSERT INTO orders (id, amount) VALUES (1, 10)",
+      "feature_id": "dml.insert",
+      "variant": "INSERT VALUES/SELECT",
+      "source_instance_ids": [
+        "orders",
+        "customers"
+      ],
+      "expected_terminal_bag": [
+        [
+          null,
+          null
+        ],
+        [
+          1,
+          10
+        ],
+        [
+          1,
+          10
+        ],
+        [
+          1,
+          10
+        ],
+        [
+          2,
+          5
+        ]
+      ],
+      "expected_positive_bag": [
+        [
+          1,
+          10
+        ]
+      ],
+      "expected_rejected_bag": [],
+      "expected_unknown_bag": [],
+      "parser_dialects": [
+        "ansi",
+        "bigquery",
+        "clickhouse",
+        "databricks",
+        "duckdb",
+        "generic",
+        "hive",
+        "mssql",
+        "mysql",
+        "postgresql",
+        "redshift",
+        "snowflake",
+        "sqlite"
+      ],
+      "typed_outcome_proof": "partial_no_catalog_enforcement",
+      "duckdb_engine_version": "1.10506.0",
+      "vendor_execution": "unattested",
+      "adapter_parity": "not_yet_certified",
+      "independent_signoff": false
+    },
+    {
+      "id": "88-C178-DDL",
+      "family": "ddl",
+      "source_sample_id": "88-C177-S212",
+      "sql": "CREATE TABLE orders AS SELECT id FROM customers",
+      "feature_id": "ddl.producers",
+      "variant": "CREATE TABLE AS",
+      "source_instance_ids": [
+        "customers"
+      ],
+      "expected_terminal_bag": [
+        [
+          null
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          3
+        ]
+      ],
+      "expected_positive_bag": [
+        [
+          null
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          3
+        ]
+      ],
+      "expected_rejected_bag": [],
+      "expected_unknown_bag": [],
+      "parser_dialects": [
+        "ansi",
+        "bigquery",
+        "clickhouse",
+        "databricks",
+        "duckdb",
+        "generic",
+        "hive",
+        "mssql",
+        "mysql",
+        "postgresql",
+        "redshift",
+        "snowflake",
+        "sqlite"
+      ],
+      "typed_outcome_proof": "partial_no_catalog_enforcement",
+      "duckdb_engine_version": "1.10506.0",
+      "vendor_execution": "unattested",
+      "adapter_parity": "not_yet_certified",
+      "independent_signoff": false
+    }
+  ],
+  "mandatory_variant_boundaries": [
+    {
+      "id": "88-C178-TOP",
+      "family": "pagination",
+      "sql": "SELECT TOP 2 id FROM orders ORDER BY id",
+      "classification": "conditional_parser_vendor",
+      "owner": "TASK-178",
+      "released": false,
+      "required_evidence": "13 dialect canonical, stable tie and NULL ordering, full native source/terminal"
+    },
+    {
+      "id": "88-C178-FETCH",
+      "family": "pagination",
+      "sql": "SELECT id FROM orders ORDER BY id FETCH FIRST 2 ROWS WITH TIES",
+      "classification": "conditional_native_duckdb_rejection",
+      "owner": "TASK-178",
+      "released": false,
+      "required_evidence": "Equivalence requires tie-law evidence and native support; DuckDB rejects original syntax"
+    },
+    {
+      "id": "88-C178-MINUS",
+      "family": "set",
+      "sql": "SELECT id FROM orders MINUS SELECT id FROM customers",
+      "classification": "conditional_parser_vendor",
+      "owner": "TASK-178",
+      "released": false,
+      "required_evidence": "Attested per-dialect synonym of EXCEPT with SQL NULL and bag semantics"
+    },
+    {
+      "id": "88-C178-SUPERGROUP",
+      "family": "grouping",
+      "sample_ids": [
+        "88-C177-S100",
+        "88-C177-S101",
+        "88-C177-S104"
+      ],
+      "classification": "23_prior_public_drifts_including_lateral_and_struct",
+      "owner": "TASK-178",
+      "released": false,
+      "required_evidence": "Canonical AST-independent semantics for 23 previously observed drifts"
+    }
+  ],
+  "expected_statement_effects": "Canonical INSERT and CTAS must not overclaim unexecuted source writes or table materialization",
+  "completion": {
+    "mandatory_exact_oracle_matrix_certified": false,
+    "all_13_dialect_typed_semantics_certified": false,
+    "direct_dbt_odcs_equivalence_certified": false,
+    "all_23_drifts_resolved": false,
+    "negative_and_impossible_oracles_complete": false,
+    "native_vendor_certified": false,
+    "final_ci_green": false,
+    "independent_review_verified": false,
+    "child_done": false,
+    "parent_done": false,
+    "release_approved": false
+  },
+  "original_child_ac_mapping": {
+    "1": "versioned matrix started; variant, typed and adapter cells pending",
+    "2": "portable sample coverage only; required variants pending",
+    "3": "initial independent native oracles; exhaustive physical proof pending",
+    "4": "13 dialect portable structural checks; adapter/vendor evidence pending",
+    "5": "not verified"
+  }
+}

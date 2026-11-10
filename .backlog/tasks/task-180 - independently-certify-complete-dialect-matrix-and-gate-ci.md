@@ -19,7 +19,7 @@ type: feature
 ## Description
 
 <!-- SECTION:DESCRIPTION:BEGIN -->
-**TASK-88 child 5/5.** Independently certify complete dialect matrix and gate CI. Implement this scope in its own PR against `main` after dependencies merge. Preserve original TASK-88 AC for separate parent signoff. Never create parent-child dependency cycles.
+**TASK-88 original child 5/5, unchanged final independent gate after the expanded child queue.** Independently certify complete dialect matrix and gate CI. Implement this scope in its own PR against `main` after dependencies merge. Preserve original TASK-88 AC for separate parent signoff. Never create parent-child dependency cycles.
 <!-- SECTION:DESCRIPTION:END -->
 
 ## Bounded planning scope
@@ -43,3 +43,7 @@ type: feature
 ## Next
 
 After this child, including completed/merged TASK-191 boundary dispositions, audit and sign off TASK-88 separately; TASK-91 controls release readiness.
+
+## TASK-178 original AC handoff (2026-11-10)
+
+Before signing off TASK-180, independently validate the complete 163 x 13 mandatory TASK-178 matrix against TASK-192 predicates/types, TASK-193 joins/scopes, TASK-194 sets, TASK-195 windows/grouping/ordering, TASK-196 schema/DML/DDL, TASK-197 cross-adapter parity, TASK-179 session/vendor evidence, and TASK-191 parser/native exceptions. The baseline TASK-178 Done status only certifies portable tests and explicit observations; it does not satisfy final output-domain/physical-bag certification, original parent #1..#8, or protocol 3.0.0 release readiness. All original TASK-180 AC remain unchanged. [Ownership registry](../../docs/task-178-scope-split.json).

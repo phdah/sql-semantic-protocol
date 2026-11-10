@@ -46,10 +46,14 @@ type: feature
 
 ## Next
 
-After this child is **Done and merged**, [TASK-180](task-180%20-%20independently-certify-complete-dialect-matrix-and-gate-ci.md) performs the independent complete-matrix and TASK-88 parent signoff. TASK-178 remains the immediate next child once TASK-177 PR #196 merges.
+After this child is **Done and merged**, [TASK-180](task-180%20-%20independently-certify-complete-dialect-matrix-and-gate-ci.md) performs the independent complete-matrix and TASK-88 parent signoff. After TASK-178 PR #197 merges, TASK-192 is the immediate next task. TASK-191 still follows TASK-179 after the extracted TASK-192..197 sequence; the parser/native acceptance obligations are unchanged.
 
 ## Implementation Notes
 
 <!-- SECTION:NOTES:BEGIN -->
 Created from TASK-177 scope split on 2026-11-09. Baseline handoff: `docs/task-177-scope-split.md`, `docs/task-177-acceptance-audit.md`, `docs/task-177-physical-proof-ledger.json`. No implementation or acceptance signoff for this new ticket yet.
 <!-- SECTION:NOTES:END -->
+
+## TASK-178 bounded-scope handoff (2026-11-10)
+
+The original TASK-178 semantic family proofs are now TASK-192..196, with cross-adapter acceptance TASK-197 and TASK-180 final signoff. TASK-191 still owns exactly the original 55 parser rejects, 116 Unsupported cells, and 23 original native nonterminals without double counting. Do not close mandatory parser/Unsupported claims using only TASK-178's observational inventory. See [scope-split ownership](../../docs/task-178-scope-split.json).

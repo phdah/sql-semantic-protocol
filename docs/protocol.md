@@ -919,6 +919,15 @@ emitted once for each distinct predicate-tree location, so two unsupported condi
 with the same code are not collapsed. The `identity` denotes the condition's path
 within its owning SQL clause, while `origin` identifies the local scope or layer.
 
+When a direct ordered SELECT has a **certified typed `row_shaping` operator**,
+the meaning-preserving spellings `TOP n`, `FETCH FIRST n ROWS ONLY`, and
+`LIMIT n` share the same `limit` residual identity and reason. This is
+canonical row-selection metadata, not evidence of a complete physical source
+bag or execution on another database engine. Non-certified TOP/PERCENT,
+FETCH/session extensions and nested shapes continue to emit their explicit
+unresolved syntax-specific residual. `WITH TIES` retains its distinct typed
+`row_shaping.with_ties` flag and cannot be normalized into `LIMIT`.
+
 | Reason | Cause |
 | --- | --- |
 | `cross_column_disjunction` | OR spans multiple source columns and therefore carries correlation not representable by independent domains. |

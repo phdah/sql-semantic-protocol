@@ -1,7 +1,7 @@
 {
   "version": 2,
   "created": "2026-10-17",
-  "purpose": "Finite child queues; parents retain all original acceptance criteria and signoff gates. Child tasks are not Done until their own frozen executable matrix and CI are verified. TASK-189 extends TASK-74's original four-child queue with common aggregate window proofs, before TASK-127.",
+  "purpose": "Finite child queues; parents retain all original acceptance criteria and signoff gates. Child tasks are not Done until their own frozen executable matrix and CI are verified. TASK-189 extends TASK-74's original four-child queue with common aggregate window proofs, before TASK-127. TASK-178's original semantic work is boundedly split into TASK-192..197 before TASK-179 while TASK-88/TASK-91 retain the original global signoff.",
   "scope": "All unfinished release-blocking implementation parents TASK-71..90, excluding completed TASK-79; TASK-91 is a release gate and TASK-92 is post-v3.",
   "start_child_id": 109,
   "parents": [
@@ -1435,9 +1435,9 @@
         },
         {
           "title": "Certify canonical equivalence for shared dialect AST variants",
-          "variants": "JOIN, sets, predicates, windows, DML, DDL, TOP/FETCH/MINUS variants",
-          "oracle": "For meaning-preserving spellings assert identical typed domains, NULL/boundary, lineage, membership, count and effects",
-          "boundary": "Strip only provenance metadata; do not weaken comparison to parser AST shapes",
+          "variants": "Observed 163 named SQL cases across 13 parser dialects; representative seven-case native baseline; 78 adapter typed-domain parity cases; 53 native-terminal/domain soundness checks",
+          "oracle": "Complete full-document structural equivalence for meaning-preserving shared spellings; explicit failed/conditional paths, typed NULL/boundary and independent representative DuckDB positive/rejected oracles",
+          "boundary": "Bounded TASK-178 Done only. No 2,119-cell independent strongest-typed/source-terminal proof, external vendor runtime or parent release signoff. Original five broad AC moved verbatim into docs/task-178-scope-split.md and TASK-192..197 plus existing TASK-179/191/180.",
           "original_ac": [
             2,
             4,
@@ -1450,13 +1450,148 @@
           "fixture_ids": [
             "88-C178-P",
             "88-C178-N"
-          ]
+          ],
+          "scoped_status": "Done (PR #197 merge pending; exact bounded verification)",
+          "signoff_audit": "docs/task-178-scope-split.md",
+          "delivery_pr": "https://github.com/phdah/sql-semantic-protocol/pull/197"
+        },
+        {
+          "id": 192,
+          "title": "Certify predicate and structural-type outcomes",
+          "variants": "42 predicate and 1 structural type original variant; 43 x13 dialect cells",
+          "oracle": "Strongest sound typed bounds and TRUE/NOT TRUE/UNKNOWN complete native source/terminal partitions",
+          "boundary": "Vendor/session case law remains TASK-179; unimplemented mandatory typed cases block final TASK-180",
+          "original_ac": [
+            2,
+            4,
+            5,
+            6,
+            7,
+            8
+          ],
+          "fixture_ids": [
+            "88-C192-P",
+            "88-C192-N"
+          ],
+          "owner": "TASK-192",
+          "acceptance_signoff": "pending",
+          "dependency": 178
+        },
+        {
+          "id": 193,
+          "title": "Certify join and correlated source-instance bags",
+          "variants": "23 joins and 1 correlated scope original variant; 24 x13 cells",
+          "oracle": "Exact joined, unmatched, anti and self-alias physical source-instance and full output bags",
+          "boundary": "MSSQL LATERAL TRUE parser AST meaning remains unapproved pending TASK-179/191",
+          "original_ac": [
+            2,
+            4,
+            5,
+            6,
+            7,
+            8
+          ],
+          "fixture_ids": [
+            "88-C193-P",
+            "88-C193-N"
+          ],
+          "owner": "TASK-193",
+          "acceptance_signoff": "pending",
+          "dependency": 192
+        },
+        {
+          "id": 194,
+          "title": "Certify set-operator bags and alignment",
+          "variants": "22 set variants x13 dialects",
+          "oracle": "Tuple-level UNION/INTERSECT/EXCEPT DISTINCT/ALL NULL and multiplicity; BY NAME and positional typed alignment",
+          "boundary": "Parser/unsupported alignment and engine syntax boundaries remain TASK-191",
+          "original_ac": [
+            2,
+            4,
+            5,
+            6,
+            7,
+            8
+          ],
+          "fixture_ids": [
+            "88-C194-P",
+            "88-C194-N"
+          ],
+          "owner": "TASK-194",
+          "acceptance_signoff": "pending",
+          "dependency": 193
+        },
+        {
+          "id": 195,
+          "title": "Certify window grouping and ordering outcomes",
+          "variants": "3 grouping, 19 windows and 14 ordering variants; 36 x13 dialects",
+          "oracle": "Empty subtotal, peer-rank, frame, QUALIFY and page survivor/rejected whole-bag and domain proofs",
+          "boundary": "Vendor NULL sorting, WITH TIES and sampling uncertainty remain TASK-179/191",
+          "original_ac": [
+            2,
+            4,
+            5,
+            6,
+            7,
+            8
+          ],
+          "fixture_ids": [
+            "88-C195-P",
+            "88-C195-N"
+          ],
+          "owner": "TASK-195",
+          "acceptance_signoff": "pending",
+          "dependency": 194
+        },
+        {
+          "id": 196,
+          "title": "Certify schema write and ddl state outcomes",
+          "variants": "11 schema, 18 DML and 9 DDL variants; 38 x13 dialects",
+          "oracle": "Full source and target before/after bag, effects and schema/constraint typed proof",
+          "boundary": "Vendor merge/upsert/transaction and unsupported execution bound to TASK-179/191",
+          "original_ac": [
+            2,
+            4,
+            5,
+            6,
+            7,
+            8
+          ],
+          "fixture_ids": [
+            "88-C196-P",
+            "88-C196-N"
+          ],
+          "owner": "TASK-196",
+          "acceptance_signoff": "pending",
+          "dependency": 195
+        },
+        {
+          "id": 197,
+          "title": "Close cross adapter typed semantic parity",
+          "variants": "Cross-cutting reuse of exact 163 original variants x13 dialects",
+          "oracle": "Complete per-case equality of canonical typed facts from representable SQL, dbt and ODCS source evidence; explicit nonrepresentable cases",
+          "boundary": "No inference from parser acceptance to vendor execution; TASK-180 independently signs off global matrix",
+          "original_ac": [
+            2,
+            4,
+            5,
+            6,
+            7,
+            8
+          ],
+          "fixture_ids": [
+            "88-C197-P",
+            "88-C197-N"
+          ],
+          "owner": "TASK-197",
+          "acceptance_signoff": "pending",
+          "dependency": 196
         },
         {
           "title": "Classify conditional session and vendor execution laws",
           "variants": "NULL ordering; collations; implicit coercion; FLOAT/timezone; DML/transaction; name case",
           "oracle": "Every vendor-specific law has explicit version/session/evidence, typed residual or real executed oracle",
-          "boundary": "No claim of engine execution from DuckDB-equivalent syntax or unsupported parser dialect",
+          "boundary": "No claim of engine execution from DuckDB-equivalent syntax or unsupported parser dialect; starts after TASK-197 cross-adapter closure",
           "original_ac": [
             3,
             4,
@@ -1468,7 +1603,8 @@
           "fixture_ids": [
             "88-C179-P",
             "88-C179-N"
-          ]
+          ],
+          "dependency": 197
         },
         {
           "id": 191,
@@ -1492,7 +1628,7 @@
           "title": "Independently certify complete dialect matrix and gate CI",
           "variants": "all 13 dialect rows and conditionals; SQL/dbt/ODCS; physical outcomes",
           "oracle": "Full parser equivalence CI across TASK-66 frozen variants and all owned conditionals reviewed without false exactness",
-          "boundary": "Any unowned conditional or failed mandatory outcome blocks TASK-88 Done and TASK-91",
+          "boundary": "Any unowned conditional or failed mandatory outcome blocks TASK-88 Done and TASK-91; TASK-192..197 must also be completed, not inferred from TASK-178 baseline",
           "original_ac": [
             1,
             2,
@@ -1667,6 +1803,6 @@
       ]
     }
   ],
-  "next_unallocated_child_id": 192,
-  "updated": "2026-11-09"
+  "next_unallocated_child_id": 198,
+  "updated": "2026-11-10"
 }
