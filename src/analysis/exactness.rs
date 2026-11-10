@@ -166,6 +166,7 @@ pub(super) fn analyze_query_condition_exactness(
     joins: &[ProtocolJoin],
     diagnostics: &[Diagnostic],
     correlated: bool,
+    direct_row_shaping: Option<&crate::protocol::SetRowShaping>,
 ) -> ConditionExactness {
     let mut residuals = Vec::new();
 
@@ -264,30 +265,57 @@ pub(super) fn analyze_query_condition_exactness(
 
     collect_set_expr_exactness_residuals(query.body.as_ref(), "body", &mut residuals);
 
-    if let Some(limit_clause) = &query.limit_clause {
-        let text = limit_clause.to_string().to_ascii_uppercase();
-        if text.contains("OFFSET") {
+    if let Some(shaping) = direct_row_shaping {
+        // Once the analyzer has constructed the same typed row-selection
+        // operator from TOP, FETCH or LIMIT, retain one stable *semantic*
+        // residual rather than three parser-spelling-specific identities.
+        // In particular, a row-selection operator does not make an open
+        // source's exact output bag provable merely because its limit is known.
+        // Leave non-certified TOP/PERCENT, nested pages, and vendor extensions
+        // on the existing explicit syntax-boundary path below.
+        residuals.retain(|residual| {
+            !(residual.clause() == ConditionClause::RowSetOperator
+                && residual.identity() == "body:top"
+                && residual.reason() == ResidualConditionReason::Top)
+        });
+        residuals.push(ResidualCondition::new(
+            ResidualConditionReason::Limit,
+            ConditionClause::RowSetOperator,
+            "row_shaping",
+        ));
+        if shaping.offset > 0 {
             residuals.push(ResidualCondition::new(
                 ResidualConditionReason::Offset,
                 ConditionClause::RowSetOperator,
                 "offset",
             ));
         }
-        if text.contains("LIMIT") || !text.contains("OFFSET") {
+    } else {
+        if let Some(limit_clause) = &query.limit_clause {
+            let text = limit_clause.to_string().to_ascii_uppercase();
+            if text.contains("OFFSET") {
+                residuals.push(ResidualCondition::new(
+                    ResidualConditionReason::Offset,
+                    ConditionClause::RowSetOperator,
+                    "offset",
+                ));
+            }
+            if text.contains("LIMIT") || !text.contains("OFFSET") {
+                residuals.push(ResidualCondition::new(
+                    ResidualConditionReason::Limit,
+                    ConditionClause::RowSetOperator,
+                    "limit",
+                ));
+            }
+        }
+
+        if query.fetch.is_some() {
             residuals.push(ResidualCondition::new(
-                ResidualConditionReason::Limit,
+                ResidualConditionReason::Fetch,
                 ConditionClause::RowSetOperator,
-                "limit",
+                "fetch",
             ));
         }
-    }
-
-    if query.fetch.is_some() {
-        residuals.push(ResidualCondition::new(
-            ResidualConditionReason::Fetch,
-            ConditionClause::RowSetOperator,
-            "fetch",
-        ));
     }
 
     if correlated {
