@@ -1434,7 +1434,7 @@
           "handoff": "docs/task-177-scope-split.md"
         },
         {
-          "title": "Establish portable canonical-equivalence baseline for shared AST variants",
+          "title": "Certify canonical equivalence for shared dialect AST variants",
           "variants": "Observed 163 named SQL cases across 13 parser dialects; representative seven-case native baseline; 78 adapter typed-domain parity cases; 53 native-terminal/domain soundness checks",
           "oracle": "Complete full-document structural equivalence for meaning-preserving shared spellings; explicit failed/conditional paths, typed NULL/boundary and independent representative DuckDB positive/rejected oracles",
           "boundary": "Bounded TASK-178 Done only. No 2,119-cell independent strongest-typed/source-terminal proof, external vendor runtime or parent release signoff. Original five broad AC moved verbatim into docs/task-178-scope-split.md and TASK-192..197 plus existing TASK-179/191/180.",
@@ -1523,7 +1523,7 @@
         },
         {
           "id": 195,
-          "title": "Certify window, grouping, ordering and pagination outcomes",
+          "title": "Certify window grouping and ordering outcomes",
           "variants": "3 grouping, 19 windows and 14 ordering variants; 36 x13 dialects",
           "oracle": "Empty subtotal, peer-rank, frame, QUALIFY and page survivor/rejected whole-bag and domain proofs",
           "boundary": "Vendor NULL sorting, WITH TIES and sampling uncertainty remain TASK-179/191",
@@ -1545,7 +1545,7 @@
         },
         {
           "id": 196,
-          "title": "Certify schema, DML and DDL state transitions",
+          "title": "Certify schema write and ddl state outcomes",
           "variants": "11 schema, 18 DML and 9 DDL variants; 38 x13 dialects",
           "oracle": "Full source and target before/after bag, effects and schema/constraint typed proof",
           "boundary": "Vendor merge/upsert/transaction and unsupported execution bound to TASK-179/191",
@@ -1567,7 +1567,7 @@
         },
         {
           "id": 197,
-          "title": "Close SQL/dbt/ODCS typed semantic adapter parity",
+          "title": "Close cross adapter typed semantic parity",
           "variants": "Cross-cutting reuse of exact 163 original variants x13 dialects",
           "oracle": "Complete per-case equality of canonical typed facts from representable SQL, dbt and ODCS source evidence; explicit nonrepresentable cases",
           "boundary": "No inference from parser acceptance to vendor execution; TASK-180 independently signs off global matrix",
