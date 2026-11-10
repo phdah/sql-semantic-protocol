@@ -23,6 +23,13 @@ type: feature
 **TASK-178 scope-split follow-up; TASK-88 release-blocking child.** **43 original TASK-178 variants:** `predicates` (42) and `types` (1), exactly **559 observed parser/dialect cells** in `docs/task-178-full-variant-inventory.json`. Include integer intervals, Boolean and NULL truth, pattern/computed/temporal/environment predicates, and the conservative STRUCT CAST outcome. Own the typed/source/terminal semantic evidence, not external vendor execution. Vendor/session laws remain TASK-179, parser/Unsupported dispositions TASK-191, independent release-wide certification TASK-180. Original TASK-178 AC #1..#5 and TASK-88 AC #1..#8 remain binding at their mapped owner/final gate; completing this bounded task does not approve unrelated matrix rows, vendor runtime support or protocol 3.0.0. Source of truth: [scope split](../../docs/task-178-scope-split.json). Do not introduce parent-child cycles.
 <!-- SECTION:DESCRIPTION:END -->
 
+## Bounded fixture IDs and evidence gates
+
+- **fixture IDs:** `88-C192-P`, `88-C192-N` (positive and rejected/Impossible physical cases).
+- **DuckDB / 13 dialect parser seam:** compare independent closed-source/terminal bags, complete emitted typed protocol outcomes and NULL/boundary evidence; never infer other vendor runtime execution.
+- **Residual cases:** preserve explicit unapproved semantic gaps, required proof and downstream owner; never promote an unimplemented mandatory core variant to Exact or approved Residual.
+- Freeze the task-owned matrix in `docs/coverage-manifest.json` before changing semantic code.
+
 ## Acceptance Criteria
 
 <!-- AC:BEGIN -->
@@ -30,6 +37,7 @@ type: feature
 - [ ] #2 Use public analyzer/configured-input APIs and independent DuckDB input/terminal goldens to validate strongest *sound* projected domains and TRUE/IS NOT TRUE/UNKNOWN partitions where executable; preserve duplicate occurrences, counterexamples, and explicit type-law assumptions. Do not equate parser acceptance or Unknown with certified exactness.
 - [ ] #3 Cover the 43 named cases and their meaning-preserving dialect variants with explicit full-document outcomes and parser/Unsupported exceptions; preserve STRUCT CAST and vendor-dependent collation/timezone/NaN cases as named unapproved boundaries until their actual owners adjudicate them. Do not reclassify required supported behavior as Residual to pass.
 - [ ] #4 Verify representable direct SQL/dbt/ODCS source facts affected by changes, then hand all positive/negative/conditional cell evidence to TASK-197 and TASK-180; pass exact-head format, lint, default/no-default Rust tests/docs, dbt E2E and pinned sql-tdg compatibility where relevant.
+- [ ] #5 Complete exact-head rustfmt, strict Clippy, default/no-default Rust tests and docs, dbt E2E, active schema/goldens and relevant pinned sql-tdg consumer checks. Independently review every bounded acceptance cell and record the linked evidence in `docs/coverage-manifest.json`; TASK-88 parent and TASK-91 release remain unapproved until TASK-180 and separate parent signoff.
 <!-- AC:END -->
 
 ## Next
