@@ -388,3 +388,140 @@ fn nullable_three_valued_witnesses_agree_across_odcs_and_direct() {
         }
     }
 }
+
+
+fn original_s013_complete_physical_snapshots() -> Vec<PhysicalWriteState> {
+    fn row(
+        identity: &str,
+        entries: &[(&str, LiteralValue)],
+    ) -> PhysicalWriteRow {
+        let mut values = BTreeMap::from([(
+            "__physical_row_id".to_string(),
+            LiteralValue::Text(identity.to_string()),
+        )]);
+        for (key, value) in entries {
+            values.insert((*key).to_string(), value.clone());
+        }
+        PhysicalWriteRow::new(values).expect("complete typed source occurrence")
+    }
+    let integer = |value: Option<i64>| {
+        value.map_or(LiteralValue::Null, |n| LiteralValue::Number(n.to_string()))
+    };
+    let outer = [
+        (Some(-1), Some(10)),
+        (Some(0), Some(10)),
+        (Some(1), Some(10)),
+        (Some(1), None),
+        (Some(2), Some(19)),
+        (Some(3), Some(20)),
+        (None, Some(30)),
+    ]
+    .into_iter()
+    .enumerate()
+    .map(|(n, (id, amount))| {
+        row(
+            &format!("o{n}"),
+            &[
+                ("id", integer(id)),
+                ("amount", integer(amount)),
+                ("created_at", LiteralValue::Null),
+            ],
+        )
+    })
+    .collect::<Vec<_>>();
+    let inner = [
+        (Some(1), "one"),
+        (Some(1), "duplicate"),
+        (Some(3), "three"),
+        (None, "null"),
+    ]
+    .into_iter()
+    .enumerate()
+    .map(|(n, (id, name))| {
+        row(
+            &format!("c{n}"),
+            &[
+                ("id", integer(id)),
+                ("name", LiteralValue::Text(name.to_string())),
+            ],
+        )
+    })
+    .collect::<Vec<_>>();
+    vec![
+        PhysicalWriteState::new("orders", outer).expect("orders bag"),
+        PhysicalWriteState::new("customers", inner).expect("customers bag"),
+    ]
+}
+
+#[test]
+fn original_s013_closed_world_semijoin_is_equal_across_representable_adapter_sources() {
+    let matrix = cases();
+    let sql = matrix["cases"]
+        .as_array()
+        .expect("43 original SQL")
+        .iter()
+        .find(|case| case["id"] == "88-C177-S013")
+        .expect("original correlated EXISTS")["sql"]
+        .as_str()
+        .expect("unaltered SQL");
+    let physical = original_s013_complete_physical_snapshots();
+    let direct_catalog = direct_catalog("INTEGER");
+    #[cfg(feature = "odcs")]
+    let odcs_catalog = odcs_catalog("INTEGER");
+    let mut comparisons = 0;
+
+    for dialect in matrix["dialects"].as_array().expect("13 public parsers") {
+        let name = dialect.as_str().expect("dialect");
+        let direct = configured_bundle(&direct_catalog, name, sql);
+        let dbt = dbt_source_bundle("INTEGER", sql, name);
+        let mut bundles = vec![("direct", direct), ("dbt_compiled", dbt)];
+        #[cfg(feature = "odcs")]
+        bundles.push((
+            "odcs",
+            configured_bundle(&odcs_catalog, name, sql),
+        ));
+
+        for (adapter, bundle) in bundles {
+            let layer = bundle.layers().last().expect("original S013 query layer");
+            let proof = physical_finite_exists_bag_plan(&bundle, layer.id(), &physical);
+            let PhysicalFiniteExistsProof::Exact(exact) = proof else {
+                panic!("S013/{name}/{adapter}: incomplete source-bag proof: {proof:?}");
+            };
+            assert_eq!(exact.selected, ["o2", "o3", "o5"]);
+            assert_eq!(exact.rejected, ["o0", "o1", "o4", "o6"]);
+            assert_eq!(
+                exact.matching_inner["o2"],
+                ["c0".to_string(), "c1".to_string()]
+            );
+            assert_eq!(exact.matching_inner["o6"], Vec::<String>::new());
+            assert_eq!(
+                exact.terminal
+                    .iter()
+                    .map(|r| r.get("id"))
+                    .collect::<Vec<_>>(),
+                vec![
+                    Some(&LiteralValue::Number("1".to_string())),
+                    Some(&LiteralValue::Number("1".to_string())),
+                    Some(&LiteralValue::Number("3".to_string())),
+                ],
+                "S013/{name}/{adapter}: duplicate-preserving terminal"
+            );
+            let domain = exact.terminal_domains.get("id").expect("terminal id domain");
+            assert_eq!(domain.values(), &[1, 3]);
+            assert_eq!(domain.bounds(), Some((1, 3)));
+            assert!(!domain.null_allowed());
+            assert!(
+                bundle
+                    .producer_evidence()
+                    .iter()
+                    .all(|evidence| evidence.execution() == ProducerExecution::Unattested),
+                "S013/{name}/{adapter}: no adapter claims native vendor execution"
+            );
+            comparisons += 1;
+        }
+    }
+    #[cfg(feature = "odcs")]
+    assert_eq!(comparisons, 39);
+    #[cfg(not(feature = "odcs"))]
+    assert_eq!(comparisons, 26);
+}
