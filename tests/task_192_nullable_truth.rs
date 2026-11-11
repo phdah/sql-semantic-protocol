@@ -5,10 +5,9 @@
 use duckdb::Connection;
 use serde_json::Value;
 use sql_semantic_protocol::{
-    analyze_configured_inputs_with_catalog, analyze_sql, dialect_from_name,
-    BooleanTruthCase, BooleanWitnessDirection, ComposedSemantics,
-    ConditionExactnessStatus, ConfiguredSqlInput, Predicate, ProtocolStatement,
-    RelationCatalog, SqlInput, ValueDomain,
+    analyze_configured_inputs_with_catalog, analyze_sql, dialect_from_name, BooleanTruthCase,
+    BooleanWitnessDirection, ComposedSemantics, ConditionExactnessStatus, ConfiguredSqlInput,
+    Predicate, ProtocolStatement, RelationCatalog, SqlInput, ValueDomain,
 };
 
 const ORIGINAL: &str = include_str!("../docs/task-177-predicate-oracles.json");
@@ -34,7 +33,8 @@ fn physical_ids(db: &Connection, sql: &str) -> Vec<i64> {
 }
 
 fn expected_ids(case: &Value, key: &str) -> Vec<i64> {
-    let mut ids: Vec<_> = serde_json::from_value(case[key].clone()).expect("physical row identities");
+    let mut ids: Vec<_> =
+        serde_json::from_value(case[key].clone()).expect("physical row identities");
     ids.sort();
     ids
 }
@@ -78,7 +78,11 @@ fn original_s012_and_s017_preserve_native_three_valued_truth_partitions() {
                 &db,
                 &format!("SELECT id FROM orders WHERE ({predicate}) {truth}"),
             );
-            assert_eq!(native, expected_ids(case, key), "{id}: original {truth} source partition");
+            assert_eq!(
+                native,
+                expected_ids(case, key),
+                "{id}: original {truth} source partition"
+            );
             let normalized = physical_ids(
                 &db,
                 &format!("SELECT id FROM orders WHERE ({canonical_truth}) {truth}"),
@@ -100,7 +104,10 @@ fn original_s012_and_s017_preserve_native_three_valued_truth_partitions() {
         let mut expected_rejected = expected_ids(case, "expected_false_ids");
         expected_rejected.extend(expected_ids(case, "expected_unknown_ids"));
         expected_rejected.sort();
-        assert_eq!(rejected, expected_rejected, "{id}: every rejected occurrence");
+        assert_eq!(
+            rejected, expected_rejected,
+            "{id}: every rejected occurrence"
+        );
     }
 }
 
@@ -114,7 +121,10 @@ fn exact_nullable_original_predicates_do_not_erase_id_or_null_truth() {
             continue;
         }
         let sql = case["sql"].as_str().expect("unchanged original SQL");
-        for dialect in freeze["dialects"].as_array().expect("13 public parser dialects") {
+        for dialect in freeze["dialects"]
+            .as_array()
+            .expect("13 public parser dialects")
+        {
             let name = dialect.as_str().expect("name");
             let parser = dialect_from_name(name).expect("supported public parser");
             let protocol = analyze_sql(sql, name, parser.as_ref())
@@ -130,7 +140,10 @@ fn exact_nullable_original_predicates_do_not_erase_id_or_null_truth() {
             let Some(where_predicate) = query.predicates().where_predicate() else {
                 panic!("{id}/{name}: WHERE dropped");
             };
-            assert!(matches!(where_predicate, Predicate::And(_)), "{id}/{name}: 3VL guard lost");
+            assert!(
+                matches!(where_predicate, Predicate::And(_)),
+                "{id}/{name}: 3VL guard lost"
+            );
             match id {
                 "88-C177-S012" => assert!(
                     matches!(query.output().columns()[0].domain(), ValueDomain::Ranges(_)),
@@ -157,14 +170,11 @@ fn typed_nullable_predicates_have_exact_true_and_not_true_boolean_witnesses() {
     for dialect in freeze["dialects"].as_array().expect("13 public parsers") {
         let name = dialect.as_str().expect("dialect");
         let parser = dialect_from_name(name).expect("parser");
-        let ddl = SqlInput::inline(
-            "CREATE TABLE orders (id INTEGER, amount INTEGER)",
-        );
-        let schema = sql_semantic_protocol::analyze_inputs(
-            &[ddl], name, parser.as_ref(),
-        ).expect("typed direct SQL DDL");
-        let catalog = RelationCatalog::from_schemas(schema.source_schemas())
-            .expect("typed original source");
+        let ddl = SqlInput::inline("CREATE TABLE orders (id INTEGER, amount INTEGER)");
+        let schema = sql_semantic_protocol::analyze_inputs(&[ddl], name, parser.as_ref())
+            .expect("typed direct SQL DDL");
+        let catalog =
+            RelationCatalog::from_schemas(schema.source_schemas()).expect("typed original source");
         for id in ["88-C177-S012", "88-C177-S017"] {
             let case = freeze["cases"]
                 .as_array()
@@ -175,7 +185,10 @@ fn typed_nullable_predicates_have_exact_true_and_not_true_boolean_witnesses() {
             let sql = case["sql"].as_str().expect("source SQL");
             let input = SqlInput::inline(sql);
             let configured = [ConfiguredSqlInput::new(
-                "task192-nullable-truth", &input, name, parser.as_ref(),
+                "task192-nullable-truth",
+                &input,
+                name,
+                parser.as_ref(),
             )];
             let bundle = analyze_configured_inputs_with_catalog(&configured, &catalog)
                 .unwrap_or_else(|error| panic!("{id}/{name}: {error}"));
