@@ -762,9 +762,10 @@ fn has_exact_numeric_boolean_witness_for_column(
             };
             ordinary_numeric_comparison_column(negative.operand(), sources).as_ref() == Some(column)
         }
-        Predicate::And(logical) => logical.operands().iter().any(|operand| {
-            has_exact_numeric_boolean_witness_for_column(operand, column, sources)
-        }),
+        Predicate::And(logical) => logical
+            .operands()
+            .iter()
+            .any(|operand| has_exact_numeric_boolean_witness_for_column(operand, column, sources)),
         Predicate::Not(negative) => {
             ordinary_numeric_comparison_column(negative.operand(), sources).as_ref() == Some(column)
         }
