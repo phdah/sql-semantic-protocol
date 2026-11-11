@@ -6,8 +6,9 @@ use sql_semantic_protocol::{analyze_sql, dialect_from_name, to_json};
 
 #[test]
 fn current_task_192_public_exactness_must_be_compared_to_independent_contract() {
-    let freeze: Value = serde_json::from_str(include_str!("../docs/task-192-acceptance-freeze.json"))
-        .expect("committed case list");
+    let freeze: Value =
+        serde_json::from_str(include_str!("../docs/task-192-acceptance-freeze.json"))
+            .expect("committed case list");
     let parser = dialect_from_name("duckdb").expect("DuckDB parser");
     let mut observed = Vec::new();
     for case in freeze["cases"].as_array().expect("43 named variants") {
