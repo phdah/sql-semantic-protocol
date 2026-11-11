@@ -5,8 +5,8 @@
 use serde_json::{json, Value};
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, analyze_dbt_manifest_with_schemas, analyze_inputs,
-    dialect_from_name, parse_dbt_manifest, ComposedSemantics, ConfiguredSqlInput,
-    BooleanRowConstraint, BooleanTruthCase, BooleanWitnessDirection, ConditionExactnessStatus,
+    dialect_from_name, parse_dbt_manifest, BooleanRowConstraint, BooleanTruthCase,
+    BooleanWitnessDirection, ComposedSemantics, ConditionExactnessStatus, ConfiguredSqlInput,
     ProducerExecution, RelationCatalog, SqlInput, ValueDomain,
 };
 
@@ -166,7 +166,11 @@ fn composed_truth_signature(
     bundle: &sql_semantic_protocol::AnalysisBundle,
 ) -> (
     ConditionExactnessStatus,
-    Vec<(BooleanRowConstraint, BooleanWitnessDirection, BooleanWitnessDirection)>,
+    Vec<(
+        BooleanRowConstraint,
+        BooleanWitnessDirection,
+        BooleanWitnessDirection,
+    )>,
 ) {
     let layer = bundle.layers().last().expect("original terminal query");
     let ComposedSemantics::Resolved(semantics) = layer.composed_semantics() else {
@@ -324,11 +328,13 @@ fn nullable_three_valued_witnesses_agree_across_direct_and_compiled_dbt() {
             );
             assert!(
                 expected.1.iter().any(|(_, positive, negative)| {
-                    matches!(positive, BooleanWitnessDirection::Exact(BooleanTruthCase::True))
-                        && matches!(
-                            negative,
-                            BooleanWitnessDirection::Exact(BooleanTruthCase::NotTrue)
-                        )
+                    matches!(
+                        positive,
+                        BooleanWitnessDirection::Exact(BooleanTruthCase::True)
+                    ) && matches!(
+                        negative,
+                        BooleanWitnessDirection::Exact(BooleanTruthCase::NotTrue)
+                    )
                 }),
                 "{id}/{name}: complete source TRUE and NOT TRUE witness missing"
             );
