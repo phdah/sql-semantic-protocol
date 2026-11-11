@@ -216,6 +216,99 @@ fn typed_nullable_predicates_have_exact_true_and_not_true_boolean_witnesses() {
 }
 
 #[test]
+fn original_cross_column_or_and_not_have_exact_typed_boolean_witnesses_not_scalar_exactness() {
+    // These bounded witnesses are constructive row-local evidence, not a
+    // promotion of a residual *whole-query* scalar-domain contract.
+    let freeze: Value = serde_json::from_str(FREEZE).expect("original 43 SQL cases");
+    let prior: Value = serde_json::from_str(ORIGINAL).expect("frozen native source bags");
+    let db = Connection::open_in_memory().expect("DuckDB");
+    db.execute_batch(prior["source_setup"].as_str().expect("complete source"))
+        .expect("original native population");
+
+    for id in ["88-C177-S010", "88-C177-S011"] {
+        let oracle = original_case(&prior, id);
+        let predicate = oracle["predicate"].as_str().expect("original Boolean condition");
+        let canonical = match id {
+            "88-C177-S010" => "(amount > 1 OR id > 0)",
+            "88-C177-S011" => "NOT (amount > 1)",
+            _ => unreachable!("fixed original witness cases"),
+        };
+        for (test, key) in [
+            ("IS TRUE", "expected_selected_ids"),
+            ("IS FALSE", "expected_false_ids"),
+            ("IS UNKNOWN", "expected_unknown_ids"),
+        ] {
+            assert_eq!(
+                physical_ids(&db, &format!("SELECT id FROM orders WHERE ({canonical}) {test}")),
+                expected_ids(oracle, key),
+                "{id}: independent native {test} partition"
+            );
+            assert_eq!(
+                physical_ids(&db, &format!("SELECT id FROM orders WHERE ({predicate}) {test}")),
+                expected_ids(oracle, key),
+                "{id}: original native {test} partition"
+            );
+        }
+        let mut complement = expected_ids(oracle, "expected_false_ids");
+        complement.extend(expected_ids(oracle, "expected_unknown_ids"));
+        complement.sort();
+        assert_eq!(
+            physical_ids(&db, &format!("SELECT id FROM orders WHERE ({predicate}) IS NOT TRUE")),
+            complement,
+            "{id}: duplicate-safe rejected source occurrences"
+        );
+
+        let case = freeze["cases"]
+            .as_array()
+            .expect("43 variants")
+            .iter()
+            .find(|case| case["id"] == id)
+            .expect("original SQL");
+        let sql = case["sql"].as_str().expect("original text");
+
+        for name in freeze["dialects"].as_array().expect("13 dialects") {
+            let name = name.as_str().expect("dialect");
+            let parser = dialect_from_name(name).expect("public parser");
+            let ddl = SqlInput::inline("CREATE TABLE orders (id INTEGER, amount INTEGER)");
+            let schema = sql_semantic_protocol::analyze_inputs(&[ddl], name, parser.as_ref())
+                .expect("typed original source schema");
+            let catalog = RelationCatalog::from_schemas(schema.source_schemas())
+                .expect("source catalog");
+            let input = SqlInput::inline(sql);
+            let configured = [ConfiguredSqlInput::new(
+                "task192-residual-witness",
+                &input,
+                name,
+                parser.as_ref(),
+            )];
+            let bundle = analyze_configured_inputs_with_catalog(&configured, &catalog)
+                .unwrap_or_else(|error| panic!("{id}/{name}: {error}"));
+            let layer = bundle.layers().last().expect("query layer");
+            let ComposedSemantics::Resolved(composed) = layer.composed_semantics() else {
+                panic!("{id}/{name}: missing typed source");
+            };
+            assert_eq!(
+                composed.condition_exactness().status(),
+                ConditionExactnessStatus::Residual,
+                "{id}/{name}: complete typed Boolean witness cannot certify independent scalar domains"
+            );
+            assert!(
+                composed.boolean_witnesses().iter().any(|item| {
+                    matches!(
+                        item.witness().qualifying(),
+                        BooleanWitnessDirection::Exact(BooleanTruthCase::True)
+                    ) && matches!(
+                        item.witness().rejected(),
+                        BooleanWitnessDirection::Exact(BooleanTruthCase::NotTrue)
+                    )
+                }),
+                "{id}/{name}: expected exact row-local TRUE/NOT TRUE witness"
+            );
+        }
+    }
+}
+
+#[test]
 fn unrelated_not_and_cross_column_or_remain_conservative() {
     let parser = dialect_from_name("duckdb").expect("DuckDB public parser");
     for sql in [
