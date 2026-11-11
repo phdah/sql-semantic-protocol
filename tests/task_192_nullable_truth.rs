@@ -135,7 +135,9 @@ fn exact_nullable_original_predicates_do_not_erase_id_or_null_truth() {
             assert_eq!(
                 query.condition_exactness().status(),
                 ConditionExactnessStatus::Exact,
-                "{id}/{name}: truth-preserving supported predicate"
+                "{id}/{name}: truth-preserving supported predicate; residuals={:?} source={:?}",
+                query.condition_exactness().residual_conditions(),
+                query.predicates().where_predicate()
             );
             let Some(where_predicate) = query.predicates().where_predicate() else {
                 panic!("{id}/{name}: WHERE dropped");
