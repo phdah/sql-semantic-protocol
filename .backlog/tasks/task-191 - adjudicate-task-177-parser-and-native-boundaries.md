@@ -57,3 +57,9 @@ Created from TASK-177 scope split on 2026-11-09. Baseline handoff: `docs/task-17
 ## TASK-178 bounded-scope handoff (2026-11-10)
 
 The original TASK-178 semantic family proofs are now TASK-192..196, with cross-adapter acceptance TASK-197 and TASK-180 final signoff. TASK-191 still owns exactly the original 55 parser rejects, 116 Unsupported cells, and 23 original native nonterminals without double counting. Do not close mandatory parser/Unsupported claims using only TASK-178's observational inventory. See [scope-split ownership](../../docs/task-178-scope-split.json).
+
+
+## TASK-192 pending original parser/native handoff (not an approval)
+
+- Original S179 `CAST(ROW(1,'a') AS STRUCT(a INT,b VARCHAR))` succeeds natively in DuckDB with a structured scalar but remains a typed canonical Unknown/Unsupported output in the current portable protocol. BigQuery and generic parsers reject that **original spelling**; the DuckDB historical drift is explicitly retained/repaired. TASK-191 owns the later parser/STRUCT disposition rather than treating the native DuckDB scalar as a universal supported output.
+- Original S033 signed fixed-width overflow is a native **error** (not a successful scalar), S042 NULLS LAST ordered bag is independently captured without inventing tie ordering, and S027/S032 engine-specific arithmetic width differences are recorded. TASK-191 retains its own independently reviewed boundary ledger and separate Done gate.
