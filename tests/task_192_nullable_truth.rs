@@ -276,4 +276,3 @@ fn floating_source_without_nan_and_signed_zero_laws_cannot_be_exact() {
         }
     }
 }
-
