@@ -227,7 +227,9 @@ fn original_cross_column_or_and_not_have_exact_typed_boolean_witnesses_not_scala
 
     for id in ["88-C177-S010", "88-C177-S011"] {
         let oracle = original_case(&prior, id);
-        let predicate = oracle["predicate"].as_str().expect("original Boolean condition");
+        let predicate = oracle["predicate"]
+            .as_str()
+            .expect("original Boolean condition");
         let canonical = match id {
             "88-C177-S010" => "(amount > 1 OR id > 0)",
             "88-C177-S011" => "NOT (amount > 1)",
@@ -239,12 +241,18 @@ fn original_cross_column_or_and_not_have_exact_typed_boolean_witnesses_not_scala
             ("IS UNKNOWN", "expected_unknown_ids"),
         ] {
             assert_eq!(
-                physical_ids(&db, &format!("SELECT id FROM orders WHERE ({canonical}) {test}")),
+                physical_ids(
+                    &db,
+                    &format!("SELECT id FROM orders WHERE ({canonical}) {test}")
+                ),
                 expected_ids(oracle, key),
                 "{id}: independent native {test} partition"
             );
             assert_eq!(
-                physical_ids(&db, &format!("SELECT id FROM orders WHERE ({predicate}) {test}")),
+                physical_ids(
+                    &db,
+                    &format!("SELECT id FROM orders WHERE ({predicate}) {test}")
+                ),
                 expected_ids(oracle, key),
                 "{id}: original native {test} partition"
             );
@@ -253,7 +261,10 @@ fn original_cross_column_or_and_not_have_exact_typed_boolean_witnesses_not_scala
         complement.extend(expected_ids(oracle, "expected_unknown_ids"));
         complement.sort();
         assert_eq!(
-            physical_ids(&db, &format!("SELECT id FROM orders WHERE ({predicate}) IS NOT TRUE")),
+            physical_ids(
+                &db,
+                &format!("SELECT id FROM orders WHERE ({predicate}) IS NOT TRUE")
+            ),
             complement,
             "{id}: duplicate-safe rejected source occurrences"
         );
@@ -272,8 +283,8 @@ fn original_cross_column_or_and_not_have_exact_typed_boolean_witnesses_not_scala
             let ddl = SqlInput::inline("CREATE TABLE orders (id INTEGER, amount INTEGER)");
             let schema = sql_semantic_protocol::analyze_inputs(&[ddl], name, parser.as_ref())
                 .expect("typed original source schema");
-            let catalog = RelationCatalog::from_schemas(schema.source_schemas())
-                .expect("source catalog");
+            let catalog =
+                RelationCatalog::from_schemas(schema.source_schemas()).expect("source catalog");
             let input = SqlInput::inline(sql);
             let configured = [ConfiguredSqlInput::new(
                 "task192-residual-witness",
