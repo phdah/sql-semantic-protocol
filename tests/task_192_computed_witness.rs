@@ -155,7 +155,6 @@ fn signed_integer_computed_predicates_have_typed_true_and_not_true_witnesses() {
     }
 }
 
-
 #[test]
 fn original_s027_and_s032_are_not_total_on_unrestricted_signed_bigint_sources() {
     // The unchanged original SQL is evaluated against a separate complete
