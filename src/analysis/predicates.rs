@@ -186,9 +186,7 @@ pub(super) fn analyze_predicate_with_windows(
         // including for the rejected/NOT TRUE rows, not merely an equivalence
         // of WHERE-selected rows. Do not infer it for computed expressions,
         // nullable literals, casts or vendor-defined comparison functions.
-        Expr::IsUnknown(inner)
-            if null_propagating_numeric_comparison_column(inner).is_some() =>
-        {
+        Expr::IsUnknown(inner) if null_propagating_numeric_comparison_column(inner).is_some() => {
             let column = null_propagating_numeric_comparison_column(inner)
                 .expect("guarded plain column and numeric literal");
             Predicate::IsNull(IsNullPredicate::new(
@@ -425,9 +423,8 @@ pub(super) fn null_propagating_numeric_comparison_column(expression: &Expr) -> O
     ) {
         return None;
     }
-    let plain_column = |value: &Expr| {
-        matches!(value, Expr::Identifier(_) | Expr::CompoundIdentifier(_))
-    };
+    let plain_column =
+        |value: &Expr| matches!(value, Expr::Identifier(_) | Expr::CompoundIdentifier(_));
     let numeric_literal = |value: &Expr| {
         matches!(
             value,
