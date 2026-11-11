@@ -470,9 +470,14 @@ fn original_s013_closed_world_semijoin_is_equal_across_representable_adapter_sou
         let name = dialect.as_str().expect("dialect");
         let direct = configured_bundle(&direct_catalog, name, sql);
         let dbt = dbt_source_bundle("INTEGER", sql, name);
-        let mut bundles = vec![("direct", direct), ("dbt_compiled", dbt)];
         #[cfg(feature = "odcs")]
-        bundles.push(("odcs", configured_bundle(&odcs_catalog, name, sql)));
+        let bundles = vec![
+            ("direct", direct),
+            ("dbt_compiled", dbt),
+            ("odcs", configured_bundle(&odcs_catalog, name, sql)),
+        ];
+        #[cfg(not(feature = "odcs"))]
+        let bundles = vec![("direct", direct), ("dbt_compiled", dbt)];
 
         for (adapter, bundle) in bundles {
             let layer = bundle.layers().last().expect("original S013 query layer");
