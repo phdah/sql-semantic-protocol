@@ -1,0 +1,349 @@
+{
+  "schema_version": 1,
+  "owner": "TASK-192",
+  "scope": "independently specified fixed original SQL source and output-shape checks, no generated-output golden or vendor runtime attestations",
+  "independent_review_signed_off": false,
+  "case_count": 43,
+  "cases": [
+    {
+      "id": "88-C177-S001",
+      "outer_sources": [
+        "orders"
+      ],
+      "output_column": "amount",
+      "where_kind": "comparison"
+    },
+    {
+      "id": "88-C177-S002",
+      "outer_sources": [
+        "orders"
+      ],
+      "output_column": "amount",
+      "where_kind": "comparison"
+    },
+    {
+      "id": "88-C177-S003",
+      "outer_sources": [
+        "orders"
+      ],
+      "output_column": "amount",
+      "where_kind": "comparison"
+    },
+    {
+      "id": "88-C177-S004",
+      "outer_sources": [
+        "orders"
+      ],
+      "output_column": "amount",
+      "where_kind": "comparison"
+    },
+    {
+      "id": "88-C177-S005",
+      "outer_sources": [
+        "orders"
+      ],
+      "output_column": "amount",
+      "where_kind": "comparison"
+    },
+    {
+      "id": "88-C177-S006",
+      "outer_sources": [
+        "orders"
+      ],
+      "output_column": "amount",
+      "where_kind": "comparison"
+    },
+    {
+      "id": "88-C177-S007",
+      "outer_sources": [
+        "orders"
+      ],
+      "output_column": "amount",
+      "where_kind": "between"
+    },
+    {
+      "id": "88-C177-S008",
+      "outer_sources": [
+        "orders"
+      ],
+      "output_column": "amount",
+      "where_kind": "between"
+    },
+    {
+      "id": "88-C177-S009",
+      "outer_sources": [
+        "orders"
+      ],
+      "output_column": "id",
+      "where_kind": "and"
+    },
+    {
+      "id": "88-C177-S010",
+      "outer_sources": [
+        "orders"
+      ],
+      "output_column": "id",
+      "where_kind": "or"
+    },
+    {
+      "id": "88-C177-S011",
+      "outer_sources": [
+        "orders"
+      ],
+      "output_column": "id",
+      "where_kind": "not"
+    },
+    {
+      "id": "88-C177-S012",
+      "outer_sources": [
+        "orders"
+      ],
+      "output_column": "id",
+      "where_kind": "and"
+    },
+    {
+      "id": "88-C177-S013",
+      "outer_sources": [
+        "orders"
+      ],
+      "output_column": "id",
+      "where_kind": "exists"
+    },
+    {
+      "id": "88-C177-S014",
+      "outer_sources": [
+        "orders"
+      ],
+      "output_column": "id",
+      "where_kind": "is_null"
+    },
+    {
+      "id": "88-C177-S015",
+      "outer_sources": [
+        "orders"
+      ],
+      "output_column": "id",
+      "where_kind": "is_null"
+    },
+    {
+      "id": "88-C177-S016",
+      "outer_sources": [
+        "orders"
+      ],
+      "output_column": "id",
+      "where_kind": "and"
+    },
+    {
+      "id": "88-C177-S017",
+      "outer_sources": [
+        "orders"
+      ],
+      "output_column": "id",
+      "where_kind": "and"
+    },
+    {
+      "id": "88-C177-S018",
+      "outer_sources": [
+        "orders"
+      ],
+      "output_column": "id",
+      "where_kind": "is_null"
+    },
+    {
+      "id": "88-C177-S019",
+      "outer_sources": [
+        "orders"
+      ],
+      "output_column": "id",
+      "where_kind": "in"
+    },
+    {
+      "id": "88-C177-S020",
+      "outer_sources": [
+        "customers"
+      ],
+      "output_column": "id",
+      "where_kind": "like_prefix"
+    },
+    {
+      "id": "88-C177-S021",
+      "outer_sources": [
+        "customers"
+      ],
+      "output_column": "id",
+      "where_kind": "boolean_expression"
+    },
+    {
+      "id": "88-C177-S022",
+      "outer_sources": [
+        "customers"
+      ],
+      "output_column": "id",
+      "where_kind": "like_prefix"
+    },
+    {
+      "id": "88-C177-S023",
+      "outer_sources": [
+        "customers"
+      ],
+      "output_column": "id",
+      "where_kind": "boolean_expression"
+    },
+    {
+      "id": "88-C177-S024",
+      "outer_sources": [
+        "customers"
+      ],
+      "output_column": "id",
+      "where_kind": "boolean_expression"
+    },
+    {
+      "id": "88-C177-S025",
+      "outer_sources": [
+        "customers"
+      ],
+      "output_column": "id",
+      "where_kind": "like_prefix"
+    },
+    {
+      "id": "88-C177-S026",
+      "outer_sources": [
+        "customers"
+      ],
+      "output_column": "id",
+      "where_kind": "comparison"
+    },
+    {
+      "id": "88-C177-S027",
+      "outer_sources": [
+        "orders"
+      ],
+      "output_column": "id",
+      "where_kind": "comparison"
+    },
+    {
+      "id": "88-C177-S028",
+      "outer_sources": [
+        "orders"
+      ],
+      "output_column": "id",
+      "where_kind": "comparison"
+    },
+    {
+      "id": "88-C177-S029",
+      "outer_sources": [
+        "orders"
+      ],
+      "output_column": "id",
+      "where_kind": "comparison"
+    },
+    {
+      "id": "88-C177-S030",
+      "outer_sources": [
+        "orders"
+      ],
+      "output_column": "id",
+      "where_kind": "comparison"
+    },
+    {
+      "id": "88-C177-S031",
+      "outer_sources": [
+        "orders"
+      ],
+      "output_column": "id",
+      "where_kind": "is_null"
+    },
+    {
+      "id": "88-C177-S032",
+      "outer_sources": [
+        "orders"
+      ],
+      "output_column": "id",
+      "where_kind": "comparison"
+    },
+    {
+      "id": "88-C177-S033",
+      "outer_sources": [],
+      "output_column": "overflow_case",
+      "where_kind": "none"
+    },
+    {
+      "id": "88-C177-S034",
+      "outer_sources": [
+        "orders"
+      ],
+      "output_column": "id",
+      "where_kind": "comparison"
+    },
+    {
+      "id": "88-C177-S035",
+      "outer_sources": [
+        "orders"
+      ],
+      "output_column": "id",
+      "where_kind": "comparison"
+    },
+    {
+      "id": "88-C177-S036",
+      "outer_sources": [
+        "orders"
+      ],
+      "output_column": "id",
+      "where_kind": "comparison"
+    },
+    {
+      "id": "88-C177-S037",
+      "outer_sources": [
+        "orders"
+      ],
+      "output_column": "id",
+      "where_kind": "between"
+    },
+    {
+      "id": "88-C177-S038",
+      "outer_sources": [
+        "customers"
+      ],
+      "output_column": "id",
+      "where_kind": "comparison"
+    },
+    {
+      "id": "88-C177-S039",
+      "outer_sources": [
+        "customers"
+      ],
+      "output_column": "id",
+      "where_kind": "comparison"
+    },
+    {
+      "id": "88-C177-S040",
+      "outer_sources": [
+        "orders"
+      ],
+      "output_column": "id",
+      "where_kind": "comparison"
+    },
+    {
+      "id": "88-C177-S041",
+      "outer_sources": [
+        "orders"
+      ],
+      "output_column": "id",
+      "where_kind": "comparison"
+    },
+    {
+      "id": "88-C177-S042",
+      "outer_sources": [
+        "orders"
+      ],
+      "output_column": "id",
+      "where_kind": "none"
+    },
+    {
+      "id": "88-C177-S179",
+      "outer_sources": [],
+      "output_column": "v",
+      "where_kind": "none"
+    }
+  ]
+}
