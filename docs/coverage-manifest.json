@@ -18,13 +18,26 @@
     "adapter_parity_tests": "tests/task_192_adapter_parity.rs",
     "native_physical_tests": "tests/task_192_native_partitions.rs",
     "typed_domain_policy_cells_frozen": 559,
-    "typed_expected_policy_cases": {"precise_constraint": 10, "unconstrained_nullable_id": 31, "native_evaluation_error": 1, "unsupported_structural_cast": 1},
+    "typed_expected_policy_cases": {
+      "precise_constraint": 10,
+      "unconstrained_nullable_id": 31,
+      "native_evaluation_error": 1,
+      "unsupported_structural_cast": 1
+    },
     "typed_soundness_test": "tests/task_192_typed_soundness.rs",
     "consumer_ci_only_pr": "https://github.com/phdah/sql-tdg/pull/49",
     "expected_exact_domains_frozen_for_all_cases": false,
     "independent_signoff": false,
     "release_approved": false,
-    "task_done": false
+    "task_done": false,
+    "semantic_cell_ledger": "docs/task-192-semantic-cell-ledger.json",
+    "expected_public_analyzer_cell_count": 559,
+    "public_semantic_contract_test": "tests/task_192_semantic_contract.rs",
+    "native_projected_id_counterexamples": "tests/task_192_projection_counterexamples.rs",
+    "native_alternate_source_cases": 3,
+    "dbt_original_compiled_sql_analyzer_parity": "tests/task_192_adapter_parity.rs",
+    "null_truth_exact_normalization": "src/analysis/predicates.rs",
+    "global_independent_review": "pending"
   },
   "task_177_dialect_parser_acceptance": {
     "owner": "TASK-177",
