@@ -9299,11 +9299,13 @@
   "release_approved": false,
   "nullable_numeric_boolean_laws": {
     "original_case_ids": [
+      "88-C177-S011",
       "88-C177-S012",
+      "88-C177-S016",
       "88-C177-S017"
     ],
     "source_goldens": "docs/task-177-predicate-oracles.json",
     "public_regressions": "tests/task_192_nullable_truth.rs",
-    "proof_boundary": "ordinary signed integer comparisons and matching column null tests; catalog-typed witnesses required for constructive proof; no external vendor native certification"
+    "proof_boundary": "ordinary signed numeric NOT and same-column NULL comparisons; catalog-typed witnesses required for constructive proof; no external vendor native certification"
   }
 }
