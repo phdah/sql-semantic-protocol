@@ -162,10 +162,7 @@ fn signed(value: Option<i64>) -> LiteralValue {
     value.map_or(LiteralValue::Null, |v| LiteralValue::Number(v.to_string()))
 }
 
-fn source_row(
-    physical_id: &str,
-    columns: &[(&str, LiteralValue)],
-) -> PhysicalWriteRow {
+fn source_row(physical_id: &str, columns: &[(&str, LiteralValue)]) -> PhysicalWriteRow {
     let mut values = BTreeMap::from([(
         "__physical_row_id".to_string(),
         LiteralValue::Text(physical_id.to_string()),
@@ -178,8 +175,7 @@ fn source_row(
 
 fn physical_sources() -> (RelationCatalog, Vec<PhysicalWriteState>) {
     let column = |name, data_type| {
-        SchemaColumn::from_sql_type(name, data_type, "duckdb")
-            .expect("physical source data type")
+        SchemaColumn::from_sql_type(name, data_type, "duckdb").expect("physical source data type")
     };
     let catalog = RelationCatalog::from_schemas(&[
         RelationSchema::new(
@@ -270,7 +266,10 @@ fn original_s013_has_closed_world_constructive_exists_proofs_on_all_13_dialects(
         let PhysicalFiniteExistsProof::Exact(exact) = proof else {
             panic!("S013/{dialect_name}: complete physical source proof: {proof:?}");
         };
-        assert_eq!(exact.sources, ["orders".to_string(), "customers".to_string()]);
+        assert_eq!(
+            exact.sources,
+            ["orders".to_string(), "customers".to_string()]
+        );
         assert_eq!(exact.kind, SubqueryMembershipKind::Exists);
         assert_eq!(exact.selected, ["o2", "o3", "o5"]);
         assert_eq!(exact.rejected, ["o0", "o1", "o4", "o6"]);
@@ -288,7 +287,11 @@ fn original_s013_has_closed_world_constructive_exists_proofs_on_all_13_dialects(
             "S013/{dialect_name}: prove every matching and absent inner occurrence"
         );
         assert_eq!(
-            exact.terminal.iter().map(|row| row.get("id")).collect::<Vec<_>>(),
+            exact
+                .terminal
+                .iter()
+                .map(|row| row.get("id"))
+                .collect::<Vec<_>>(),
             vec![
                 Some(&LiteralValue::Number("1".to_string())),
                 Some(&LiteralValue::Number("1".to_string())),
@@ -296,7 +299,10 @@ fn original_s013_has_closed_world_constructive_exists_proofs_on_all_13_dialects(
             ],
             "S013/{dialect_name}: exact duplicate-preserving terminal"
         );
-        let domain = exact.terminal_domains.get("id").expect("typed final id domain");
+        let domain = exact
+            .terminal_domains
+            .get("id")
+            .expect("typed final id domain");
         assert_eq!(domain.values(), &[1, 3]);
         assert!(!domain.null_allowed());
         assert_eq!(domain.bounds(), Some((1, 3)));
@@ -315,8 +321,8 @@ fn numeric_sql_id_requires_separate_unique_physical_occurrence_identity() {
         "duckdb",
         parser.as_ref(),
     )];
-    let bundle = analyze_configured_inputs_with_catalog(&configured, &catalog)
-        .expect("original SQL");
+    let bundle =
+        analyze_configured_inputs_with_catalog(&configured, &catalog).expect("original SQL");
 
     let mut duplicate = sources[0].rows().to_vec();
     duplicate.push(duplicate[2].clone());
