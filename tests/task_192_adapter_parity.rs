@@ -6,7 +6,7 @@ use serde_json::{json, Value};
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, analyze_dbt_manifest_with_schemas, analyze_inputs,
     dialect_from_name, parse_dbt_manifest, ComposedSemantics, ConfiguredSqlInput, RelationCatalog,
-    SqlInput, ValueDomain,
+    SqlInput, ValueDomain, ProducerExecution,
 };
 
 const MATRIX: &str = include_str!("../docs/task-192-acceptance-freeze.json");
@@ -22,7 +22,23 @@ fn direct_catalog(amount_type: &str) -> RelationCatalog {
     RelationCatalog::from_schemas(bundle.source_schemas()).expect("direct schemas")
 }
 
-fn dbt_catalog(amount_type: &str) -> RelationCatalog {
+fn dbt_source_bundle(
+    amount_type: &str,
+    sql: &str,
+    dialect_name: &str,
+) -> sql_semantic_protocol::AnalysisBundle {
+    // Fixture dependency edges are explicit physical sources referenced in the
+    // original SQL, not all hypothetical sources in the catalog. This tests
+    // the compiled model itself, not a convenient substitute query.
+    let mut dependencies = Vec::new();
+    if sql.contains("orders") {
+        dependencies.push("source.task192.orders");
+    }
+    if sql.contains("customers") {
+        dependencies.push("source.task192.customers");
+    }
+    assert!(!dependencies.is_empty(), "all 41 source-bearing cases require sources");
+
     let manifest = json!({
         "metadata": {
             "dbt_schema_version": "https://schemas.getdbt.com/dbt/manifest/v12.json",
@@ -37,10 +53,8 @@ fn dbt_catalog(amount_type: &str) -> RelationCatalog {
                 "language": "sql",
                 "config": {"materialized": "view"},
                 "relation_name": "predicate_probe",
-                "compiled_code": "SELECT o.id FROM orders o JOIN customers c ON c.id = o.id",
-                "depends_on": {"nodes": [
-                    "source.task192.orders", "source.task192.customers"
-                ]}
+                "compiled_code": sql,
+                "depends_on": {"nodes": dependencies}
             }
         },
         "sources": {
@@ -68,10 +82,26 @@ fn dbt_catalog(amount_type: &str) -> RelationCatalog {
         }
     });
     let parsed = parse_dbt_manifest(&manifest.to_string()).expect("compiled dbt v12 manifest");
-    let dialect = dialect_from_name("duckdb").expect("dbt parser");
-    let bundle = analyze_dbt_manifest_with_schemas(&parsed, "duckdb", dialect.as_ref())
-        .expect("dbt source schema evidence");
-    RelationCatalog::from_schemas(bundle.source_schemas()).expect("dbt schemas")
+    let dialect = dialect_from_name(dialect_name).expect("public parser");
+    analyze_dbt_manifest_with_schemas(&parsed, dialect_name, dialect.as_ref())
+        .expect("compiled dbt source and query semantics")
+}
+
+fn compiled_dbt_domains(
+    bundle: &sql_semantic_protocol::AnalysisBundle,
+) -> Option<Vec<ValueDomain>> {
+    let layer = bundle.layers().last().expect("compiled dbt terminal");
+    match layer.composed_semantics() {
+        ComposedSemantics::Resolved(semantics) => Some(
+            semantics
+                .output()
+                .columns()
+                .iter()
+                .map(|c| c.domain().clone())
+                .collect(),
+        ),
+        _ => None,
+    }
 }
 
 #[cfg(feature = "odcs")]
@@ -146,8 +176,6 @@ fn every_representable_original_predicate_keeps_dbt_and_direct_typed_domains() {
     let dialects = matrix["dialects"].as_array().expect("13 dialects");
     let integer = direct_catalog("INTEGER");
     let float = direct_catalog("DOUBLE");
-    let dbt_integer = dbt_catalog("INTEGER");
-    let dbt_float = dbt_catalog("DOUBLE");
     let mut verified = 0;
     for case in matrix["cases"].as_array().expect("43 original cases") {
         let id = case["id"].as_str().expect("named case");
@@ -158,20 +186,34 @@ fn every_representable_original_predicate_keeps_dbt_and_direct_typed_domains() {
         }
         let sql = case["sql"].as_str().expect("original SQL");
         let floating = matches!(id, "88-C177-S040" | "88-C177-S041");
-        let (direct, dbt) = if floating {
-            (&float, &dbt_float)
+        let (direct, amount_type) = if floating {
+            (&float, "DOUBLE")
         } else {
-            (&integer, &dbt_integer)
+            (&integer, "INTEGER")
         };
         for name in dialects {
             let name = name.as_str().expect("dialect");
             let expected = domains(direct, name, sql);
-            let actual = domains(dbt, name, sql);
             assert!(
                 expected.as_ref().is_some_and(|c| !c.is_empty()),
                 "{id}/{name}: missing typed output"
             );
-            assert_eq!(actual, expected, "{id}/{name}: dbt source-fact parity");
+            let dbt = dbt_source_bundle(amount_type, sql, name);
+            let actual = compiled_dbt_domains(&dbt);
+            assert_eq!(actual, expected, "{id}/{name}: original compiled dbt SQL parity");
+            let sourced = RelationCatalog::from_schemas(dbt.source_schemas())
+                .expect("dbt exported typed source facts");
+            assert_eq!(
+                domains(&sourced, name, sql),
+                expected,
+                "{id}/{name}: dbt source facts changed when exported to a catalog"
+            );
+            assert!(
+                dbt.producer_evidence()
+                    .iter()
+                    .all(|producer| producer.execution() == ProducerExecution::Unattested),
+                "{id}/{name}: compiled dbt metadata is not native execution"
+            );
             verified += 1;
         }
     }
