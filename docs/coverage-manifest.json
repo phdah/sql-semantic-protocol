@@ -62,7 +62,10 @@
       "original_source_and_terminal_oracles": "docs/task-177-predicate-oracles.json",
       "three_valued_logic_and_typed_witness_test": "tests/task_192_nullable_truth.rs",
       "adapter_source_parity_test": "tests/task_192_adapter_parity.rs",
-      "status": "typed_row_witness_only_whole_query_residual_unapproved"
+      "status": "typed_row_witness_only_whole_query_residual_unapproved",
+      "public_physical_row_plan": "physical_source_plan",
+      "public_physical_positive_negative_test": "tests/task_192_nullable_truth.rs",
+      "physical_scope": "constructible_individual_row_TRUE_NOT_TRUE_not_universal_scalar_projection"
     },
     "computed_source_witness_evidence": {
       "original_case_ids": [
@@ -84,7 +87,13 @@
         "88-C177-S027",
         "88-C177-S032"
       ],
-      "status": "native_duckdb_partitions_and_typed_source_local_witnesses_not_whole_query_signoff"
+      "status": "native_duckdb_partitions_and_typed_source_local_witnesses_not_whole_query_signoff",
+      "extremal_signed_overflow_negative_oracle": "tests/task_192_computed_witness.rs",
+      "overflow_extremes_with_null": [
+        "9223372036854775807",
+        "-9223372036854775808",
+        "NULL"
+      ]
     },
     "string_session_witness_evidence": {
       "original_portable_prefix_case_ids": [
