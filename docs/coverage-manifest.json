@@ -52,7 +52,57 @@
       "full_external_vendor_certification": false,
       "unattested_floating_negative_test": "tests/task_192_nullable_truth.rs",
       "full_boolean_witness_adapter_parity_test": "tests/task_192_adapter_parity.rs"
-    }
+    },
+    "independent_review_handoff": "docs/task-192-independent-review-handoff.md",
+    "typed_source_row_evidence": {
+      "original_cross_column_and_negation_case_ids": [
+        "88-C177-S010",
+        "88-C177-S011"
+      ],
+      "original_source_and_terminal_oracles": "docs/task-177-predicate-oracles.json",
+      "three_valued_logic_and_typed_witness_test": "tests/task_192_nullable_truth.rs",
+      "adapter_source_parity_test": "tests/task_192_adapter_parity.rs",
+      "status": "typed_row_witness_only_whole_query_residual_unapproved"
+    },
+    "computed_source_witness_evidence": {
+      "original_case_ids": [
+        "88-C177-S027",
+        "88-C177-S028",
+        "88-C177-S029",
+        "88-C177-S030",
+        "88-C177-S031",
+        "88-C177-S032"
+      ],
+      "oracle_and_witness_test": "tests/task_192_computed_witness.rs",
+      "bounded_typed_exact_case_ids": [
+        "88-C177-S028",
+        "88-C177-S029",
+        "88-C177-S030",
+        "88-C177-S031"
+      ],
+      "overflow_unproved_case_ids": [
+        "88-C177-S027",
+        "88-C177-S032"
+      ],
+      "status": "native_duckdb_partitions_and_typed_source_local_witnesses_not_whole_query_signoff"
+    },
+    "string_session_witness_evidence": {
+      "original_portable_prefix_case_ids": [
+        "88-C177-S020",
+        "88-C177-S022",
+        "88-C177-S025"
+      ],
+      "original_trailing_space_case_id": "88-C177-S039",
+      "native_oracles": "docs/task-177-predicate-oracles.json",
+      "public_typed_and_unattested_law_test": "tests/task_192_string_witness.rs",
+      "attestation_requirements": [
+        "binary_collation",
+        "no_char_padding"
+      ],
+      "external_vendor_execution": "unattested",
+      "status": "conditional_source_local_witness_only"
+    },
+    "production_consumer_migration_pr": "https://github.com/phdah/sql-tdg/pull/50"
   },
   "task_177_dialect_parser_acceptance": {
     "owner": "TASK-177",
