@@ -6,6 +6,7 @@ use serde_json::{json, Value};
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, analyze_dbt_manifest_with_schemas, analyze_inputs,
     dialect_from_name, parse_dbt_manifest, ComposedSemantics, ConfiguredSqlInput,
+    BooleanRowConstraint, BooleanTruthCase, BooleanWitnessDirection, ConditionExactnessStatus,
     ProducerExecution, RelationCatalog, SqlInput, ValueDomain,
 };
 
@@ -144,7 +145,11 @@ schema:
     RelationCatalog::from_schemas(parsed.source_schemas()).expect("ODCS schemas")
 }
 
-fn domains(catalog: &RelationCatalog, dialect_name: &str, sql: &str) -> Option<Vec<ValueDomain>> {
+fn configured_bundle(
+    catalog: &RelationCatalog,
+    dialect_name: &str,
+    sql: &str,
+) -> sql_semantic_protocol::AnalysisBundle {
     let dialect = dialect_from_name(dialect_name).expect("public SQL dialect");
     let input = SqlInput::inline(sql);
     let configured = [ConfiguredSqlInput::new(
@@ -153,8 +158,39 @@ fn domains(catalog: &RelationCatalog, dialect_name: &str, sql: &str) -> Option<V
         dialect_name,
         dialect.as_ref(),
     )];
-    let bundle = analyze_configured_inputs_with_catalog(&configured, catalog)
-        .expect("source-typed public analyzer");
+    analyze_configured_inputs_with_catalog(&configured, catalog)
+        .expect("source-typed public analyzer")
+}
+
+fn composed_truth_signature(
+    bundle: &sql_semantic_protocol::AnalysisBundle,
+) -> (
+    ConditionExactnessStatus,
+    Vec<(BooleanRowConstraint, BooleanWitnessDirection, BooleanWitnessDirection)>,
+) {
+    let layer = bundle.layers().last().expect("original terminal query");
+    let ComposedSemantics::Resolved(semantics) = layer.composed_semantics() else {
+        panic!("original source-complete query must resolve");
+    };
+    (
+        semantics.condition_exactness().status(),
+        semantics
+            .boolean_witnesses()
+            .iter()
+            .map(|item| {
+                let witness = item.witness();
+                (
+                    witness.condition().clone(),
+                    witness.qualifying().clone(),
+                    witness.rejected().clone(),
+                )
+            })
+            .collect(),
+    )
+}
+
+fn domains(catalog: &RelationCatalog, dialect_name: &str, sql: &str) -> Option<Vec<ValueDomain>> {
+    let bundle = configured_bundle(catalog, dialect_name, sql);
     let layer = bundle.layers().last().expect("one query layer");
     match layer.composed_semantics() {
         ComposedSemantics::Resolved(semantics) => Some(
@@ -261,4 +297,67 @@ fn every_representable_original_predicate_keeps_odcs_and_direct_typed_domains() 
         }
     }
     assert_eq!(verified, 41 * 13);
+}
+
+#[test]
+fn nullable_three_valued_witnesses_agree_across_direct_and_compiled_dbt() {
+    let matrix = cases();
+    let source = direct_catalog("INTEGER");
+    for id in ["88-C177-S012", "88-C177-S017"] {
+        let sql = matrix["cases"]
+            .as_array()
+            .expect("original SQL cases")
+            .iter()
+            .find(|case| case["id"] == id)
+            .expect("original nullable predicate")["sql"]
+            .as_str()
+            .expect("original text");
+        for name in matrix["dialects"].as_array().expect("13 parsers") {
+            let name = name.as_str().expect("dialect name");
+            let direct = configured_bundle(&source, name, sql);
+            let dbt = dbt_source_bundle("INTEGER", sql, name);
+            let expected = composed_truth_signature(&direct);
+            let actual = composed_truth_signature(&dbt);
+            assert_eq!(
+                actual, expected,
+                "{id}/{name}: dbt compiled query changed the complete typed boolean truth contract"
+            );
+            assert!(
+                expected.1.iter().any(|(_, positive, negative)| {
+                    matches!(positive, BooleanWitnessDirection::Exact(BooleanTruthCase::True))
+                        && matches!(
+                            negative,
+                            BooleanWitnessDirection::Exact(BooleanTruthCase::NotTrue)
+                        )
+                }),
+                "{id}/{name}: complete source TRUE and NOT TRUE witness missing"
+            );
+        }
+    }
+}
+
+#[cfg(feature = "odcs")]
+#[test]
+fn nullable_three_valued_witnesses_agree_across_odcs_and_direct() {
+    let matrix = cases();
+    let direct = direct_catalog("INTEGER");
+    let odcs = odcs_catalog("INTEGER");
+    for id in ["88-C177-S012", "88-C177-S017"] {
+        let sql = matrix["cases"]
+            .as_array()
+            .expect("cases")
+            .iter()
+            .find(|case| case["id"] == id)
+            .expect("original SQL")["sql"]
+            .as_str()
+            .expect("unchanged SQL");
+        for name in matrix["dialects"].as_array().expect("13 dialects") {
+            let name = name.as_str().expect("dialect");
+            assert_eq!(
+                composed_truth_signature(&configured_bundle(&odcs, name, sql)),
+                composed_truth_signature(&configured_bundle(&direct, name, sql)),
+                "{id}/{name}: ODCS source evidence changed nullable TRUE/NOT TRUE proof"
+            );
+        }
+    }
 }
