@@ -207,8 +207,13 @@ pub(super) fn analyze_predicate_with_windows(
         Expr::IsTrue(inner) if null_propagating_numeric_comparison_column(inner).is_some() => {
             let column = null_propagating_numeric_comparison_column(inner)
                 .expect("guarded numeric comparison column");
-            let positive =
-                analyze_predicate_with_windows(inner, named_windows, output_aliases, scope, diagnostics);
+            let positive = analyze_predicate_with_windows(
+                inner,
+                named_windows,
+                output_aliases,
+                scope,
+                diagnostics,
+            );
             let non_null = Predicate::IsNull(IsNullPredicate::new(
                 analyze_predicate_expression(
                     column,
