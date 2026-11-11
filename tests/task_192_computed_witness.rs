@@ -154,3 +154,45 @@ fn signed_integer_computed_predicates_have_typed_true_and_not_true_witnesses() {
         }
     }
 }
+
+
+#[test]
+fn original_s027_and_s032_are_not_total_on_unrestricted_signed_bigint_sources() {
+    // The unchanged original SQL is evaluated against a separate complete
+    // source that includes an extremal signed value. A sampled DuckDB success
+    // is not a universal proof that an arithmetic/ABS comparison cannot fail.
+    let freeze: Value = serde_json::from_str(FREEZE).expect("frozen original SQL");
+    for (id, source_rows) in [
+        (
+            "88-C177-S027",
+            "INSERT INTO orders VALUES (1, 9223372036854775807), (2, NULL)",
+        ),
+        (
+            "88-C177-S032",
+            "INSERT INTO orders VALUES (1, CAST('-9223372036854775808' AS BIGINT)), (2, NULL)",
+        ),
+    ] {
+        let sql = freeze["cases"]
+            .as_array()
+            .expect("43 original cases")
+            .iter()
+            .find(|case| case["id"] == id)
+            .expect("frozen arithmetic variant")["sql"]
+            .as_str()
+            .expect("unchanged SQL");
+        let db = Connection::open_in_memory().expect("DuckDB");
+        db.execute_batch("CREATE TABLE orders (id BIGINT, amount BIGINT)")
+            .expect("signed physical schema");
+        db.execute_batch(source_rows)
+            .expect("complete extremal signed source and NULL");
+        let result = db.prepare(sql).and_then(|mut statement| {
+            statement
+                .query_map([], |row| row.get::<_, i64>(0))?
+                .collect::<duckdb::Result<Vec<_>>>()
+        });
+        assert!(
+            result.is_err(),
+            "{id}: unrestricted signed source includes an overflow; conditional arithmetic must not become Exact"
+        );
+    }
+}
