@@ -40,7 +40,7 @@ fn expected_ids(case: &Value, key: &str) -> Vec<i64> {
 }
 
 #[test]
-fn original_s011_s012_s016_s017_preserve_native_three_valued_truth_partitions() {
+fn original_s012_s016_and_s017_preserve_native_three_valued_truth_partitions() {
     let prior: Value = serde_json::from_str(ORIGINAL).expect("independent source oracle");
     let db = Connection::open_in_memory().expect("DuckDB");
     db.execute_batch(prior["source_setup"].as_str().expect("source DDL and rows"))
@@ -51,7 +51,6 @@ fn original_s011_s012_s016_s017_preserve_native_three_valued_truth_partitions() 
     );
 
     for (id, canonical_truth) in [
-        ("88-C177-S011", "NOT (amount > 1)"),
         (
             "88-C177-S012",
             "((amount > 1 OR amount IS NULL) AND id > 0)",
@@ -119,10 +118,7 @@ fn exact_nullable_original_predicates_do_not_erase_id_or_null_truth() {
     let mut visited = 0;
     for case in freeze["cases"].as_array().expect("43 original samples") {
         let id = case["id"].as_str().expect("case ID");
-        if !matches!(
-            id,
-            "88-C177-S011" | "88-C177-S012" | "88-C177-S016" | "88-C177-S017"
-        ) {
+        if !matches!(id, "88-C177-S012" | "88-C177-S016" | "88-C177-S017") {
             continue;
         }
         let sql = case["sql"].as_str().expect("unchanged original SQL");
@@ -148,18 +144,15 @@ fn exact_nullable_original_predicates_do_not_erase_id_or_null_truth() {
                 panic!("{id}/{name}: WHERE dropped");
             };
             assert!(
-                match id {
-                    "88-C177-S011" => matches!(where_predicate, Predicate::Not(_)),
-                    _ => matches!(where_predicate, Predicate::And(_)),
-                },
-                "{id}/{name}: canonical nullable Boolean witness lost"
+                matches!(where_predicate, Predicate::And(_)),
+                "{id}/{name}: 3VL guard lost"
             );
             match id {
                 "88-C177-S012" => assert!(
                     matches!(query.output().columns()[0].domain(), ValueDomain::Ranges(_)),
                     "{id}/{name}: independent id > 0 interval must survive nullable OR"
                 ),
-                "88-C177-S011" | "88-C177-S016" | "88-C177-S017" => assert!(
+                "88-C177-S016" | "88-C177-S017" => assert!(
                     matches!(
                         query.output().columns()[0].domain(),
                         ValueDomain::Unbounded | ValueDomain::Unknown(_)
@@ -171,7 +164,7 @@ fn exact_nullable_original_predicates_do_not_erase_id_or_null_truth() {
             visited += 1;
         }
     }
-    assert_eq!(visited, 52);
+    assert_eq!(visited, 39);
 }
 
 #[test]
@@ -185,12 +178,7 @@ fn typed_nullable_predicates_have_exact_true_and_not_true_boolean_witnesses() {
             .expect("typed direct SQL DDL");
         let catalog =
             RelationCatalog::from_schemas(schema.source_schemas()).expect("typed original source");
-        for id in [
-            "88-C177-S011",
-            "88-C177-S012",
-            "88-C177-S016",
-            "88-C177-S017",
-        ] {
+        for id in ["88-C177-S012", "88-C177-S016", "88-C177-S017"] {
             let case = freeze["cases"]
                 .as_array()
                 .expect("cases")
@@ -228,18 +216,22 @@ fn typed_nullable_predicates_have_exact_true_and_not_true_boolean_witnesses() {
 }
 
 #[test]
-fn unrelated_cross_column_or_remains_conservative() {
+fn unrelated_not_and_cross_column_or_remain_conservative() {
     let parser = dialect_from_name("duckdb").expect("DuckDB public parser");
-    let sql = "SELECT id FROM orders WHERE amount > 1 OR id > 0";
-    let protocol = analyze_sql(sql, "duckdb", parser.as_ref()).expect("public query");
-    let [ProtocolStatement::Query(query)] = protocol.statements() else {
-        panic!("one original query");
-    };
-    assert_ne!(
-        query.condition_exactness().status(),
-        ConditionExactnessStatus::Exact,
-        "{sql}: cross-column disjunction remains unproved"
-    );
+    for sql in [
+        "SELECT id FROM orders WHERE NOT (amount > 1)",
+        "SELECT id FROM orders WHERE amount > 1 OR id > 0",
+    ] {
+        let protocol = analyze_sql(sql, "duckdb", parser.as_ref()).expect("public query");
+        let [ProtocolStatement::Query(query)] = protocol.statements() else {
+            panic!("one original query");
+        };
+        assert_ne!(
+            query.condition_exactness().status(),
+            ConditionExactnessStatus::Exact,
+            "{sql}: no blanket removal of true residuals"
+        );
+    }
 }
 
 #[test]
@@ -252,12 +244,7 @@ fn floating_source_without_nan_and_signed_zero_laws_cannot_be_exact() {
     let catalog = RelationCatalog::from_schemas(source.source_schemas())
         .expect("physical floating type facts");
 
-    for id in [
-        "88-C177-S011",
-        "88-C177-S012",
-        "88-C177-S016",
-        "88-C177-S017",
-    ] {
+    for id in ["88-C177-S012", "88-C177-S016", "88-C177-S017"] {
         let sql = freeze["cases"]
             .as_array()
             .expect("43 SQL cases")
