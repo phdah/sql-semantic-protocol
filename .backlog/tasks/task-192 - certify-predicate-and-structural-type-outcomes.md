@@ -79,3 +79,8 @@ Extracted on 2026-11-10 from the previously overbroad TASK-178. There is **no im
 - Numeric `IS FALSE` has an explicit `NOT comparison AND column IS NOT NULL` normalization, preserving FALSE on SQL NULL without replacing NOT with an unsafe comparison complement. Untyped plain NOT and unrelated OR remain explicit residuals.
 - [559-cell expected semantic ledger](../../docs/task-192-semantic-cell-ledger.json) now records S012/S017 as Exact on all 13 parser dialects; external vendor/session claims remain unattested.
 - Full original-task independent semantic reviewer approval, relevant conditional owner dispositions, and final pinned consumer migration approval are still prerequisites for checking AC #1..#5 and marking Done.
+
+## Third pass source-type and adapter safety
+
+- [Typed source-law negative proof](../../tests/task_192_nullable_truth.rs) checks all 13 parsers with original S012/S017 SQL against an unattested DOUBLE source; no exact signed integer row-membership proof may be inferred through NaN/signed-zero semantics. Parser-only Exact is a symbolic SQL condition shape, not vendor runtime certification.
+- [Adapter 3VL semantic parity](../../tests/task_192_adapter_parity.rs) now compares direct, original compiled dbt and ODCS complete Boolean witness tree, TRUE/NOT TRUE directions and condition-exactness strength for both named nullable cases on all 13 parsers. Keep producer execution `unattested`.
