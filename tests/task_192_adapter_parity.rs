@@ -389,12 +389,8 @@ fn nullable_three_valued_witnesses_agree_across_odcs_and_direct() {
     }
 }
 
-
 fn original_s013_complete_physical_snapshots() -> Vec<PhysicalWriteState> {
-    fn row(
-        identity: &str,
-        entries: &[(&str, LiteralValue)],
-    ) -> PhysicalWriteRow {
+    fn row(identity: &str, entries: &[(&str, LiteralValue)]) -> PhysicalWriteRow {
         let mut values = BTreeMap::from([(
             "__physical_row_id".to_string(),
             LiteralValue::Text(identity.to_string()),
@@ -476,10 +472,7 @@ fn original_s013_closed_world_semijoin_is_equal_across_representable_adapter_sou
         let dbt = dbt_source_bundle("INTEGER", sql, name);
         let mut bundles = vec![("direct", direct), ("dbt_compiled", dbt)];
         #[cfg(feature = "odcs")]
-        bundles.push((
-            "odcs",
-            configured_bundle(&odcs_catalog, name, sql),
-        ));
+        bundles.push(("odcs", configured_bundle(&odcs_catalog, name, sql)));
 
         for (adapter, bundle) in bundles {
             let layer = bundle.layers().last().expect("original S013 query layer");
@@ -495,7 +488,8 @@ fn original_s013_closed_world_semijoin_is_equal_across_representable_adapter_sou
             );
             assert_eq!(exact.matching_inner["o6"], Vec::<String>::new());
             assert_eq!(
-                exact.terminal
+                exact
+                    .terminal
                     .iter()
                     .map(|r| r.get("id"))
                     .collect::<Vec<_>>(),
@@ -506,7 +500,10 @@ fn original_s013_closed_world_semijoin_is_equal_across_representable_adapter_sou
                 ],
                 "S013/{name}/{adapter}: duplicate-preserving terminal"
             );
-            let domain = exact.terminal_domains.get("id").expect("terminal id domain");
+            let domain = exact
+                .terminal_domains
+                .get("id")
+                .expect("terminal id domain");
             assert_eq!(domain.values(), &[1, 3]);
             assert_eq!(domain.bounds(), Some((1, 3)));
             assert!(!domain.null_allowed());
