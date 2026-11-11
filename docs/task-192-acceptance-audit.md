@@ -58,3 +58,19 @@ matrices, plus passing exact-head CI.
 `tests/task_192_typed_soundness.rs` checks that all 41 successful original numeric terminals fit the emitted domains on every parser, including NULLs, duplicates and signed values, and ensures no unsupported finite `id` restriction is inferred from predicates on other source columns. The test is evidence of soundness on the pinned native samples, **not** completeness over arbitrary source bags.
 
 The temporary [sql-tdg consumer compatibility PR #49](https://github.com/phdah/sql-tdg/pull/49) has an exact protocol commit pin for CI only. The main consumer's published dependency must remain unchanged.
+
+## Second implementation pass: exact public semantics and source-independent counterexamples
+
+- `docs/task-192-semantic-cell-ledger.json` now freezes all 559 named public analyzer cells with explicit expected projected-domain kind, exact/conditional/residual status, named residual cause, parser-rejection/STRUCT-drift adjudication and a reference to their physical DuckDB evidence. It does **not** copy generated output as an independently verified full-document golden.
+- `tests/task_192_semantic_contract.rs` enforces every named cell through `analyze_sql` + canonical `to_json`, checking all expected status fields, original case references, explicit parser failures, and cross-dialect full-document equivalence. Ten precise numeric cases cross-reference independent bound/set/inclusivity fixtures. Historic DuckDB STRUCT D is repaired; BigQuery and generic parser rejections remain explicit.
+- `tests/task_192_adapter_parity.rs` now analyzes **the original SQL** as each compiled dbt model, not a dummy SELECT, and checks composed results against direct configured-input and exported source schemas for all 41 applicable original cases × 13 dialects. ODCS type-source parity remains separate. No producer metadata attests actual vendor execution.
+- `tests/task_192_projection_counterexamples.rs` tests new complete source and terminal DuckDB bags with deliberately negative, NULL, large and repeated output `id` values for original pattern/temporal/NaN predicates. These are counterexamples to accidentally deriving finite projected ID membership from predicates on unrelated columns.
+- `src/analysis/predicates.rs` adds a narrow, truth-preserving rule for `(nullable_column > numeric_literal) IS UNKNOWN`: the test is exactly `nullable_column IS NULL` (for TRUE, FALSE and NOT TRUE). It does not generalize through casts, arithmetic, functions or null-safe comparisons. The public regression test enforces this for original S018 on 13 dialect parsers.
+
+### Important unresolved mandatory rows
+
+- S012 computes a representable `id > 0` projected range, but its `(amount > 1 OR amount IS NULL)` input cannot be expressed as one exact existing scalar Range/Set domain containing both a numeric interval and SQL NULL. The analyzer correctly retains an explicit `unsupported_predicate` residual; **this is not approved mandatory completion**. Do not erase it simply to make CI pass.
+- S017 `IS FALSE` remains a `logical_not` residual for a nullable comparison. Rewriting it to the opposite numeric comparison without preserving the original FALSE/UNKNOWN partitions or resolving NaN laws would be unsound. Its positive native original-SQL truth bag is known, but full semantic exactness is not approved.
+- S033 and S179 have `condition_exactness=exact` only because no filtering WHERE clause exists. Their **output value domains remain Unknown** and do not certify a successful native overflow or portable nested STRUCT CAST.
+
+These rows require a reviewed representability/proof implementation or explicit approval by the original task owners. The 559-cell ledger is an exhaustive, executable **expected current contract**, not permission to mark known missing mandatory semantics as complete. External vendor law, final downstream migration and independent review retain their original owners.
