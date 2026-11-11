@@ -40,10 +40,12 @@
     "global_independent_review": "pending",
     "nullable_numeric_semantic_evidence": {
       "case_ids": [
+        "88-C177-S011",
         "88-C177-S012",
+        "88-C177-S016",
         "88-C177-S017"
       ],
-      "expected_semantic_cells": 26,
+      "expected_semantic_cells": 52,
       "source_and_terminal_oracles": "docs/task-177-predicate-oracles.json",
       "public_3vl_tests": "tests/task_192_nullable_truth.rs",
       "normalization": "src/analysis/predicates.rs",
