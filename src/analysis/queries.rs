@@ -374,6 +374,7 @@ pub(super) fn analyze_query(
             &relation_analysis.joins,
             &relation_analysis.sources,
             &predicate_exactness,
+            metadata,
         ))
         .merged_with(&comparison_domain_exactness(&column_domains, metadata))
         .merged_with(&ConditionExactness::from_residuals(
