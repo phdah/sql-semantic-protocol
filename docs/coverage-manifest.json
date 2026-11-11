@@ -48,7 +48,9 @@
       "public_3vl_tests": "tests/task_192_nullable_truth.rs",
       "normalization": "src/analysis/predicates.rs",
       "exactness": "src/analysis/exactness.rs",
-      "full_external_vendor_certification": false
+      "full_external_vendor_certification": false,
+      "unattested_floating_negative_test": "tests/task_192_nullable_truth.rs",
+      "full_boolean_witness_adapter_parity_test": "tests/task_192_adapter_parity.rs"
     }
   },
   "task_177_dialect_parser_acceptance": {
