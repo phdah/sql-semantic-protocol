@@ -44,7 +44,10 @@ fn all_original_sqls_have_independently_frozen_outer_source_and_predicate_shapes
     assert_eq!(fixed["owner"], "TASK-192");
     assert_eq!(fixed["case_count"], 43);
     assert_eq!(fixed["independent_review_signed_off"], false);
-    assert_eq!((expected.len(), original_cases.len(), dialects.len()), (43, 43, 13));
+    assert_eq!(
+        (expected.len(), original_cases.len(), dialects.len()),
+        (43, 43, 13)
+    );
 
     let mut seen = BTreeSet::new();
     let mut accepted = 0;
@@ -53,7 +56,10 @@ fn all_original_sqls_have_independently_frozen_outer_source_and_predicate_shapes
         let id = independently_expected["id"]
             .as_str()
             .expect("fixed original case identity");
-        assert!(seen.insert(id), "{id}: duplicate independently frozen shape");
+        assert!(
+            seen.insert(id),
+            "{id}: duplicate independently frozen shape"
+        );
         let sql = original_cases
             .iter()
             .find(|case| case["id"] == id)
@@ -83,8 +89,7 @@ fn all_original_sqls_have_independently_frozen_outer_source_and_predicate_shapes
                 rejected += 1;
                 continue;
             }
-            let parsed =
-                result.unwrap_or_else(|error| panic!("{identity}: {error}"));
+            let parsed = result.unwrap_or_else(|error| panic!("{identity}: {error}"));
             let [ProtocolStatement::Query(query)] = parsed.statements() else {
                 panic!("{identity}: exactly one original SELECT query");
             };
