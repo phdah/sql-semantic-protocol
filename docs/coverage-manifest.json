@@ -88,12 +88,15 @@
         "88-C177-S032"
       ],
       "status": "native_duckdb_partitions_and_typed_source_local_witnesses_not_whole_query_signoff",
-      "extremal_signed_overflow_negative_oracle": "tests/task_192_computed_witness.rs",
       "overflow_extremes_with_null": [
         "9223372036854775807",
         "-9223372036854775808",
         "NULL"
-      ]
+      ],
+      "extremal_signed_native_arithmetic_oracle": "tests/task_192_computed_witness.rs",
+      "original_s027_duckdb_widens_bigint_addition": true,
+      "original_s032_duckdb_signed_abs_extreme": "awaiting_exact_head_native_regression",
+      "portable_vendor_widening_certified": false
     },
     "string_session_witness_evidence": {
       "original_portable_prefix_case_ids": [
