@@ -84,3 +84,11 @@ Extracted on 2026-11-10 from the previously overbroad TASK-178. There is **no im
 
 - [Typed source-law negative proof](../../tests/task_192_nullable_truth.rs) checks all 13 parsers with original S012/S017 SQL against an unattested DOUBLE source; no exact signed integer row-membership proof may be inferred through NaN/signed-zero semantics. Parser-only Exact is a symbolic SQL condition shape, not vendor runtime certification.
 - [Adapter 3VL semantic parity](../../tests/task_192_adapter_parity.rs) now compares direct, original compiled dbt and ODCS complete Boolean witness tree, TRUE/NOT TRUE directions and condition-exactness strength for both named nullable cases on all 13 parsers. Keep producer execution `unattested`.
+
+
+## Fourth pass exact nullable truth corrections (PR #198)
+
+- S016 numeric comparison `IS TRUE` now retains a same-column `IS NOT NULL` guard so its full FALSE/UNKNOWN/NOT TRUE partition matches the original SQL.
+- S011 ordinary signed-integer comparison `NOT` now has a narrowly permitted exact Boolean witness without upgrading arbitrary logical NOT or floating sources.
+- The original S011/S012/S016/S017 source identities, all 13 public parsers, direct typed Boolean witnesses and unattested FLOAT negative laws have regression coverage.
+- The 559-cell expected ledger reflects the new S011 classification; all four cases remain **unreviewed for release**. Remaining mandatory family residuals, independent review, the exact final-head consumer pin and CI continue to block all five acceptance criteria.
