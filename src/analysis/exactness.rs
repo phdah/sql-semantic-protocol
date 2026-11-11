@@ -132,7 +132,8 @@ pub(super) fn unknown_column_domain_exactness(
             }
         }
         for (clause, identity) in locations {
-            // A scalar ValueDomain cannot encode (numeric range OR SQL NULL).
+            // A scalar ValueDomain cannot encode (numeric range OR SQL NULL),
+            // nor a guarded NOT/comparison without losing three-valued truth.
             // In this narrow matching-column case the Boolean predicate tree
             // independently retains both branches and their full three-valued
             // source membership. Only suppress the *scalar encoding* residual,
@@ -725,10 +726,15 @@ fn has_exact_nullable_numeric_disjunction_for_column(
 ) -> bool {
     match predicate {
         Predicate::Or(logical) if is_numeric_comparison_or_null(logical, sources) => {
-            logical
-                .operands()
-                .iter()
-                .any(|operand| ordinary_numeric_comparison_column(operand, sources).as_ref() == Some(column))
+            logical.operands().iter().any(|operand| {
+                ordinary_numeric_comparison_column(operand, sources).as_ref() == Some(column)
+            })
+        }
+        Predicate::And(logical) if is_guarded_nullable_numeric_false(logical, sources) => {
+            let [Predicate::Not(negative), _] = logical.operands() else {
+                return false;
+            };
+            ordinary_numeric_comparison_column(negative.operand(), sources).as_ref() == Some(column)
         }
         Predicate::And(logical) => logical.operands().iter().any(|operand| {
             has_exact_nullable_numeric_disjunction_for_column(operand, column, sources)
