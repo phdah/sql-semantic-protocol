@@ -307,7 +307,13 @@ fn every_representable_original_predicate_keeps_odcs_and_direct_typed_domains() 
 fn nullable_three_valued_witnesses_agree_across_direct_and_compiled_dbt() {
     let matrix = cases();
     let source = direct_catalog("INTEGER");
-    for id in ["88-C177-S012", "88-C177-S016", "88-C177-S017"] {
+    for id in [
+        "88-C177-S010",
+        "88-C177-S011",
+        "88-C177-S012",
+        "88-C177-S016",
+        "88-C177-S017",
+    ] {
         let sql = matrix["cases"]
             .as_array()
             .expect("original SQL cases")
@@ -348,7 +354,13 @@ fn nullable_three_valued_witnesses_agree_across_odcs_and_direct() {
     let matrix = cases();
     let direct = direct_catalog("INTEGER");
     let odcs = odcs_catalog("INTEGER");
-    for id in ["88-C177-S012", "88-C177-S016", "88-C177-S017"] {
+    for id in [
+        "88-C177-S010",
+        "88-C177-S011",
+        "88-C177-S012",
+        "88-C177-S016",
+        "88-C177-S017",
+    ] {
         let sql = matrix["cases"]
             .as_array()
             .expect("cases")
