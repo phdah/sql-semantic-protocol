@@ -333,7 +333,10 @@ fn struct_cast_parser_rejections_and_repaired_duckdb_drift_are_explicit() {
     let mut accepted = 0;
     let mut rejected = 0;
     let mut repaired = 0;
-    for observation in structure["dialect_cells"].as_array().expect("13 parser cells") {
+    for observation in structure["dialect_cells"]
+        .as_array()
+        .expect("13 parser cells")
+    {
         let dialect_name = field(observation, "dialect");
         let historical = field(observation, "observed_parser_canonical_status");
         let dialect = dialect_from_name(dialect_name).expect("registered SQL parser");
@@ -360,8 +363,7 @@ fn struct_cast_parser_rejections_and_repaired_duckdb_drift_are_explicit() {
         let mut wire = json(&to_json(&protocol));
         let query = &wire["inputs"][0]["statements"][0];
         assert_eq!(
-            query["output"]["columns"][0]["domain"]["kind"],
-            "unknown",
+            query["output"]["columns"][0]["domain"]["kind"], "unknown",
             "{dialect_name}: a native DuckDB STRUCT value does not certify portable CAST semantics"
         );
         assert!(
@@ -369,7 +371,9 @@ fn struct_cast_parser_rejections_and_repaired_duckdb_drift_are_explicit() {
                 .as_array()
                 .expect("public diagnostic list")
                 .iter()
-                .any(|diagnostic| diagnostic["code"].as_str().is_some_and(|code| code.contains("unsupported"))),
+                .any(|diagnostic| diagnostic["code"]
+                    .as_str()
+                    .is_some_and(|code| code.contains("unsupported"))),
             "{dialect_name}: unsupported STRUCT must be observable, not silently exact"
         );
         wire["inputs"][0]["dialect"] = Value::Null;
@@ -415,7 +419,9 @@ fn original_is_unknown_of_nullable_numeric_comparison_is_a_certified_null_test()
             panic!("{name}: original numeric truth test was dropped");
         };
         let Some(Predicate::IsNull(null_test)) = query.predicates().where_predicate() else {
-            panic!("{name}: IS UNKNOWN of a null-propagating numeric comparison must be a null test");
+            panic!(
+                "{name}: IS UNKNOWN of a null-propagating numeric comparison must be a null test"
+            );
         };
         assert!(!null_test.negated(), "{name}: IS UNKNOWN selects NULL");
         assert_eq!(
