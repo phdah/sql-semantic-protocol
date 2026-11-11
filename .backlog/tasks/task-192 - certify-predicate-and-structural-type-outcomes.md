@@ -71,3 +71,11 @@ Extracted on 2026-11-10 from the previously overbroad TASK-178. There is **no im
 - [Alternate native source counterexamples](../../tests/task_192_projection_counterexamples.rs) exercise all 3VL partitions with independent NULL/large/negative/duplicate projected IDs in string/temporal/NaN query families.
 - Original S018 nullable numeric `IS UNKNOWN` normalizes to an exact `IS NULL` predicate at the public seam, preserving positive and NOT TRUE physical semantics. S012 nullable interval disjunction and S017 logical NOT semantics are still explicit mandatory semantic limitations. **They are not approved Residual dispositions.**
 - Full independent reviewer signoff, mandatory sound physical realization for remaining residual variants and final-head pinned sql-tdg migration still block Done; keep all AC boxes unchecked pending proof.
+
+## Third pass nullable 3VL repairs (PR #198)
+
+- [S012/S017 native truth cases](../../tests/task_192_nullable_truth.rs) independently compare complete original TRUE/FALSE/UNKNOWN/NOT TRUE source and terminal bags with canonical matching-column Boolean trees, including NULL exclusion, duplicate rows, signed boundaries and negative controls.
+- The public analyzer now retains matching numeric comparison `OR IS NULL` as an exact Boolean witness without fabricating scalar `ValueDomain::Ranges + NULL`. An Unknown source-domain encoding cannot override this exactness when it has no independent type failure.
+- Numeric `IS FALSE` has an explicit `NOT comparison AND column IS NOT NULL` normalization, preserving FALSE on SQL NULL without replacing NOT with an unsafe comparison complement. Untyped plain NOT and unrelated OR remain explicit residuals.
+- [559-cell expected semantic ledger](../../docs/task-192-semantic-cell-ledger.json) now records S012/S017 as Exact on all 13 parser dialects; external vendor/session claims remain unattested.
+- Full original-task independent semantic reviewer approval, relevant conditional owner dispositions, and final pinned consumer migration approval are still prerequisites for checking AC #1..#5 and marking Done.
