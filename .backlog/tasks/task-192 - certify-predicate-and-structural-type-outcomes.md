@@ -98,3 +98,12 @@ Extracted on 2026-11-10 from the previously overbroad TASK-178. There is **no im
 - No independent reviewer approval is available for the 559 cell contract.
   Exact-head tests, migrated consumer pin, conditional case owners and remaining
   family residual resolutions all remain required before TASK-192 Done.
+
+## Fifth pass bounded residual review evidence (PR #198)
+
+- S010 and S011 preserve `cross_column_disjunction` and `logical_not` **whole-query Residual** while testing signed-integer source-local exact TRUE/NOT TRUE Boolean witnesses against the original full DuckDB truth partitions on all 13 parser dialects. Cross-adapter direct/dbt/ODCS witness parity has been added.
+- S027-S032 now have complete original native 3VL partition checks and explicit source-local typed outcomes. S028-S031 have exact operator-local witnesses. S027/S032 remain unapproved because arbitrary source integer values can trigger arithmetic overflow absent bounded source guarantees.
+- Typed VARCHAR safe LIKE prefixes S020/S022/S025 and trailing-space equality S039 have conditional source-local witness tests requiring caller-attested binary collation and no padding. Fixed CHAR, ILIKE, regex, SIMILAR TO and locale-specific comparisons fail closed without native vendor law proof.
+- The per-case and per-owner review route is in [independent TASK-192 handoff](../../docs/task-192-independent-review-handoff.md). The coverage manifest registers evidence without upgrading original public exactness, physical vendor certification or independent approval.
+- The separate production [sql-tdg consumer migration draft](https://github.com/phdah/sql-tdg/pull/50) is awaiting independent review and a released protocol version. Test-only consumer PR #49 remains a temporary harness, not a merge path.
+- The **559-cell ledger still requires a genuinely independent semantic reviewer**. Unapproved mandatory computed/relational/temporal/vendor/STRUCT residuals remain. All five ACs are unchecked, task status In Progress and parent/release signoff blocked.
