@@ -132,6 +132,24 @@ pub(super) fn unknown_column_domain_exactness(
             }
         }
         for (clause, identity) in locations {
+            // A scalar ValueDomain cannot encode (numeric range OR SQL NULL).
+            // In this narrow matching-column case the Boolean predicate tree
+            // independently retains both branches and their full three-valued
+            // source membership. Only suppress the *scalar encoding* residual,
+            // never an actual typing failure or another unsupported predicate.
+            if typed_failure.is_none()
+                && clause == ConditionClause::Where
+                && predicate_exactness.residual_conditions().is_empty()
+                && predicates.where_predicate().is_some_and(|predicate| {
+                    has_exact_nullable_numeric_disjunction_for_column(
+                        predicate,
+                        column_domain.column(),
+                        sources,
+                    )
+                })
+            {
+                continue;
+            }
             // A structural unknown explained by the predicate classifier is already
             // represented with the predicate's own identity. Do not report it again.
             if typed_failure.is_none()
@@ -698,6 +716,25 @@ fn is_numeric_comparison_or_null(logical: &LogicalPredicate, sources: &[SourceRe
         }
     }
     false
+}
+
+fn has_exact_nullable_numeric_disjunction_for_column(
+    predicate: &Predicate,
+    column: &ColumnRef,
+    sources: &[SourceRelation],
+) -> bool {
+    match predicate {
+        Predicate::Or(logical) if is_numeric_comparison_or_null(logical, sources) => {
+            logical
+                .operands()
+                .iter()
+                .any(|operand| ordinary_numeric_comparison_column(operand, sources).as_ref() == Some(column))
+        }
+        Predicate::And(logical) => logical.operands().iter().any(|operand| {
+            has_exact_nullable_numeric_disjunction_for_column(operand, column, sources)
+        }),
+        _ => false,
+    }
 }
 
 fn is_guarded_nullable_numeric_false(
