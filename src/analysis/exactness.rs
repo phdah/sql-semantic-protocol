@@ -144,7 +144,7 @@ pub(super) fn unknown_column_domain_exactness(
                 && predicate_exactness.residual_conditions().is_empty()
                 && source_has_portable_signed_integer_law(metadata, column_domain.column())
                 && predicates.where_predicate().is_some_and(|predicate| {
-                    has_exact_nullable_numeric_disjunction_for_column(
+                    has_exact_numeric_boolean_witness_for_column(
                         predicate,
                         column_domain.column(),
                         sources,
@@ -608,6 +608,15 @@ pub(super) fn predicate_residual_reasons(
         // Whole-query scalar exactness is independent of an operator-local
         // binary-prefix witness and requires comparison-setting attestations.
         Predicate::LikePrefix(_) => vec![ResidualConditionReason::ComputedExpression],
+        // Ordinary signed numeric comparisons retain SQL UNKNOWN under NOT.
+        // The typed Boolean witness can negate this comparison exactly;
+        // arbitrary NOT expressions still need independent proof.
+        Predicate::Not(not)
+            if clause != ConditionClause::JoinOn
+                && ordinary_numeric_comparison_column(not.operand(), sources).is_some() =>
+        {
+            Vec::new()
+        }
         Predicate::Not(_) => vec![ResidualConditionReason::LogicalNot],
         Predicate::IsNull(predicate) => {
             if matches!(predicate.expression(), Expression::Column(_)) {
@@ -736,7 +745,7 @@ fn source_has_portable_signed_integer_law(
     }
 }
 
-fn has_exact_nullable_numeric_disjunction_for_column(
+fn has_exact_numeric_boolean_witness_for_column(
     predicate: &Predicate,
     column: &ColumnRef,
     sources: &[SourceRelation],
@@ -754,8 +763,11 @@ fn has_exact_nullable_numeric_disjunction_for_column(
             ordinary_numeric_comparison_column(negative.operand(), sources).as_ref() == Some(column)
         }
         Predicate::And(logical) => logical.operands().iter().any(|operand| {
-            has_exact_nullable_numeric_disjunction_for_column(operand, column, sources)
+            has_exact_numeric_boolean_witness_for_column(operand, column, sources)
         }),
+        Predicate::Not(negative) => {
+            ordinary_numeric_comparison_column(negative.operand(), sources).as_ref() == Some(column)
+        }
         _ => false,
     }
 }
