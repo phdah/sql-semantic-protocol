@@ -203,6 +203,33 @@ pub(super) fn analyze_predicate_with_windows(
         Expr::IsTrue(inner) if !is_plain_boolean_column(inner) => {
             analyze_predicate_with_windows(inner, named_windows, output_aliases, scope, diagnostics)
         }
+        // For an ordinary nullable numeric comparison, IS FALSE is a
+        // two-valued test. NOT comparison alone is UNKNOWN on NULL, which
+        // changes the rejected/IS FALSE source bag. The explicit NOT NULL
+        // guard turns that UNKNOWN into FALSE without assuming that the
+        // opposite comparison operator covers every non-NULL value (NaN).
+        Expr::IsFalse(inner) if null_propagating_numeric_comparison_column(inner).is_some() => {
+            let column = null_propagating_numeric_comparison_column(inner)
+                .expect("guarded numeric comparison column");
+            let negative = Predicate::Not(NotPredicate::new(analyze_predicate_with_windows(
+                inner,
+                named_windows,
+                output_aliases,
+                scope,
+                diagnostics,
+            )));
+            let non_null = Predicate::IsNull(IsNullPredicate::new(
+                analyze_predicate_expression(
+                    column,
+                    named_windows,
+                    output_aliases,
+                    scope,
+                    diagnostics,
+                ),
+                true,
+            ));
+            Predicate::And(LogicalPredicate::pair(negative, non_null))
+        }
         Expr::IsFalse(inner) if !is_plain_boolean_column(inner) => {
             Predicate::Not(NotPredicate::new(analyze_predicate_with_windows(
                 inner,
