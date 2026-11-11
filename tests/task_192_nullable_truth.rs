@@ -5,10 +5,10 @@
 use duckdb::Connection;
 use serde_json::Value;
 use sql_semantic_protocol::{
-    analyze_configured_inputs_with_catalog, analyze_sql, dialect_from_name,
-    physical_source_plan, BooleanTruthCase, BooleanWitnessDirection, ComposedSemantics,
-    ConditionExactnessStatus, ConfiguredSqlInput, Predicate, ProtocolStatement, RelationCatalog,
-    SqlInput, ValueDomain, WitnessDirection, WitnessFormula, WitnessObligation,
+    analyze_configured_inputs_with_catalog, analyze_sql, dialect_from_name, physical_source_plan,
+    BooleanTruthCase, BooleanWitnessDirection, ComposedSemantics, ConditionExactnessStatus,
+    ConfiguredSqlInput, Predicate, ProtocolStatement, RelationCatalog, SqlInput, ValueDomain,
+    WitnessDirection, WitnessFormula, WitnessObligation,
 };
 
 const ORIGINAL: &str = include_str!("../docs/task-177-predicate-oracles.json");
@@ -329,15 +329,17 @@ fn original_cross_column_or_and_not_have_exact_typed_boolean_witnesses_not_scala
                     panic!("{id}/{name}: missing physical {truth:?} row witness: {physical:?}");
                 };
                 assert!(
-                    cases.iter().any(|case| case.obligations().iter().any(|obligation| {
-                        matches!(
-                            obligation,
-                            WitnessObligation::Predicate(WitnessFormula::RowTruth {
-                                truth: actual,
-                                ..
-                            }) if *actual == truth
-                        )
-                    })),
+                    cases
+                        .iter()
+                        .any(|case| case.obligations().iter().any(|obligation| {
+                            matches!(
+                                obligation,
+                                WitnessObligation::Predicate(WitnessFormula::RowTruth {
+                                    truth: actual,
+                                    ..
+                                }) if *actual == truth
+                            )
+                        })),
                     "{id}/{name}: physical row witness has wrong TRUE or NOT TRUE direction"
                 );
             }
