@@ -113,7 +113,16 @@
       "parser_cells": 13,
       "exactness_scope": "closed_world_fully_supplied_original_semijoin_only",
       "universal_whole_query_status": "residual_unapproved_independent_scalar_domain",
-      "independent_review": false
+      "independent_review": false,
+      "adapter_parity_test": "tests/task_192_adapter_parity.rs",
+      "adapter_contracts": [
+        "direct_sql",
+        "dbt_compiled",
+        "odcs"
+      ],
+      "expected_adapter_parser_pairs_with_odcs": 39,
+      "expected_adapter_parser_pairs_without_odcs": 26,
+      "external_vendor_execution": "unattested"
     },
     "independent_original_query_shapes": {
       "case_count": 43,
