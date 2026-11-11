@@ -25,8 +25,12 @@ the normalization does not attest runtime vendor execution.
 The original TASK-192 S018 predicate retains an exact NULL-membership
 claim without deriving an artificial finite domain for projected `id`.
 
-Three further original 3VL cases have explicit Boolean-tree proofs:
+Four further original 3VL cases have explicit Boolean-tree proofs:
 
+- **S011** retains `NOT (amount > 1)` without discarding SQL UNKNOWN. For
+  a signed integer source, its original NULL rows remain UNKNOWN, ordinary
+  values at most 1 are TRUE and values above 1 are FALSE. The exact typed
+  Boolean witness does not invent a finite domain for projected `id`.
 - **S012** retains `amount > 1 OR amount IS NULL` as a same-column
   disjunction. Its TRUE rows are values above 1 plus SQL NULL, FALSE rows are
   non-NULL values at most 1, and its UNKNOWN partition is empty. This does
