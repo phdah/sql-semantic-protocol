@@ -318,3 +318,74 @@ fn observed_portable_dialect_documents_remain_equivalent_without_claiming_native
         );
     }
 }
+
+#[test]
+fn struct_cast_parser_rejections_and_repaired_duckdb_drift_are_explicit() {
+    let freeze = json(FREEZE);
+    let structure = freeze["cases"]
+        .as_array()
+        .expect("43 fixed cases")
+        .iter()
+        .find(|case| case["id"] == "88-C177-S179")
+        .expect("one structural exception");
+    let sql = field(structure, "sql");
+    let mut portable: Option<Value> = None;
+    let mut accepted = 0;
+    let mut rejected = 0;
+    let mut repaired = 0;
+    for observation in structure["dialect_cells"].as_array().expect("13 parser cells") {
+        let dialect_name = field(observation, "dialect");
+        let historical = field(observation, "observed_parser_canonical_status");
+        let dialect = dialect_from_name(dialect_name).expect("registered SQL parser");
+        let result = analyze_sql(sql, dialect_name, dialect.as_ref());
+        if historical == "R" {
+            assert!(
+                matches!(result, Err(sql_semantic_protocol::Error::Parse(_))),
+                "{dialect_name}: original syntax rejection needs an actual parser error"
+            );
+            assert!(
+                matches!(dialect_name, "bigquery" | "generic"),
+                "unexpected unsupported parser identity"
+            );
+            rejected += 1;
+            continue;
+        }
+        assert!(
+            matches!(historical, "C" | "D"),
+            "{dialect_name}: unexplained STRUCT dialect cell"
+        );
+        let protocol = result.unwrap_or_else(|error| {
+            panic!("{dialect_name}: original STRUCT should remain an explicit semantic boundary: {error}")
+        });
+        let mut wire = json(&to_json(&protocol));
+        let query = &wire["inputs"][0]["statements"][0];
+        assert_eq!(
+            query["output"]["columns"][0]["domain"]["kind"],
+            "unknown",
+            "{dialect_name}: a native DuckDB STRUCT value does not certify portable CAST semantics"
+        );
+        assert!(
+            query["diagnostics"]
+                .as_array()
+                .expect("public diagnostic list")
+                .iter()
+                .any(|diagnostic| diagnostic["code"].as_str().is_some_and(|code| code.contains("unsupported"))),
+            "{dialect_name}: unsupported STRUCT must be observable, not silently exact"
+        );
+        wire["inputs"][0]["dialect"] = Value::Null;
+        if let Some(expected) = &portable {
+            assert_eq!(&wire, expected, "{dialect_name}: full document differs");
+        } else {
+            portable = Some(wire);
+        }
+        if historical == "D" {
+            assert_eq!(
+                dialect_name, "duckdb",
+                "historical drift was a one-cell DuckDB repair"
+            );
+            repaired += 1;
+        }
+        accepted += 1;
+    }
+    assert_eq!((accepted, rejected, repaired), (11, 2, 1));
+}
