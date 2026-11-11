@@ -47,3 +47,10 @@ Next: [TASK-191](task-191%20-%20adjudicate-task-177-parser-and-native-boundaries
 ## Dependency amendment (2026-11-10)
 
 TASK-178's bounded portable baseline is completed in PR #197, but full semantic proof was extracted into TASK-192..197. TASK-179 now follows TASK-197 rather than TASK-178 directly. This does not waive any original vendor/session law or engine execution requirement. See [the ownership ledger](../../docs/task-178-scope-split.json).
+
+
+## TASK-192 pending vendor-law handoff (not an approval)
+
+- S021/S023/S024 nonbinary ILIKE/SIMILAR/regex and S026/S038 COLLATE require named vendor collation/execution laws. S020/S022/S025 safe LIKE prefix and S039 padded VARCHAR equality have exact **source-local typed** witnesses only with explicitly supplied `binary_collation` and `no_char_padding` assumptions; no actual external warehouse session was attested.
+- S034/S035/S036/S037 temporal offset, DST and date-conversion behavior, S040 NaN/implicit cast, S041 signed zero, and S042 NULL sorting retain session/vendor boundaries. S027 BIGINT max addition succeeds in the original DuckDB test through engine-specific widening, while S032 ABS(BIGINT min) fails; neither is a proven 13-vendor arithmetic law. `tests/task_192_computed_witness.rs` supplies independent original SQL oracles.
+- TASK-179 must later adjudicate these on its own finite acceptance matrix, not infer runtime vendor behavior from TASK-192 parser or DuckDB evidence.
