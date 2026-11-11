@@ -1,4 +1,4 @@
-//! TASK-192: nullable disjunction and IS FALSE have different 3VL laws.
+//! TASK-192: nullable disjunction and IS TRUE/IS FALSE have different 3VL laws.
 //! Exactness requires the original full positive/negative/UNKNOWN partition,
 //! not just agreement on which WHERE rows happen to survive.
 
@@ -40,7 +40,7 @@ fn expected_ids(case: &Value, key: &str) -> Vec<i64> {
 }
 
 #[test]
-fn original_s012_and_s017_preserve_native_three_valued_truth_partitions() {
+fn original_s012_s016_and_s017_preserve_native_three_valued_truth_partitions() {
     let prior: Value = serde_json::from_str(ORIGINAL).expect("independent source oracle");
     let db = Connection::open_in_memory().expect("DuckDB");
     db.execute_batch(prior["source_setup"].as_str().expect("source DDL and rows"))
@@ -54,6 +54,10 @@ fn original_s012_and_s017_preserve_native_three_valued_truth_partitions() {
         (
             "88-C177-S012",
             "((amount > 1 OR amount IS NULL) AND id > 0)",
+        ),
+        (
+            "88-C177-S016",
+            "((amount > 0) AND amount IS NOT NULL)",
         ),
         (
             "88-C177-S017",
@@ -117,7 +121,7 @@ fn exact_nullable_original_predicates_do_not_erase_id_or_null_truth() {
     let mut visited = 0;
     for case in freeze["cases"].as_array().expect("43 original samples") {
         let id = case["id"].as_str().expect("case ID");
-        if !matches!(id, "88-C177-S012" | "88-C177-S017") {
+        if !matches!(id, "88-C177-S012" | "88-C177-S016" | "88-C177-S017") {
             continue;
         }
         let sql = case["sql"].as_str().expect("unchanged original SQL");
@@ -151,7 +155,7 @@ fn exact_nullable_original_predicates_do_not_erase_id_or_null_truth() {
                     matches!(query.output().columns()[0].domain(), ValueDomain::Ranges(_)),
                     "{id}/{name}: independent id > 0 interval must survive nullable OR"
                 ),
-                "88-C177-S017" => assert!(
+                "88-C177-S016" | "88-C177-S017" => assert!(
                     matches!(
                         query.output().columns()[0].domain(),
                         ValueDomain::Unbounded | ValueDomain::Unknown(_)
@@ -163,7 +167,7 @@ fn exact_nullable_original_predicates_do_not_erase_id_or_null_truth() {
             visited += 1;
         }
     }
-    assert_eq!(visited, 26);
+    assert_eq!(visited, 39);
 }
 
 #[test]
@@ -177,7 +181,7 @@ fn typed_nullable_predicates_have_exact_true_and_not_true_boolean_witnesses() {
             .expect("typed direct SQL DDL");
         let catalog =
             RelationCatalog::from_schemas(schema.source_schemas()).expect("typed original source");
-        for id in ["88-C177-S012", "88-C177-S017"] {
+        for id in ["88-C177-S012", "88-C177-S016", "88-C177-S017"] {
             let case = freeze["cases"]
                 .as_array()
                 .expect("cases")
@@ -243,7 +247,7 @@ fn floating_source_without_nan_and_signed_zero_laws_cannot_be_exact() {
     let catalog = RelationCatalog::from_schemas(source.source_schemas())
         .expect("physical floating type facts");
 
-    for id in ["88-C177-S012", "88-C177-S017"] {
+    for id in ["88-C177-S012", "88-C177-S016", "88-C177-S017"] {
         let sql = freeze["cases"]
             .as_array()
             .expect("43 SQL cases")
