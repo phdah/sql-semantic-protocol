@@ -102,7 +102,28 @@
       "external_vendor_execution": "unattested",
       "status": "conditional_source_local_witness_only"
     },
-    "production_consumer_migration_pr": "https://github.com/phdah/sql-tdg/pull/50"
+    "production_consumer_migration_pr": "https://github.com/phdah/sql-tdg/pull/50",
+    "correlated_exists_finite_evidence": {
+      "original_case_id": "88-C177-S013",
+      "original_sql": "docs/task-192-acceptance-freeze.json",
+      "source_complete_signed_key_oracles": "tests/task_192_correlated_exists.rs",
+      "realization": "src/physical_realization/exists_bags.rs",
+      "physical_occurrence_identity": "schema_backed_unique_text___physical_row_id",
+      "source_identity_rule": "distinct_from_original_numeric_nullable_or_duplicate_sql_id",
+      "parser_cells": 13,
+      "exactness_scope": "closed_world_fully_supplied_original_semijoin_only",
+      "universal_whole_query_status": "residual_unapproved_independent_scalar_domain",
+      "independent_review": false
+    },
+    "independent_original_query_shapes": {
+      "case_count": 43,
+      "parser_cells": 559,
+      "expectations": "docs/task-192-original-query-shapes.json",
+      "public_test": "tests/task_192_independent_query_shapes.rs",
+      "scope": "outer_relation_output_alias_and_normalized_predicate_shape",
+      "full_document_manual_golden_still_missing": true,
+      "independent_review": false
+    }
   },
   "task_177_dialect_parser_acceptance": {
     "owner": "TASK-177",
