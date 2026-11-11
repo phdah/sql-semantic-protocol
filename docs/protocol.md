@@ -1,5 +1,40 @@
 # SQL Semantic Protocol contract
 
+## TASK-192 nullable numeric comparison truth tests
+
+For a plain, well-typed SQL comparison between a physical column and a
+non-NULL numeric literal, `(column > 0) IS UNKNOWN` is equivalent to
+`column IS NULL` under three-valued logic. This holds for the full
+TRUE/FALSE/UNKNOWN partition of the *outer* truth test, not just the
+WHERE-selected rows:
+
+| Column | Ordinary comparison | `IS UNKNOWN` | `column IS NULL` |
+| --- | --- | --- | --- |
+| NULL | UNKNOWN | TRUE | TRUE |
+| Non-NULL, comparison TRUE | TRUE | FALSE | FALSE |
+| Non-NULL, comparison FALSE | FALSE | FALSE | FALSE |
+
+The public analyzer normalizes only an ordinary comparison using one unwrapped
+identifier/qualified column and a numeric literal, in either operand order,
+to the canonical `is_null` predicate. No `IS UNKNOWN` shortcut is inferred
+for arithmetic or function operands, casts, NULL-safe operators, unknown
+vendor comparison functions or implicit conversion rules. A schema that makes
+the original numeric comparison invalid still requires source type validation;
+the normalization does not attest runtime vendor execution.
+
+The original TASK-192 S018 predicate now retains an exact NULL-membership
+claim without deriving an artificial finite domain for the projected `id`.
+Other nullable Boolean boundaries are not automatically completed: S012's
+`range OR NULL` source restriction cannot be represented exactly by a single
+scalar `ValueDomain::Ranges` or `ValueDomain::Set`, and S017's
+`IS FALSE`/logical NOT cannot simply drop SQL UNKNOWN or assume NaN
+comparison complements. Their conservative residual proof boundaries
+remain unapproved. The separate
+[`TASK-192` semantic cell contract](task-192-semantic-cell-ledger.json)
+and [acceptance audit](task-192-acceptance-audit.md) retain the full
+559-cell obligations and distinguish parser equivalence from physical proof.
+
+
 ## TASK-174 dbt materialization declarations and execution evidence
 
 A dbt manifest owns a model's `config.materialized` and `unique_id`. Its compiled
