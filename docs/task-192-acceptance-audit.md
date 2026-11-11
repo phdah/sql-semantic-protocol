@@ -77,26 +77,26 @@ The temporary [sql-tdg consumer compatibility PR #49](https://github.com/phdah/s
 - The original compiled dbt and ODCS parity tests now compare **entire coupled Boolean witness constraints, qualifying/rejected directions and row-condition exactness**, not just output domains, for S012 and S017 on all 13 parsers. dbt producer execution remains separately unattested.
 - S033 and S179 have `condition_exactness=exact` only because no filtering WHERE clause exists. Their **output value domains remain Unknown** and do not certify a successful native overflow or portable nested STRUCT CAST.
 
-### Fourth implementation pass: exact original S011/S016 3VL laws
+### Fourth implementation pass: S016 nullable IS TRUE repair
 
-- **S016** had a false assertion of full source-level exactness: reducing
-  `amount > 0 IS TRUE` to the underlying comparison changed FALSE to UNKNOWN
-  on NULL source rows. `src/analysis/predicates.rs` now retains
-  `amount > 0 AND amount IS NOT NULL`. The unchanged original DuckDB source
-  oracle checks every TRUE, FALSE, UNKNOWN and NOT TRUE occurrence.
-- **S011** preserves the canonical `NOT (amount > 1)` expression and upgrades
-  *only* an ordinary single-column numeric comparison to an exact symbolic
-  Boolean condition under signed-integer type laws. Its SQL UNKNOWN on NULL
-  survives; arbitrary NOT, cross-column OR and unproved floating type laws
-  remain residual.
-- `tests/task_192_nullable_truth.rs` checks S011/S012/S016/S017 original
-  native partitions and typed public TRUE/NOT TRUE Boolean witnesses on all
-  13 parsers, plus a 52-cell unattested DOUBLE negative-law matrix.
-- The v1 559-cell semantic ledger now has matching exact S011 expectations
-  without changing original SQL, output-domain policies or vendor attestations.
+- **S016** previously mapped `amount > 0 IS TRUE` to `amount > 0`,
+  incorrectly turning a FALSE outcome on NULL source rows into UNKNOWN.
+  `src/analysis/predicates.rs` now retains
+  `amount > 0 AND amount IS NOT NULL`, preserving the original complete
+  TRUE/FALSE/UNKNOWN/NOT TRUE source partition.
+- `tests/task_192_nullable_truth.rs` exercises the unchanged S012/S016/S017
+  DuckDB source and terminal oracles, 39 public parser cells, typed exact
+  TRUE/NOT TRUE Boolean witnesses, and 39 unattested DOUBLE negative controls.
+- An attempted S011 numeric NOT exactness promotion failed independently
+  seeded conformance in `tests/differential_conformance.rs`: NULL-membership
+  assumptions and nested CTE predicate analysis were insufficient. This
+  promotion was reverted. S011 remains the **unapproved logical_not residual**
+  in all 13 dialect cells, with a fail-closed negative regression.
+- The versioned 559-cell ledger preserves the existing source and terminal
+  scope, exact S012/S016/S017 classification, and explicit unreviewed flags.
 
-This narrows two concrete mandatory semantic gaps. It does not replace
-independent reviewer verification, approve remaining residuals or demonstrate
-unmodified downstream consumer compatibility.
+The verified S016 correction does not replace independent reviewer validation,
+approve remaining mandatory residuals or demonstrate unmodified consumer
+compatibility.
 
 The ledger is an exhaustive expected **public contract**, not a signed release certification: residual computed/temporal and vendor-dependent cases still require independent adjudication against their original bounded acceptance obligations. External vendor laws, final downstream migration and independent reviewer signoff retain their explicit owners. **No task Done or parent release approval is implied.**
