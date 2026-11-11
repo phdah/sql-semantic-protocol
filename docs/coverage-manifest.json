@@ -95,8 +95,9 @@
       ],
       "extremal_signed_native_arithmetic_oracle": "tests/task_192_computed_witness.rs",
       "original_s027_duckdb_widens_bigint_addition": true,
-      "original_s032_duckdb_signed_abs_extreme": "awaiting_exact_head_native_regression",
-      "portable_vendor_widening_certified": false
+      "original_s032_duckdb_signed_abs_extreme": "error_on_bigint_min_confirmed_native",
+      "portable_vendor_widening_certified": false,
+      "extremal_native_oracle_protocol_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/43109586448"
     },
     "string_session_witness_evidence": {
       "original_portable_prefix_case_ids": [
