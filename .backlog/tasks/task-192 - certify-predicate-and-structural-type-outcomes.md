@@ -63,3 +63,11 @@ Extracted on 2026-11-10 from the previously overbroad TASK-178. There is **no im
 
 - [Typed domain soundness tests](../../tests/task_192_typed_soundness.rs) replay all 41 successful original scalar native terminal bags against all 13 parser output domains and verify that the 31 nullable `id` projections never acquire an invented finite range or inclusion set from an unrelated predicate. Ten exact portable signed-bound/set claims are sourced from independent original predicate goldens and explicitly frozen in the TASK-192 matrix; full independent per-cell certification is still outstanding.
 - [Temporary sql-tdg consumer PR #49](https://github.com/phdah/sql-tdg/pull/49) pins a protocol candidate for downstream compatibility testing; it is a CI-only verification branch and must never be merged. Update the pin to exact final protocol head before recording signoff.
+
+## Second pass implementation evidence (PR #198)
+
+- [559-cell semantic contract](../../docs/task-192-semantic-cell-ledger.json) and [public-API test](../../tests/task_192_semantic_contract.rs) now guard expected exact/conditional/residual, projected domain kind, named residual reasons, parser rejection and historic repaired STRUCT drift on every SQL/dialect cell.
+- [dbt adapter parity](../../tests/task_192_adapter_parity.rs) analyzes the original compiled SQL instead of unrelated placeholder SQL for all 41 source-bearing cases in all 13 public parsers.
+- [Alternate native source counterexamples](../../tests/task_192_projection_counterexamples.rs) exercise all 3VL partitions with independent NULL/large/negative/duplicate projected IDs in string/temporal/NaN query families.
+- Original S018 nullable numeric `IS UNKNOWN` normalizes to an exact `IS NULL` predicate at the public seam, preserving positive and NOT TRUE physical semantics. S012 nullable interval disjunction and S017 logical NOT semantics are still explicit mandatory semantic limitations. **They are not approved Residual dispositions.**
+- Full independent reviewer signoff, mandatory sound physical realization for remaining residual variants and final-head pinned sql-tdg migration still block Done; keep all AC boxes unchecked pending proof.
