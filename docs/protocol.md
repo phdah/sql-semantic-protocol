@@ -25,7 +25,7 @@ the normalization does not attest runtime vendor execution.
 The original TASK-192 S018 predicate retains an exact NULL-membership
 claim without deriving an artificial finite domain for projected `id`.
 
-Two further original 3VL cases have explicit Boolean-tree proofs:
+Three further original 3VL cases have explicit Boolean-tree proofs:
 
 - **S012** retains `amount > 1 OR amount IS NULL` as a same-column
   disjunction. Its TRUE rows are values above 1 plus SQL NULL, FALSE rows are
@@ -34,6 +34,11 @@ Two further original 3VL cases have explicit Boolean-tree proofs:
   Boolean witness* carries row-membership instead; the separately proven
   projected `id > 0` interval is unchanged. Other unrepresentable scalar
   unions remain residual.
+- **S016** models `(amount > 0) IS TRUE` with
+  `(amount > 0) AND amount IS NOT NULL`. The explicit guard preserves
+  FALSE on NULL rows rather than converting the outer truth test to UNKNOWN.
+  The TRUE/FALSE/UNKNOWN/NOT TRUE source partition is preserved without
+  assuming an inverted comparison or a vendor-specific NaN rule.
 - **S017** models `(amount > 0) IS FALSE` with
   `NOT (amount > 0) AND amount IS NOT NULL`. Both expressions are FALSE
   when `amount` is NULL, unlike naked `NOT (amount > 0)`. The original
