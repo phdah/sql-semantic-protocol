@@ -86,6 +86,7 @@ pub(super) fn unknown_column_domain_exactness(
     joins: &[ProtocolJoin],
     sources: &[SourceRelation],
     predicate_exactness: &ConditionExactness,
+    metadata: &AnalysisMetadata<'_>,
 ) -> ConditionExactness {
     let mut residuals = Vec::new();
     for column_domain in column_domains {
@@ -141,6 +142,7 @@ pub(super) fn unknown_column_domain_exactness(
             if typed_failure.is_none()
                 && clause == ConditionClause::Where
                 && predicate_exactness.residual_conditions().is_empty()
+                && source_has_portable_signed_integer_law(metadata, column_domain.column())
                 && predicates.where_predicate().is_some_and(|predicate| {
                     has_exact_nullable_numeric_disjunction_for_column(
                         predicate,
@@ -717,6 +719,21 @@ fn is_numeric_comparison_or_null(logical: &LogicalPredicate, sources: &[SourceRe
         }
     }
     false
+}
+
+fn source_has_portable_signed_integer_law(
+    metadata: &AnalysisMetadata<'_>,
+    column: &ColumnRef,
+) -> bool {
+    // Untyped SQL preserves the symbolic predicate contract, but a typed
+    // floating source cannot borrow signed integer trichotomy or NULL laws.
+    // In particular, neither NaN comparisons nor text-to-number coercions
+    // may be upgraded to a physical exactness claim by this shortcut.
+    match metadata.column_data_type(column) {
+        None | Some(DataType::SignedInteger { .. }) => true,
+        Some(DataType::Nullable(inner)) => matches!(inner.as_ref(), DataType::SignedInteger { .. }),
+        _ => false,
+    }
 }
 
 fn has_exact_nullable_numeric_disjunction_for_column(
