@@ -485,6 +485,12 @@ pub(super) fn append_predicate_residuals(
     // A path through the logical tree identifies a condition, rather than only its
     // reason. Two unsupported siblings must not collapse into one residual.
     match predicate {
+        // The paired NOT/comparison and IS NOT NULL guard is a canonical
+        // two-valued IS FALSE witness. Its conjunctive semantics are exact
+        // even on NULL rows; a standalone NOT remains a residual.
+        Predicate::And(logical)
+            if clause != ConditionClause::JoinOn
+                && is_guarded_nullable_numeric_false(logical, sources) => {}
         Predicate::And(logical) => {
             for (index, operand) in logical.operands().iter().enumerate() {
                 append_predicate_residuals(
@@ -565,7 +571,14 @@ pub(super) fn predicate_residual_reasons(
             collect_predicate_column_refs(predicate, sources, &mut columns);
             if columns.len() > 1 {
                 vec![ResidualConditionReason::CrossColumnDisjunction]
-            } else if predicate_domains_contain_unknown(predicate, sources) {
+            } else if predicate_domains_contain_unknown(predicate, sources)
+                && !is_numeric_comparison_or_null(logical, sources)
+            {
+                // A union of a numeric range with SQL NULL has no precise
+                // scalar ValueDomain representation. Its *Boolean tree* is
+                // nevertheless exact when the matching-column NULL arm
+                // closes its SQL UNKNOWN branch. Do not invent a range+NULL
+                // domain or extend this rule to unrelated OR operands.
                 vec![ResidualConditionReason::UnsupportedPredicate]
             } else {
                 Vec::new()
@@ -621,6 +634,89 @@ pub(super) fn predicate_residual_reasons(
             vec![ResidualConditionReason::UnsupportedPredicate]
         }
     }
+}
+
+// Keep this narrow: only a direct ordinary numeric comparison and one
+// matching plain-column NULL test have a complete portable 3VL law. The
+// original Boolean predicate tree is retained for physical realization.
+fn ordinary_numeric_comparison_column(
+    predicate: &Predicate,
+    sources: &[SourceRelation],
+) -> Option<ColumnRef> {
+    let Predicate::Comparison(comparison) = predicate else {
+        return None;
+    };
+    if !matches!(
+        comparison.operator(),
+        ComparisonOperator::Eq
+            | ComparisonOperator::Neq
+            | ComparisonOperator::Lt
+            | ComparisonOperator::Lte
+            | ComparisonOperator::Gt
+            | ComparisonOperator::Gte
+    ) {
+        return None;
+    }
+    let column = match (comparison.left(), comparison.right()) {
+        (Expression::Column(column), Expression::Literal(literal))
+        | (Expression::Literal(literal), Expression::Column(column))
+            if matches!(literal.value(), LiteralValue::Number(_)) =>
+        {
+            column
+        }
+        _ => return None,
+    };
+    Some(resolve_column(column, sources))
+}
+
+fn matches_column_null_test(
+    test: &Predicate,
+    column: &ColumnRef,
+    negated: bool,
+    sources: &[SourceRelation],
+) -> bool {
+    matches!(test,
+        Predicate::IsNull(is_null)
+            if is_null.negated() == negated
+                && matches!(
+                    is_null.expression(),
+                    Expression::Column(actual)
+                        if resolve_column(actual, sources) == *column
+                )
+    )
+}
+
+fn is_numeric_comparison_or_null(
+    logical: &LogicalPredicate,
+    sources: &[SourceRelation],
+) -> bool {
+    let [left, right] = logical.operands() else {
+        return false;
+    };
+    for (comparison, test) in [(left, right), (right, left)] {
+        if let Some(column) = ordinary_numeric_comparison_column(comparison, sources) {
+            if matches_column_null_test(test, &column, false, sources) {
+                return true;
+            }
+        }
+    }
+    false
+}
+
+fn is_guarded_nullable_numeric_false(
+    logical: &LogicalPredicate,
+    sources: &[SourceRelation],
+) -> bool {
+    let [negative, non_null] = logical.operands() else {
+        return false;
+    };
+    let Predicate::Not(not) = negative else {
+        return false;
+    };
+    let Some(column) = ordinary_numeric_comparison_column(not.operand(), sources) else {
+        return false;
+    };
+    matches_column_null_test(non_null, &column, true, sources)
 }
 
 pub(super) fn columns_reference_distinct_sources(
