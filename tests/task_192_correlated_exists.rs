@@ -2,11 +2,15 @@
 //! occurrences, including duplicates, NULL and unmatched rows. This is a
 //! source-local membership witness, not scalar-domain or vendor signoff.
 
+use std::collections::BTreeMap;
+
 use duckdb::Connection;
 use serde_json::Value;
 use sql_semantic_protocol::{
-    analyze_configured_inputs_with_catalog, analyze_inputs, dialect_from_name, ComposedSemantics,
-    ConditionExactnessStatus, ConfiguredSqlInput, RelationCatalog, SqlInput,
+    analyze_configured_inputs_with_catalog, analyze_inputs, dialect_from_name,
+    physical_finite_exists_bag_plan, ComposedSemantics, ConditionExactnessStatus,
+    ConfiguredSqlInput, LiteralValue, PhysicalFiniteExistsProof, PhysicalWriteRow,
+    PhysicalWriteState, RelationCatalog, RelationSchema, SchemaColumn, SqlInput,
     SubqueryMembershipCase, SubqueryMembershipDirection, SubqueryMembershipKind, ValueDomain,
 };
 
@@ -152,4 +156,177 @@ fn s013_has_separate_physical_source_correlations_and_exact_both_direction_witne
             "S013/{name}: NULL key or missing match is NOT TRUE"
         );
     }
+}
+
+fn signed(value: Option<i64>) -> LiteralValue {
+    value.map_or(LiteralValue::Null, |v| LiteralValue::Number(v.to_string()))
+}
+
+fn source_row(
+    physical_id: &str,
+    columns: &[(&str, LiteralValue)],
+) -> PhysicalWriteRow {
+    let mut values = BTreeMap::from([(
+        "__physical_row_id".to_string(),
+        LiteralValue::Text(physical_id.to_string()),
+    )]);
+    for (name, value) in columns {
+        values.insert((*name).to_string(), value.clone());
+    }
+    PhysicalWriteRow::new(values).expect("typed complete physical source occurrence")
+}
+
+fn physical_sources() -> (RelationCatalog, Vec<PhysicalWriteState>) {
+    let column = |name, data_type| {
+        SchemaColumn::from_sql_type(name, data_type, "duckdb")
+            .expect("physical source data type")
+    };
+    let catalog = RelationCatalog::from_schemas(&[
+        RelationSchema::new(
+            "orders",
+            vec![
+                column("id", "INTEGER"),
+                column("amount", "INTEGER"),
+                column("__physical_row_id", "VARCHAR"),
+            ],
+        )
+        .expect("outer source schema"),
+        RelationSchema::new(
+            "customers",
+            vec![
+                column("id", "INTEGER"),
+                column("name", "VARCHAR"),
+                column("__physical_row_id", "VARCHAR"),
+            ],
+        )
+        .expect("inner source schema"),
+    ])
+    .expect("physical schema catalog");
+
+    let outer = [
+        (Some(-1), Some(10)),
+        (Some(0), Some(10)),
+        (Some(1), Some(10)),
+        (Some(1), None),
+        (Some(2), Some(19)),
+        (Some(3), Some(20)),
+        (None, Some(30)),
+    ]
+    .into_iter()
+    .enumerate()
+    .map(|(index, (id, amount))| {
+        source_row(
+            &format!("o{index}"),
+            &[("id", signed(id)), ("amount", signed(amount))],
+        )
+    })
+    .collect();
+    let inner = [
+        (Some(1), "one"),
+        (Some(1), "duplicate"),
+        (Some(3), "three"),
+        (None, "null"),
+    ]
+    .into_iter()
+    .enumerate()
+    .map(|(index, (id, name))| {
+        source_row(
+            &format!("c{index}"),
+            &[
+                ("id", signed(id)),
+                ("name", LiteralValue::Text(name.to_string())),
+            ],
+        )
+    })
+    .collect();
+    (
+        catalog,
+        vec![
+            PhysicalWriteState::new("orders", outer).expect("outer bag"),
+            PhysicalWriteState::new("customers", inner).expect("inner bag"),
+        ],
+    )
+}
+
+#[test]
+fn original_s013_has_closed_world_constructive_exists_proofs_on_all_13_dialects() {
+    let (matrix, sql) = original_exists();
+    let (catalog, sources) = physical_sources();
+
+    for dialect_name in matrix["dialects"].as_array().expect("13 parsers") {
+        let dialect_name = dialect_name.as_str().expect("dialect name");
+        let parser = dialect_from_name(dialect_name).expect("public parser");
+        let input = SqlInput::inline(&sql);
+        let configured = [ConfiguredSqlInput::new(
+            "task192-s013-complete-physical-bags",
+            &input,
+            dialect_name,
+            parser.as_ref(),
+        )];
+        let bundle = analyze_configured_inputs_with_catalog(&configured, &catalog)
+            .expect("original source-complete query");
+        let layer = bundle.layers().last().expect("original query layer");
+        let proof = physical_finite_exists_bag_plan(&bundle, layer.id(), &sources);
+        let PhysicalFiniteExistsProof::Exact(exact) = proof else {
+            panic!("S013/{dialect_name}: complete physical source proof: {proof:?}");
+        };
+        assert_eq!(exact.sources, ["orders".to_string(), "customers".to_string()]);
+        assert_eq!(exact.kind, SubqueryMembershipKind::Exists);
+        assert_eq!(exact.selected, ["o2", "o3", "o5"]);
+        assert_eq!(exact.rejected, ["o0", "o1", "o4", "o6"]);
+        assert_eq!(
+            exact.matching_inner,
+            BTreeMap::from([
+                ("o0".to_string(), vec![]),
+                ("o1".to_string(), vec![]),
+                ("o2".to_string(), vec!["c0".to_string(), "c1".to_string()]),
+                ("o3".to_string(), vec!["c0".to_string(), "c1".to_string()]),
+                ("o4".to_string(), vec![]),
+                ("o5".to_string(), vec!["c2".to_string()]),
+                ("o6".to_string(), vec![]),
+            ]),
+            "S013/{dialect_name}: prove every matching and absent inner occurrence"
+        );
+        assert_eq!(
+            exact.terminal.iter().map(|row| row.get("id")).collect::<Vec<_>>(),
+            vec![
+                Some(&LiteralValue::Number("1".to_string())),
+                Some(&LiteralValue::Number("1".to_string())),
+                Some(&LiteralValue::Number("3".to_string())),
+            ],
+            "S013/{dialect_name}: exact duplicate-preserving terminal"
+        );
+        let domain = exact.terminal_domains.get("id").expect("typed final id domain");
+        assert_eq!(domain.values(), &[1, 3]);
+        assert!(!domain.null_allowed());
+        assert_eq!(domain.bounds(), Some((1, 3)));
+    }
+}
+
+#[test]
+fn numeric_sql_id_requires_separate_unique_physical_occurrence_identity() {
+    let (_, sql) = original_exists();
+    let (catalog, mut sources) = physical_sources();
+    let parser = dialect_from_name("duckdb").expect("parser");
+    let input = SqlInput::inline(&sql);
+    let configured = [ConfiguredSqlInput::new(
+        "task192-s013-invalid-physical-ids",
+        &input,
+        "duckdb",
+        parser.as_ref(),
+    )];
+    let bundle = analyze_configured_inputs_with_catalog(&configured, &catalog)
+        .expect("original SQL");
+
+    let mut duplicate = sources[0].rows().to_vec();
+    duplicate.push(duplicate[2].clone());
+    sources[0] = PhysicalWriteState::new("orders", duplicate).expect("syntactically valid bag");
+    let layer = bundle.layers().last().expect("query layer");
+    assert!(
+        matches!(
+            physical_finite_exists_bag_plan(&bundle, layer.id(), &sources),
+            PhysicalFiniteExistsProof::Impossible { .. }
+        ),
+        "duplicating an occurrence identity cannot be accepted as an exact semijoin proof"
+    );
 }
