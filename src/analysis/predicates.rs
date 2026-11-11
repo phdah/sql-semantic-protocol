@@ -200,6 +200,27 @@ pub(super) fn analyze_predicate_with_windows(
                 false,
             ))
         }
+        // IS TRUE is a two-valued test, unlike the underlying nullable
+        // comparison. Keep FALSE (rather than UNKNOWN) on NULL source rows
+        // by adding the same-column NOT NULL guard. As with IS FALSE, avoid
+        // inferring a complement operator that would assume NaN laws.
+        Expr::IsTrue(inner) if null_propagating_numeric_comparison_column(inner).is_some() => {
+            let column = null_propagating_numeric_comparison_column(inner)
+                .expect("guarded numeric comparison column");
+            let positive =
+                analyze_predicate_with_windows(inner, named_windows, output_aliases, scope, diagnostics);
+            let non_null = Predicate::IsNull(IsNullPredicate::new(
+                analyze_predicate_expression(
+                    column,
+                    named_windows,
+                    output_aliases,
+                    scope,
+                    diagnostics,
+                ),
+                true,
+            ));
+            Predicate::And(LogicalPredicate::pair(positive, non_null))
+        }
         Expr::IsTrue(inner) if !is_plain_boolean_column(inner) => {
             analyze_predicate_with_windows(inner, named_windows, output_aliases, scope, diagnostics)
         }
