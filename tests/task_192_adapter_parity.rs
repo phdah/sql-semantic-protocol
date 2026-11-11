@@ -5,8 +5,8 @@
 use serde_json::{json, Value};
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, analyze_dbt_manifest_with_schemas, analyze_inputs,
-    dialect_from_name, parse_dbt_manifest, ComposedSemantics, ConfiguredSqlInput, RelationCatalog,
-    SqlInput, ValueDomain, ProducerExecution,
+    dialect_from_name, parse_dbt_manifest, ComposedSemantics, ConfiguredSqlInput,
+    ProducerExecution, RelationCatalog, SqlInput, ValueDomain,
 };
 
 const MATRIX: &str = include_str!("../docs/task-192-acceptance-freeze.json");
@@ -37,7 +37,10 @@ fn dbt_source_bundle(
     if sql.contains("customers") {
         dependencies.push("source.task192.customers");
     }
-    assert!(!dependencies.is_empty(), "all 41 source-bearing cases require sources");
+    assert!(
+        !dependencies.is_empty(),
+        "all 41 source-bearing cases require sources"
+    );
 
     let manifest = json!({
         "metadata": {
@@ -200,7 +203,10 @@ fn every_representable_original_predicate_keeps_dbt_and_direct_typed_domains() {
             );
             let dbt = dbt_source_bundle(amount_type, sql, name);
             let actual = compiled_dbt_domains(&dbt);
-            assert_eq!(actual, expected, "{id}/{name}: original compiled dbt SQL parity");
+            assert_eq!(
+                actual, expected,
+                "{id}/{name}: original compiled dbt SQL parity"
+            );
             let sourced = RelationCatalog::from_schemas(dbt.source_schemas())
                 .expect("dbt exported typed source facts");
             assert_eq!(
