@@ -22,14 +22,31 @@ vendor comparison functions or implicit conversion rules. A schema that makes
 the original numeric comparison invalid still requires source type validation;
 the normalization does not attest runtime vendor execution.
 
-The original TASK-192 S018 predicate now retains an exact NULL-membership
-claim without deriving an artificial finite domain for the projected `id`.
-Other nullable Boolean boundaries are not automatically completed: S012's
-`range OR NULL` source restriction cannot be represented exactly by a single
-scalar `ValueDomain::Ranges` or `ValueDomain::Set`, and S017's
-`IS FALSE`/logical NOT cannot simply drop SQL UNKNOWN or assume NaN
-comparison complements. Their conservative residual proof boundaries
-remain unapproved. The separate
+The original TASK-192 S018 predicate retains an exact NULL-membership
+claim without deriving an artificial finite domain for projected `id`.
+
+Two further original 3VL cases have explicit Boolean-tree proofs:
+
+- **S012** retains `amount > 1 OR amount IS NULL` as a same-column
+  disjunction. Its TRUE rows are values above 1 plus SQL NULL, FALSE rows are
+  non-NULL values at most 1, and its UNKNOWN partition is empty. This does
+  not fit a single scalar `Range`/`Set` domain, so a *matching exact
+  Boolean witness* carries row-membership instead; the separately proven
+  projected `id > 0` interval is unchanged. Other unrepresentable scalar
+  unions remain residual.
+- **S017** models `(amount > 0) IS FALSE` with
+  `NOT (amount > 0) AND amount IS NOT NULL`. Both expressions are FALSE
+  when `amount` is NULL, unlike naked `NOT (amount > 0)`. The original
+  FALSE/UNKNOWN/NOT TRUE source bags are therefore retained. It does not
+  replace `NOT (amount > 0)` with `amount <= 0`, which could assert
+  unproved NaN/comparison-complement behavior.
+
+These statements apply to a well-typed ordinary numeric comparison and a
+matching column NULL test. Typed public Boolean witnesses and independent
+native DuckDB source/terminal goldens check both complete directions. Missing
+warehouse type laws or native vendor/session execution are not certified.
+
+The separate
 [`TASK-192` semantic cell contract](task-192-semantic-cell-ledger.json)
 and [acceptance audit](task-192-acceptance-audit.md) retain the full
 559-cell obligations and distinguish parser equivalence from physical proof.
