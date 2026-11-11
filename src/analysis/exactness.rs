@@ -686,10 +686,7 @@ fn matches_column_null_test(
     )
 }
 
-fn is_numeric_comparison_or_null(
-    logical: &LogicalPredicate,
-    sources: &[SourceRelation],
-) -> bool {
+fn is_numeric_comparison_or_null(logical: &LogicalPredicate, sources: &[SourceRelation]) -> bool {
     let [left, right] = logical.operands() else {
         return false;
     };
