@@ -5,9 +5,9 @@
 use duckdb::Connection;
 use serde_json::Value;
 use sql_semantic_protocol::{
-    analyze_configured_inputs_with_catalog, analyze_inputs, dialect_from_name,
-    BooleanTruthCase, BooleanWitnessDirection, ComposedSemantics, ConfiguredSqlInput,
-    RelationCatalog, SqlInput, ValueDomain,
+    analyze_configured_inputs_with_catalog, analyze_inputs, dialect_from_name, BooleanTruthCase,
+    BooleanWitnessDirection, ComposedSemantics, ConfiguredSqlInput, RelationCatalog, SqlInput,
+    ValueDomain,
 };
 
 const SOURCE: &str = include_str!("../docs/task-177-predicate-oracles.json");
@@ -26,9 +26,7 @@ fn sorted_native_ids(connection: &Connection, sql: &str) -> Vec<i64> {
     let rows = statement
         .query_map([], |row| row.get::<_, i64>(0))
         .expect("complete source identities");
-    let mut identities = rows
-        .map(|row| row.expect("source row"))
-        .collect::<Vec<_>>();
+    let mut identities = rows.map(|row| row.expect("source row")).collect::<Vec<_>>();
     identities.sort();
     identities
 }
@@ -101,8 +99,7 @@ fn signed_integer_computed_predicates_have_typed_true_and_not_true_witnesses() {
     let ddl = SqlInput::inline("CREATE TABLE orders (id INTEGER, amount INTEGER)");
     let schema = analyze_inputs(&[ddl], "duckdb", native_parser.as_ref())
         .expect("physical signed integer source");
-    let catalog = RelationCatalog::from_schemas(schema.source_schemas())
-        .expect("source datatypes");
+    let catalog = RelationCatalog::from_schemas(schema.source_schemas()).expect("source datatypes");
 
     for id in COMPUTED_IDS {
         let sql = freeze["cases"]
