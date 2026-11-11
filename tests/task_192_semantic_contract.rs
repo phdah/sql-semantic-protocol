@@ -16,7 +16,9 @@ fn parse(s: &str) -> Value {
 }
 
 fn attr<'a>(value: &'a Value, key: &str) -> &'a str {
-    value[key].as_str().expect("required semantic contract value")
+    value[key]
+        .as_str()
+        .expect("required semantic contract value")
 }
 
 #[test]
@@ -80,12 +82,18 @@ fn all_559_original_public_cells_have_explicit_expected_semantic_dispositions() 
     let mut accepted = 0;
     let mut rejected = 0;
     let mut repaired = 0;
-    for cell in contract["cells"].as_array().expect("559 independent dialect cells") {
+    for cell in contract["cells"]
+        .as_array()
+        .expect("559 independent dialect cells")
+    {
         let id = attr(cell, "case_id");
         let dialect_name = attr(cell, "dialect");
         let identity = attr(cell, "id");
         assert_eq!(identity, format!("{id}/{dialect_name}"));
-        assert!(seen.insert(identity), "{identity}: duplicate dialect proof cell");
+        assert!(
+            seen.insert(identity),
+            "{identity}: duplicate dialect proof cell"
+        );
         assert_eq!(cell["expected_typed_domain_case_ref"], id);
         assert_eq!(cell["native_source_terminal_case_ref"], id);
         assert_eq!(cell["independently_reviewed"], false);
@@ -123,7 +131,10 @@ fn all_559_original_public_cells_have_explicit_expected_semantic_dispositions() 
         let mut wire = parse(&to_json(&protocol));
         {
             let statement = &wire["inputs"][0]["statements"][0];
-            assert_eq!(statement["kind"], "query", "{identity}: no silent statement drop");
+            assert_eq!(
+                statement["kind"], "query",
+                "{identity}: no silent statement drop"
+            );
             assert_eq!(
                 statement["output"]["columns"][0]["domain"]["kind"],
                 cell["expected_projected_domain_kind"],
@@ -131,8 +142,7 @@ fn all_559_original_public_cells_have_explicit_expected_semantic_dispositions() 
             );
             let actual_exactness = &statement["condition_exactness"];
             assert_eq!(
-                actual_exactness["status"],
-                cell["expected_condition_exactness"],
+                actual_exactness["status"], cell["expected_condition_exactness"],
                 "{identity}: expected exact/conditional/residual classification"
             );
             if cell["expected_residual_reason"].is_string() {
@@ -141,8 +151,7 @@ fn all_559_original_public_cells_have_explicit_expected_semantic_dispositions() 
                     .expect("explicit residual causes");
                 assert_eq!(residuals.len(), 1, "{identity}: no hidden residual clauses");
                 assert_eq!(
-                    residuals[0]["reason"],
-                    cell["expected_residual_reason"],
+                    residuals[0]["reason"], cell["expected_residual_reason"],
                     "{identity}: preserve the named unapproved semantic gap"
                 );
             } else {
@@ -154,13 +163,15 @@ fn all_559_original_public_cells_have_explicit_expected_semantic_dispositions() 
                 );
             }
             assert_eq!(
-                policy["expected_output_domain_kind"],
-                cell["expected_projected_domain_kind"],
+                policy["expected_output_domain_kind"], cell["expected_projected_domain_kind"],
                 "{identity}: per-case output policy"
             );
         }
 
-        for input in wire["inputs"].as_array_mut().expect("public protocol input list") {
+        for input in wire["inputs"]
+            .as_array_mut()
+            .expect("public protocol input list")
+        {
             input["dialect"] = Value::Null;
         }
         if let Some(expected) = normalized_documents.get(id) {
