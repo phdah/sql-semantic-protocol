@@ -5,9 +5,9 @@
 use duckdb::Connection;
 use serde_json::Value;
 use sql_semantic_protocol::{
-    analyze_configured_inputs_with_catalog, analyze_sql, dialect_from_name,
-    ComposedSemantics, ConfiguredSqlInput, ProtocolStatement, RelationCatalog,
-    RelationSchema, SchemaColumn, SqlInput, ValueDomain,
+    analyze_configured_inputs_with_catalog, analyze_sql, dialect_from_name, ComposedSemantics,
+    ConfiguredSqlInput, ProtocolStatement, RelationCatalog, RelationSchema, SchemaColumn, SqlInput,
+    ValueDomain,
 };
 
 const FREEZE: &str = include_str!("../docs/task-192-acceptance-freeze.json");
@@ -103,7 +103,8 @@ fn nullable_duplicate_projected_ids_cannot_gain_false_bounds_from_source_predica
             sample.id
         );
         let db = Connection::open_in_memory().expect("DuckDB");
-        db.execute_batch(sample.setup).expect("independent fixed source");
+        db.execute_batch(sample.setup)
+            .expect("independent fixed source");
         let entire = vec![None, Some(-100), Some(8), Some(999), Some(999), Some(999)];
         assert_eq!(
             id_bag(&db, &format!("SELECT id FROM {}", sample.relation)),
@@ -134,11 +135,14 @@ fn nullable_duplicate_projected_ids_cannot_gain_false_bounds_from_source_predica
                 sample.id
             );
         }
-        for dialect_name in registry["dialects"].as_array().expect("13 exposed dialects") {
+        for dialect_name in registry["dialects"]
+            .as_array()
+            .expect("13 exposed dialects")
+        {
             let dialect_name = dialect_name.as_str().expect("dialect");
             let dialect = dialect_from_name(dialect_name).expect("supported parser");
-            let protocol = analyze_sql(sql, dialect_name, dialect.as_ref())
-                .expect("original SQL must parse");
+            let protocol =
+                analyze_sql(sql, dialect_name, dialect.as_ref()).expect("original SQL must parse");
             let [ProtocolStatement::Query(query)] = protocol.statements() else {
                 panic!("{}: missing query", sample.id);
             };
@@ -162,8 +166,8 @@ fn nullable_duplicate_projected_ids_cannot_gain_false_bounds_from_source_predica
                 ],
             )
             .expect("typed source");
-            let catalog = RelationCatalog::from_schemas(&[source])
-                .expect("independent physical type facts");
+            let catalog =
+                RelationCatalog::from_schemas(&[source]).expect("independent physical type facts");
             let input = SqlInput::inline(sql);
             let configured = [ConfiguredSqlInput::new(
                 "task192-counterexample",
@@ -175,7 +179,10 @@ fn nullable_duplicate_projected_ids_cannot_gain_false_bounds_from_source_predica
                 .expect("typed public analyzer");
             let layer = bundle.layers().last().expect("one output");
             let ComposedSemantics::Resolved(semantics) = layer.composed_semantics() else {
-                panic!("{}/{}: source-complete query did not resolve", sample.id, dialect_name);
+                panic!(
+                    "{}/{}: source-complete query did not resolve",
+                    sample.id, dialect_name
+                );
             };
             assert!(
                 matches!(
