@@ -138,3 +138,44 @@ fn nonportable_string_pattern_families_cannot_be_exact_from_binary_attestation()
     }
     assert_eq!(cells, 65);
 }
+
+#[test]
+fn original_trailing_space_string_equality_requires_explicit_comparison_laws() {
+    // The original S039 query compares a VARCHAR to a padded literal.
+    // A binary, non-padding source law must be declared before a row-local
+    // equality witness can be Exact. This does not attest native vendors.
+    let freeze: Value = serde_json::from_str(FREEZE).expect("original SQL");
+    let sql = freeze["cases"]
+        .as_array()
+        .expect("43 cases")
+        .iter()
+        .find(|case| case["id"] == "88-C177-S039")
+        .expect("original S039")["sql"]
+        .as_str()
+        .expect("original SQL");
+    let variable = source_catalog("VARCHAR(64)");
+    let fixed = source_catalog("CHAR(64)");
+    let laws = [
+        ComparisonAssumption::BinaryCollation,
+        ComparisonAssumption::NoCharPadding,
+    ];
+    for name in freeze["dialects"].as_array().expect("13 dialects") {
+        let name = name.as_str().expect("dialect");
+        assert!(
+            !directions(sql, name, &variable, &[]).0,
+            "S039/{name}: no implicit binary comparison environment"
+        );
+        assert!(
+            !directions(sql, name, &variable, &laws[..1]).0,
+            "S039/{name}: binary collation does not attest CHAR trimming"
+        );
+        assert!(
+            directions(sql, name, &variable, &laws).0,
+            "S039/{name}: attested VARCHAR string equality should have a typed witness"
+        );
+        assert!(
+            !directions(sql, name, &fixed, &laws).0,
+            "S039/{name}: fixed CHAR padding remains an unproved source law"
+        );
+    }
+}
