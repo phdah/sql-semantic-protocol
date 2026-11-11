@@ -156,19 +156,21 @@ fn signed_integer_computed_predicates_have_typed_true_and_not_true_witnesses() {
 }
 
 #[test]
-fn original_s027_and_s032_are_not_total_on_unrestricted_signed_bigint_sources() {
-    // The unchanged original SQL is evaluated against a separate complete
-    // source that includes an extremal signed value. A sampled DuckDB success
-    // is not a universal proof that an arithmetic/ABS comparison cannot fail.
+fn original_s027_and_s032_have_separate_extremal_native_numeric_laws() {
+    // DuckDB can widen BIGINT addition to evaluate S027 at BIGINT::MAX.
+    // That positive native fact is not a portable proof for every engine.
+    // ABS(BIGINT::MIN) is a distinct potentially throwing operation.
     let freeze: Value = serde_json::from_str(FREEZE).expect("frozen original SQL");
-    for (id, source_rows) in [
+    for (id, source_rows, expected_error) in [
         (
             "88-C177-S027",
             "INSERT INTO orders VALUES (1, 9223372036854775807), (2, NULL)",
+            false,
         ),
         (
             "88-C177-S032",
             "INSERT INTO orders VALUES (1, CAST('-9223372036854775808' AS BIGINT)), (2, NULL)",
+            true,
         ),
     ] {
         let sql = freeze["cases"]
@@ -189,9 +191,17 @@ fn original_s027_and_s032_are_not_total_on_unrestricted_signed_bigint_sources() 
                 .query_map([], |row| row.get::<_, i64>(0))?
                 .collect::<duckdb::Result<Vec<_>>>()
         });
-        assert!(
-            result.is_err(),
-            "{id}: unrestricted signed source includes an overflow; conditional arithmetic must not become Exact"
-        );
+        if expected_error {
+            assert!(
+                result.is_err(),
+                "{id}: original ABS on signed minimum is not necessarily total"
+            );
+        } else {
+            assert_eq!(
+                result.expect("DuckDB widened signed addition on the original SQL"),
+                vec![1],
+                "{id}: native widening is an engine-specific fact, not a portable signed-width guarantee"
+            );
+        }
     }
 }
