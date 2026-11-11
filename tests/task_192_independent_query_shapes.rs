@@ -29,6 +29,9 @@ fn predicate_shape(predicate: Option<&Predicate>) -> &'static str {
         Some(Predicate::BooleanExpression(_)) => "boolean_expression",
         Some(Predicate::Unknown(_)) => "unknown",
         Some(Predicate::Unsupported(_)) => "unsupported",
+        // Public Predicate is deliberately non-exhaustive. A future variant
+        // is never silently treated as a previously certified original shape.
+        Some(_) => "unknown_future_variant",
     }
 }
 
