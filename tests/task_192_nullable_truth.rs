@@ -232,3 +232,48 @@ fn unrelated_not_and_cross_column_or_remain_conservative() {
         );
     }
 }
+
+#[test]
+fn floating_source_without_nan_and_signed_zero_laws_cannot_be_exact() {
+    let freeze: Value = serde_json::from_str(FREEZE).expect("original SQL");
+    let parser = dialect_from_name("duckdb").expect("source DDL dialect");
+    let ddl = SqlInput::inline("CREATE TABLE orders (id INTEGER, amount DOUBLE)");
+    let source = sql_semantic_protocol::analyze_inputs(&[ddl], "duckdb", parser.as_ref())
+        .expect("floating source schema");
+    let catalog = RelationCatalog::from_schemas(source.source_schemas())
+        .expect("physical floating type facts");
+
+    for id in ["88-C177-S012", "88-C177-S017"] {
+        let sql = freeze["cases"]
+            .as_array()
+            .expect("43 SQL cases")
+            .iter()
+            .find(|case| case["id"] == id)
+            .expect("original case")["sql"]
+            .as_str()
+            .expect("original SQL");
+        for dialect_name in freeze["dialects"].as_array().expect("13 parser dialects") {
+            let name = dialect_name.as_str().expect("dialect");
+            let dialect = dialect_from_name(name).expect("parser");
+            let input = SqlInput::inline(sql);
+            let configured = [ConfiguredSqlInput::new(
+                "task192-unattested-float",
+                &input,
+                name,
+                dialect.as_ref(),
+            )];
+            let bundle = analyze_configured_inputs_with_catalog(&configured, &catalog)
+                .unwrap_or_else(|error| panic!("{id}/{name}: {error}"));
+            let layer = bundle.layers().last().expect("query");
+            let ComposedSemantics::Resolved(composed) = layer.composed_semantics() else {
+                panic!("{id}/{name}: source query");
+            };
+            assert_ne!(
+                composed.condition_exactness().status(),
+                ConditionExactnessStatus::Exact,
+                "{id}/{name}: DOUBLE without an attested NaN/ordering law cannot certify integer-style exactness"
+            );
+        }
+    }
+}
+
