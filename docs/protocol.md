@@ -41,10 +41,14 @@ Two further original 3VL cases have explicit Boolean-tree proofs:
   replace `NOT (amount > 0)` with `amount <= 0`, which could assert
   unproved NaN/comparison-complement behavior.
 
-These statements apply to a well-typed ordinary numeric comparison and a
-matching column NULL test. Typed public Boolean witnesses and independent
-native DuckDB source/terminal goldens check both complete directions. Missing
-warehouse type laws or native vendor/session execution are not certified.
+These statements retain the portable Boolean expression for a matching
+column NULL test, but **constructive exactness under configured source types
+requires independently established signed integer semantics**. The typed
+analyzer retains a residual for a floating-point source without certified
+NaN/signed-zero comparison laws; a text-to-numeric coercion is not silently
+upgraded either. Public Boolean witnesses and independent native DuckDB
+source/terminal goldens check both complete directions for the verified
+integer source. Missing vendor/session laws remain uncertified.
 
 The separate
 [`TASK-192` semantic cell contract](task-192-semantic-cell-ledger.json)
