@@ -37,7 +37,19 @@
     "native_alternate_source_cases": 3,
     "dbt_original_compiled_sql_analyzer_parity": "tests/task_192_adapter_parity.rs",
     "null_truth_exact_normalization": "src/analysis/predicates.rs",
-    "global_independent_review": "pending"
+    "global_independent_review": "pending",
+    "nullable_numeric_semantic_evidence": {
+      "case_ids": [
+        "88-C177-S012",
+        "88-C177-S017"
+      ],
+      "expected_semantic_cells": 26,
+      "source_and_terminal_oracles": "docs/task-177-predicate-oracles.json",
+      "public_3vl_tests": "tests/task_192_nullable_truth.rs",
+      "normalization": "src/analysis/predicates.rs",
+      "exactness": "src/analysis/exactness.rs",
+      "full_external_vendor_certification": false
+    }
   },
   "task_177_dialect_parser_acceptance": {
     "owner": "TASK-177",
