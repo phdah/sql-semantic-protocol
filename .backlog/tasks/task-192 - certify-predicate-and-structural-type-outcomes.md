@@ -86,9 +86,15 @@ Extracted on 2026-11-10 from the previously overbroad TASK-178. There is **no im
 - [Adapter 3VL semantic parity](../../tests/task_192_adapter_parity.rs) now compares direct, original compiled dbt and ODCS complete Boolean witness tree, TRUE/NOT TRUE directions and condition-exactness strength for both named nullable cases on all 13 parsers. Keep producer execution `unattested`.
 
 
-## Fourth pass exact nullable truth corrections (PR #198)
+## Fourth pass nullable truth correction (PR #198)
 
-- S016 numeric comparison `IS TRUE` now retains a same-column `IS NOT NULL` guard so its full FALSE/UNKNOWN/NOT TRUE partition matches the original SQL.
-- S011 ordinary signed-integer comparison `NOT` now has a narrowly permitted exact Boolean witness without upgrading arbitrary logical NOT or floating sources.
-- The original S011/S012/S016/S017 source identities, all 13 public parsers, direct typed Boolean witnesses and unattested FLOAT negative laws have regression coverage.
-- The 559-cell expected ledger reflects the new S011 classification; all four cases remain **unreviewed for release**. Remaining mandatory family residuals, independent review, the exact final-head consumer pin and CI continue to block all five acceptance criteria.
+- S016 numeric `IS TRUE` now retains the same-column `IS NOT NULL` guard
+  to preserve FALSE rather than UNKNOWN for NULL source rows.
+- Original S012/S016/S017 identities, all 13 dialects, typed Boolean witnesses,
+  complete DuckDB truth partitions and negative DOUBLE source laws are tested.
+- S011 `NOT (amount > 1)` was **not** certified: seeded cross-conformance exposed
+  unproved NULL and nested predicate assumptions, so its attempted Exact
+  promotion was reverted and its `logical_not` residual remains unapproved.
+- No independent reviewer approval is available for the 559 cell contract.
+  Exact-head tests, migrated consumer pin, conditional case owners and remaining
+  family residual resolutions all remain required before TASK-192 Done.
