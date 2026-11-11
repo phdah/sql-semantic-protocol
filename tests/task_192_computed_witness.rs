@@ -133,17 +133,22 @@ fn signed_integer_computed_predicates_have_typed_true_and_not_true_witnesses() {
                 ),
                 "{id}/{name}: filtering amount cannot constrain projected id"
             );
-            assert!(
-                composed.boolean_witnesses().iter().any(|entry| {
-                    matches!(
-                        entry.witness().qualifying(),
-                        BooleanWitnessDirection::Exact(BooleanTruthCase::True)
-                    ) && matches!(
-                        entry.witness().rejected(),
-                        BooleanWitnessDirection::Exact(BooleanTruthCase::NotTrue)
-                    )
-                }),
-                "{id}/{name}: no exact signed-integer TRUE/NOT TRUE operator witness; witnesses={:?}",
+            let exact = composed.boolean_witnesses().iter().any(|entry| {
+                matches!(
+                    entry.witness().qualifying(),
+                    BooleanWitnessDirection::Exact(BooleanTruthCase::True)
+                ) && matches!(
+                    entry.witness().rejected(),
+                    BooleanWitnessDirection::Exact(BooleanTruthCase::NotTrue)
+                )
+            });
+            let expected_exact = matches!(
+                id,
+                "88-C177-S028" | "88-C177-S029" | "88-C177-S030" | "88-C177-S031"
+            );
+            assert_eq!(
+                exact, expected_exact,
+                "{id}/{name}: signed-integer proof must not invent arithmetic overflow laws; witnesses={:?}",
                 composed.boolean_witnesses()
             );
         }
