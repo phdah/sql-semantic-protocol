@@ -2,12 +2,15 @@
 //! SQL DDL, compiled dbt metadata and ODCS where each can represent them.
 //! Adapter parity does not independently establish a native vendor law.
 
+use std::collections::BTreeMap;
+
 use serde_json::{json, Value};
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, analyze_dbt_manifest_with_schemas, analyze_inputs,
-    dialect_from_name, parse_dbt_manifest, BooleanRowConstraint, BooleanTruthCase,
-    BooleanWitnessDirection, ComposedSemantics, ConditionExactnessStatus, ConfiguredSqlInput,
-    ProducerExecution, RelationCatalog, SqlInput, ValueDomain,
+    dialect_from_name, parse_dbt_manifest, physical_finite_exists_bag_plan, BooleanRowConstraint,
+    BooleanTruthCase, BooleanWitnessDirection, ComposedSemantics, ConditionExactnessStatus,
+    ConfiguredSqlInput, LiteralValue, PhysicalFiniteExistsProof, PhysicalWriteRow,
+    PhysicalWriteState, ProducerExecution, RelationCatalog, SqlInput, ValueDomain,
 };
 
 const MATRIX: &str = include_str!("../docs/task-192-acceptance-freeze.json");
@@ -15,8 +18,8 @@ const MATRIX: &str = include_str!("../docs/task-192-acceptance-freeze.json");
 fn direct_catalog(amount_type: &str) -> RelationCatalog {
     let dialect = dialect_from_name("duckdb").expect("public dialect");
     let sql = format!(
-        "CREATE TABLE orders (id INTEGER, amount {amount_type}, created_at TIMESTAMP);
-         CREATE TABLE customers (id INTEGER, name VARCHAR)"
+        "CREATE TABLE orders (id INTEGER, amount {amount_type}, created_at TIMESTAMP, __physical_row_id VARCHAR);
+         CREATE TABLE customers (id INTEGER, name VARCHAR, __physical_row_id VARCHAR)"
     );
     let bundle = analyze_inputs(&[SqlInput::inline(&sql)], "duckdb", dialect.as_ref())
         .expect("direct physical SQL source datatypes");
@@ -70,7 +73,8 @@ fn dbt_source_bundle(
                 "columns": {
                     "id": {"name": "id", "data_type": "INTEGER"},
                     "amount": {"name": "amount", "data_type": amount_type},
-                    "created_at": {"name": "created_at", "data_type": "TIMESTAMP"}
+                    "created_at": {"name": "created_at", "data_type": "TIMESTAMP"},
+                    "__physical_row_id": {"name": "__physical_row_id", "data_type": "VARCHAR"}
                 }
             },
             "source.task192.customers": {
@@ -80,7 +84,8 @@ fn dbt_source_bundle(
                 "relation_name": "customers",
                 "columns": {
                     "id": {"name": "id", "data_type": "INTEGER"},
-                    "name": {"name": "name", "data_type": "VARCHAR"}
+                    "name": {"name": "name", "data_type": "VARCHAR"},
+                    "__physical_row_id": {"name": "__physical_row_id", "data_type": "VARCHAR"}
                 }
             }
         }
@@ -127,12 +132,16 @@ schema:
         physicalType: {amount_type}
       - name: created_at
         physicalType: TIMESTAMP
+      - name: __physical_row_id
+        physicalType: VARCHAR
   - name: customers
     physicalName: customers
     properties:
       - name: id
         physicalType: INTEGER
       - name: name
+        physicalType: VARCHAR
+      - name: __physical_row_id
         physicalType: VARCHAR
 "
     );
