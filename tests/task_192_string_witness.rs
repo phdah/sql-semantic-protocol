@@ -4,24 +4,28 @@
 
 use serde_json::Value;
 use sql_semantic_protocol::{
-    analyze_configured_inputs_with_catalog, analyze_inputs, dialect_from_name,
-    BooleanTruthCase, BooleanWitnessDirection, ComparisonAssumption, ComposedSemantics,
-    ConfiguredSqlInput, RelationCatalog, SqlInput, ValueDomain,
+    analyze_configured_inputs_with_catalog, analyze_inputs, dialect_from_name, BooleanTruthCase,
+    BooleanWitnessDirection, ComparisonAssumption, ComposedSemantics, ConfiguredSqlInput,
+    RelationCatalog, SqlInput, ValueDomain,
 };
 
 const FREEZE: &str = include_str!("../docs/task-192-acceptance-freeze.json");
 
 fn source_catalog(name_type: &str) -> RelationCatalog {
     let dialect = dialect_from_name("duckdb").expect("DDL parser");
-    let ddl = SqlInput::inline(&format!(
+    let ddl = SqlInput::inline(format!(
         "CREATE TABLE customers (id INTEGER, name {name_type})"
     ));
-    let source =
-        analyze_inputs(&[ddl], "duckdb", dialect.as_ref()).expect("source schema");
+    let source = analyze_inputs(&[ddl], "duckdb", dialect.as_ref()).expect("source schema");
     RelationCatalog::from_schemas(source.source_schemas()).expect("catalog")
 }
 
-fn directions(sql: &str, dialect_name: &str, catalog: &RelationCatalog, laws: &[ComparisonAssumption]) -> (bool, ValueDomain) {
+fn directions(
+    sql: &str,
+    dialect_name: &str,
+    catalog: &RelationCatalog,
+    laws: &[ComparisonAssumption],
+) -> (bool, ValueDomain) {
     let dialect = dialect_from_name(dialect_name).expect("public SQL parser");
     let input = SqlInput::inline(sql);
     let configured = [ConfiguredSqlInput::new(
@@ -46,7 +50,10 @@ fn directions(sql: &str, dialect_name: &str, catalog: &RelationCatalog, laws: &[
             BooleanWitnessDirection::Exact(BooleanTruthCase::NotTrue)
         )
     });
-    (exact_witness, composed.output().columns()[0].domain().clone())
+    (
+        exact_witness,
+        composed.output().columns()[0].domain().clone(),
+    )
 }
 
 #[test]
@@ -71,18 +78,17 @@ fn original_safe_like_prefixes_require_both_binary_string_laws_on_all_13_parsers
             .expect("original SQL");
         for name in freeze["dialects"].as_array().expect("13 parsers") {
             let name = name.as_str().expect("parser name");
-            for laws in [
-                &[][..],
-                &binary_laws[..1],
-                &binary_laws[1..],
-            ] {
+            for laws in [&[][..], &binary_laws[..1], &binary_laws[1..]] {
                 assert!(
                     !directions(sql, name, &variable, laws).0,
                     "{id}/{name}: missing comparison law cannot certify LIKE"
                 );
             }
             let (exact, domain) = directions(sql, name, &variable, &binary_laws);
-            assert!(exact, "{id}/{name}: attested safe prefix has no typed TRUE/NOT TRUE witness");
+            assert!(
+                exact,
+                "{id}/{name}: attested safe prefix has no typed TRUE/NOT TRUE witness"
+            );
             assert!(
                 matches!(domain, ValueDomain::Unbounded | ValueDomain::Unknown(_)),
                 "{id}/{name}: filtering name cannot invent finite projected id"
