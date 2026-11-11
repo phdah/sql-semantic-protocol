@@ -17,7 +17,9 @@ fn native_ids(db: &Connection, query: &str) -> Vec<i64> {
     let rows = statement
         .query_map([], |row| row.get::<_, i64>(0))
         .expect("native complete identity rows");
-    let mut ids = rows.map(|row| row.expect("native source occurrence")).collect::<Vec<_>>();
+    let mut ids = rows
+        .map(|row| row.expect("native source occurrence"))
+        .collect::<Vec<_>>();
     ids.sort();
     ids
 }
@@ -93,8 +95,7 @@ fn s013_has_separate_physical_source_correlations_and_exact_both_direction_witne
     let parser = dialect_from_name("duckdb").expect("DDL parser");
     let source = analyze_inputs(&[ddl], "duckdb", parser.as_ref())
         .expect("authoritative physical source schemas");
-    let catalog = RelationCatalog::from_schemas(source.source_schemas())
-        .expect("source catalog");
+    let catalog = RelationCatalog::from_schemas(source.source_schemas()).expect("source catalog");
 
     for name in matrix["dialects"].as_array().expect("13 parser dialects") {
         let name = name.as_str().expect("dialect");
@@ -118,7 +119,10 @@ fn s013_has_separate_physical_source_correlations_and_exact_both_direction_witne
             "S013/{name}: subquery witness is source-local, not whole-query scalar Exact"
         );
         assert!(
-            matches!(composed.output().columns()[0].domain(), ValueDomain::Unbounded | ValueDomain::Unknown(_)),
+            matches!(
+                composed.output().columns()[0].domain(),
+                ValueDomain::Unbounded | ValueDomain::Unknown(_)
+            ),
             "S013/{name}: correlated EXISTS cannot infer a finite projected id set"
         );
 
