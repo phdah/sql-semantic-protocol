@@ -389,3 +389,46 @@ fn struct_cast_parser_rejections_and_repaired_duckdb_drift_are_explicit() {
     }
     assert_eq!((accepted, rejected, repaired), (11, 2, 1));
 }
+
+#[test]
+fn original_is_unknown_of_nullable_numeric_comparison_is_a_certified_null_test() {
+    use sql_semantic_protocol::{
+        ConditionExactnessStatus, Predicate, ProtocolStatement, ValueDomain,
+    };
+
+    let freeze = json(FREEZE);
+    let sql = field(
+        freeze["cases"]
+            .as_array()
+            .expect("43 original SQLs")
+            .iter()
+            .find(|case| case["id"] == "88-C177-S018")
+            .expect("original nullable comparison"),
+        "sql",
+    );
+    for name in freeze["dialects"].as_array().expect("13 dialects") {
+        let name = name.as_str().expect("dialect");
+        let parser = dialect_from_name(name).expect("supported dialect");
+        let protocol = analyze_sql(sql, name, parser.as_ref())
+            .expect("portable original three-valued predicate");
+        let [ProtocolStatement::Query(query)] = protocol.statements() else {
+            panic!("{name}: original numeric truth test was dropped");
+        };
+        let Some(Predicate::IsNull(null_test)) = query.predicates().where_predicate() else {
+            panic!("{name}: IS UNKNOWN of a null-propagating numeric comparison must be a null test");
+        };
+        assert!(!null_test.negated(), "{name}: IS UNKNOWN selects NULL");
+        assert_eq!(
+            query.condition_exactness().status(),
+            ConditionExactnessStatus::Exact,
+            "{name}: numeric NULL truth must not be a computed-expression residual"
+        );
+        assert!(
+            matches!(
+                query.output().columns()[0].domain(),
+                ValueDomain::Unbounded | ValueDomain::Unknown(_)
+            ),
+            "{name}: the predicate tests amount, not projected id"
+        );
+    }
+}
