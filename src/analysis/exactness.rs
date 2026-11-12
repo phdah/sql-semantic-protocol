@@ -234,9 +234,12 @@ pub(super) fn analyze_query_condition_exactness(
     dependencies: &BTreeSet<String>,
     joins: &[ProtocolJoin],
     diagnostics: &[Diagnostic],
-    correlated: bool,
-    metadata: Option<&AnalysisMetadata<'_>>,
+    correlation_and_typing: (bool, Option<&AnalysisMetadata<'_>>),
 ) -> ConditionExactness {
+    // Nested subqueries can have correlation without a source catalog.
+    // Keep these distinct facts together to avoid a misleading extra public
+    // analysis argument and never infer types from the parser alone.
+    let (correlated, metadata) = correlation_and_typing;
     let mut residuals = Vec::new();
 
     // Local relations carry inherited physical joins, but the enclosing scope
