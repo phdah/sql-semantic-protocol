@@ -257,9 +257,7 @@ fn requires_unproved_nan_text_coercion(
     let resolved = resolve_column(column, sources);
     match metadata.and_then(|facts| facts.column_data_type(&resolved)) {
         Some(DataType::String { .. }) => false,
-        Some(DataType::Nullable(inner)) => {
-            !matches!(inner.as_ref(), DataType::String { .. })
-        }
+        Some(DataType::Nullable(inner)) => !matches!(inner.as_ref(), DataType::String { .. }),
         _ => true,
     }
 }
