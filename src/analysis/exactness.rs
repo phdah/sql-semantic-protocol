@@ -179,6 +179,54 @@ pub(super) fn unknown_column_domain_exactness(
     ConditionExactness::from_residuals(residuals)
 }
 
+/// An ordinary signed comparison has the same SQL UNKNOWN outcome on NULL
+/// after NOT. Its ordering complement is therefore representable as a precise
+/// scalar interval only when the source's signed-integer law is explicit.
+/// This cannot be applied to floating NaN, implicit coercions, collation,
+/// computed expressions, untyped SQL, or arbitrary Boolean negation.
+pub(super) fn typed_signed_ordered_not(
+    predicate: &Predicate,
+    sources: &[SourceRelation],
+    metadata: &AnalysisMetadata<'_>,
+) -> Option<(ColumnRef, ComparisonOperator, LiteralExpression)> {
+    let Predicate::Not(negation) = predicate else {
+        return None;
+    };
+    let Predicate::Comparison(comparison) = negation.operand() else {
+        return None;
+    };
+    let (column, operator, literal) = match (comparison.left(), comparison.right()) {
+        (Expression::Column(column), Expression::Literal(literal)) => {
+            (column, comparison.operator(), literal)
+        }
+        (Expression::Literal(literal), Expression::Column(column)) => {
+            (column, comparison.operator().reversed(), literal)
+        }
+        _ => return None,
+    };
+    if literal.literal_type() != LiteralType::Integer
+        || !matches!(literal.value(), LiteralValue::Number(raw) if raw.parse::<i64>().is_ok())
+    {
+        return None;
+    }
+    let inverse = match operator {
+        ComparisonOperator::Gt => ComparisonOperator::Lte,
+        ComparisonOperator::Gte => ComparisonOperator::Lt,
+        ComparisonOperator::Lt => ComparisonOperator::Gte,
+        ComparisonOperator::Lte => ComparisonOperator::Gt,
+        _ => return None,
+    };
+    let resolved = resolve_column(column, sources);
+    let signed = match metadata.column_data_type(&resolved) {
+        Some(DataType::SignedInteger { .. }) => true,
+        Some(DataType::Nullable(inner)) => {
+            matches!(inner.as_ref(), DataType::SignedInteger { .. })
+        }
+        _ => false,
+    };
+    signed.then_some((resolved, inverse, literal.clone()))
+}
+
 pub(super) fn analyze_query_condition_exactness(
     query: &SqlQuery,
     predicates: &Predicates,
@@ -187,6 +235,7 @@ pub(super) fn analyze_query_condition_exactness(
     joins: &[ProtocolJoin],
     diagnostics: &[Diagnostic],
     correlated: bool,
+    metadata: Option<&AnalysisMetadata<'_>>,
 ) -> ConditionExactness {
     let mut residuals = Vec::new();
 
@@ -204,14 +253,18 @@ pub(super) fn analyze_query_condition_exactness(
     }
 
     if let Some(predicate) = predicates.where_predicate() {
-        append_predicate_residuals(
-            predicate,
-            ConditionClause::Where,
-            "where",
-            &equality_sources,
-            true,
-            &mut residuals,
-        );
+        if !metadata.is_some_and(|metadata| {
+            typed_signed_ordered_not(predicate, &equality_sources, metadata).is_some()
+        }) {
+            append_predicate_residuals(
+                predicate,
+                ConditionClause::Where,
+                "where",
+                &equality_sources,
+                true,
+                &mut residuals,
+            );
+        }
     }
 
     if predicates.having_predicate().is_some() {
