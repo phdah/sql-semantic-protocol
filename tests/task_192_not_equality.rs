@@ -6,19 +6,32 @@
 use duckdb::Connection;
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, analyze_inputs, dialect_from_name, ComposedSemantics,
-    ConditionExactnessStatus, ConfiguredSqlInput, LiteralValue,
-    RelationCatalog, SetMode, SqlInput, ValueDomain,
+    ConditionExactnessStatus, ConfiguredSqlInput, LiteralValue, RelationCatalog, SetMode, SqlInput,
+    ValueDomain,
 };
 
 const DIALECTS: [&str; 13] = [
-    "ansi", "bigquery", "clickhouse", "databricks", "duckdb", "generic",
-    "hive", "mssql", "mysql", "postgresql", "redshift", "snowflake", "sqlite",
+    "ansi",
+    "bigquery",
+    "clickhouse",
+    "databricks",
+    "duckdb",
+    "generic",
+    "hive",
+    "mssql",
+    "mysql",
+    "postgresql",
+    "redshift",
+    "snowflake",
+    "sqlite",
 ];
 
 fn signed_catalog() -> RelationCatalog {
     let dialect = dialect_from_name("duckdb").expect("DDL dialect");
     let bundle = analyze_inputs(
-        &[SqlInput::inline("CREATE TABLE orders (id INTEGER, amount INTEGER)")],
+        &[SqlInput::inline(
+            "CREATE TABLE orders (id INTEGER, amount INTEGER)",
+        )],
         "duckdb",
         dialect.as_ref(),
     )
