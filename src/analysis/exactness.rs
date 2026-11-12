@@ -631,7 +631,7 @@ pub(super) fn predicate_residual_reasons(
             } else {
                 vec![ResidualConditionReason::LogicalNot]
             }
-        },
+        }
         Predicate::IsNull(predicate) => {
             if matches!(predicate.expression(), Expression::Column(_)) {
                 Vec::new()
