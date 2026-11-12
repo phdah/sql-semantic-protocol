@@ -541,7 +541,10 @@ fn single_input_library_supports_comparison_declarations() {
         query.condition_exactness().status(),
         ConditionExactnessStatus::Conditional
     );
-    protocol.declare_comparison_assumptions(&[ComparisonAssumption::BinaryCollation]);
+    protocol.declare_comparison_assumptions(&[
+        ComparisonAssumption::BinaryCollation,
+        ComparisonAssumption::NoCharPadding,
+    ]);
     let ProtocolStatement::Query(query) = &protocol.statements()[0] else {
         panic!("not a query")
     };
@@ -552,6 +555,6 @@ fn single_input_library_supports_comparison_declarations() {
     let json: serde_json::Value = serde_json::from_str(&to_json(&protocol)).unwrap();
     assert_eq!(
         json["declared_comparison_assumptions"],
-        serde_json::json!(["binary_collation"])
+        serde_json::json!(["binary_collation", "no_char_padding"])
     );
 }
