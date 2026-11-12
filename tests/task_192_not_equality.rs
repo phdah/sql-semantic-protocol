@@ -298,3 +298,44 @@ fn original_s011_native_three_valued_signed_truth_includes_nulls() {
     assert_eq!(ids("IS UNKNOWN"), vec![3]);
     assert_eq!(ids("IS NOT TRUE"), vec![2, 3, 4]);
 }
+
+
+#[test]
+fn original_signed_ordered_not_preserves_bounds_through_copy_cte_and_derived_layers() {
+    let direct_sql = "SELECT amount FROM orders WHERE NOT (amount > 1)";
+    let catalog = signed_catalog();
+    for name in DIALECTS {
+        let parser = dialect_from_name(name).expect("public parser");
+        let examine = |sql: &str| {
+            let input = SqlInput::inline(sql);
+            let configured = [ConfiguredSqlInput::new(
+                "task192-not-cte-preservation",
+                &input,
+                name,
+                parser.as_ref(),
+            )];
+            let bundle = analyze_configured_inputs_with_catalog(&configured, &catalog)
+                .expect("source-typed SQL");
+            let layer = bundle.layers().last().expect("terminal");
+            let ComposedSemantics::Resolved(semantics) = layer.composed_semantics() else {
+                panic!("{name}: missing resolved output for {sql}");
+            };
+            (
+                semantics.output().columns()[0].domain().clone(),
+                semantics.condition_exactness().status(),
+            )
+        };
+        let baseline = examine(direct_sql);
+        assert_eq!(baseline.1, ConditionExactnessStatus::Exact);
+        for sql in [
+            "WITH filtered AS (SELECT amount FROM orders WHERE NOT (amount > 1)) SELECT amount FROM filtered",
+            "SELECT amount FROM (SELECT amount FROM orders WHERE NOT (amount > 1)) filtered",
+        ] {
+            let actual = examine(sql);
+            assert_eq!(
+                actual, baseline,
+                "{name}: copy producer must preserve the signed NOT domain and exactness"
+            );
+        }
+    }
+}
