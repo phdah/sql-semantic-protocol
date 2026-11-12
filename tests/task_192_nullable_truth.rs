@@ -301,8 +301,12 @@ fn original_cross_column_or_and_not_have_exact_typed_boolean_witnesses_not_scala
             };
             assert_eq!(
                 composed.condition_exactness().status(),
-                ConditionExactnessStatus::Residual,
-                "{id}/{name}: complete typed Boolean witness cannot certify independent scalar domains"
+                if id == "88-C177-S011" {
+                    ConditionExactnessStatus::Exact
+                } else {
+                    ConditionExactnessStatus::Residual
+                },
+                "{id}/{name}: signed NOT-ordered comparison has a typed scalar interval, unlike cross-column OR"
             );
             assert!(
                 composed.boolean_witnesses().iter().any(|item| {
@@ -316,9 +320,9 @@ fn original_cross_column_or_and_not_have_exact_typed_boolean_witnesses_not_scala
                 }),
                 "{id}/{name}: expected exact row-local TRUE/NOT TRUE witness"
             );
-            // The full physical source plan carries both source-row directions
-            // as constructive predicates even though scalar whole-query
-            // independent-column exactness intentionally remains Residual.
+            // Physical TRUE/NOT TRUE obligations are constructive for both
+            // cases. Only the typed single-column ordered NOT has an exact
+            // scalar complement; cross-column OR remains a residual domain.
             let physical = physical_source_plan(&bundle, layer.id());
             assert_eq!(physical.sources(), &["orders".to_string()]);
             for (direction, truth) in [
