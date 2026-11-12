@@ -179,7 +179,12 @@ fn typed_nullable_predicates_have_exact_true_and_not_true_boolean_witnesses() {
             .expect("typed direct SQL DDL");
         let catalog =
             RelationCatalog::from_schemas(schema.source_schemas()).expect("typed original source");
-        for id in ["88-C177-S012", "88-C177-S016", "88-C177-S017"] {
+        for id in [
+        "88-C177-S010",
+        "88-C177-S012",
+        "88-C177-S016",
+        "88-C177-S017",
+    ] {
             let case = freeze["cases"]
                 .as_array()
                 .expect("cases")
@@ -218,8 +223,9 @@ fn typed_nullable_predicates_have_exact_true_and_not_true_boolean_witnesses() {
 
 #[test]
 fn original_s010_and_s011_have_typed_truth_with_scoped_scalar_exactness() {
-    // These bounded witnesses are constructive row-local evidence, not a
-    // promotion of a residual *whole-query* scalar-domain contract.
+    // Both signed comparisons in S010 share one row identity. Its
+    // coupled Boolean tree can be exact without asserting separate scalar
+    // column-domain constraints; the projected id remains unbounded.
     let freeze: Value = serde_json::from_str(FREEZE).expect("original 43 SQL cases");
     let prior: Value = serde_json::from_str(ORIGINAL).expect("frozen native source bags");
     let db = Connection::open_in_memory().expect("DuckDB");
@@ -301,12 +307,15 @@ fn original_s010_and_s011_have_typed_truth_with_scoped_scalar_exactness() {
             };
             assert_eq!(
                 composed.condition_exactness().status(),
-                if id == "88-C177-S011" {
-                    ConditionExactnessStatus::Exact
-                } else {
-                    ConditionExactnessStatus::Residual
-                },
-                "{id}/{name}: signed NOT-ordered comparison has a typed scalar interval, unlike cross-column OR"
+                ConditionExactnessStatus::Exact,
+                "{id}/{name}: typed signed Boolean source-row law must retain its full truth and correlation"
+            );
+            assert!(
+                matches!(
+                    composed.output().columns()[0].domain(),
+                    ValueDomain::Unbounded
+                ),
+                "{id}/{name}: no independent finite id restriction follows from S010's OR or S011's amount-only NOT"
             );
             assert!(
                 composed.boolean_witnesses().iter().any(|item| {
@@ -320,9 +329,9 @@ fn original_s010_and_s011_have_typed_truth_with_scoped_scalar_exactness() {
                 }),
                 "{id}/{name}: expected exact row-local TRUE/NOT TRUE witness"
             );
-            // Physical TRUE/NOT TRUE obligations are constructive for both
-            // cases. Only the typed single-column ordered NOT has an exact
-            // scalar complement; cross-column OR remains a residual domain.
+            // Both typed source-row truth directions are constructive.
+            // S010 retains cross-column correlation in the Boolean witness,
+            // whereas S011 also has a precise signed amount complement.
             let physical = physical_source_plan(&bundle, layer.id());
             assert_eq!(physical.sources(), &["orders".to_string()]);
             for (direction, truth) in [
