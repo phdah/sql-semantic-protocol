@@ -126,6 +126,12 @@ The ledger is an exhaustive expected **public contract**, not a signed release c
 - Ordinary `NOT (column = integer)` and `NOT (column <> integer)` also gain their direct scalar equality/inequality duals, with the SQL NULL row remaining UNKNOWN. Other NOT shapes, including NULL-bearing IN and nested NOT, are not promoted. `tests/task_192_not_equality.rs` verifies the full nullable/duplicate DuckDB bags and the 13 public parsers. These extra NOT equality tests improve canonical portability but are not new original TASK-178 sample IDs.
 - This is implementation and executable evidence **only**. The 559-cell untyped original ledger is unchanged, and the still-missing independent full-document expected goldens and distinct reviewer decisions keep TASK-192 In Progress.
 
+### S040 implicit NaN coercion, fail-closed original 13-cell contract
+
+- The original `SELECT id FROM orders WHERE amount = 'NaN'` has no portable implicit text-to-number cast rule without source/vendor evidence. The previously Conditional-only untyped expectation could be promoted incorrectly by unrelated collation/padding declarations. `src/analysis/exactness.rs` now emits the stable `comparison_semantics` residual `where:nan_implicit_cast` for an untyped or non-string source.
+- `tests/task_192_nan_text_cast.rs` enforces all 13 original public parser cells and checks that even attesting binary collation, padding, no-NaN, signed zero and timezone with typed DOUBLE cannot certify the missing coercion. S040's 13 expected ledger cells now independently prescribe Residual; exactly 19 original case policies remain Exact, 22 Residual, 2 Conditional. Original SQL, DuckDB oracles, original S179 parser failures and all 559 reviewer flags are preserved.
+- This fixes a conservative analysis classification, **not** the independent reviewer requirement or TASK-179's vendor-specific runtime law. No TASK-192 AC has been signed off.
+
 ### Additional independently frozen projection and string-law checks
 
 - `tests/task_192_semantic_contract.rs` now checks the **full literal membership** for S001/S002 and all **signed interval endpoints, inclusivity and disjoint union components** for S003-S009/S012 against the independently frozen TASK-177 numeric laws. It also checks the precise projected-domain policy for every accepted public parser cell, not merely its kind. This is 130 bounded numeric case/dialect proofs, without claiming that all 43 *complete canonical documents* are independently authored.
