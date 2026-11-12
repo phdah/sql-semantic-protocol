@@ -105,8 +105,7 @@ fn computed_operand<'a>(
             Some((column, SignedComputation::Add(literal)))
         }
         Expression::Function(function)
-            if function.name().eq_ignore_ascii_case("abs")
-                && !function.distinct() =>
+            if function.name().eq_ignore_ascii_case("abs") && !function.distinct() =>
         {
             let [expression] = function.arguments() else {
                 return None;
@@ -137,7 +136,9 @@ fn signed_width(bundle: &AnalysisBundle, relation: &str, column: &str) -> Option
         data_type = inner;
     }
     match data_type {
-        DataType::SignedInteger { bits: Some(bits @ (16 | 32 | 64)) } => Some(*bits),
+        DataType::SignedInteger {
+            bits: Some(bits @ (16 | 32 | 64)),
+        } => Some(*bits),
         _ => None,
     }
 }
@@ -246,8 +247,7 @@ pub fn physical_finite_signed_computed_bag_plan(
             ComparisonOperator::Lte => computed <= limit,
             ComparisonOperator::Gt => computed > limit,
             ComparisonOperator::Gte => computed >= limit,
-            ComparisonOperator::IsDistinctFrom
-            | ComparisonOperator::IsNotDistinctFrom => {
+            ComparisonOperator::IsDistinctFrom | ComparisonOperator::IsNotDistinctFrom => {
                 return residual("NULL-safe comparison is outside the signed arithmetic proof");
             }
         };
@@ -258,7 +258,10 @@ pub fn physical_finite_signed_computed_bag_plan(
             if !matches!(out_value, LiteralValue::Number(_) | LiteralValue::Null) {
                 return residual("projected source value is not a nullable integer");
             }
-            terminal.push(BTreeMap::from([(output.name().to_string(), out_value.clone())]));
+            terminal.push(BTreeMap::from([(
+                output.name().to_string(),
+                out_value.clone(),
+            )]));
             selected_ordinals.push(ordinal);
         } else {
             rejected_ordinals.push(ordinal);
