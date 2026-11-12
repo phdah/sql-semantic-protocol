@@ -4,7 +4,8 @@
 
 use serde_json::Value;
 use sql_semantic_protocol::{
-    analyze_configured_inputs_with_catalog, analyze_inputs, dialect_from_name, BooleanTruthCase,
+    analyze_configured_inputs_with_catalog, analyze_inputs, analyze_sql, dialect_from_name, to_json,
+    BooleanTruthCase,
     BooleanWitnessDirection, ComparisonAssumption, ComposedSemantics, ConfiguredSqlInput,
     RelationCatalog, SqlInput, ValueDomain,
 };
@@ -176,6 +177,60 @@ fn original_trailing_space_string_equality_requires_explicit_comparison_laws() {
         assert!(
             !directions(sql, name, &fixed, &laws).0,
             "S039/{name}: fixed CHAR padding remains an unproved source law"
+        );
+    }
+}
+
+#[test]
+fn original_untyped_s039_never_assumes_fixed_char_padding_is_absent() {
+    // No schema is supplied: this source could be CHAR or VARCHAR. Binary
+    // collation cannot by itself justify the original 'abc ' equality.
+    let freeze: Value = serde_json::from_str(FREEZE).expect("original case inventory");
+    let sql = freeze["cases"]
+        .as_array()
+        .expect("43 original SQLs")
+        .iter()
+        .find(|case| case["id"] == "88-C177-S039")
+        .expect("S039 original")
+        ["sql"]
+        .as_str()
+        .expect("unaltered SQL");
+    for name in freeze["dialects"].as_array().expect("13 parser names") {
+        let name = name.as_str().expect("dialect");
+        let parser = dialect_from_name(name).expect("public parser");
+        let protocol = analyze_sql(sql, name, parser.as_ref()).expect("S039 parser");
+        let wire: Value =
+            serde_json::from_str(&to_json(&protocol)).expect("canonical public document");
+        let exactness = &wire["inputs"][0]["statements"][0]["condition_exactness"];
+        assert_eq!(
+            exactness["status"], "conditional",
+            "S039/{name}: source-free parser cannot attest a warehouse string law"
+        );
+        let requirements = exactness["comparison_assumptions"]
+            .as_array()
+            .expect("explicit conditional laws");
+        let mut actual = requirements
+            .iter()
+            .map(|requirement| {
+                assert_eq!(
+                    requirement["declared"], false,
+                    "S039/{name}: no silently attested warehouse session"
+                );
+                assert_eq!(requirement["clause"], "where");
+                assert!(
+                    requirement["identity"]
+                        .as_str()
+                        .is_some_and(|identity| identity.contains("customers.name")),
+                    "S039/{name}: comparison assumption must name its source column"
+                );
+                requirement["name"].as_str().expect("named assumption")
+            })
+            .collect::<Vec<_>>();
+        actual.sort_unstable();
+        assert_eq!(
+            actual,
+            vec!["binary_collation", "no_char_padding"],
+            "S039/{name}: independently required comparison laws"
         );
     }
 }
