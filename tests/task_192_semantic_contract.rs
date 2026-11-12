@@ -50,7 +50,11 @@ fn assert_independent_projected_domain(domain: &ValueDomain, policy: &Value, ide
                         SetMode::Include => "set_include",
                         SetMode::Exclude => "set_exclude",
                     };
-                    assert_eq!(mode, attr(expected, "kind"), "{identity}: set inclusion/exclusion");
+                    assert_eq!(
+                        mode,
+                        attr(expected, "kind"),
+                        "{identity}: set inclusion/exclusion"
+                    );
                     let mut actual = set
                         .values()
                         .iter()
@@ -62,7 +66,10 @@ fn assert_independent_projected_domain(domain: &ValueDomain, policy: &Value, ide
                         .clone();
                     actual.sort_by_key(Value::to_string);
                     frozen.sort_by_key(Value::to_string);
-                    assert_eq!(actual, frozen, "{identity}: exact numeric and NULL set members");
+                    assert_eq!(
+                        actual, frozen,
+                        "{identity}: exact numeric and NULL set members"
+                    );
                 }
                 "range" | "range_union" => {
                     let ValueDomain::Ranges(ranges) = domain else {
@@ -89,7 +96,10 @@ fn assert_independent_projected_domain(domain: &ValueDomain, policy: &Value, ide
                             .expect("frozen disjoint numeric intervals")
                             .clone()
                     };
-                    assert_eq!(actual, frozen, "{identity}: signed interval bounds, direction and inclusivity");
+                    assert_eq!(
+                        actual, frozen,
+                        "{identity}: signed interval bounds, direction and inclusivity"
+                    );
                 }
                 other => panic!("{identity}: unreviewed frozen precise domain shape {other}"),
             }
