@@ -216,8 +216,16 @@ pub fn physical_finite_signed_computed_bag_plan(
     let Some(bits) = signed_width(bundle, relation.name(), column) else {
         return residual("source integer storage width is not authoritatively established");
     };
+    if signed_width(bundle, relation.name(), projected.column()).is_none() {
+        return residual("projected column lacks an authoritative signed integer type");
+    }
     let magnitude = 1_i128 << (bits - 1);
     let (minimum, maximum) = (-magnitude, magnitude - 1);
+    if !(minimum..=maximum).contains(&limit)
+        || matches!(operation, SignedComputation::Add(value) if !(minimum..=maximum).contains(&value))
+    {
+        return residual("numeric constant exceeds the declared source integer width");
+    }
 
     let mut selected_ordinals = Vec::new();
     let mut rejected_ordinals = Vec::new();
