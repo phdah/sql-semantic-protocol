@@ -375,7 +375,10 @@ fn s013_requires_the_full_inner_bag_and_handles_proven_empty_inner_relation() {
     assert_eq!(exact.rejected, ["o0", "o1", "o2", "o3", "o4", "o5", "o6"]);
     assert!(exact.terminal.is_empty());
     assert!(exact.matching_inner.values().all(Vec::is_empty));
-    let id_domain = exact.terminal_domains.get("id").expect("typed empty terminal");
+    let id_domain = exact
+        .terminal_domains
+        .get("id")
+        .expect("typed empty terminal");
     assert!(id_domain.values().is_empty());
     assert!(!id_domain.null_allowed());
     assert_eq!(id_domain.bounds(), None);
