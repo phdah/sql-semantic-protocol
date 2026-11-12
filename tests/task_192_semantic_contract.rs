@@ -266,6 +266,19 @@ fn all_559_original_public_cells_have_explicit_expected_semantic_dispositions() 
                     residuals[0]["reason"], cell["expected_residual_reason"],
                     "{identity}: preserve the named unapproved semantic gap"
                 );
+                assert_eq!(
+                    residuals[0]["clause"], "where",
+                    "{identity}: original predicate residual must identify WHERE"
+                );
+                assert_eq!(
+                    residuals[0]["identity"],
+                    if id == "88-C177-S040" {
+                        "where:nan_implicit_cast"
+                    } else {
+                        "where"
+                    },
+                    "{identity}: stable, independently specified residual location"
+                );
             } else {
                 assert!(
                     actual_exactness["residual_conditions"]
@@ -273,6 +286,38 @@ fn all_559_original_public_cells_have_explicit_expected_semantic_dispositions() 
                         .is_none_or(|items| items.is_empty()),
                     "{identity}: an exact/conditional predicate cannot hide a residual"
                 );
+            }
+            // Check the actual assumption *names* and source identities for
+            // the two remaining conditional original SQLs. A status of
+            // "conditional" alone does not identify what must be attested.
+            if matches!(id, "88-C177-S037" | "88-C177-S039") {
+                let expected = if id == "88-C177-S037" {
+                    vec!["session_time_zone"]
+                } else {
+                    vec!["binary_collation", "no_char_padding"]
+                };
+                let requirements = actual_exactness["comparison_assumptions"]
+                    .as_array()
+                    .expect("explicit conditional source laws");
+                let mut actual = requirements
+                    .iter()
+                    .map(|requirement| {
+                        assert_eq!(requirement["clause"], "where", "{identity}: source law clause");
+                        assert_eq!(
+                            requirement["declared"], false,
+                            "{identity}: parser cannot attest session settings"
+                        );
+                        assert!(
+                            requirement["identity"]
+                                .as_str()
+                                .is_some_and(|name| name.starts_with("column_domain:")),
+                            "{identity}: assumption needs an exact source-column identity"
+                        );
+                        requirement["name"].as_str().expect("typed assumption name")
+                    })
+                    .collect::<Vec<_>>();
+                actual.sort_unstable();
+                assert_eq!(actual, expected, "{identity}: independently required source laws");
             }
             assert_eq!(
                 policy["expected_output_domain_kind"], cell["expected_projected_domain_kind"],
