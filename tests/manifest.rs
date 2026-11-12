@@ -163,7 +163,7 @@ fn analysis_manifest_comparison_assumptions_are_applied() {
         &manifest,
         serde_json::json!({
             "manifest_version": "1",
-            "comparison_assumptions": ["binary_collation"],
+            "comparison_assumptions": ["binary_collation", "no_char_padding"],
             "inputs": [{"id": "one", "sql": "SELECT name FROM t WHERE name = 'x'"}]
         })
         .to_string(),
@@ -183,7 +183,7 @@ fn analysis_manifest_comparison_assumptions_are_applied() {
     let json: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
     assert_eq!(
         json["declared_comparison_assumptions"],
-        serde_json::json!(["binary_collation"])
+        serde_json::json!(["binary_collation", "no_char_padding"])
     );
     assert_eq!(
         json["layers"][0]["composed_semantics"]["condition_exactness"]["status"],
