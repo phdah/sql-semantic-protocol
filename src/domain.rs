@@ -608,7 +608,7 @@ fn derive_predicate_domains(predicate: &Predicate, sources: &[SourceRelation]) -
                 sources,
                 "logical NOT cannot always be reduced safely to independent scalar domains",
             )
-        },
+        }
         Predicate::IsNull(predicate) => derive_is_null(predicate, sources),
         Predicate::In(predicate) => derive_in(predicate, sources),
         Predicate::Exists(_) => DomainMap::new(),
