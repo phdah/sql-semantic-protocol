@@ -229,6 +229,8 @@ For source-attested finite integer ORDER BY keys, TASK-128 extends `physical_fin
 
 ### Subqueries and table sources
 
+For source-attested signed integer comparisons, `NOT (column > integer_literal)` and the other strict/non-strict ordered inverses yield an exact single-column interval with SQL NULL excluded. Without authoritative signed type evidence, ordered NOT remains Residual; this avoids assuming NaN order or vendor coercion. Ordinary `NOT (column = integer_literal)` and `NOT (column <> integer_literal)` additionally use exact dual equality/inequality domains with SQL NULL staying UNKNOWN. Compound/nested NOT and NULL-bearing IN are never inverted by this shortcut. The original S011 still has an unbounded projected `id` domain even when the *source* `amount <= 1` is exact.
+
 Scalar subqueries are represented as `scalar_subquery` expressions instead of opaque unsupported expressions. EXISTS and IN/NOT IN subqueries use dedicated predicate kinds, `exists` and `in_subquery`, so membership and negation semantics are not flattened into generic boolean expressions.
 
 Each nested subquery carries a parser-independent semantic summary containing its physical `dependencies`, resolved outer-scope `correlations`, projected `output`, local `predicates`, and nested `diagnostics`. Correlation resolution is conservative: qualified references resolve only when one visible outer source matches, and a local alias shadows an outer alias with the same name.
