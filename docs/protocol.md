@@ -654,6 +654,12 @@ accepts the same CLI option. Each requirement is retained with its condition ide
 requirements were attested, `conditional` means requirements remain open and no residuals
 exist, and `residual` means at least one predicate still cannot be represented.
 
+An untyped comparison with the text literal `'NaN'` additionally retains a
+`comparison_semantics` residual `where:nan_implicit_cast`: no combination of
+collation, padding, no-NaN or signed-zero assumptions proves the missing
+string-to-number coercion law. With no source type, S040 is therefore Residual,
+not merely Conditional. TASK-179 owns warehouse-specific adjudication.
+
 For **untyped string comparisons**, neither the source's binary collation nor
 the absence of fixed-CHAR padding is inferred from a parsed SQL literal.
 Both `binary_collation` and `no_char_padding` must be attested until the
