@@ -31,6 +31,10 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
 
+      - name: Provision version-matched native DuckDB
+        if: matrix.check == 'test' || matrix.check == 'lint'
+        run: bash scripts/prepare-duckdb-ci.sh
+
       - name: Install Rust toolchain
         run: |
           rustup toolchain install stable --profile minimal --component rustfmt,clippy
@@ -56,6 +60,9 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
+
+      - name: Provision version-matched native DuckDB
+        run: bash scripts/prepare-duckdb-ci.sh
 
       - name: Install Rust toolchain
         run: |
@@ -96,6 +103,10 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
+
+      - name: Provision version-matched native DuckDB
+        if: matrix.check == 'test' || matrix.check == 'lint'
+        run: bash scripts/prepare-duckdb-ci.sh
 
       - name: Install Rust toolchain
         run: |
