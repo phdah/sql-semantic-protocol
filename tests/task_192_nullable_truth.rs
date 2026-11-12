@@ -179,12 +179,7 @@ fn typed_nullable_predicates_have_exact_true_and_not_true_boolean_witnesses() {
             .expect("typed direct SQL DDL");
         let catalog =
             RelationCatalog::from_schemas(schema.source_schemas()).expect("typed original source");
-        for id in [
-        "88-C177-S010",
-        "88-C177-S012",
-        "88-C177-S016",
-        "88-C177-S017",
-    ] {
+        for id in ["88-C177-S012", "88-C177-S016", "88-C177-S017"] {
             let case = freeze["cases"]
                 .as_array()
                 .expect("cases")
@@ -389,7 +384,12 @@ fn floating_source_without_nan_and_signed_zero_laws_cannot_be_exact() {
     let catalog = RelationCatalog::from_schemas(source.source_schemas())
         .expect("physical floating type facts");
 
-    for id in ["88-C177-S012", "88-C177-S016", "88-C177-S017"] {
+    for id in [
+        "88-C177-S010",
+        "88-C177-S012",
+        "88-C177-S016",
+        "88-C177-S017",
+    ] {
         let sql = freeze["cases"]
             .as_array()
             .expect("43 SQL cases")
