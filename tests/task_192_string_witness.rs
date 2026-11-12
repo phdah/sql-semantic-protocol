@@ -191,8 +191,7 @@ fn original_untyped_s039_never_assumes_fixed_char_padding_is_absent() {
         .expect("43 original SQLs")
         .iter()
         .find(|case| case["id"] == "88-C177-S039")
-        .expect("S039 original")
-        ["sql"]
+        .expect("S039 original")["sql"]
         .as_str()
         .expect("unaltered SQL");
     for name in freeze["dialects"].as_array().expect("13 parser names") {
