@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "task_id": "TASK-192",
-  "scope": "Pending independent review assignment, not an independently authored full-document golden or a release approval",
+  "scope": "Pending independent review assignment. All 43 full-document candidates are pinned but analyzer-produced; they are not independently authored semantic goldens or approved release evidence.",
   "case_count": 43,
   "cell_count": 559,
   "parser_accepted": 557,
@@ -13,7 +13,8 @@
     "original_sql": "docs/task-192-acceptance-freeze.json",
     "expected_public_policies": "docs/task-192-semantic-cell-ledger.json",
     "independent_query_shape": "docs/task-192-original-query-shapes.json",
-    "review_instructions": "docs/task-192-independent-review-handoff.md"
+    "review_instructions": "docs/task-192-independent-review-handoff.md",
+    "proposed_unreviewed_complete_documents": "docs/task-192-proposed-full-documents.json"
   },
   "required_review_dimensions": [
     "original_SQL_and_parser_boundary",
@@ -28,259 +29,259 @@
     {
       "case_id": "88-C177-S001",
       "source_terminal_oracle": "docs/task-177-predicate-oracles.json",
-      "expected_full_canonical_document_ref": null,
+      "expected_full_canonical_document_ref": "docs/task-192-proposed-full-documents.json#88-C177-S001",
       "downstream_owner": null
     },
     {
       "case_id": "88-C177-S002",
       "source_terminal_oracle": "docs/task-177-predicate-oracles.json",
-      "expected_full_canonical_document_ref": null,
+      "expected_full_canonical_document_ref": "docs/task-192-proposed-full-documents.json#88-C177-S002",
       "downstream_owner": null
     },
     {
       "case_id": "88-C177-S003",
       "source_terminal_oracle": "docs/task-177-predicate-oracles.json",
-      "expected_full_canonical_document_ref": null,
+      "expected_full_canonical_document_ref": "docs/task-192-proposed-full-documents.json#88-C177-S003",
       "downstream_owner": null
     },
     {
       "case_id": "88-C177-S004",
       "source_terminal_oracle": "docs/task-177-predicate-oracles.json",
-      "expected_full_canonical_document_ref": null,
+      "expected_full_canonical_document_ref": "docs/task-192-proposed-full-documents.json#88-C177-S004",
       "downstream_owner": null
     },
     {
       "case_id": "88-C177-S005",
       "source_terminal_oracle": "docs/task-177-predicate-oracles.json",
-      "expected_full_canonical_document_ref": null,
+      "expected_full_canonical_document_ref": "docs/task-192-proposed-full-documents.json#88-C177-S005",
       "downstream_owner": null
     },
     {
       "case_id": "88-C177-S006",
       "source_terminal_oracle": "docs/task-177-predicate-oracles.json",
-      "expected_full_canonical_document_ref": null,
+      "expected_full_canonical_document_ref": "docs/task-192-proposed-full-documents.json#88-C177-S006",
       "downstream_owner": null
     },
     {
       "case_id": "88-C177-S007",
       "source_terminal_oracle": "docs/task-177-predicate-oracles.json",
-      "expected_full_canonical_document_ref": null,
+      "expected_full_canonical_document_ref": "docs/task-192-proposed-full-documents.json#88-C177-S007",
       "downstream_owner": null
     },
     {
       "case_id": "88-C177-S008",
       "source_terminal_oracle": "docs/task-177-predicate-oracles.json",
-      "expected_full_canonical_document_ref": null,
+      "expected_full_canonical_document_ref": "docs/task-192-proposed-full-documents.json#88-C177-S008",
       "downstream_owner": null
     },
     {
       "case_id": "88-C177-S009",
       "source_terminal_oracle": "docs/task-177-predicate-oracles.json",
-      "expected_full_canonical_document_ref": null,
+      "expected_full_canonical_document_ref": "docs/task-192-proposed-full-documents.json#88-C177-S009",
       "downstream_owner": null
     },
     {
       "case_id": "88-C177-S010",
       "source_terminal_oracle": "docs/task-177-predicate-oracles.json",
-      "expected_full_canonical_document_ref": null,
+      "expected_full_canonical_document_ref": "docs/task-192-proposed-full-documents.json#88-C177-S010",
       "downstream_owner": null
     },
     {
       "case_id": "88-C177-S011",
       "source_terminal_oracle": "docs/task-177-predicate-oracles.json",
-      "expected_full_canonical_document_ref": null,
+      "expected_full_canonical_document_ref": "docs/task-192-proposed-full-documents.json#88-C177-S011",
       "downstream_owner": null
     },
     {
       "case_id": "88-C177-S012",
       "source_terminal_oracle": "docs/task-177-predicate-oracles.json",
-      "expected_full_canonical_document_ref": null,
+      "expected_full_canonical_document_ref": "docs/task-192-proposed-full-documents.json#88-C177-S012",
       "downstream_owner": null
     },
     {
       "case_id": "88-C177-S013",
       "source_terminal_oracle": "docs/task-177-predicate-oracles.json",
-      "expected_full_canonical_document_ref": null,
+      "expected_full_canonical_document_ref": "docs/task-192-proposed-full-documents.json#88-C177-S013",
       "downstream_owner": null
     },
     {
       "case_id": "88-C177-S014",
       "source_terminal_oracle": "docs/task-177-predicate-oracles.json",
-      "expected_full_canonical_document_ref": null,
+      "expected_full_canonical_document_ref": "docs/task-192-proposed-full-documents.json#88-C177-S014",
       "downstream_owner": null
     },
     {
       "case_id": "88-C177-S015",
       "source_terminal_oracle": "docs/task-177-predicate-oracles.json",
-      "expected_full_canonical_document_ref": null,
+      "expected_full_canonical_document_ref": "docs/task-192-proposed-full-documents.json#88-C177-S015",
       "downstream_owner": null
     },
     {
       "case_id": "88-C177-S016",
       "source_terminal_oracle": "docs/task-177-predicate-oracles.json",
-      "expected_full_canonical_document_ref": null,
+      "expected_full_canonical_document_ref": "docs/task-192-proposed-full-documents.json#88-C177-S016",
       "downstream_owner": null
     },
     {
       "case_id": "88-C177-S017",
       "source_terminal_oracle": "docs/task-177-predicate-oracles.json",
-      "expected_full_canonical_document_ref": null,
+      "expected_full_canonical_document_ref": "docs/task-192-proposed-full-documents.json#88-C177-S017",
       "downstream_owner": null
     },
     {
       "case_id": "88-C177-S018",
       "source_terminal_oracle": "docs/task-177-predicate-oracles.json",
-      "expected_full_canonical_document_ref": null,
+      "expected_full_canonical_document_ref": "docs/task-192-proposed-full-documents.json#88-C177-S018",
       "downstream_owner": null
     },
     {
       "case_id": "88-C177-S019",
       "source_terminal_oracle": "docs/task-177-predicate-oracles.json",
-      "expected_full_canonical_document_ref": null,
+      "expected_full_canonical_document_ref": "docs/task-192-proposed-full-documents.json#88-C177-S019",
       "downstream_owner": null
     },
     {
       "case_id": "88-C177-S020",
       "source_terminal_oracle": "docs/task-192-acceptance-freeze.json",
-      "expected_full_canonical_document_ref": null,
+      "expected_full_canonical_document_ref": "docs/task-192-proposed-full-documents.json#88-C177-S020",
       "downstream_owner": null
     },
     {
       "case_id": "88-C177-S021",
       "source_terminal_oracle": "docs/task-192-acceptance-freeze.json",
-      "expected_full_canonical_document_ref": null,
+      "expected_full_canonical_document_ref": "docs/task-192-proposed-full-documents.json#88-C177-S021",
       "downstream_owner": null
     },
     {
       "case_id": "88-C177-S022",
       "source_terminal_oracle": "docs/task-192-acceptance-freeze.json",
-      "expected_full_canonical_document_ref": null,
+      "expected_full_canonical_document_ref": "docs/task-192-proposed-full-documents.json#88-C177-S022",
       "downstream_owner": null
     },
     {
       "case_id": "88-C177-S023",
       "source_terminal_oracle": "docs/task-192-native-partitions.json",
-      "expected_full_canonical_document_ref": null,
+      "expected_full_canonical_document_ref": "docs/task-192-proposed-full-documents.json#88-C177-S023",
       "downstream_owner": null
     },
     {
       "case_id": "88-C177-S024",
       "source_terminal_oracle": "docs/task-192-native-partitions.json",
-      "expected_full_canonical_document_ref": null,
+      "expected_full_canonical_document_ref": "docs/task-192-proposed-full-documents.json#88-C177-S024",
       "downstream_owner": null
     },
     {
       "case_id": "88-C177-S025",
       "source_terminal_oracle": "docs/task-192-acceptance-freeze.json",
-      "expected_full_canonical_document_ref": null,
+      "expected_full_canonical_document_ref": "docs/task-192-proposed-full-documents.json#88-C177-S025",
       "downstream_owner": null
     },
     {
       "case_id": "88-C177-S026",
       "source_terminal_oracle": "docs/task-192-native-partitions.json",
-      "expected_full_canonical_document_ref": null,
+      "expected_full_canonical_document_ref": "docs/task-192-proposed-full-documents.json#88-C177-S026",
       "downstream_owner": null
     },
     {
       "case_id": "88-C177-S027",
       "source_terminal_oracle": "docs/task-177-predicate-oracles.json",
-      "expected_full_canonical_document_ref": null,
+      "expected_full_canonical_document_ref": "docs/task-192-proposed-full-documents.json#88-C177-S027",
       "downstream_owner": null
     },
     {
       "case_id": "88-C177-S028",
       "source_terminal_oracle": "docs/task-177-predicate-oracles.json",
-      "expected_full_canonical_document_ref": null,
+      "expected_full_canonical_document_ref": "docs/task-192-proposed-full-documents.json#88-C177-S028",
       "downstream_owner": null
     },
     {
       "case_id": "88-C177-S029",
       "source_terminal_oracle": "docs/task-177-predicate-oracles.json",
-      "expected_full_canonical_document_ref": null,
+      "expected_full_canonical_document_ref": "docs/task-192-proposed-full-documents.json#88-C177-S029",
       "downstream_owner": null
     },
     {
       "case_id": "88-C177-S030",
       "source_terminal_oracle": "docs/task-177-predicate-oracles.json",
-      "expected_full_canonical_document_ref": null,
+      "expected_full_canonical_document_ref": "docs/task-192-proposed-full-documents.json#88-C177-S030",
       "downstream_owner": null
     },
     {
       "case_id": "88-C177-S031",
       "source_terminal_oracle": "docs/task-177-predicate-oracles.json",
-      "expected_full_canonical_document_ref": null,
+      "expected_full_canonical_document_ref": "docs/task-192-proposed-full-documents.json#88-C177-S031",
       "downstream_owner": null
     },
     {
       "case_id": "88-C177-S032",
       "source_terminal_oracle": "docs/task-177-predicate-oracles.json",
-      "expected_full_canonical_document_ref": null,
+      "expected_full_canonical_document_ref": "docs/task-192-proposed-full-documents.json#88-C177-S032",
       "downstream_owner": null
     },
     {
       "case_id": "88-C177-S033",
       "source_terminal_oracle": "docs/task-192-native-partitions.json",
-      "expected_full_canonical_document_ref": null,
+      "expected_full_canonical_document_ref": "docs/task-192-proposed-full-documents.json#88-C177-S033",
       "downstream_owner": null
     },
     {
       "case_id": "88-C177-S034",
       "source_terminal_oracle": "docs/task-192-native-partitions.json",
-      "expected_full_canonical_document_ref": null,
+      "expected_full_canonical_document_ref": "docs/task-192-proposed-full-documents.json#88-C177-S034",
       "downstream_owner": null
     },
     {
       "case_id": "88-C177-S035",
       "source_terminal_oracle": "docs/task-192-native-partitions.json",
-      "expected_full_canonical_document_ref": null,
+      "expected_full_canonical_document_ref": "docs/task-192-proposed-full-documents.json#88-C177-S035",
       "downstream_owner": null
     },
     {
       "case_id": "88-C177-S036",
       "source_terminal_oracle": "docs/task-192-native-partitions.json",
-      "expected_full_canonical_document_ref": null,
+      "expected_full_canonical_document_ref": "docs/task-192-proposed-full-documents.json#88-C177-S036",
       "downstream_owner": null
     },
     {
       "case_id": "88-C177-S037",
       "source_terminal_oracle": "docs/task-192-native-partitions.json",
-      "expected_full_canonical_document_ref": null,
+      "expected_full_canonical_document_ref": "docs/task-192-proposed-full-documents.json#88-C177-S037",
       "downstream_owner": "TASK-179"
     },
     {
       "case_id": "88-C177-S038",
       "source_terminal_oracle": "docs/task-192-native-partitions.json",
-      "expected_full_canonical_document_ref": null,
+      "expected_full_canonical_document_ref": "docs/task-192-proposed-full-documents.json#88-C177-S038",
       "downstream_owner": null
     },
     {
       "case_id": "88-C177-S039",
       "source_terminal_oracle": "docs/task-192-native-partitions.json",
-      "expected_full_canonical_document_ref": null,
+      "expected_full_canonical_document_ref": "docs/task-192-proposed-full-documents.json#88-C177-S039",
       "downstream_owner": "TASK-179"
     },
     {
       "case_id": "88-C177-S040",
       "source_terminal_oracle": "docs/task-192-native-partitions.json",
-      "expected_full_canonical_document_ref": null,
+      "expected_full_canonical_document_ref": "docs/task-192-proposed-full-documents.json#88-C177-S040",
       "downstream_owner": "TASK-179"
     },
     {
       "case_id": "88-C177-S041",
       "source_terminal_oracle": "docs/task-192-native-partitions.json",
-      "expected_full_canonical_document_ref": null,
+      "expected_full_canonical_document_ref": "docs/task-192-proposed-full-documents.json#88-C177-S041",
       "downstream_owner": null
     },
     {
       "case_id": "88-C177-S042",
       "source_terminal_oracle": "docs/task-192-native-partitions.json",
-      "expected_full_canonical_document_ref": null,
+      "expected_full_canonical_document_ref": "docs/task-192-proposed-full-documents.json#88-C177-S042",
       "downstream_owner": null
     },
     {
       "case_id": "88-C177-S179",
       "source_terminal_oracle": "docs/task-192-native-partitions.json",
-      "expected_full_canonical_document_ref": null,
+      "expected_full_canonical_document_ref": "docs/task-192-proposed-full-documents.json#88-C177-S179",
       "downstream_owner": "TASK-191"
     }
   ],
