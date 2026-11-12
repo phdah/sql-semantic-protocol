@@ -40,6 +40,15 @@ All case IDs above are the `88-C177-S...` suffixes of the original
 freeze. The task's source ownership and parser observations remain in the
 machine-readable ledger; this table is a human review route, not a replacement.
 
+### Original S040 coercion boundary, pending TASK-179
+
+Untyped `amount = 'NaN'` cannot be certified using collation/padding or
+`no_nan`/`signed_zero_equivalent` flags: it is the implicit string-to-float
+coercion itself that remains unproved. The original 13 S040 expected cells now
+name `comparison_semantics` as a Residual instead of Conditional. Review
+`tests/task_192_nan_text_cast.rs`, the original DuckDB terminal and TASK-179's
+unapproved vendor law before any stronger classification.
+
 ## Required signoff steps
 
 1. Independently inspect **each of the 559 named public parser cells** against
