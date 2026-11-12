@@ -132,3 +132,28 @@ Extracted on 2026-11-10 from the previously overbroad TASK-178. There is **no im
 - **Fail-closed:** no type evidence, floating/NaN, text/coercion, nested NOT, computed arithmetic, and other unsupported patterns do not borrow the signed trichotomy law. `src/domain.rs` separately supports ordinary direct `NOT (=)` / `NOT (<>)` integer literal duals, which are safe under SQL 3VL and preserve NULL UNKNOWN. This additional generic case is not a substitute for any original 43-case oracle.
 - `tests/task_192_not_equality.rs` checks all 13 parser dialects, independent DuckDB TRUE/FALSE/UNKNOWN/NOT TRUE source occurrence bags, 3VL nullable duplicates, exact signed bound and negative FLOAT/untyped cases. `tests/task_192_nullable_truth.rs` now distinguishes S010 cross-column Residual from S011 **catalog-typed** Exact while preserving physical TRUE/NOT TRUE proofs for both.
 - **Important:** `docs/task-192-semantic-cell-ledger.json` is the *untyped* v1 public baseline, so its original S011 untyped classification remains Residual. Separate configured source evidence proves S011 typed Exact. Neither baseline nor typed evidence has an independent reviewer approval; the five ACs remain unchecked and TASK-192 stays In Progress.
+
+## Additional S010 typed Boolean implementation and review readiness (2026-11-12)
+
+- Original S010 `amount > 1 OR id > 0` now certifies its full same-row
+  TRUE/NOT TRUE Boolean condition under **one authoritative signed-integer
+  source**, without inventing an independent finite output `id` range.
+  Untyped, DOUBLE and multi-source cases remain conservative. Original S010
+  13-cell untyped ledger and the separate conditional/vendor boundaries
+  are unchanged.
+- Original S010 signed positive and FLOAT negative regression coverage lives
+  in `tests/task_192_nullable_truth.rs` alongside the complete DuckDB
+  partitions and direct/dbt/ODCS parity. Conservative 559-cell literal/domain,
+  named residual identity, conditional comparison-law and query-shape
+  assertions remain in their task-owned public tests.
+- `docs/task-192-review-queue.json` explicitly queues all 559 original
+  review decisions. `tests/task_192_review_queue.rs` checks the review list
+  is complete and remains unsigned pending separately accountable review.
+- CI now explicitly provisions pinned DuckDB 1.5.6 shared libraries before
+  native Rust/build jobs instead of relying on transient build-script
+  download path inference.
+
+**AC #1..#5 are still unchecked.** Independent full-document goldens, a
+distinct reviewer's signoff of all 559 original cells, legitimate residual
+dispositions and exact-head protocol/consumer CI are outstanding. Do not
+mark TASK-192 Done or PR #198 ready to merge on author-side CI alone.
