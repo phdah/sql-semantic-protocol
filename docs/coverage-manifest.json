@@ -33,6 +33,14 @@
     "semantic_cell_ledger": "docs/task-192-semantic-cell-ledger.json",
     "expected_public_analyzer_cell_count": 559,
     "public_semantic_contract_test": "tests/task_192_semantic_contract.rs",
+    "independent_projected_numeric_literal_checks": {
+      "test": "tests/task_192_semantic_contract.rs",
+      "original_numeric_cases": 10,
+      "parser_cells": 130,
+      "expected_values_and_bounds": "docs/task-177-predicate-oracles.json",
+      "complete_independent_canonical_documents": false
+    },
+    "untyped_string_padding_assumption_test": "tests/task_192_string_witness.rs",
     "native_projected_id_counterexamples": "tests/task_192_projection_counterexamples.rs",
     "native_alternate_source_cases": 3,
     "dbt_original_compiled_sql_analyzer_parity": "tests/task_192_adapter_parity.rs",
