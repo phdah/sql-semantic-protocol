@@ -5,8 +5,8 @@
 use serde_json::Value;
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, analyze_inputs, analyze_sql, dialect_from_name,
-    to_json, ComparisonAssumption, ComposedSemantics, ConditionExactnessStatus,
-    ConfiguredSqlInput, RelationCatalog, SqlInput, ValueDomain,
+    to_json, ComparisonAssumption, ComposedSemantics, ConditionExactnessStatus, ConfiguredSqlInput,
+    RelationCatalog, SqlInput, ValueDomain,
 };
 
 const FREEZE: &str = include_str!("../docs/task-192-acceptance-freeze.json");
@@ -45,8 +45,7 @@ fn all_13_untyped_original_nan_text_comparisons_are_unapproved_residuals() {
         let name = name.as_str().expect("public dialect");
         let dialect = dialect_from_name(name).expect("public parser");
         let parsed = analyze_sql(&sql, name, dialect.as_ref()).expect("original SQL parses");
-        let wire: Value =
-            serde_json::from_str(&to_json(&parsed)).expect("public JSON document");
+        let wire: Value = serde_json::from_str(&to_json(&parsed)).expect("public JSON document");
         let statement = &wire["inputs"][0]["statements"][0];
         assert_eq!(statement["condition_exactness"]["status"], "residual");
         let residuals = statement["condition_exactness"]["residual_conditions"]
@@ -55,7 +54,10 @@ fn all_13_untyped_original_nan_text_comparisons_are_unapproved_residuals() {
         assert_eq!(residuals.len(), 1, "S040/{name}: unique missing law");
         assert_eq!(residuals[0]["reason"], "comparison_semantics");
         assert_eq!(residuals[0]["identity"], "where:nan_implicit_cast");
-        assert_eq!(statement["output"]["columns"][0]["domain"]["kind"], "unbounded");
+        assert_eq!(
+            statement["output"]["columns"][0]["domain"]["kind"],
+            "unbounded"
+        );
     }
 }
 
@@ -97,7 +99,10 @@ fn declaring_collation_padding_float_and_time_zone_cannot_attest_nan_cast() {
             "S040/{name}: explicit runtime implicit-cast behavior is unproved"
         );
         assert!(
-            matches!(semantics.output().columns()[0].domain(), ValueDomain::Unbounded),
+            matches!(
+                semantics.output().columns()[0].domain(),
+                ValueDomain::Unbounded
+            ),
             "S040/{name}: filtering amount cannot bound id"
         );
     }
