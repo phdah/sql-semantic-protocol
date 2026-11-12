@@ -17,12 +17,9 @@ const CANDIDATES: &str = include_str!("../docs/task-192-proposed-full-documents.
 fn document(sql: &str, dialect: &str) -> Result<Value, sql_semantic_protocol::Error> {
     let parser = dialect_from_name(dialect).expect("public parser dialect");
     let protocol = analyze_sql(sql, dialect, parser.as_ref())?;
-    let mut value: Value = serde_json::from_str(&to_json(&protocol))
-        .expect("emitted canonical JSON must be valid");
-    for input in value["inputs"]
-        .as_array_mut()
-        .expect("canonical inputs")
-    {
+    let mut value: Value =
+        serde_json::from_str(&to_json(&protocol)).expect("emitted canonical JSON must be valid");
+    for input in value["inputs"].as_array_mut().expect("canonical inputs") {
         // Parser identity is context, not semantic meaning.
         input["dialect"] = Value::Null;
     }
@@ -38,27 +35,39 @@ fn all_43_full_documents_match_explicit_proposed_goldens_over_559_parser_cells()
     assert_eq!(expected["owner"], "TASK-192");
     assert_eq!(expected["case_count"], 43);
     assert_eq!(expected["independently_reviewed"], false);
-    let goldens = expected["cases"].as_array().expect("43 pinned full documents");
+    let goldens = expected["cases"]
+        .as_array()
+        .expect("43 pinned full documents");
     assert_eq!(goldens.len(), 43);
 
     let mut seen = BTreeSet::new();
     let mut count = 0;
-    for case in original["cases"].as_array().expect("43 original SQL variants") {
+    for case in original["cases"]
+        .as_array()
+        .expect("43 original SQL variants")
+    {
         let id = case["id"].as_str().expect("stable original id");
         assert!(seen.insert(id), "{id}: duplicate original SQL");
-        let golden = goldens.iter().find(|candidate| candidate["id"] == id)
+        let golden = goldens
+            .iter()
+            .find(|candidate| candidate["id"] == id)
             .expect("each original SQL requires one full candidate golden");
         let sql = case["sql"].as_str().expect("fixed original SQL");
         assert_eq!(golden["original_sql"], sql, "{id}: original SQL changed");
-        let expected_document = golden["document"].as_object()
+        let expected_document = golden["document"]
+            .as_object()
             .expect("full independently auditable canonical JSON, not just domain.kind");
         assert!(!expected_document.is_empty(), "{id}: empty document");
-        for (index, dialect) in original["dialects"].as_array().expect("13 public parsers")
-            .iter().enumerate()
+        for (index, dialect) in original["dialects"]
+            .as_array()
+            .expect("13 public parsers")
+            .iter()
+            .enumerate()
         {
             let dialect = dialect.as_str().expect("dialect identity");
             let status = case["dialect_cells"][index]["observed_parser_canonical_status"]
-                .as_str().expect("historical status");
+                .as_str()
+                .expect("historical status");
             let found = document(sql, dialect);
             if id == "88-C177-S179" && matches!(dialect, "bigquery" | "generic") {
                 assert!(found.is_err(), "{id}/{dialect}: named parser exception");
@@ -75,7 +84,9 @@ fn all_43_full_documents_match_explicit_proposed_goldens_over_559_parser_cells()
     }
     assert_eq!(count, 559);
     assert_eq!(seen.len(), 43);
-    assert!(goldens.iter().all(|item| seen.contains(item["id"].as_str().expect("golden id"))));
+    assert!(goldens
+        .iter()
+        .all(|item| seen.contains(item["id"].as_str().expect("golden id"))));
 }
 
 /// Diagnostic for inspecting the actual analyzer documents before a reviewer
