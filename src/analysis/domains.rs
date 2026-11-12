@@ -90,7 +90,25 @@ pub(super) fn analyze_set_expr_column_domains(
                 &mut relation_diagnostics,
                 &mut derived_index,
             );
-            let predicate_domains = derive_column_domains(&domain_predicates, &relations.sources);
+            let predicate_domains = match (
+                metadata,
+                domain_predicates.where_predicate(),
+                domain_predicates.having_predicate(),
+                domain_predicates.qualify_predicate(),
+            ) {
+                (Some(metadata), Some(predicate), None, None) => {
+                    match typed_signed_ordered_not(predicate, &relations.sources, metadata) {
+                        Some((column, inverse, literal)) => {
+                            vec![ColumnDomain::new(
+                                column,
+                                comparison_domain(inverse, &literal),
+                            )]
+                        }
+                        None => derive_column_domains(&domain_predicates, &relations.sources),
+                    }
+                }
+                _ => derive_column_domains(&domain_predicates, &relations.sources),
+            };
             let join_domains =
                 derive_inner_join_column_domains(&relations.joins, &relations.sources);
             let own_domains = remap_local_column_domains(
