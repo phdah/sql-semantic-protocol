@@ -231,6 +231,39 @@ pub(super) fn typed_signed_ordered_not(
     signed.then_some((resolved, inverse, literal.clone()))
 }
 
+/// A parser-only comparison against the text spelling 'NaN' cannot
+/// establish whether a warehouse will compare strings or coerce to a
+/// floating NaN. The declared collation/padding/float laws do not certify
+/// the missing implicit-cast rule. A typed string source has no such cast.
+fn requires_unproved_nan_text_coercion(
+    predicate: &Predicate,
+    sources: &[SourceRelation],
+    metadata: Option<&AnalysisMetadata<'_>>,
+) -> bool {
+    let Predicate::Comparison(comparison) = predicate else {
+        return false;
+    };
+    let (column, literal) = match (comparison.left(), comparison.right()) {
+        (Expression::Column(column), Expression::Literal(literal))
+        | (Expression::Literal(literal), Expression::Column(column)) => (column, literal),
+        _ => return false,
+    };
+    let LiteralValue::Text(raw) = literal.value() else {
+        return false;
+    };
+    if !raw.eq_ignore_ascii_case("nan") {
+        return false;
+    }
+    let resolved = resolve_column(column, sources);
+    match metadata.and_then(|facts| facts.column_data_type(&resolved)) {
+        Some(DataType::String { .. }) => false,
+        Some(DataType::Nullable(inner)) => {
+            !matches!(inner.as_ref(), DataType::String { .. })
+        }
+        _ => true,
+    }
+}
+
 pub(super) fn analyze_query_condition_exactness(
     query: &SqlQuery,
     predicates: &Predicates,
@@ -271,6 +304,13 @@ pub(super) fn analyze_query_condition_exactness(
                 true,
                 &mut residuals,
             );
+        }
+        if requires_unproved_nan_text_coercion(predicate, &equality_sources, metadata) {
+            residuals.push(ResidualCondition::new(
+                ResidualConditionReason::ComparisonSemantics,
+                ConditionClause::Where,
+                "where:nan_implicit_cast",
+            ));
         }
     }
 
