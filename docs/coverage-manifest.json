@@ -71,7 +71,7 @@
       "original_source_and_terminal_oracles": "docs/task-177-predicate-oracles.json",
       "three_valued_logic_and_typed_witness_test": "tests/task_192_nullable_truth.rs",
       "adapter_source_parity_test": "tests/task_192_adapter_parity.rs",
-      "status": "typed_row_witness_only_whole_query_residual_unapproved",
+      "status": "s010_and_s011_catalog_signed_exact_boolean_condition_untyped_residual_independent_review_pending",
       "public_physical_row_plan": "physical_source_plan",
       "public_physical_positive_negative_test": "tests/task_192_nullable_truth.rs",
       "physical_scope": "constructible_individual_row_TRUE_NOT_TRUE_not_universal_scalar_projection"
