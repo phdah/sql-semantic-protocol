@@ -87,4 +87,3 @@ fn all_43_full_documents_match_explicit_proposed_goldens_over_559_parser_cells()
         .iter()
         .all(|item| seen.contains(item["id"].as_str().expect("golden id"))));
 }
-
