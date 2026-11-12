@@ -480,7 +480,9 @@ fn cli_assumption_declaration_is_recorded_and_closes_condition() {
         .as_array()
         .expect("two independent source-law obligations");
     assert_eq!(requirements.len(), 2);
-    assert!(requirements.iter().all(|requirement| requirement["declared"] == true));
+    assert!(requirements
+        .iter()
+        .all(|requirement| requirement["declared"] == true));
 }
 
 #[test]
