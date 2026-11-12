@@ -502,6 +502,7 @@ mod rank_bags;
 mod ranking;
 mod scalar_quantified;
 mod sequential_graph;
+mod signed_computed_bags;
 mod set_bags;
 mod set_trees;
 mod sets;
@@ -532,6 +533,10 @@ pub use cte_scripts::{
 pub(crate) use distributions::{
     physical_distribution_conflict, physical_distribution_plan,
     physical_inverted_set_distribution_plan,
+};
+pub use signed_computed_bags::{
+    physical_finite_signed_computed_bag_plan, PhysicalSignedComputedExact,
+    PhysicalSignedComputedProof,
 };
 pub use exists_bags::{
     physical_finite_exists_bag_plan, PhysicalExistsColumnDomain, PhysicalFiniteExistsExact,
