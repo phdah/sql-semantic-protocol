@@ -4,8 +4,10 @@
 
 use std::collections::{BTreeMap, BTreeSet};
 
-use serde_json::Value;
-use sql_semantic_protocol::{analyze_sql, dialect_from_name, to_json};
+use serde_json::{json, Value};
+use sql_semantic_protocol::{
+    analyze_sql, dialect_from_name, to_json, LiteralValue, ProtocolStatement, SetMode, ValueDomain,
+};
 
 const CONTRACT: &str = include_str!("../docs/task-192-semantic-cell-ledger.json");
 const FREEZE: &str = include_str!("../docs/task-192-acceptance-freeze.json");
@@ -19,6 +21,94 @@ fn attr<'a>(value: &'a Value, key: &str) -> &'a str {
     value[key]
         .as_str()
         .expect("required semantic contract value")
+}
+
+/// Translate only independently frozen signed integer and SQL NULL literals.
+/// This deliberately has no fallback that would silently accept a new value type.
+fn frozen_literal(value: &LiteralValue) -> Value {
+    match value {
+        LiteralValue::Number(raw) => json!(raw.parse::<i64>().expect("frozen signed integer")),
+        LiteralValue::Null => Value::Null,
+        _ => panic!("TASK-192 frozen numeric policy cannot certify other literal types"),
+    }
+}
+
+/// Compare the actual *values* of every precise projection, not just its
+/// domain category. These expectations come from the original native/SQL-law
+/// goldens in the acceptance freeze, never from a previously emitted document.
+fn assert_independent_projected_domain(domain: &ValueDomain, policy: &Value, identity: &str) {
+    match attr(policy, "kind") {
+        "precise_constraint" => {
+            assert_eq!(policy["nullable"], false, "{identity}: numeric NULL policy");
+            let expected = &policy["literal_domain"];
+            match attr(expected, "kind") {
+                "set_include" | "set_exclude" => {
+                    let ValueDomain::Set(set) = domain else {
+                        panic!("{identity}: expected independently bounded numeric set, got {domain:?}");
+                    };
+                    let mode = match set.mode() {
+                        SetMode::Include => "set_include",
+                        SetMode::Exclude => "set_exclude",
+                    };
+                    assert_eq!(mode, attr(expected, "kind"), "{identity}: set inclusion/exclusion");
+                    let mut actual = set
+                        .values()
+                        .iter()
+                        .map(|literal| frozen_literal(literal.value()))
+                        .collect::<Vec<_>>();
+                    let mut frozen = expected["values"]
+                        .as_array()
+                        .expect("frozen numeric set members")
+                        .clone();
+                    actual.sort_by_key(Value::to_string);
+                    frozen.sort_by_key(Value::to_string);
+                    assert_eq!(actual, frozen, "{identity}: exact numeric and NULL set members");
+                }
+                "range" | "range_union" => {
+                    let ValueDomain::Ranges(ranges) = domain else {
+                        panic!("{identity}: expected independently bounded numeric intervals, got {domain:?}");
+                    };
+                    let actual = ranges
+                        .ranges()
+                        .iter()
+                        .map(|range| {
+                            let lower = range.lower().map(|bound| {
+                                json!([frozen_literal(bound.value().value()), bound.inclusive()])
+                            });
+                            let upper = range.upper().map(|bound| {
+                                json!([frozen_literal(bound.value().value()), bound.inclusive()])
+                            });
+                            json!({"lower": lower, "upper": upper})
+                        })
+                        .collect::<Vec<_>>();
+                    let frozen = if expected["kind"] == "range" {
+                        vec![json!({"lower": expected["lower"], "upper": expected["upper"]})]
+                    } else {
+                        expected["ranges"]
+                            .as_array()
+                            .expect("frozen disjoint numeric intervals")
+                            .clone()
+                    };
+                    assert_eq!(actual, frozen, "{identity}: signed interval bounds, direction and inclusivity");
+                }
+                other => panic!("{identity}: unreviewed frozen precise domain shape {other}"),
+            }
+        }
+        "unconstrained_nullable_id" => {
+            assert_eq!(policy["null_allowed"], true, "{identity}: SQL NULL policy");
+            assert!(
+                matches!(domain, ValueDomain::Unbounded),
+                "{identity}: unrelated WHERE condition cannot constrain the projected id: {domain:?}"
+            );
+        }
+        "native_evaluation_error" | "unsupported_structural_cast" => {
+            assert!(
+                matches!(domain, ValueDomain::Unknown(_)),
+                "{identity}: no portable successful scalar outcome is certified: {domain:?}"
+            );
+        }
+        other => panic!("{identity}: missing independently frozen projected domain policy {other}"),
+    }
 }
 
 #[test]
@@ -128,6 +218,18 @@ fn all_559_original_public_cells_have_explicit_expected_semantic_dispositions() 
         let protocol = result.unwrap_or_else(|error| {
             panic!("{identity}: expected public SQL semantics, got {error}")
         });
+        let [ProtocolStatement::Query(query)] = protocol.statements() else {
+            panic!("{identity}: expected one complete public query statement");
+        };
+        let [projected] = query.output().columns() else {
+            panic!("{identity}: expected exactly one public projected column");
+        };
+        assert_independent_projected_domain(
+            projected.domain(),
+            &policy["independent_projected_domain_policy"],
+            identity,
+        );
+
         let mut wire = parse(&to_json(&protocol));
         {
             let statement = &wire["inputs"][0]["statements"][0];
