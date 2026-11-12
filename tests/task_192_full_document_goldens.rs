@@ -27,7 +27,6 @@ fn document(sql: &str, dialect: &str) -> Result<Value, sql_semantic_protocol::Er
 }
 
 #[test]
-#[ignore]
 fn all_43_full_documents_match_explicit_proposed_goldens_over_559_parser_cells() {
     let original: Value = serde_json::from_str(ORIGINAL).expect("43 fixed original SQLs");
     let expected: Value = serde_json::from_str(CANDIDATES).expect("versioned candidate documents");
@@ -56,7 +55,7 @@ fn all_43_full_documents_match_explicit_proposed_goldens_over_559_parser_cells()
         assert_eq!(golden["original_sql"], sql, "{id}: original SQL changed");
         let expected_document = golden["document"]
             .as_object()
-            .expect("full independently auditable canonical JSON, not just domain.kind");
+            .expect("full proposed canonical JSON, not just domain.kind");
         assert!(!expected_document.is_empty(), "{id}: empty document");
         for (index, dialect) in original["dialects"]
             .as_array()
@@ -89,16 +88,3 @@ fn all_43_full_documents_match_explicit_proposed_goldens_over_559_parser_cells()
         .all(|item| seen.contains(item["id"].as_str().expect("golden id"))));
 }
 
-/// Diagnostic for inspecting the actual analyzer documents before a reviewer
-/// validates the candidate goldens. NEVER treat this as independent evidence.
-#[test]
-#[ignore]
-fn emit_candidate_goldens_for_separate_semantic_adjudication() {
-    let original: Value = serde_json::from_str(ORIGINAL).expect("original SQL");
-    for case in original["cases"].as_array().expect("original variants") {
-        let id = case["id"].as_str().expect("id");
-        let sql = case["sql"].as_str().expect("sql");
-        let doc = document(sql, "ansi").expect("ANSI parses all 43 original SQLs");
-        println!("TASK192_DOCUMENT_BEGIN:{id}:{}", doc);
-    }
-}
