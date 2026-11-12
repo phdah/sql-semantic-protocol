@@ -141,10 +141,9 @@ fn native_full_null_duplicate_negative_bags_validate_inverted_truth() {
 }
 
 #[test]
-fn ordered_and_null_bearing_not_still_fail_closed() {
+fn opaque_and_null_bearing_not_still_fail_closed() {
     let dialect = dialect_from_name("duckdb").expect("public parser");
     for sql in [
-        "SELECT amount FROM orders WHERE NOT (amount > 10)",
         "SELECT amount FROM orders WHERE NOT (amount IN (10, NULL))",
         "SELECT amount FROM orders WHERE NOT NOT (amount = 10)",
     ] {
@@ -171,4 +170,124 @@ fn ordered_and_null_bearing_not_still_fail_closed() {
             "{sql}: no unsafe NOT generalization"
         );
     }
+}
+
+#[test]
+fn original_s011_has_exact_nullable_signed_interval_but_no_projected_id_bound() {
+    const S011: &str = "SELECT id FROM orders WHERE NOT (amount > 1)";
+    for name in DIALECTS {
+        let dialect = dialect_from_name(name).expect("public parser");
+        let input = SqlInput::inline(S011);
+        let configured = [ConfiguredSqlInput::new(
+            "task192-original-S011-signed",
+            &input,
+            name,
+            dialect.as_ref(),
+        )];
+        let bundle = analyze_configured_inputs_with_catalog(&configured, &signed_catalog())
+            .expect("original SQL under authoritative signed source type");
+        let ComposedSemantics::Resolved(composed) = bundle
+            .layers()
+            .last()
+            .expect("query layer")
+            .composed_semantics()
+        else {
+            panic!("{name}: missing original signed source");
+        };
+        assert_eq!(
+            composed.condition_exactness().status(),
+            ConditionExactnessStatus::Exact,
+            "S011/{name}: numeric NOT > is <= only for signed sources"
+        );
+        assert!(
+            matches!(composed.output().columns()[0].domain(), ValueDomain::Unbounded),
+            "S011/{name}: filtering amount does not restrict projected id"
+        );
+        let amount = composed
+            .column_domains()
+            .iter()
+            .find(|domain| domain.column().relation() == Some("orders")
+                && domain.column().name() == "amount")
+            .unwrap_or_else(|| panic!("S011/{name}: missing typed amount interval"));
+        let ValueDomain::Ranges(ranges) = amount.domain() else {
+            panic!("S011/{name}: signed amount predicate must be an interval");
+        };
+        let [range] = ranges.ranges() else {
+            panic!("S011/{name}: one upper-bounded numeric interval");
+        };
+        assert!(range.lower().is_none(), "S011/{name}: no invented lower bound");
+        let bound = range.upper().expect("signed upper endpoint");
+        assert_eq!(bound.value().value(), &LiteralValue::Number("1".to_string()));
+        assert!(bound.inclusive(), "S011/{name}: complement of > is <=");
+    }
+}
+
+#[test]
+fn ordered_not_requires_authoritative_signed_type_and_never_assumes_nan_laws() {
+    const SQL: &str = "SELECT amount FROM orders WHERE NOT (amount > 1)";
+    let parser = dialect_from_name("duckdb").expect("public parser");
+    let untyped = sql_semantic_protocol::analyze_sql(SQL, "duckdb", parser.as_ref())
+        .expect("untyped SQL");
+    let [sql_semantic_protocol::ProtocolStatement::Query(untyped)] = untyped.statements() else {
+        panic!("one untyped query");
+    };
+    assert_eq!(
+        untyped.condition_exactness().status(),
+        ConditionExactnessStatus::Residual,
+        "untyped ordered NOT remains conservative"
+    );
+
+    let ddl = SqlInput::inline("CREATE TABLE orders (id INTEGER, amount DOUBLE)");
+    let schema = analyze_inputs(&[ddl], "duckdb", parser.as_ref())
+        .expect("floating source type");
+    let floating = RelationCatalog::from_schemas(schema.source_schemas())
+        .expect("floating catalog");
+    let input = SqlInput::inline(SQL);
+    let configured = [ConfiguredSqlInput::new(
+        "task192-float-not-negative",
+        &input,
+        "duckdb",
+        parser.as_ref(),
+    )];
+    let result = analyze_configured_inputs_with_catalog(&configured, &floating)
+        .expect("floating SQL");
+    let ComposedSemantics::Resolved(composed) = result
+        .layers()
+        .last()
+        .expect("floating query")
+        .composed_semantics()
+    else {
+        panic!("one floating source");
+    };
+    assert_eq!(
+        composed.condition_exactness().status(),
+        ConditionExactnessStatus::Residual,
+        "NaN and signed-zero comparison laws require separate evidence"
+    );
+}
+
+#[test]
+fn original_s011_native_three_valued_signed_truth_includes_nulls() {
+    let connection = Connection::open_in_memory().expect("DuckDB");
+    connection
+        .execute_batch(
+            "CREATE TABLE orders (id INTEGER, amount INTEGER);
+             INSERT INTO orders VALUES (-1,-3), (0,1), (1,1), (2,2), (3,NULL), (4,100);",
+        )
+        .expect("complete nullable signed source");
+    let ids = |truth: &str| {
+        let query = format!(
+            "SELECT id FROM orders WHERE (NOT (amount > 1)) {truth} ORDER BY id"
+        );
+        let mut statement = connection.prepare(&query).expect("native S011 SQL");
+        statement
+            .query_map([], |row| row.get::<_, i64>(0))
+            .expect("native row identities")
+            .map(|row| row.expect("physical ID"))
+            .collect::<Vec<_>>()
+    };
+    assert_eq!(ids("IS TRUE"), vec![-1, 0, 1]);
+    assert_eq!(ids("IS FALSE"), vec![2, 4]);
+    assert_eq!(ids("IS UNKNOWN"), vec![3]);
+    assert_eq!(ids("IS NOT TRUE"), vec![2, 3, 4]);
 }
