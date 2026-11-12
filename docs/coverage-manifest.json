@@ -145,6 +145,39 @@
       "scope": "outer_relation_output_alias_and_normalized_predicate_shape",
       "full_document_manual_golden_still_missing": true,
       "independent_review": false
+    },
+    "original_s011_typed_signed_not": {
+      "case_id": "88-C177-S011",
+      "original_sql": "docs/task-192-acceptance-freeze.json",
+      "comparison": "NOT (amount > 1)",
+      "precondition": "explicit_authoritative_signed_integer_source_datatype",
+      "source_domain": "amount_lte_1_inclusive_with_sql_null_excluded",
+      "projected_id_domain": "unbounded",
+      "public_untyped_baseline": "residual_logical_not",
+      "scoped_typed_condition": "exact",
+      "positive_and_rejected_source_evidence": "tests/task_192_not_equality.rs",
+      "existing_original_case_physical_truth": "tests/task_192_nullable_truth.rs",
+      "canonical_owner": "src/analysis/exactness.rs::typed_signed_ordered_not",
+      "scalar_derivation": "src/analysis/domains.rs",
+      "no_type_or_floating": "residual",
+      "external_vendor_execution": "unattested",
+      "independently_reviewed": false
+    },
+    "portable_not_integer_equality": {
+      "source": "src/domain.rs",
+      "exact_laws": [
+        "NOT (column = integer) -> column <> integer",
+        "NOT (column <> integer) -> column = integer"
+      ],
+      "null_truth": "UNKNOWN_remains_UNKNOWN",
+      "excluded_nonportable": [
+        "ordered_without_explicit_signed_type",
+        "nested_not",
+        "null_in_list",
+        "computed_arithmetic"
+      ],
+      "public_test": "tests/task_192_not_equality.rs",
+      "independently_reviewed": false
     }
   },
   "task_177_dialect_parser_acceptance": {
