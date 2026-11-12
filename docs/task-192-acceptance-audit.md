@@ -90,8 +90,10 @@ The temporary [sql-tdg consumer compatibility PR #49](https://github.com/phdah/s
 - An attempted S011 numeric NOT exactness promotion failed independently
   seeded conformance in `tests/differential_conformance.rs`: NULL-membership
   assumptions and nested CTE predicate analysis were insufficient. This
-  promotion was reverted. S011 remains the **unapproved logical_not residual**
-  in all 13 dialect cells, with a fail-closed negative regression.
+  promotion was reverted *at this fourth pass*. S011 remained an **unapproved
+  untyped logical_not residual** in all 13 dialect cells. The later ninth pass
+  introduces a narrower signed-catalog-only proof, without changing this
+  untyped ledger classification.
 - The versioned 559-cell ledger preserves the existing source and terminal
   scope, exact S012/S016/S017 classification, and explicit unreviewed flags.
 
@@ -101,7 +103,7 @@ compatibility.
 
 ### Fifth pass: independently replayable residual evidence, without release approval
 
-- S010/S011: [typed Boolean source-row witness tests](../tests/task_192_nullable_truth.rs) now replay original full DuckDB TRUE/FALSE/UNKNOWN/NOT TRUE populations and public `physical_source_plan` constructed TRUE/NOT TRUE source-row obligations and verify the source-typed exact row-local Boolean witness on all 13 parser dialects. [Adapter parity](../tests/task_192_adapter_parity.rs) also checks direct, original compiled dbt and ODCS semantics for these original cases. Neither is a whole-query independent-domain proof. The two residual classes remain explicitly unapproved.
+- S010/S011: [typed Boolean source-row witness tests](../tests/task_192_nullable_truth.rs) now replay original full DuckDB TRUE/FALSE/UNKNOWN/NOT TRUE populations and public `physical_source_plan` constructed TRUE/NOT TRUE source-row obligations and verify the source-typed exact row-local Boolean witness on all 13 parser dialects. [Adapter parity](../tests/task_192_adapter_parity.rs) also checks direct, original compiled dbt and ODCS semantics for these original cases. At the fifth pass neither was a whole-query independent-domain proof. The ninth pass now certifies S011 with explicit signed-integer source metadata; S010 remains Residual and the original untyped S011 ledger remains Residual.
 - S027-S032: [computed predicate evidence](../tests/task_192_computed_witness.rs) checks each original whole-bag native result and every three-valued partition. Source-typed exact row-level witnesses are demonstrated for S028-S031. Independently executed extremal DuckDB cases prove that S027 `BIGINT::MAX+2` **succeeds by widening** while S032 `ABS(BIGINT::MIN)` **raises a native error**, including source NULL negative controls; neither vendor-specific behavior licenses a portable source-independent inversion. Both remain residual without an authoritative source/result width or engine law.
 - S020/S022/S025 and S039: [pattern law evidence](../tests/task_192_string_witness.rs) verifies typed, source-local exactness only under explicitly attested binary collation and no character padding, plus fixed-width CHAR negative controls. Nonportable ILIKE, SIMILAR TO, regex and locale collation variants remain unproved even when unrelated binary assumptions are declared. No external vendor/session execution is attested.
 - [Independent review handoff](task-192-independent-review-handoff.md) links every original variant family to its physical and typed proof, the still-unapproved disposition and the responsible downstream reviewers. The 559-cell source of truth and individual `independently_reviewed=false` flags are unchanged.
