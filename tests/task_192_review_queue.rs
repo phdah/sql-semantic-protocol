@@ -62,12 +62,21 @@ fn reviewer_assignment_queue_names_every_original_cell_without_false_approval() 
             format!("docs/task-192-proposed-full-documents.json#{id}"),
             "{id}: one full unreviewed document must be linked for the reviewer"
         );
-        let proposed = candidate["cases"].as_array().expect("43 proposed documents")
-            .iter().find(|row| row["id"] == id).expect("full document candidate");
+        let proposed = candidate["cases"]
+            .as_array()
+            .expect("43 proposed documents")
+            .iter()
+            .find(|row| row["id"] == id)
+            .expect("full document candidate");
         assert_eq!(proposed["original_sql"], original["sql"]);
-        assert!(proposed["document"].is_object(), "{id}: a full wire document, not a partial shape");
-        assert_eq!(candidate["independently_reviewed"], false,
-            "{id}: analyzer-produced regression goldens are not independent approval");
+        assert!(
+            proposed["document"].is_object(),
+            "{id}: a full wire document, not a partial shape"
+        );
+        assert_eq!(
+            candidate["independently_reviewed"], false,
+            "{id}: analyzer-produced regression goldens are not independent approval"
+        );
         let owner = item["downstream_owner"].as_str();
         assert!(
             owner.is_none_or(|name| matches!(name, "TASK-179" | "TASK-191")),
