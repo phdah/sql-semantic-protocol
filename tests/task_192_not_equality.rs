@@ -77,16 +77,20 @@ fn check_domains(sql: &str, dialect_name: &str, should_include: bool) {
             SetMode::Exclude
         }
     );
-    let mut values: Vec<_> = set.values().iter().map(|v| v.value().clone()).collect();
-    values.sort();
+    let values: Vec<_> = set.values().iter().map(|v| v.value().clone()).collect();
     let mut expected = vec![LiteralValue::Number("10".to_string())];
     // Exclusion must explicitly reject NULL. = retains only the matching
     // integer and therefore excludes NULL without a separate entry.
     if !should_include {
         expected.push(LiteralValue::Null);
-        expected.sort();
     }
-    assert_eq!(values, expected, "{dialect_name}: full set and NULL law");
+    assert_eq!(values.len(), expected.len());
+    for value in expected {
+        assert!(
+            values.contains(&value),
+            "{dialect_name}: missing expected scalar value {value:?}"
+        );
+    }
 }
 
 #[test]
