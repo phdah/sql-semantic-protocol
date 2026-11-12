@@ -175,3 +175,25 @@ mark TASK-192 Done or PR #198 ready to merge on author-side CI alone.
 - `docs/task-192-review-queue.json` links those 43 complete candidates
   without manufacturing any of the 559 independent review decisions. No
   release or TASK-192 AC box has been signed by generating this fixture.
+
+
+## Bounded original semantic closures: S013, S027 and S032
+
+- `docs/task-192-bounded-semantic-closures.json` records the precise
+  physical evidence contract and necessary residual bounds for all three.
+- **S013:** original correlated EXISTS has exact complete two-source
+  selected/rejected/NULL/duplicate bag; a new negative test verifies
+  *missing inner population* is Residual and *attested empty inner*
+  is Exact without fabricating matches.
+- **S027/S032:** new canonical Rust API
+  `physical_finite_signed_computed_bag_plan` evaluates source-local
+  addition/ABS for exact signed widths 16/32/64, using complete source
+  snapshots and checked result-width bounds. All 13 parser dialects
+  are compared to native original TRUE/FALSE/UNKNOWN/NOT TRUE
+  source/terminal goldens; duplicate occurrence and finite typed
+  terminal set/bounds are checked. Signed extrema with possible
+  overflow return a named Residual and no false portable Exact.
+- This closes the **bounded physical construction** implementation
+  gap without changing global untyped open-world classifications.
+  Independent reviewer signoff, stronger universal/vendor law decisions
+  if required, and 559-cell provenance still block Done.
