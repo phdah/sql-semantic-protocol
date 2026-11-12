@@ -1,3 +1,14 @@
+TASK-192 bounded computed arithmetic and relational EXISTS:
+`src/physical_realization/signed_computed_bags.rs` implements complete
+typed 16/32/64-bit overflow-safe one-source addition/ABS TRUE/NOT TRUE/UNKNOWN
+bag proof, exercised in `tests/task_192_signed_computed_bags.rs` for
+original S027/S032 × 13 parsers. `src/physical_realization/exists_bags.rs`
+continues to own original S013 complete correlated EXISTS, including empty
+vs missing inner-world evidence in `tests/task_192_correlated_exists.rs`.
+The exact bounded/necessary-open-world-residual split is recorded in
+`docs/task-192-bounded-semantic-closures.json`. This does not assert
+vendor overflow or independent review approval.
+
 TASK-192 complete candidate canonical wire fixture: `docs/task-192-proposed-full-documents.json` owns 43 analyzer-derived, **unreviewed** complete public documents; `tests/task_192_full_document_goldens.rs` tests the entire document over all 557 accepted original parser cells plus both STRUCT parser exceptions. Separate independently frozen original SQL/type/native physical oracles check semantic facts in `tests/task_192_semantic_contract.rs`, `tests/task_192_independent_query_shapes.rs` and `tests/task_192_native_partitions.rs`. The 559-cell `docs/task-192-review-queue.json` requires distinct reviewer approval before TASK-192 Done; do not conflate source-generated regression snapshots with independent semantics.
 
 TASK-192 original S011 typed ordered NOT closure: `src/analysis/exactness.rs::typed_signed_ordered_not` has the single authoritative signed-integer type-law guard; `src/analysis/domains.rs` turns the original NOT comparison into an inclusive complement domain only with that guard. `src/domain.rs` separately inverts only ordinary numeric equality NOT (with SQL NULL still UNKNOWN). `tests/task_192_not_equality.rs` checks S011 signed/untyped/FLOAT, independent full 3VL DuckDB bags, 13 parser dialects and conservative NOT negatives. Original S010 disjunction is whole-query Exact **only** when the single source has authoritative signed-integer types for both compared columns; untyped or FLOAT remains Residual. Neither variant invents a projected `id` bound. Independent reviewer approval still required.
