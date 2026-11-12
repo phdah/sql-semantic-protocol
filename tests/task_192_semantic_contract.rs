@@ -302,7 +302,10 @@ fn all_559_original_public_cells_have_explicit_expected_semantic_dispositions() 
                 let mut actual = requirements
                     .iter()
                     .map(|requirement| {
-                        assert_eq!(requirement["clause"], "where", "{identity}: source law clause");
+                        assert_eq!(
+                            requirement["clause"], "where",
+                            "{identity}: source law clause"
+                        );
                         assert_eq!(
                             requirement["declared"], false,
                             "{identity}: parser cannot attest session settings"
@@ -317,7 +320,10 @@ fn all_559_original_public_cells_have_explicit_expected_semantic_dispositions() 
                     })
                     .collect::<Vec<_>>();
                 actual.sort_unstable();
-                assert_eq!(actual, expected, "{identity}: independently required source laws");
+                assert_eq!(
+                    actual, expected,
+                    "{identity}: independently required source laws"
+                );
             }
             assert_eq!(
                 policy["expected_output_domain_kind"], cell["expected_projected_domain_kind"],
