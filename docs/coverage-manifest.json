@@ -63,6 +63,8 @@
       "full_boolean_witness_adapter_parity_test": "tests/task_192_adapter_parity.rs"
     },
     "independent_review_handoff": "docs/task-192-independent-review-handoff.md",
+    "independent_review_assignment_queue": "docs/task-192-review-queue.json",
+    "independent_review_queue_completeness_test": "tests/task_192_review_queue.rs",
     "typed_source_row_evidence": {
       "original_cross_column_and_negation_case_ids": [
         "88-C177-S010",
