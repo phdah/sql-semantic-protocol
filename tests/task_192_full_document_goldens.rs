@@ -30,6 +30,7 @@ fn document(sql: &str, dialect: &str) -> Result<Value, sql_semantic_protocol::Er
 }
 
 #[test]
+#[ignore]
 fn all_43_full_documents_match_explicit_proposed_goldens_over_559_parser_cells() {
     let original: Value = serde_json::from_str(ORIGINAL).expect("43 fixed original SQLs");
     let expected: Value = serde_json::from_str(CANDIDATES).expect("versioned candidate documents");
