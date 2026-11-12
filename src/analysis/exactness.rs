@@ -231,6 +231,59 @@ pub(super) fn typed_signed_ordered_not(
     signed.then_some((resolved, inverse, literal.clone()))
 }
 
+/// A row-coupled OR need not be approximated as two independent scalar
+/// domains. When both arms compare signed integer columns of one physical
+/// source against signed integer literals, the canonical Boolean tree and its
+/// TRUE/NOT TRUE source-row witness preserve SQL NULL and row correlation.
+/// No per-column union domain is inferred from the OR.
+fn typed_signed_same_source_disjunction(
+    predicate: &Predicate,
+    sources: &[SourceRelation],
+    metadata: &AnalysisMetadata<'_>,
+) -> bool {
+    let Predicate::Or(logical) = predicate else {
+        return false;
+    };
+    let [left, right] = logical.operands() else {
+        return false;
+    };
+    if sources.len() != 1 {
+        return false;
+    }
+
+    let column = |operand: &Predicate| -> Option<ColumnRef> {
+        let Predicate::Comparison(comparison) = operand else {
+            return None;
+        };
+        let (column, literal) = match (comparison.left(), comparison.right()) {
+            (Expression::Column(column), Expression::Literal(literal))
+            | (Expression::Literal(literal), Expression::Column(column)) => (column, literal),
+            _ => return None,
+        };
+        if literal.literal_type() != LiteralType::Integer
+            || !matches!(literal.value(), LiteralValue::Number(raw) if raw.parse::<i64>().is_ok())
+        {
+            return None;
+        }
+        let resolved = resolve_column(column, sources);
+        let signed = match metadata.column_data_type(&resolved) {
+            Some(DataType::SignedInteger { .. }) => true,
+            Some(DataType::Nullable(inner)) => {
+                matches!(inner.as_ref(), DataType::SignedInteger { .. })
+            }
+            _ => false,
+        };
+        signed.then_some(resolved)
+    };
+
+    let (Some(first), Some(second)) = (column(left), column(right)) else {
+        return false;
+    };
+    // The relationship is evaluated on one source-row occurrence, never as
+    // an independent Cartesian product of values from different relations.
+    first != second && first.relation().is_some() && first.relation() == second.relation()
+}
+
 /// A parser-only comparison against the text spelling 'NaN' cannot
 /// establish whether a warehouse will compare strings or coerce to a
 /// floating NaN. The declared collation/padding/float laws do not certify
@@ -293,6 +346,7 @@ pub(super) fn analyze_query_condition_exactness(
     if let Some(predicate) = predicates.where_predicate() {
         if !metadata.is_some_and(|metadata| {
             typed_signed_ordered_not(predicate, &equality_sources, metadata).is_some()
+                || typed_signed_same_source_disjunction(predicate, &equality_sources, metadata)
         }) {
             append_predicate_residuals(
                 predicate,
