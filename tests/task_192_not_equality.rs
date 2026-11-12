@@ -299,7 +299,6 @@ fn original_s011_native_three_valued_signed_truth_includes_nulls() {
     assert_eq!(ids("IS NOT TRUE"), vec![2, 3, 4]);
 }
 
-
 #[test]
 fn original_signed_ordered_not_preserves_bounds_through_copy_cte_and_derived_layers() {
     let direct_sql = "SELECT amount FROM orders WHERE NOT (amount > 1)";
