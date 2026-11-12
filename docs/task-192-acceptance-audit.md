@@ -169,3 +169,29 @@ The ledger is an exhaustive expected **public contract**, not a signed release c
 reviewer signature. Independent 43-document expectations, all 559 signed
 decisions and final-head consumer CI are still mandatory before AC #1..#5
 can be signed. TASK-192 remains In Progress and PR #198 remains draft.
+
+
+### Full-document 43-case candidate freeze for independent review
+
+- `docs/task-192-proposed-full-documents.json` pins the **entire serialized
+  canonical protocol** for each original SQL variant, with 64-bit integer
+  literals preserved exactly rather than round-tripping through JavaScript
+  floating-point values. It is *candidate analyzer output*, not independently
+  authored expected semantics or a release signoff.
+- `tests/task_192_full_document_goldens.rs` compares those 43 pinned
+  complete documents against all 557 accepted original parser cells,
+  normalizing only parser-dialect metadata, and preserves the two original
+  S179 parser rejection boundaries. This eliminates first-analyzer-as-expected
+  baseline circularity for **regression detection**, but not the need for
+  independently reviewed semantic content.
+- `docs/task-192-review-queue.json` references the exact candidate
+  document for each of 43 cases while all 559 reviewer decisions remain
+  pending. The other independently specified query shapes, precise 130
+  numeric domain cells, source/terminal native bags, typed witness and
+  adapter parity checks remain separate corroborating evidence.
+
+**Remaining blockers for AC #1/#3/#5:** a genuinely independent reviewer
+must validate/replace all 43 document candidates against original SQL and
+strongest sound domains, adjudicate mandatory portable residuals, sign
+all 559 cells at an immutable head, and record a review identity and evidence.
+Neither proposed snapshots nor passing CI count as such approval.
