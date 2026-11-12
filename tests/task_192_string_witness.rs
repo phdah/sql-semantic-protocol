@@ -4,10 +4,9 @@
 
 use serde_json::Value;
 use sql_semantic_protocol::{
-    analyze_configured_inputs_with_catalog, analyze_inputs, analyze_sql, dialect_from_name, to_json,
-    BooleanTruthCase,
-    BooleanWitnessDirection, ComparisonAssumption, ComposedSemantics, ConfiguredSqlInput,
-    RelationCatalog, SqlInput, ValueDomain,
+    analyze_configured_inputs_with_catalog, analyze_inputs, analyze_sql, dialect_from_name,
+    to_json, BooleanTruthCase, BooleanWitnessDirection, ComparisonAssumption, ComposedSemantics,
+    ConfiguredSqlInput, RelationCatalog, SqlInput, ValueDomain,
 };
 
 const FREEZE: &str = include_str!("../docs/task-192-acceptance-freeze.json");
