@@ -137,3 +137,35 @@ The ledger is an exhaustive expected **public contract**, not a signed release c
 - `tests/task_192_semantic_contract.rs` now checks the **full literal membership** for S001/S002 and all **signed interval endpoints, inclusivity and disjoint union components** for S003-S009/S012 against the independently frozen TASK-177 numeric laws. It also checks the precise projected-domain policy for every accepted public parser cell, not merely its kind. This is 130 bounded numeric case/dialect proofs, without claiming that all 43 *complete canonical documents* are independently authored.
 - `src/analysis/exactness.rs` now requires `binary_collation` **and** `no_char_padding` for untyped string comparisons: an absent catalog cannot prove VARCHAR rather than fixed CHAR. `tests/task_192_string_witness.rs` checks the two explicit, un-attested source-column requirements on original S039 over all 13 parsers. Catalog-backed VARCHAR/fixed CHAR and typed operator-witness tests remain separate.
 - These changes strengthen the independent expected-fact floor but **do not close** the missing 43 complete authored goldens, unresolved mandatory dispositions or 559 independent reviewer decisions. TASK-192 stays In Progress, all five ACs unchecked and PR #198 draft.
+
+### Additional S010 signed cross-column truth and independent review queue
+
+- The original S010 `amount > 1 OR id > 0` now has an Exact whole-query
+  **Boolean condition** only where the canonical query has exactly one source
+  and both distinct compared columns have authoritative signed-integer types.
+  The OR remains row-coupled; no independent finite output `id` domain is
+  fabricated. `src/analysis/exactness.rs::typed_signed_same_source_disjunction`
+  implements the narrow guard.
+- `tests/task_192_nullable_truth.rs` checks original complete native
+  TRUE/FALSE/UNKNOWN/NOT TRUE source occurrence bags, constructive public
+  physical TRUE/NOT TRUE plans, all 13 parser dialects under signed catalog
+  metadata, and FLOAT/untyped negative controls. Direct/dbt/ODCS full
+  Boolean-truth parity remains covered by `tests/task_192_adapter_parity.rs`.
+  Original *untyped* S010 ledger cells remain Residual.
+- `tests/task_192_semantic_contract.rs` additionally pins WHERE residual
+  cause identities and independently required undeclared source-law names
+  (S037 session timezone, S039 binary collation and no-padding) at the
+  559-cell public seam.
+- `docs/task-192-review-queue.json` provides an explicit normalized reviewer
+  assignment row for every original 559 cell, with no false full-document
+  golden or reviewer signoff. `tests/task_192_review_queue.rs` verifies
+  exact identity completeness and the unresolved review state.
+- Rust CI's external DuckDB bootstrap is made deterministic by
+  `scripts/prepare-duckdb-ci.sh` and the GitHub workflow: it links the
+  version-matched native DuckDB 1.5.6 library for test, lint and dbt jobs.
+  This is a CI reliability fix, not a protocol runtime or public schema change.
+
+**Remaining:** The author-side review queue is not an independent golden or
+reviewer signature. Independent 43-document expectations, all 559 signed
+decisions and final-head consumer CI are still mandatory before AC #1..#5
+can be signed. TASK-192 remains In Progress and PR #198 remains draft.
