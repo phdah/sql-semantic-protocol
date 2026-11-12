@@ -157,3 +157,21 @@ Extracted on 2026-11-10 from the previously overbroad TASK-178. There is **no im
 distinct reviewer's signoff of all 559 original cells, legitimate residual
 dispositions and exact-head protocol/consumer CI are outstanding. Do not
 mark TASK-192 Done or PR #198 ready to merge on author-side CI alone.
+
+
+## Additional complete candidate wire regressions (2026-11-12)
+
+- `docs/task-192-proposed-full-documents.json` now pins a complete
+  analyzer-produced canonical-document candidate for **every original 43-case
+  SQL**, preserving integer widths exactly. `tests/task_192_full_document_goldens.rs`
+  asserts all fields for every accepted 13-dialect parser cell (557 successes,
+  2 original S179 parser rejections); no longer uses the first analyzer output
+  as a transient regression oracle.
+- The separate frozen manually specified SQL shapes, scalar range/set/null
+  outcomes, full DuckDB truth partitions and source/terminal bags remain the
+  independent semantic evidence. The full-document candidates themselves
+  still require **distinct independent human review**, especially where a
+  semantic mistake might be stable across all dialects.
+- `docs/task-192-review-queue.json` links those 43 complete candidates
+  without manufacturing any of the 559 independent review decisions. No
+  release or TASK-192 AC box has been signed by generating this fixture.
