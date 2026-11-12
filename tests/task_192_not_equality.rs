@@ -322,6 +322,12 @@ fn original_signed_ordered_not_preserves_safe_bounds_through_copy_cte_and_derive
             (
                 semantics.output().columns()[0].domain().clone(),
                 semantics.condition_exactness().status(),
+                semantics
+                    .condition_exactness()
+                    .residual_conditions()
+                    .iter()
+                    .map(|residual| residual.reason().as_str().to_string())
+                    .collect::<Vec<_>>(),
             )
         };
         let baseline = examine(direct_sql);
@@ -338,13 +344,17 @@ fn original_signed_ordered_not_preserves_safe_bounds_through_copy_cte_and_derive
             // An independently derived scalar interval does not license a
             // universal whole-producer row-membership proof. Composition
             // may conservatively retain a named residual boundary here.
-            assert!(
-                matches!(
-                    actual.1,
-                    ConditionExactnessStatus::Exact | ConditionExactnessStatus::Residual
-                ),
-                "{name}: a copy cannot invent a conditional vendor law"
+            assert_ne!(
+                actual.1,
+                ConditionExactnessStatus::Conditional,
+                "{name}: a copy cannot invent an unverified vendor assumption"
             );
+            if actual.1 == ConditionExactnessStatus::Residual {
+                assert!(
+                    !actual.2.is_empty(),
+                    "{name}: residual composition must name its unproved law"
+                );
+            }
         }
     }
 }
