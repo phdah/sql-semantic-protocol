@@ -200,14 +200,18 @@ fn original_s011_has_exact_nullable_signed_interval_but_no_projected_id_bound() 
             "S011/{name}: numeric NOT > is <= only for signed sources"
         );
         assert!(
-            matches!(composed.output().columns()[0].domain(), ValueDomain::Unbounded),
+            matches!(
+                composed.output().columns()[0].domain(),
+                ValueDomain::Unbounded
+            ),
             "S011/{name}: filtering amount does not restrict projected id"
         );
         let amount = composed
             .column_domains()
             .iter()
-            .find(|domain| domain.column().relation() == Some("orders")
-                && domain.column().name() == "amount")
+            .find(|domain| {
+                domain.column().relation() == Some("orders") && domain.column().name() == "amount"
+            })
             .unwrap_or_else(|| panic!("S011/{name}: missing typed amount interval"));
         let ValueDomain::Ranges(ranges) = amount.domain() else {
             panic!("S011/{name}: signed amount predicate must be an interval");
@@ -215,9 +219,15 @@ fn original_s011_has_exact_nullable_signed_interval_but_no_projected_id_bound() 
         let [range] = ranges.ranges() else {
             panic!("S011/{name}: one upper-bounded numeric interval");
         };
-        assert!(range.lower().is_none(), "S011/{name}: no invented lower bound");
+        assert!(
+            range.lower().is_none(),
+            "S011/{name}: no invented lower bound"
+        );
         let bound = range.upper().expect("signed upper endpoint");
-        assert_eq!(bound.value().value(), &LiteralValue::Number("1".to_string()));
+        assert_eq!(
+            bound.value().value(),
+            &LiteralValue::Number("1".to_string())
+        );
         assert!(bound.inclusive(), "S011/{name}: complement of > is <=");
     }
 }
@@ -226,8 +236,8 @@ fn original_s011_has_exact_nullable_signed_interval_but_no_projected_id_bound() 
 fn ordered_not_requires_authoritative_signed_type_and_never_assumes_nan_laws() {
     const SQL: &str = "SELECT amount FROM orders WHERE NOT (amount > 1)";
     let parser = dialect_from_name("duckdb").expect("public parser");
-    let untyped = sql_semantic_protocol::analyze_sql(SQL, "duckdb", parser.as_ref())
-        .expect("untyped SQL");
+    let untyped =
+        sql_semantic_protocol::analyze_sql(SQL, "duckdb", parser.as_ref()).expect("untyped SQL");
     let [sql_semantic_protocol::ProtocolStatement::Query(untyped)] = untyped.statements() else {
         panic!("one untyped query");
     };
@@ -238,10 +248,9 @@ fn ordered_not_requires_authoritative_signed_type_and_never_assumes_nan_laws() {
     );
 
     let ddl = SqlInput::inline("CREATE TABLE orders (id INTEGER, amount DOUBLE)");
-    let schema = analyze_inputs(&[ddl], "duckdb", parser.as_ref())
-        .expect("floating source type");
-    let floating = RelationCatalog::from_schemas(schema.source_schemas())
-        .expect("floating catalog");
+    let schema = analyze_inputs(&[ddl], "duckdb", parser.as_ref()).expect("floating source type");
+    let floating =
+        RelationCatalog::from_schemas(schema.source_schemas()).expect("floating catalog");
     let input = SqlInput::inline(SQL);
     let configured = [ConfiguredSqlInput::new(
         "task192-float-not-negative",
@@ -249,8 +258,8 @@ fn ordered_not_requires_authoritative_signed_type_and_never_assumes_nan_laws() {
         "duckdb",
         parser.as_ref(),
     )];
-    let result = analyze_configured_inputs_with_catalog(&configured, &floating)
-        .expect("floating SQL");
+    let result =
+        analyze_configured_inputs_with_catalog(&configured, &floating).expect("floating SQL");
     let ComposedSemantics::Resolved(composed) = result
         .layers()
         .last()
@@ -276,9 +285,7 @@ fn original_s011_native_three_valued_signed_truth_includes_nulls() {
         )
         .expect("complete nullable signed source");
     let ids = |truth: &str| {
-        let query = format!(
-            "SELECT id FROM orders WHERE (NOT (amount > 1)) {truth} ORDER BY id"
-        );
+        let query = format!("SELECT id FROM orders WHERE (NOT (amount > 1)) {truth} ORDER BY id");
         let mut statement = connection.prepare(&query).expect("native S011 SQL");
         statement
             .query_map([], |row| row.get::<_, i64>(0))
