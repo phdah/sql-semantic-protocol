@@ -92,16 +92,17 @@ Extracted on 2026-11-10 from the previously overbroad TASK-178. There is **no im
   to preserve FALSE rather than UNKNOWN for NULL source rows.
 - Original S012/S016/S017 identities, all 13 dialects, typed Boolean witnesses,
   complete DuckDB truth partitions and negative DOUBLE source laws are tested.
-- S011 `NOT (amount > 1)` was **not** certified: seeded cross-conformance exposed
-  unproved NULL and nested predicate assumptions, so its attempted Exact
-  promotion was reverted and its `logical_not` residual remains unapproved.
+- The original *fourth pass* attempted S011 NOT promotion failed seeded
+  cross-conformance on NULL and nested predicate assumptions, so that broad
+  promotion was reverted. The later ninth pass adds an explicit signed-integer
+  type guard and precise SQL NULL-safe bound. Untyped S011 remains Residual.
 - No independent reviewer approval is available for the 559 cell contract.
   Exact-head tests, migrated consumer pin, conditional case owners and remaining
   family residual resolutions all remain required before TASK-192 Done.
 
 ## Fifth pass bounded residual review evidence (PR #198)
 
-- S010 and S011 preserve `cross_column_disjunction` and `logical_not` **whole-query Residual** while testing signed-integer source-local exact TRUE/NOT TRUE Boolean witnesses against the original full DuckDB truth partitions on all 13 parser dialects. Cross-adapter direct/dbt/ODCS witness parity has been added.
+- At the fifth pass, S010/S011 were both whole-query Residual but had complete signed source-local TRUE/NOT TRUE witnesses on all 13 parsers and direct/dbt/ODCS parity. The later ninth pass certifies **S011 only with authoritative signed-integer metadata** as Exact, preserving its untyped Residual baseline; S010 remains whole-query Residual.
 - S027-S032 now have complete original native 3VL partition checks and explicit source-local typed outcomes. S028-S031 have exact operator-local witnesses. S027/S032 remain unapproved because arbitrary source integer values can trigger arithmetic overflow absent bounded source guarantees.
 - Typed VARCHAR safe LIKE prefixes S020/S022/S025 and trailing-space equality S039 have conditional source-local witness tests requiring caller-attested binary collation and no padding. Fixed CHAR, ILIKE, regex, SIMILAR TO and locale-specific comparisons fail closed without native vendor law proof.
 - The per-case and per-owner review route is in [independent TASK-192 handoff](../../docs/task-192-independent-review-handoff.md). The coverage manifest registers evidence without upgrading original public exactness, physical vendor certification or independent approval.
