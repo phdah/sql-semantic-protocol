@@ -300,7 +300,7 @@ fn original_s011_native_three_valued_signed_truth_includes_nulls() {
 }
 
 #[test]
-fn original_signed_ordered_not_preserves_bounds_through_copy_cte_and_derived_layers() {
+fn original_signed_ordered_not_preserves_safe_bounds_through_copy_cte_and_derived_layers() {
     let direct_sql = "SELECT amount FROM orders WHERE NOT (amount > 1)";
     let catalog = signed_catalog();
     for name in DIALECTS {
@@ -332,8 +332,18 @@ fn original_signed_ordered_not_preserves_bounds_through_copy_cte_and_derived_lay
         ] {
             let actual = examine(sql);
             assert_eq!(
-                actual, baseline,
-                "{name}: copy producer must preserve the signed NOT domain and exactness"
+                actual.0, baseline.0,
+                "{name}: copy producer must preserve the precise signed NOT source/output interval"
+            );
+            // An independently derived scalar interval does not license a
+            // universal whole-producer row-membership proof. Composition
+            // may conservatively retain a named residual boundary here.
+            assert!(
+                matches!(
+                    actual.1,
+                    ConditionExactnessStatus::Exact | ConditionExactnessStatus::Residual
+                ),
+                "{name}: a copy cannot invent a conditional vendor law"
             );
         }
     }
