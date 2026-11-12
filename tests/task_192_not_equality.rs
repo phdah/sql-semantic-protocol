@@ -6,7 +6,7 @@
 use duckdb::Connection;
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, analyze_inputs, dialect_from_name, ComposedSemantics,
-    ConditionExactnessStatus, ConfiguredSqlInput, LiteralValue, ProtocolStatement,
+    ConditionExactnessStatus, ConfiguredSqlInput, LiteralValue,
     RelationCatalog, SetMode, SqlInput, ValueDomain,
 };
 
@@ -64,13 +64,13 @@ fn check_domains(sql: &str, dialect_name: &str, should_include: bool) {
             SetMode::Exclude
         }
     );
-    let mut values: Vec<_> = set.values().iter().map(|v| v.value()).collect();
+    let mut values: Vec<_> = set.values().iter().map(|v| v.value().clone()).collect();
     values.sort();
-    let mut expected = vec![&LiteralValue::Number("10".to_string())];
+    let mut expected = vec![LiteralValue::Number("10".to_string())];
     // Exclusion must explicitly reject NULL. = retains only the matching
     // integer and therefore excludes NULL without a separate entry.
     if !should_include {
-        expected.push(&LiteralValue::Null);
+        expected.push(LiteralValue::Null);
         expected.sort();
     }
     assert_eq!(values, expected, "{dialect_name}: full set and NULL law");
