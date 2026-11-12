@@ -41,6 +41,7 @@
       "complete_independent_canonical_documents": false
     },
     "untyped_string_padding_assumption_test": "tests/task_192_string_witness.rs",
+    "unattested_nan_text_coercion_negative_test": "tests/task_192_nan_text_cast.rs",
     "native_projected_id_counterexamples": "tests/task_192_projection_counterexamples.rs",
     "native_alternate_source_cases": 3,
     "dbt_original_compiled_sql_analyzer_parity": "tests/task_192_adapter_parity.rs",
