@@ -660,6 +660,17 @@ collation, padding, no-NaN or signed-zero assumptions proves the missing
 string-to-number coercion law. With no source type, S040 is therefore Residual,
 not merely Conditional. TASK-179 owns warehouse-specific adjudication.
 
+A cross-column `OR` such as the original S010 `amount > 1 OR id > 0`
+retains a single row-coupled Boolean condition. With authoritative signed
+integer source types for **both** columns of one physical source, the
+`condition_exactness` status can be `exact`: the public Boolean tree and
+TRUE/NOT TRUE source-row witness preserve SQL NULL and cross-column correlation.
+It does **not** derive separate scalar intervals from each disjunct and does
+not constrain the projected `id` domain. Without those source type facts, on
+floating-point sources or across multiple relations, it remains Residual.
+This scoped promotion is source-independent and does not attest native vendor
+execution or downstream producer semantics.
+
 For **untyped string comparisons**, neither the source's binary collation nor
 the absence of fixed-CHAR padding is inferred from a parsed SQL literal.
 Both `binary_collation` and `no_char_padding` must be attested until the
