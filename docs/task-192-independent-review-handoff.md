@@ -54,10 +54,15 @@ unapproved vendor law before any stronger classification.
 [Versioned reviewer queue](task-192-review-queue.json) lists exactly 43 original
 cases and 559 parser cells, with normalized links to the original SQL, current
 expected typed policies, separately authored SQL source/predicate shapes and
-native source/terminal evidence. All decisions and reviewer identities are
-**pending**, and all full-document independent golden references remain
-**unassigned**. The [completeness test](../tests/task_192_review_queue.rs)
-prevents dropped/duplicated cells or accidental claims of approval.
+native source/terminal evidence. The reviewer queue also links the
+[43 complete canonical candidate documents](task-192-proposed-full-documents.json),
+now checked against all 557 accepted parser cells by
+[the complete-document regression test](../tests/task_192_full_document_goldens.rs).
+Those byte-complete candidates **originated from the analyzer** and are
+**not independently authored or approved semantic goldens**. Every reviewer
+identity and decision remains **pending**. The [completeness
+test](../tests/task_192_review_queue.rs) prevents dropped/duplicated cells or
+accidental claims of approval.
 
 The independent reviewer must author/validate the 43 full-document goldens
 without copying analyzer output as the expected answer, then record a real
@@ -97,6 +102,8 @@ cannot sign this queue or promote TASK-192 from this generated worksheet alone.
 
 - `docs/task-192-acceptance-freeze.json`
 - `docs/task-192-semantic-cell-ledger.json`
+- `docs/task-192-proposed-full-documents.json`
+- `tests/task_192_full_document_goldens.rs`
 - `docs/task-192-native-partitions.json`
 - `docs/task-177-predicate-oracles.json`
 - `tests/task_192_semantic_contract.rs`
