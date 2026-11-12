@@ -10,6 +10,7 @@ use serde_json::Value;
 const QUEUE: &str = include_str!("../docs/task-192-review-queue.json");
 const FREEZE: &str = include_str!("../docs/task-192-acceptance-freeze.json");
 const LEDGER: &str = include_str!("../docs/task-192-semantic-cell-ledger.json");
+const CANDIDATES: &str = include_str!("../docs/task-192-proposed-full-documents.json");
 
 fn read(source: &str) -> Value {
     serde_json::from_str(source).expect("versioned TASK-192 semantic evidence")
@@ -20,6 +21,7 @@ fn reviewer_assignment_queue_names_every_original_cell_without_false_approval() 
     let queue = read(QUEUE);
     let freeze = read(FREEZE);
     let ledger = read(LEDGER);
+    let candidate = read(CANDIDATES);
 
     assert_eq!(queue["schema_version"], 1);
     assert_eq!(queue["task_id"], "TASK-192");
@@ -55,10 +57,17 @@ fn reviewer_assignment_queue_names_every_original_cell_without_false_approval() 
             item["source_terminal_oracle"], expected["native_duckdb_oracle"],
             "{id}: review must link the actual native physical oracle"
         );
-        assert!(
-            item["expected_full_canonical_document_ref"].is_null(),
-            "{id}: no analyzer-snapshot goldens may be mistaken for independent documents"
+        assert_eq!(
+            item["expected_full_canonical_document_ref"],
+            format!("docs/task-192-proposed-full-documents.json#{id}"),
+            "{id}: one full unreviewed document must be linked for the reviewer"
         );
+        let proposed = candidate["cases"].as_array().expect("43 proposed documents")
+            .iter().find(|row| row["id"] == id).expect("full document candidate");
+        assert_eq!(proposed["original_sql"], original["sql"]);
+        assert!(proposed["document"].is_object(), "{id}: a full wire document, not a partial shape");
+        assert_eq!(candidate["independently_reviewed"], false,
+            "{id}: analyzer-produced regression goldens are not independent approval");
         let owner = item["downstream_owner"].as_str();
         assert!(
             owner.is_none_or(|name| matches!(name, "TASK-179" | "TASK-191")),
