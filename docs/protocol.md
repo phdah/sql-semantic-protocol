@@ -1,3 +1,30 @@
+## TASK-192 complete physical signed arithmetic and EXISTS boundaries
+
+`physical_finite_signed_computed_bag_plan` evaluates a one-source
+canonical WHERE comparison over **addition** or **ABS** only after validating
+a complete caller-supplied source bag and an authoritative 16/32/64-bit
+signed source type. It computes the complete SQL TRUE, NOT TRUE, UNKNOWN
+row-occurrence partitions and duplicate-preserving projected terminal bag,
+with exact NULL-aware typed terminal set/bounds. It returns **Residual** if
+any signed operation would exceed the declared input width, regardless of
+whether DuckDB or another engine would widen the result, throw, or return
+some other representation. It returns **Impossible** for contradictory
+physical source schemas. Untyped original predicates retain whole-query
+Residual exactness: no arbitrary open-world source or vendor law is inferred.
+
+For original S013, `physical_finite_exists_bag_plan` already proves the
+entire correlated EXISTS source/terminal bag with independently attested
+orders/customers populations, duplicate and SQL NULL keys, and exact
+selected and rejected physical identities. Missing customers population
+is **Residual**, while an explicitly complete empty customers bag is
+**Exact** with all outer rows rejected. The distinction between an absent
+world and an attested empty world is mandatory.
+
+The bounded dispositions and exact negative tests are registered in
+[`docs/task-192-bounded-semantic-closures.json`](task-192-bounded-semantic-closures.json).
+This is executable **conditional physical-source evidence**, not a
+universal vendor-width law or independent 559-cell approval.
+
 # SQL Semantic Protocol contract
 
 ## TASK-192 nullable numeric comparison truth tests
