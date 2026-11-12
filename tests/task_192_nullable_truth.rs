@@ -217,7 +217,7 @@ fn typed_nullable_predicates_have_exact_true_and_not_true_boolean_witnesses() {
 }
 
 #[test]
-fn original_cross_column_or_and_not_have_exact_typed_boolean_witnesses_not_scalar_exactness() {
+fn original_s010_and_s011_have_typed_truth_with_scoped_scalar_exactness() {
     // These bounded witnesses are constructive row-local evidence, not a
     // promotion of a residual *whole-query* scalar-domain contract.
     let freeze: Value = serde_json::from_str(FREEZE).expect("original 43 SQL cases");
