@@ -82,6 +82,22 @@
       "public_physical_positive_negative_test": "tests/task_192_nullable_truth.rs",
       "physical_scope": "constructible_individual_row_TRUE_NOT_TRUE_not_universal_scalar_projection"
     },
+    "bounded_semantic_closures": {
+      "disposition": "docs/task-192-bounded-semantic-closures.json",
+      "case_ids": [
+        "88-C177-S013",
+        "88-C177-S027",
+        "88-C177-S032"
+      ],
+      "finite_signed_arithmetic_public_api": "physical_finite_signed_computed_bag_plan",
+      "finite_signed_arithmetic_test": "tests/task_192_signed_computed_bags.rs",
+      "finite_exists_public_api": "physical_finite_exists_bag_plan",
+      "finite_exists_negative_test": "tests/task_192_correlated_exists.rs",
+      "physical_true_not_true_unknown_oracle": "docs/task-177-predicate-oracles.json",
+      "unbounded_source_or_vendor_overflow_semantics": "unapproved_residual",
+      "independent_reviewer": "pending",
+      "release_approved": false
+    },
     "computed_source_witness_evidence": {
       "original_case_ids": [
         "88-C177-S027",
