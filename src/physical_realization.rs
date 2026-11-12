@@ -502,10 +502,10 @@ mod rank_bags;
 mod ranking;
 mod scalar_quantified;
 mod sequential_graph;
-mod signed_computed_bags;
 mod set_bags;
 mod set_trees;
 mod sets;
+mod signed_computed_bags;
 mod transactions;
 mod view_bags;
 mod window_bags;
@@ -533,10 +533,6 @@ pub use cte_scripts::{
 pub(crate) use distributions::{
     physical_distribution_conflict, physical_distribution_plan,
     physical_inverted_set_distribution_plan,
-};
-pub use signed_computed_bags::{
-    physical_finite_signed_computed_bag_plan, PhysicalSignedComputedExact,
-    PhysicalSignedComputedProof,
 };
 pub use exists_bags::{
     physical_finite_exists_bag_plan, PhysicalExistsColumnDomain, PhysicalFiniteExistsExact,
@@ -613,6 +609,10 @@ pub use set_trees::{
     physical_finite_set_tree_membership_plan, physical_finite_set_tree_plan,
     PhysicalFiniteSetTreeExact, PhysicalFiniteSetTreeProof, PhysicalSetTreeBranch,
     PhysicalSetTreeTuple,
+};
+pub use signed_computed_bags::{
+    physical_finite_signed_computed_bag_plan, PhysicalSignedComputedExact,
+    PhysicalSignedComputedProof,
 };
 pub(crate) use transactions::certify_duckdb_session_laws;
 pub use transactions::{
