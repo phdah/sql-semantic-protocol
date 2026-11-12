@@ -49,6 +49,23 @@ name `comparison_semantics` as a Residual instead of Conditional. Review
 `tests/task_192_nan_text_cast.rs`, the original DuckDB terminal and TASK-179's
 unapproved vendor law before any stronger classification.
 
+## Explicit 559-cell reviewer assignment queue
+
+[Versioned reviewer queue](task-192-review-queue.json) lists exactly 43 original
+cases and 559 parser cells, with normalized links to the original SQL, current
+expected typed policies, separately authored SQL source/predicate shapes and
+native source/terminal evidence. All decisions and reviewer identities are
+**pending**, and all full-document independent golden references remain
+**unassigned**. The [completeness test](../tests/task_192_review_queue.rs)
+prevents dropped/duplicated cells or accidental claims of approval.
+
+The independent reviewer must author/validate the 43 full-document goldens
+without copying analyzer output as the expected answer, then record a real
+review identity, immutable reviewed commit, exact per-cell decision and evidence
+references. A reviewer may group identical dialect proofs but must account for
+every original 559-cell ID, including both S179 parser rejections. The author
+cannot sign this queue or promote TASK-192 from this generated worksheet alone.
+
 ## Required signoff steps
 
 1. Independently inspect **each of the 559 named public parser cells** against
