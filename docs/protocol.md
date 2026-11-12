@@ -654,6 +654,14 @@ accepts the same CLI option. Each requirement is retained with its condition ide
 requirements were attested, `conditional` means requirements remain open and no residuals
 exist, and `residual` means at least one predicate still cannot be represented.
 
+For **untyped string comparisons**, neither the source's binary collation nor
+the absence of fixed-CHAR padding is inferred from a parsed SQL literal.
+Both `binary_collation` and `no_char_padding` must be attested until the
+source datatype is known. With a catalog-backed VARCHAR column only binary
+collation remains necessary for ordinary equality; fixed CHAR retains its
+explicit padding boundary. This prevents S039's `name = 'abc '` from being
+declared exact by attesting collation alone.
+
 A timestamp without time zone compared to an offset-free typed literal is unconditional exact
 when schema evidence explicitly identifies the column as timezone-free. A timezone-aware
 timestamp comparison with an explicitly timezone-aware literal and numeric UTC offset is also unconditional exact.
