@@ -608,7 +608,30 @@ pub(super) fn predicate_residual_reasons(
         // Whole-query scalar exactness is independent of an operator-local
         // binary-prefix witness and requires comparison-setting attestations.
         Predicate::LikePrefix(_) => vec![ResidualConditionReason::ComputedExpression],
-        Predicate::Not(_) => vec![ResidualConditionReason::LogicalNot],
+        Predicate::Not(negation) => {
+            // Ordinary integer equality/inequality is two-valued for non-NULL
+            // operands and UNKNOWN for NULL. NOT swaps = and <>, preserving
+            // the NULL rejection in the scalar domain. Other NOT shapes,
+            // including ordered comparisons and IN(NULL), stay residual.
+            let exact = matches!(
+                negation.operand(),
+                Predicate::Comparison(comparison)
+                    if matches!(
+                        comparison.operator(),
+                        ComparisonOperator::Eq | ComparisonOperator::Neq
+                    ) && matches!(
+                        (comparison.left(), comparison.right()),
+                        (Expression::Column(_), Expression::Literal(literal))
+                            | (Expression::Literal(literal), Expression::Column(_))
+                            if literal.literal_type() == LiteralType::Integer
+                    )
+            );
+            if exact {
+                Vec::new()
+            } else {
+                vec![ResidualConditionReason::LogicalNot]
+            }
+        },
         Predicate::IsNull(predicate) => {
             if matches!(predicate.expression(), Expression::Column(_)) {
                 Vec::new()
