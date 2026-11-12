@@ -55,7 +55,11 @@ pub(super) fn comparison_domain_exactness(
                 }
             }
             None if literal.literal_type() == LiteralType::String => {
+                // Without catalog evidence, the source may be CHAR with
+                // space-padding equality. Binary collation alone cannot
+                // certify the original S039 trailing-space distinction.
                 assumptions.insert(ComparisonAssumption::BinaryCollation);
+                assumptions.insert(ComparisonAssumption::NoCharPadding);
             }
             None if literal.literal_type() == LiteralType::Timestamp => {
                 assumptions.insert(ComparisonAssumption::SessionTimeZone);
