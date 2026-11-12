@@ -33,16 +33,24 @@ fn reviewer_assignment_queue_names_every_original_cell_without_false_approval() 
 
     let originals = freeze["cases"].as_array().expect("43 fixed original SQLs");
     let policies = ledger["cases"].as_array().expect("43 expected policies");
-    let cases = queue["cases"].as_array().expect("43 review case references");
+    let cases = queue["cases"]
+        .as_array()
+        .expect("43 review case references");
     assert_eq!((originals.len(), policies.len(), cases.len()), (43, 43, 43));
 
     let mut found_cases = BTreeSet::new();
     for item in cases {
         let id = item["case_id"].as_str().expect("stable case identifier");
         assert!(found_cases.insert(id), "{id}: duplicate review case");
-        let original = originals.iter().find(|row| row["id"] == id).expect("fixed original SQL");
+        let original = originals
+            .iter()
+            .find(|row| row["id"] == id)
+            .expect("fixed original SQL");
         assert!(original["sql"].is_string(), "{id}: missing original SQL");
-        let expected = policies.iter().find(|row| row["id"] == id).expect("typed policy");
+        let expected = policies
+            .iter()
+            .find(|row| row["id"] == id)
+            .expect("typed policy");
         assert_eq!(
             item["source_terminal_oracle"], expected["native_duckdb_oracle"],
             "{id}: review must link the actual native physical oracle"
@@ -71,13 +79,24 @@ fn reviewer_assignment_queue_names_every_original_cell_without_false_approval() 
         assert!(seen.insert(id), "{id}: duplicate review cell");
         assert_eq!(cell["decision"], "pending", "{id}: review has not happened");
         assert!(cell["reviewer"].is_null(), "{id}: no signed reviewer");
-        assert!(cell["reviewed_commit"].is_null(), "{id}: no reviewed commit");
+        assert!(
+            cell["reviewed_commit"].is_null(),
+            "{id}: no reviewed commit"
+        );
         assert_eq!(
-            cell["evidence_refs"].as_array().expect("review evidence references").len(),
+            cell["evidence_refs"]
+                .as_array()
+                .expect("review evidence references")
+                .len(),
             0,
             "{id}: no fabricated review artifacts"
         );
     }
-    assert_eq!(seen, expected_ids, "all 559 fixed original cells require a review decision");
-    assert!(expected_cells.iter().all(|cell| cell["independently_reviewed"] == false));
+    assert_eq!(
+        seen, expected_ids,
+        "all 559 fixed original cells require a review decision"
+    );
+    assert!(expected_cells
+        .iter()
+        .all(|cell| cell["independently_reviewed"] == false));
 }
