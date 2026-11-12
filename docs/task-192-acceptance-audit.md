@@ -195,3 +195,34 @@ must validate/replace all 43 document candidates against original SQL and
 strongest sound domains, adjudicate mandatory portable residuals, sign
 all 559 cells at an immutable head, and record a review identity and evidence.
 Neither proposed snapshots nor passing CI count as such approval.
+
+
+### S013/S027/S032 implementation scope closed with explicit residual law
+
+The [bounded disposition ledger](task-192-bounded-semantic-closures.json)
+states independent positive and negative proof boundaries for the three
+previously mandatory remaining source-operator cases:
+
+- **S013:** the existing exact two-source finite EXISTS engine returns
+  precise selected/NOT TRUE source identities and complete duplicate-
+  preserving terminal domain. A new test contrasts missing inner world
+  (Residual) with an explicitly empty complete inner world (Exact).
+- **S027/S032:** the new public
+  `physical_finite_signed_computed_bag_plan` proves complete physical
+  TRUE/NOT TRUE/UNKNOWN partitions, selected/rejected occurrence ordinals,
+  projected terminal bag and typed finite set/bounds on every original
+  13-dialect parser. It checks all source values against the authoritative
+  signed width before applying addition or ABS. Extreme signed overflow
+  is explicitly Residual, never silently taken from DuckDB's widening
+  or failure law; no scalar range is invented for the unrelated projected id.
+
+The 43 original open-world/parser-only document cells remain unchanged,
+with their residual reasons. The finite source domain is a separate
+conditional proof, not the global projected output constraint.
+
+**The bounded implementation gap is now addressed.** Reviewers must
+still independently validate the width-safety proof and the necessary
+unbounded-source/vendor residual dispositions. TASK-179 retains native
+overflow/session ownership, TASK-193 broader relational proof, TASK-180
+global release-wide certification. This does not sign AC #1..#5 or
+approve the 559-cell review worksheet.
