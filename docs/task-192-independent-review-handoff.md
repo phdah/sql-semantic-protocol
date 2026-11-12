@@ -24,11 +24,11 @@ same runtime behavior.
 | --- | --- | --- | --- |
 | S001-S009, S012 | TASK-177 numeric native full bags, exact signed bounds and inclusive endpoints, TASK-192 559-cell emitted contract | Exact numeric scalar output where independently constrained; S012 retains full nullable OR witness | Independently confirm bound signs, NULL exclusion and 13-dialect canonical equality |
 | S010, S011 | TASK-177 original 3VL partitions; `task_192_nullable_truth.rs` proves physical TRUE/NOT TRUE across 13 dialects; `task_192_not_equality.rs` independently proves S011 signed <=1 and NULL exclusion and rejects FLOAT/untyped complements | S010 same-row OR and S011 signed NOT are whole-query Exact **only** under explicit signed-integer catalog evidence; S010 retains the correlated Boolean tree without inventing independent scalar ranges; S011 has signed `amount <= 1` and no projected `id` bound. Both untyped originals remain Residual; FLOAT remains fail-closed | Independently audit both typed-only promotions, 3VL source rows, one-source correlation, NULLs, NaN/floating negatives and direct/dbt/ODCS parity; no finite `id` domain |
-| S013 | `tests/task_192_correlated_exists.rs`: original SQL, independent complete outer/inner DuckDB bags and 13-parser closed-world physical semijoin proof | Exact *finite supplied-source* selected/rejected outer identities, all inner partners, and terminal bags with numeric/NULL SQL `id` distinct from `__physical_row_id`; whole-query universal scalar contract remains Residual | Independently audit source completeness, duplicate/NULL occurrence law, proven finite-bag vs universal outcome boundary, and any downstream TASK-193 relational scope |
+| S013 | `tests/task_192_correlated_exists.rs`: original SQL, complete outer/inner DuckDB bags, 13-parser exact physical semijoin, plus negative test separating *missing* inner bag from explicitly complete *empty* inner bag | Bounded source-bag implementation is complete: exact selected/rejected outer identities, all inner partners, NULL and duplicates, and full terminal; universal open-world scalar domain stays Residual necessarily | Independently approve the precise closed-world preconditions and distinct TASK-193 relational ownership, without interpreting absent inner data as no matches |
 | S014-S019 | Original native three-valued partitions and 13-dialect public contract | S016 IS TRUE, S017 IS FALSE and S018 IS UNKNOWN preserve NULL truth; typed S016/S017 negative FLOAT controls | Independently review NULL truth, NULL-containing IN and source type assumptions |
 | S020, S022, S025 | Native pattern partitions, `task_192_string_witness.rs` | Exact source-local safe prefix only for typed VARCHAR and both declared binary-collation/no-padding laws; missing law and fixed CHAR remain Residual | Review the caller attestation and reject inferred nonbinary/CHAR behavior |
 | S021, S023, S024, S026 | Native ILIKE/SIMILAR/regex/collation partitions, conservative 13-dialect negative tests | Unproved source-local vendor/session semantics, even after unrelated binary attestations | TASK-179 vendor/session disposition; no blanket portable Exact classification |
-| S027-S032 | Original complete computed DuckDB partitions in `task_192_computed_witness.rs`, plus original SQL against extremal signed 64-bit source and SQL NULL | S028-S031 signed-integer typed TRUE/NOT TRUE witnesses Exact; S027 addition and S032 ABS must stay residual for unbounded signed overflow | Verify original expression/NULL direction, DuckDB's widening for S027 and the distinct extremal ABS boundary for S032, without importing either engine-specific behavior as a portable law; check strongest *projected id* domain |
+| S027-S032 | Complete original DuckDB partitions, plus `task_192_signed_computed_bags.rs` on 13 parsers: full schema-validated source-bag TRUE/NOT TRUE/UNKNOWN and duplicate terminal with checked signed widths | S028-S031 operator-local TRUE/NOT TRUE witnesses already Exact. **S027/S032 now have exact closed-world signed 16/32/64-bit physical proofs when every arithmetic result fits its declared source width**; signed extrema safely return Residual without inferring native widening or errors | Review source-width guards, terminal set/bounds, NULL/duplicates, safe vs overflow examples, and TASK-179 vendor arithmetic handoff; never infer a global finite projected id domain |
 | S033 | DuckDB fixed-width overflow error | No successful native terminal and no invented scalar output domain | TASK-191 parser/unsupported, TASK-179 vendor overflow law |
 | S034-S036 | TASK-192 native temporal partitions and original emitted residuals | Computed temporal and implicit conversion semantics remain unproved | TASK-179 timezone, DST, result-type and conversion law |
 | S037, S039, S040 | Original native timezone, padded-string and NaN partitions with separately bounded source/session laws | S037/S039 have Conditional untyped public outcomes; S039 has typed source-local Exact only after binary/no-padding attestation. S040 is now an explicit Residual for unattested text-to-NaN coercion, even with unrelated assumptions declared | TASK-179 independent vendor/session and implicit numeric-cast law review, with no fabricated native attestation |
@@ -70,6 +70,19 @@ review identity, immutable reviewed commit, exact per-cell decision and evidence
 references. A reviewer may group identical dialect proofs but must account for
 every original 559-cell ID, including both S179 parser rejections. The author
 cannot sign this queue or promote TASK-192 from this generated worksheet alone.
+
+### Three-case bounded semantic disposition for independent signoff
+
+The machine-readable [S013/S027/S032 semantic closure matrix](task-192-bounded-semantic-closures.json)
+records actual positive and negative implementation scope. These are real
+portable conditional physical source-bag proofs, not blanket open-world
+exactness. A missing inner population or overflowing signed source is still
+an explicit and necessary Residual. The bounded source proof implementation
+is complete; distinct independent semantic review must judge whether these
+preconditions meet TASK-192's required strongest sound outcomes and approve
+or request changes. TASK-179 owns vendor-specific overflow and TASK-193
+owns broader relational generation. No unsigned owner decision is being
+re-labelled as approval.
 
 ## Required signoff steps
 
