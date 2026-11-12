@@ -574,11 +574,41 @@ fn derive_predicate_domains(predicate: &Predicate, sources: &[SourceRelation]) -
                 None => DomainMap::new(),
             }
         }
-        Predicate::Not(predicate) => unknown_for_predicate(
-            predicate.operand(),
-            sources,
-            "logical NOT cannot always be reduced safely to independent scalar domains",
-        ),
+        Predicate::Not(predicate) => {
+            // SQL NOT (col = literal) is col <> literal, and the inverse
+            // holds for <>. Both exclude SQL NULL under ordinary 3VL.
+            // Do not generalize to ordered comparisons, IN with NULL,
+            // floating-point ordering, computed expressions, or nested NOT:
+            // their independent scalar complements need additional laws.
+            if let Predicate::Comparison(comparison) = predicate.operand() {
+                let inverse = match comparison.operator() {
+                    ComparisonOperator::Eq => Some(ComparisonOperator::Neq),
+                    ComparisonOperator::Neq => Some(ComparisonOperator::Eq),
+                    _ => None,
+                };
+                if let Some(inverse) = inverse {
+                    let direct_numeric = matches!(
+                        (comparison.left(), comparison.right()),
+                        (Expression::Column(_), Expression::Literal(literal))
+                            | (Expression::Literal(literal), Expression::Column(_))
+                            if literal.literal_type() == LiteralType::Integer
+                    );
+                    if direct_numeric {
+                        let inverted = ComparisonPredicate::new(
+                            comparison.left().clone(),
+                            inverse,
+                            comparison.right().clone(),
+                        );
+                        return derive_comparison(&inverted, sources);
+                    }
+                }
+            }
+            unknown_for_predicate(
+                predicate.operand(),
+                sources,
+                "logical NOT cannot always be reduced safely to independent scalar domains",
+            )
+        },
         Predicate::IsNull(predicate) => derive_is_null(predicate, sources),
         Predicate::In(predicate) => derive_in(predicate, sources),
         Predicate::Exists(_) => DomainMap::new(),
