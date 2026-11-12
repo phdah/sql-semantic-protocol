@@ -326,7 +326,7 @@ fn original_signed_ordered_not_preserves_safe_bounds_through_copy_cte_and_derive
                     .condition_exactness()
                     .residual_conditions()
                     .iter()
-                    .map(|residual| residual.reason().as_str().to_string())
+                    .map(|residual| format!("{:?}", residual.reason()))
                     .collect::<Vec<_>>(),
             )
         };
