@@ -336,3 +336,47 @@ fn numeric_sql_id_requires_separate_unique_physical_occurrence_identity() {
         "duplicating an occurrence identity cannot be accepted as an exact semijoin proof"
     );
 }
+
+#[test]
+fn s013_requires_the_full_inner_bag_and_handles_proven_empty_inner_relation() {
+    let (_, sql) = original_exists();
+    let (catalog, mut sources) = physical_sources();
+    let parser = dialect_from_name("duckdb").expect("parser");
+    let input = SqlInput::inline(&sql);
+    let configured = [ConfiguredSqlInput::new(
+        "task192-s013-world-closure",
+        &input,
+        "duckdb",
+        parser.as_ref(),
+    )];
+    let bundle =
+        analyze_configured_inputs_with_catalog(&configured, &catalog).expect("original SQL");
+    let layer = bundle.layers().last().expect("query layer");
+
+    // An observed outer bag is not evidence that *no unknown inner rows*
+    // match. Missing inner source must never be treated as an empty source.
+    assert!(
+        matches!(
+            physical_finite_exists_bag_plan(&bundle, layer.id(), &sources[..1]),
+            PhysicalFiniteExistsProof::Residual { .. }
+        ),
+        "missing inner population cannot prove NOT TRUE or zero terminal rows"
+    );
+
+    // An *explicitly complete empty* inner population does prove the
+    // negative for every outer occurrence, even when its id is SQL NULL.
+    sources[1] = PhysicalWriteState::new("customers", Vec::new())
+        .expect("complete explicitly empty inner relation");
+    let proof = physical_finite_exists_bag_plan(&bundle, layer.id(), &sources);
+    let PhysicalFiniteExistsProof::Exact(exact) = proof else {
+        panic!("closed empty inner source has an exact negative semijoin proof: {proof:?}");
+    };
+    assert!(exact.selected.is_empty());
+    assert_eq!(exact.rejected, ["o0", "o1", "o2", "o3", "o4", "o5", "o6"]);
+    assert!(exact.terminal.is_empty());
+    assert!(exact.matching_inner.values().all(Vec::is_empty));
+    let id_domain = exact.terminal_domains.get("id").expect("typed empty terminal");
+    assert!(id_domain.values().is_empty());
+    assert!(!id_domain.null_allowed());
+    assert_eq!(id_domain.bounds(), None);
+}
