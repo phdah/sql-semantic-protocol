@@ -48,6 +48,10 @@ jobs:
         if: matrix.check == 'test' || matrix.check == 'lint'
         run: bash scripts/retry-duckdb-bootstrap.sh make ${{ matrix.check }}
 
+      - name: Emit full-document candidates for manual semantic audit
+        if: matrix.check == 'test'
+        run: cargo test --test task_192_full_document_goldens emit_candidate_goldens_for_separate_semantic_adjudication -- --ignored --nocapture
+
   dbt-e2e:
     name: dbt Core E2E
     runs-on: ubuntu-latest
