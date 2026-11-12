@@ -1,6 +1,7 @@
 //! Source and local-relational value-domain derivation.
 
 use super::*;
+use crate::domain::comparison_domain;
 
 pub(super) type LocalDomainMap = BTreeMap<String, Vec<ColumnDomain>>;
 
