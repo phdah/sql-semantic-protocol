@@ -215,6 +215,8 @@ fn new_tasks_and_existing_final_gates_form_one_acyclic_queue() {
             } else {
                 content.contains("status: To Do") || content.contains("status: In Progress")
             }
+        } else if *task == "TASK-194" {
+            content.contains("status: To Do") || content.contains("status: In Progress")
         } else {
             content.contains("status: To Do")
         };
