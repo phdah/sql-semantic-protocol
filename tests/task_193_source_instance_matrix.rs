@@ -17,7 +17,9 @@ fn read(s: &str) -> Value {
 }
 
 fn bag(db: &Connection, sql: &str, width: usize) -> Vec<Vec<Option<i64>>> {
-    let mut query = db.prepare(sql).expect("original or occurrence-level DuckDB SQL");
+    let mut query = db
+        .prepare(sql)
+        .expect("original or occurrence-level DuckDB SQL");
     let rows = query
         .query_map([], |row| {
             (0..width)
@@ -65,25 +67,28 @@ fn all_original_variants_have_independently_frozen_full_instance_bags() {
             .iter()
             .find(|original| original["id"] == id)
             .expect("must refer to original SQL");
-        assert_eq!(case["original_sql"], prior["sql"], "{id}: original syntax drift");
+        assert_eq!(
+            case["original_sql"], prior["sql"],
+            "{id}: original syntax drift"
+        );
         assert_eq!(
             case["expected_original_terminal_bag"], prior["expected_terminal_bag"],
             "{id}: independent row-identity oracle must project exactly the fixed terminal"
         );
-        let sql = case["source_instance_sql"].as_str().expect("native rowid SQL");
+        let sql = case["source_instance_sql"]
+            .as_str()
+            .expect("native rowid SQL");
         let want = expected(&case["expected_source_instance_bag"]);
-        let width = want
-            .first()
-            .map_or_else(
-                || {
-                    if id == "88-C177-S060" {
-                        2
-                    } else {
-                        panic!("{id}: empty identity bag without a pinned arity")
-                    }
-                },
-                Vec::len,
-            );
+        let width = want.first().map_or_else(
+            || {
+                if id == "88-C177-S060" {
+                    2
+                } else {
+                    panic!("{id}: empty identity bag without a pinned arity")
+                }
+            },
+            Vec::len,
+        );
         assert_eq!(
             bag(&db, sql, width),
             want,
@@ -109,12 +114,17 @@ fn all_original_variants_have_independently_frozen_full_instance_bags() {
         };
         assert_eq!(
             query.output().columns().len(),
-            case["expected_original_columns"].as_u64().expect("original arity") as usize,
+            case["expected_original_columns"]
+                .as_u64()
+                .expect("original arity") as usize,
             "{id}: source-independent output schema"
         );
     }
     assert_eq!(visited.len(), 24);
-    assert!(counted > 100, "do not drop joined multiplicity to unique values");
+    assert!(
+        counted > 100,
+        "do not drop joined multiplicity to unique values"
+    );
 }
 
 #[test]
@@ -132,7 +142,9 @@ fn every_join_predicate_has_a_complete_true_false_unknown_partner_partition() {
         let sources = probe["cartesian_source_sql"]
             .as_str()
             .expect("closed Cartesian source instances");
-        let predicate = probe["predicate"].as_str().expect("original ON predicate law");
+        let predicate = probe["predicate"]
+            .as_str()
+            .expect("original ON predicate law");
         let mut complete = BTreeSet::new();
         let mut total = 0;
         for (suffix, key) in [
@@ -151,16 +163,25 @@ fn every_join_predicate_has_a_complete_true_false_unknown_partner_partition() {
             let want = expected(&probe[key]);
             assert_eq!(bag(&db, &sql, 2), want, "{id}: {suffix} full partner rows");
             for pair in want {
-                assert!(complete.insert(pair), "{id}: pair occurs in two truth partitions");
+                assert!(
+                    complete.insert(pair),
+                    "{id}: pair occurs in two truth partitions"
+                );
                 total += 1;
             }
         }
         assert_eq!(
             total,
-            probe["expected_pair_count"].as_u64().expect("Cartesian cardinality") as usize,
+            probe["expected_pair_count"]
+                .as_u64()
+                .expect("Cartesian cardinality") as usize,
             "{id}: FALSE/UNKNOWN complement must cover every input pair"
         );
-        assert_eq!(complete.len(), total, "{id}: duplicate source IDs are not collapsed");
+        assert_eq!(
+            complete.len(),
+            total,
+            "{id}: duplicate source IDs are not collapsed"
+        );
         checked += 1;
     }
     assert_eq!(checked, 21);
@@ -185,7 +206,8 @@ fn shared_source_joins_use_distinct_alias_instances_but_one_physical_bag() {
             .expect("named physical alias variant");
         let aliases = case["source_instances"].as_array().expect("identity names");
         assert_eq!(
-            aliases.len(), arity,
+            aliases.len(),
+            arity,
             "{id}: each alias refers to a named source/producer"
         );
         let sql = case["source_instance_sql"].as_str().expect("physical SQL");
