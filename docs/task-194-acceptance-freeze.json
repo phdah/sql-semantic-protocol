@@ -615,7 +615,7 @@
       "native_boundary": "none",
       "expected_output_columns": 1,
       "expected_output_column_names": [
-        "id"
+        "amount"
       ],
       "expected_terminal_bag": [
         [
@@ -1210,7 +1210,7 @@
       "native_boundary": "none",
       "expected_output_columns": 1,
       "expected_output_column_names": [
-        "id"
+        "amount"
       ],
       "expected_terminal_bag": [
         [
@@ -1770,7 +1770,7 @@
       "native_boundary": "none",
       "expected_output_columns": 1,
       "expected_output_column_names": [
-        "id"
+        "amount"
       ],
       "expected_terminal_bag": [
         [
