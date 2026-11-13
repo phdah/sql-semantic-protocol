@@ -1,3 +1,5 @@
+TASK-193 original 24 join/scopes variants: `src/analysis/domains.rs::derive_inner_join_predicate_domains` owns the conservative ordinary equality NOT NULL domain refinement; it does not prove a finite join population. `tests/task_193_{native_join_bags,source_instance_matrix,join_nullability,typed_soundness,adapter_parity,dialect_semantics,lineage_contract}.rs` and `docs/task-193-{acceptance-freeze,source-instance-matrix-v2,source-instance-oracles}.json` own literal complete DuckDB source/terminal and per-dialect physical-identity assertions. SQL/dbt/ODCS only contribute matching source facts; MSSQL correlated LATERAL native semantics remain TASK-179/TASK-191, not an approved Exact claim. TASK-88/TASK-91 remain release-blocking.
+
 TASK-192 bounded computed arithmetic and relational EXISTS:
 `src/physical_realization/signed_computed_bags.rs` implements complete
 typed 16/32/64-bit overflow-safe one-source addition/ABS TRUE/NOT TRUE/UNKNOWN

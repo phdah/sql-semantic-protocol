@@ -113,6 +113,14 @@ fn representative_generic_query_matches_complete_protocol_document() {
                 },
                 "column_domains": [
                     {
+                        "column": {"relation": "crm.customers", "name": "id"},
+                        "domain": {"kind": "set", "mode": "exclude", "values": [{"kind": "literal", "type": "null", "value": null}]}
+                    },
+                    {
+                        "column": {"relation": "sales.orders", "name": "customer_id"},
+                        "domain": {"kind": "set", "mode": "exclude", "values": [{"kind": "literal", "type": "null", "value": null}]}
+                    },
+                    {
                         "column": {
                             "relation": "sales.orders",
                             "name": "total"
@@ -214,6 +222,14 @@ fn representative_generic_query_matches_complete_protocol_document() {
                         "sales.orders"
                     ],
                     "column_domains": [
+                        {
+                            "column": {"relation": "crm.customers", "name": "id"},
+                            "domain": {"kind": "set", "mode": "exclude", "values": [{"kind": "literal", "type": "null", "value": null}]}
+                        },
+                        {
+                            "column": {"relation": "sales.orders", "name": "customer_id"},
+                            "domain": {"kind": "set", "mode": "exclude", "values": [{"kind": "literal", "type": "null", "value": null}]}
+                        },
                         {
                             "column": {
                                 "relation": "sales.orders",

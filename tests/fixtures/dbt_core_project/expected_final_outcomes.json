@@ -410,6 +410,23 @@
         },
         {
           "column": {
+            "name": "id",
+            "relation": "\"dbt-core-e2e\".\"raw\".\"customers\""
+          },
+          "domain": {
+            "kind": "set",
+            "mode": "exclude",
+            "values": [
+              {
+                "kind": "literal",
+                "type": "null",
+                "value": null
+              }
+            ]
+          }
+        },
+        {
+          "column": {
             "name": "score",
             "relation": "\"dbt-core-e2e\".\"raw\".\"customers\""
           },
@@ -484,6 +501,23 @@
                     "value": 100
                   }
                 }
+              }
+            ]
+          }
+        },
+        {
+          "column": {
+            "name": "customer_id",
+            "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+          },
+          "domain": {
+            "kind": "set",
+            "mode": "exclude",
+            "values": [
+              {
+                "kind": "literal",
+                "type": "null",
+                "value": null
               }
             ]
           }
@@ -2300,6 +2334,23 @@
         },
         {
           "column": {
+            "name": "id",
+            "relation": "\"dbt-core-e2e\".\"raw\".\"customers\""
+          },
+          "domain": {
+            "kind": "set",
+            "mode": "exclude",
+            "values": [
+              {
+                "kind": "literal",
+                "type": "null",
+                "value": null
+              }
+            ]
+          }
+        },
+        {
+          "column": {
             "name": "score",
             "relation": "\"dbt-core-e2e\".\"raw\".\"customers\""
           },
@@ -2374,6 +2425,23 @@
                     "value": 100
                   }
                 }
+              }
+            ]
+          }
+        },
+        {
+          "column": {
+            "name": "customer_id",
+            "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+          },
+          "domain": {
+            "kind": "set",
+            "mode": "exclude",
+            "values": [
+              {
+                "kind": "literal",
+                "type": "null",
+                "value": null
               }
             ]
           }
@@ -5787,6 +5855,23 @@
         },
         {
           "column": {
+            "name": "id",
+            "relation": "\"dbt-core-e2e\".\"raw\".\"customers\""
+          },
+          "domain": {
+            "kind": "set",
+            "mode": "exclude",
+            "values": [
+              {
+                "kind": "literal",
+                "type": "null",
+                "value": null
+              }
+            ]
+          }
+        },
+        {
+          "column": {
             "name": "score",
             "relation": "\"dbt-core-e2e\".\"raw\".\"customers\""
           },
@@ -5861,6 +5946,23 @@
                     "value": 100
                   }
                 }
+              }
+            ]
+          }
+        },
+        {
+          "column": {
+            "name": "customer_id",
+            "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+          },
+          "domain": {
+            "kind": "set",
+            "mode": "exclude",
+            "values": [
+              {
+                "kind": "literal",
+                "type": "null",
+                "value": null
               }
             ]
           }
@@ -9398,6 +9500,23 @@
         },
         {
           "column": {
+            "name": "id",
+            "relation": "\"dbt-core-e2e\".\"raw\".\"customers\""
+          },
+          "domain": {
+            "kind": "set",
+            "mode": "exclude",
+            "values": [
+              {
+                "kind": "literal",
+                "type": "null",
+                "value": null
+              }
+            ]
+          }
+        },
+        {
+          "column": {
             "name": "score",
             "relation": "\"dbt-core-e2e\".\"raw\".\"customers\""
           },
@@ -9472,6 +9591,23 @@
                     "value": 100
                   }
                 }
+              }
+            ]
+          }
+        },
+        {
+          "column": {
+            "name": "customer_id",
+            "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+          },
+          "domain": {
+            "kind": "set",
+            "mode": "exclude",
+            "values": [
+              {
+                "kind": "literal",
+                "type": "null",
+                "value": null
               }
             ]
           }
@@ -11358,6 +11494,23 @@
         },
         {
           "column": {
+            "name": "id",
+            "relation": "\"dbt-core-e2e\".\"raw\".\"customers\""
+          },
+          "domain": {
+            "kind": "set",
+            "mode": "exclude",
+            "values": [
+              {
+                "kind": "literal",
+                "type": "null",
+                "value": null
+              }
+            ]
+          }
+        },
+        {
+          "column": {
             "name": "score",
             "relation": "\"dbt-core-e2e\".\"raw\".\"customers\""
           },
@@ -11432,6 +11585,23 @@
                     "value": 100
                   }
                 }
+              }
+            ]
+          }
+        },
+        {
+          "column": {
+            "name": "customer_id",
+            "relation": "\"dbt-core-e2e\".\"raw\".\"orders\""
+          },
+          "domain": {
+            "kind": "set",
+            "mode": "exclude",
+            "values": [
+              {
+                "kind": "literal",
+                "type": "null",
+                "value": null
               }
             ]
           }

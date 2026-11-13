@@ -1,0 +1,4645 @@
+{
+  "schema_version": 1,
+  "task_id": "TASK-193",
+  "status": "postfreeze_independent_source_instance_oracle_v2",
+  "historical_v1": "docs/task-193-acceptance-freeze.json",
+  "source_evidence": "docs/task-177-relational-bag-oracles.json",
+  "case_count": 24,
+  "dialect_cell_count": 312,
+  "original_positive_fixture": "88-C193-P",
+  "original_negative_fixture": "88-C193-N",
+  "oracle_provenance": "Manually stated typed SQL 3VL laws and exhaustive source index enumeration; not analyzer output",
+  "native_engine": "DuckDB 1.10506.0",
+  "external_vendor_engine_claims": false,
+  "partner_truth_probe_count": 21,
+  "rows": [
+    {
+      "case_id": "88-C177-S043",
+      "original_sql": "SELECT l.id FROM orders l INNER JOIN customers r ON l.id = r.id",
+      "source_instance_sql": "SELECT l.rowid,r.rowid FROM orders l INNER JOIN customers r ON l.id=r.id",
+      "source_instances": [
+        "orders:l",
+        "customers:r"
+      ],
+      "expected_source_instance_bag": [
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          0
+        ],
+        [
+          1,
+          1
+        ],
+        [
+          2,
+          2
+        ]
+      ],
+      "expected_source_instance_count": 5,
+      "expected_original_terminal_bag": [
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ]
+      ],
+      "expected_original_columns": 1,
+      "original_parser_dialect_observations": "CCCCCCCCCCCCC",
+      "native_duckdb_boundary": null,
+      "truth_probe": {
+        "cartesian_source_sql": "orders l CROSS JOIN customers r",
+        "predicate": "l.id=r.id",
+        "expected_true_pairs": [
+          [
+            0,
+            0
+          ],
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            0
+          ],
+          [
+            1,
+            1
+          ],
+          [
+            2,
+            2
+          ]
+        ],
+        "expected_false_pairs": [
+          [
+            0,
+            2
+          ],
+          [
+            0,
+            3
+          ],
+          [
+            1,
+            2
+          ],
+          [
+            1,
+            3
+          ],
+          [
+            2,
+            0
+          ],
+          [
+            2,
+            1
+          ],
+          [
+            2,
+            3
+          ],
+          [
+            3,
+            0
+          ],
+          [
+            3,
+            1
+          ],
+          [
+            3,
+            2
+          ],
+          [
+            3,
+            3
+          ],
+          [
+            5,
+            0
+          ],
+          [
+            5,
+            1
+          ],
+          [
+            5,
+            2
+          ],
+          [
+            5,
+            3
+          ]
+        ],
+        "expected_unknown_pairs": [
+          [
+            0,
+            4
+          ],
+          [
+            1,
+            4
+          ],
+          [
+            2,
+            4
+          ],
+          [
+            3,
+            4
+          ],
+          [
+            4,
+            0
+          ],
+          [
+            4,
+            1
+          ],
+          [
+            4,
+            2
+          ],
+          [
+            4,
+            3
+          ],
+          [
+            4,
+            4
+          ],
+          [
+            5,
+            4
+          ]
+        ],
+        "expected_pair_count": 30
+      },
+      "expected_public_join_kinds": [
+        "inner"
+      ],
+      "expected_physical_dependencies": [
+        "customers",
+        "orders"
+      ],
+      "expected_projection_lineage": [
+        [
+          "orders.id"
+        ]
+      ],
+      "projection_lineage_rule": "exact"
+    },
+    {
+      "case_id": "88-C177-S044",
+      "original_sql": "SELECT id FROM orders INNER JOIN customers USING (id)",
+      "source_instance_sql": "SELECT l.rowid,r.rowid FROM orders l INNER JOIN customers r USING (id)",
+      "source_instances": [
+        "orders:l",
+        "customers:r"
+      ],
+      "expected_source_instance_bag": [
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          0
+        ],
+        [
+          1,
+          1
+        ],
+        [
+          2,
+          2
+        ]
+      ],
+      "expected_source_instance_count": 5,
+      "expected_original_terminal_bag": [
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ]
+      ],
+      "expected_original_columns": 1,
+      "original_parser_dialect_observations": "CCCCCCCCCCCCC",
+      "native_duckdb_boundary": null,
+      "truth_probe": {
+        "cartesian_source_sql": "orders l CROSS JOIN customers r",
+        "predicate": "l.id=r.id",
+        "expected_true_pairs": [
+          [
+            0,
+            0
+          ],
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            0
+          ],
+          [
+            1,
+            1
+          ],
+          [
+            2,
+            2
+          ]
+        ],
+        "expected_false_pairs": [
+          [
+            0,
+            2
+          ],
+          [
+            0,
+            3
+          ],
+          [
+            1,
+            2
+          ],
+          [
+            1,
+            3
+          ],
+          [
+            2,
+            0
+          ],
+          [
+            2,
+            1
+          ],
+          [
+            2,
+            3
+          ],
+          [
+            3,
+            0
+          ],
+          [
+            3,
+            1
+          ],
+          [
+            3,
+            2
+          ],
+          [
+            3,
+            3
+          ],
+          [
+            5,
+            0
+          ],
+          [
+            5,
+            1
+          ],
+          [
+            5,
+            2
+          ],
+          [
+            5,
+            3
+          ]
+        ],
+        "expected_unknown_pairs": [
+          [
+            0,
+            4
+          ],
+          [
+            1,
+            4
+          ],
+          [
+            2,
+            4
+          ],
+          [
+            3,
+            4
+          ],
+          [
+            4,
+            0
+          ],
+          [
+            4,
+            1
+          ],
+          [
+            4,
+            2
+          ],
+          [
+            4,
+            3
+          ],
+          [
+            4,
+            4
+          ],
+          [
+            5,
+            4
+          ]
+        ],
+        "expected_pair_count": 30
+      },
+      "expected_public_join_kinds": [
+        "inner"
+      ],
+      "expected_physical_dependencies": [
+        "customers",
+        "orders"
+      ],
+      "expected_projection_lineage": [
+        [
+          "orders.id",
+          "customers.id"
+        ]
+      ],
+      "projection_lineage_rule": "exact"
+    },
+    {
+      "case_id": "88-C177-S045",
+      "original_sql": "SELECT id FROM orders NATURAL JOIN customers",
+      "source_instance_sql": "SELECT l.rowid,r.rowid FROM orders l NATURAL JOIN customers r",
+      "source_instances": [
+        "orders:l",
+        "customers:r"
+      ],
+      "expected_source_instance_bag": [
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          0
+        ],
+        [
+          1,
+          1
+        ]
+      ],
+      "expected_source_instance_count": 4,
+      "expected_original_terminal_bag": [
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ]
+      ],
+      "expected_original_columns": 1,
+      "original_parser_dialect_observations": "CCCCCCCCCCCCC",
+      "native_duckdb_boundary": null,
+      "truth_probe": {
+        "cartesian_source_sql": "orders l CROSS JOIN customers r",
+        "predicate": "l.id=r.id AND l.amount=r.amount",
+        "expected_true_pairs": [
+          [
+            0,
+            0
+          ],
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            0
+          ],
+          [
+            1,
+            1
+          ]
+        ],
+        "expected_false_pairs": [
+          [
+            0,
+            2
+          ],
+          [
+            0,
+            3
+          ],
+          [
+            1,
+            2
+          ],
+          [
+            1,
+            3
+          ],
+          [
+            2,
+            0
+          ],
+          [
+            2,
+            1
+          ],
+          [
+            2,
+            2
+          ],
+          [
+            2,
+            3
+          ],
+          [
+            2,
+            4
+          ],
+          [
+            3,
+            0
+          ],
+          [
+            3,
+            1
+          ],
+          [
+            3,
+            2
+          ],
+          [
+            3,
+            3
+          ],
+          [
+            4,
+            2
+          ],
+          [
+            4,
+            3
+          ],
+          [
+            5,
+            0
+          ],
+          [
+            5,
+            1
+          ],
+          [
+            5,
+            2
+          ],
+          [
+            5,
+            3
+          ],
+          [
+            5,
+            4
+          ]
+        ],
+        "expected_unknown_pairs": [
+          [
+            0,
+            4
+          ],
+          [
+            1,
+            4
+          ],
+          [
+            3,
+            4
+          ],
+          [
+            4,
+            0
+          ],
+          [
+            4,
+            1
+          ],
+          [
+            4,
+            4
+          ]
+        ],
+        "expected_pair_count": 30
+      },
+      "expected_public_join_kinds": [
+        "inner"
+      ],
+      "expected_physical_dependencies": [
+        "customers",
+        "orders"
+      ],
+      "expected_projection_lineage": [
+        [
+          "orders.id",
+          "customers.id"
+        ]
+      ],
+      "projection_lineage_rule": "exact"
+    },
+    {
+      "case_id": "88-C177-S046",
+      "original_sql": "SELECT l.id FROM orders l INNER JOIN customers r ON l.id = r.id AND l.amount = r.amount",
+      "source_instance_sql": "SELECT l.rowid,r.rowid FROM orders l INNER JOIN customers r ON l.id=r.id AND l.amount=r.amount",
+      "source_instances": [
+        "orders:l",
+        "customers:r"
+      ],
+      "expected_source_instance_bag": [
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          0
+        ],
+        [
+          1,
+          1
+        ]
+      ],
+      "expected_source_instance_count": 4,
+      "expected_original_terminal_bag": [
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ]
+      ],
+      "expected_original_columns": 1,
+      "original_parser_dialect_observations": "CCCCCCCCCCCCC",
+      "native_duckdb_boundary": null,
+      "truth_probe": {
+        "cartesian_source_sql": "orders l CROSS JOIN customers r",
+        "predicate": "l.id=r.id AND l.amount=r.amount",
+        "expected_true_pairs": [
+          [
+            0,
+            0
+          ],
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            0
+          ],
+          [
+            1,
+            1
+          ]
+        ],
+        "expected_false_pairs": [
+          [
+            0,
+            2
+          ],
+          [
+            0,
+            3
+          ],
+          [
+            1,
+            2
+          ],
+          [
+            1,
+            3
+          ],
+          [
+            2,
+            0
+          ],
+          [
+            2,
+            1
+          ],
+          [
+            2,
+            2
+          ],
+          [
+            2,
+            3
+          ],
+          [
+            2,
+            4
+          ],
+          [
+            3,
+            0
+          ],
+          [
+            3,
+            1
+          ],
+          [
+            3,
+            2
+          ],
+          [
+            3,
+            3
+          ],
+          [
+            4,
+            2
+          ],
+          [
+            4,
+            3
+          ],
+          [
+            5,
+            0
+          ],
+          [
+            5,
+            1
+          ],
+          [
+            5,
+            2
+          ],
+          [
+            5,
+            3
+          ],
+          [
+            5,
+            4
+          ]
+        ],
+        "expected_unknown_pairs": [
+          [
+            0,
+            4
+          ],
+          [
+            1,
+            4
+          ],
+          [
+            3,
+            4
+          ],
+          [
+            4,
+            0
+          ],
+          [
+            4,
+            1
+          ],
+          [
+            4,
+            4
+          ]
+        ],
+        "expected_pair_count": 30
+      },
+      "expected_public_join_kinds": [
+        "inner"
+      ],
+      "expected_physical_dependencies": [
+        "customers",
+        "orders"
+      ],
+      "expected_projection_lineage": [
+        [
+          "orders.id"
+        ]
+      ],
+      "projection_lineage_rule": "exact"
+    },
+    {
+      "case_id": "88-C177-S047",
+      "original_sql": "SELECT l.id FROM orders l INNER JOIN customers r ON l.amount IS NOT DISTINCT FROM r.amount",
+      "source_instance_sql": "SELECT l.rowid,r.rowid FROM orders l INNER JOIN customers r ON l.amount IS NOT DISTINCT FROM r.amount",
+      "source_instances": [
+        "orders:l",
+        "customers:r"
+      ],
+      "expected_source_instance_bag": [
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          1
+        ],
+        [
+          0,
+          4
+        ],
+        [
+          1,
+          0
+        ],
+        [
+          1,
+          1
+        ],
+        [
+          1,
+          4
+        ],
+        [
+          4,
+          0
+        ],
+        [
+          4,
+          1
+        ],
+        [
+          4,
+          4
+        ],
+        [
+          5,
+          3
+        ]
+      ],
+      "expected_source_instance_count": 10,
+      "expected_original_terminal_bag": [
+        [
+          null
+        ],
+        [
+          null
+        ],
+        [
+          null
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          4
+        ]
+      ],
+      "expected_original_columns": 1,
+      "original_parser_dialect_observations": "CCCCCCCCCCCCC",
+      "native_duckdb_boundary": null,
+      "truth_probe": {
+        "cartesian_source_sql": "orders l CROSS JOIN customers r",
+        "predicate": "l.amount IS NOT DISTINCT FROM r.amount",
+        "expected_true_pairs": [
+          [
+            0,
+            0
+          ],
+          [
+            0,
+            1
+          ],
+          [
+            0,
+            4
+          ],
+          [
+            1,
+            0
+          ],
+          [
+            1,
+            1
+          ],
+          [
+            1,
+            4
+          ],
+          [
+            4,
+            0
+          ],
+          [
+            4,
+            1
+          ],
+          [
+            4,
+            4
+          ],
+          [
+            5,
+            3
+          ]
+        ],
+        "expected_false_pairs": [
+          [
+            0,
+            2
+          ],
+          [
+            0,
+            3
+          ],
+          [
+            1,
+            2
+          ],
+          [
+            1,
+            3
+          ],
+          [
+            2,
+            0
+          ],
+          [
+            2,
+            1
+          ],
+          [
+            2,
+            2
+          ],
+          [
+            2,
+            3
+          ],
+          [
+            2,
+            4
+          ],
+          [
+            3,
+            0
+          ],
+          [
+            3,
+            1
+          ],
+          [
+            3,
+            2
+          ],
+          [
+            3,
+            3
+          ],
+          [
+            3,
+            4
+          ],
+          [
+            4,
+            2
+          ],
+          [
+            4,
+            3
+          ],
+          [
+            5,
+            0
+          ],
+          [
+            5,
+            1
+          ],
+          [
+            5,
+            2
+          ],
+          [
+            5,
+            4
+          ]
+        ],
+        "expected_unknown_pairs": [],
+        "expected_pair_count": 30
+      },
+      "expected_public_join_kinds": [
+        "inner"
+      ],
+      "expected_physical_dependencies": [
+        "customers",
+        "orders"
+      ],
+      "expected_projection_lineage": [
+        [
+          "orders.id"
+        ]
+      ],
+      "projection_lineage_rule": "exact"
+    },
+    {
+      "case_id": "88-C177-S048",
+      "original_sql": "SELECT l.id FROM orders l LEFT JOIN customers r ON l.id = r.id",
+      "source_instance_sql": "SELECT l.rowid,r.rowid FROM orders l LEFT JOIN customers r ON l.id=r.id",
+      "source_instances": [
+        "orders:l",
+        "customers:r"
+      ],
+      "expected_source_instance_bag": [
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          0
+        ],
+        [
+          1,
+          1
+        ],
+        [
+          2,
+          2
+        ],
+        [
+          3,
+          null
+        ],
+        [
+          4,
+          null
+        ],
+        [
+          5,
+          null
+        ]
+      ],
+      "expected_source_instance_count": 8,
+      "expected_original_terminal_bag": [
+        [
+          null
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          3
+        ],
+        [
+          4
+        ]
+      ],
+      "expected_original_columns": 1,
+      "original_parser_dialect_observations": "CCCCCCCCCCCCC",
+      "native_duckdb_boundary": null,
+      "truth_probe": {
+        "cartesian_source_sql": "orders l CROSS JOIN customers r",
+        "predicate": "l.id=r.id",
+        "expected_true_pairs": [
+          [
+            0,
+            0
+          ],
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            0
+          ],
+          [
+            1,
+            1
+          ],
+          [
+            2,
+            2
+          ]
+        ],
+        "expected_false_pairs": [
+          [
+            0,
+            2
+          ],
+          [
+            0,
+            3
+          ],
+          [
+            1,
+            2
+          ],
+          [
+            1,
+            3
+          ],
+          [
+            2,
+            0
+          ],
+          [
+            2,
+            1
+          ],
+          [
+            2,
+            3
+          ],
+          [
+            3,
+            0
+          ],
+          [
+            3,
+            1
+          ],
+          [
+            3,
+            2
+          ],
+          [
+            3,
+            3
+          ],
+          [
+            5,
+            0
+          ],
+          [
+            5,
+            1
+          ],
+          [
+            5,
+            2
+          ],
+          [
+            5,
+            3
+          ]
+        ],
+        "expected_unknown_pairs": [
+          [
+            0,
+            4
+          ],
+          [
+            1,
+            4
+          ],
+          [
+            2,
+            4
+          ],
+          [
+            3,
+            4
+          ],
+          [
+            4,
+            0
+          ],
+          [
+            4,
+            1
+          ],
+          [
+            4,
+            2
+          ],
+          [
+            4,
+            3
+          ],
+          [
+            4,
+            4
+          ],
+          [
+            5,
+            4
+          ]
+        ],
+        "expected_pair_count": 30
+      },
+      "expected_public_join_kinds": [
+        "left"
+      ],
+      "expected_physical_dependencies": [
+        "customers",
+        "orders"
+      ],
+      "expected_projection_lineage": [
+        [
+          "orders.id"
+        ]
+      ],
+      "projection_lineage_rule": "exact"
+    },
+    {
+      "case_id": "88-C177-S049",
+      "original_sql": "SELECT l.id FROM orders l RIGHT JOIN customers r ON l.id = r.id",
+      "source_instance_sql": "SELECT l.rowid,r.rowid FROM orders l RIGHT JOIN customers r ON l.id=r.id",
+      "source_instances": [
+        "orders:l",
+        "customers:r"
+      ],
+      "expected_source_instance_bag": [
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          0
+        ],
+        [
+          1,
+          1
+        ],
+        [
+          2,
+          2
+        ],
+        [
+          null,
+          3
+        ],
+        [
+          null,
+          4
+        ]
+      ],
+      "expected_source_instance_count": 7,
+      "expected_original_terminal_bag": [
+        [
+          null
+        ],
+        [
+          null
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ]
+      ],
+      "expected_original_columns": 1,
+      "original_parser_dialect_observations": "CCCCCCCCCCCCC",
+      "native_duckdb_boundary": null,
+      "truth_probe": {
+        "cartesian_source_sql": "orders l CROSS JOIN customers r",
+        "predicate": "l.id=r.id",
+        "expected_true_pairs": [
+          [
+            0,
+            0
+          ],
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            0
+          ],
+          [
+            1,
+            1
+          ],
+          [
+            2,
+            2
+          ]
+        ],
+        "expected_false_pairs": [
+          [
+            0,
+            2
+          ],
+          [
+            0,
+            3
+          ],
+          [
+            1,
+            2
+          ],
+          [
+            1,
+            3
+          ],
+          [
+            2,
+            0
+          ],
+          [
+            2,
+            1
+          ],
+          [
+            2,
+            3
+          ],
+          [
+            3,
+            0
+          ],
+          [
+            3,
+            1
+          ],
+          [
+            3,
+            2
+          ],
+          [
+            3,
+            3
+          ],
+          [
+            5,
+            0
+          ],
+          [
+            5,
+            1
+          ],
+          [
+            5,
+            2
+          ],
+          [
+            5,
+            3
+          ]
+        ],
+        "expected_unknown_pairs": [
+          [
+            0,
+            4
+          ],
+          [
+            1,
+            4
+          ],
+          [
+            2,
+            4
+          ],
+          [
+            3,
+            4
+          ],
+          [
+            4,
+            0
+          ],
+          [
+            4,
+            1
+          ],
+          [
+            4,
+            2
+          ],
+          [
+            4,
+            3
+          ],
+          [
+            4,
+            4
+          ],
+          [
+            5,
+            4
+          ]
+        ],
+        "expected_pair_count": 30
+      },
+      "expected_public_join_kinds": [
+        "right"
+      ],
+      "expected_physical_dependencies": [
+        "customers",
+        "orders"
+      ],
+      "expected_projection_lineage": [
+        [
+          "orders.id"
+        ]
+      ],
+      "projection_lineage_rule": "exact"
+    },
+    {
+      "case_id": "88-C177-S050",
+      "original_sql": "SELECT l.id FROM orders l FULL OUTER JOIN customers r ON l.id = r.id",
+      "source_instance_sql": "SELECT l.rowid,r.rowid FROM orders l FULL OUTER JOIN customers r ON l.id=r.id",
+      "source_instances": [
+        "orders:l",
+        "customers:r"
+      ],
+      "expected_source_instance_bag": [
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          0
+        ],
+        [
+          1,
+          1
+        ],
+        [
+          2,
+          2
+        ],
+        [
+          3,
+          null
+        ],
+        [
+          4,
+          null
+        ],
+        [
+          5,
+          null
+        ],
+        [
+          null,
+          3
+        ],
+        [
+          null,
+          4
+        ]
+      ],
+      "expected_source_instance_count": 10,
+      "expected_original_terminal_bag": [
+        [
+          null
+        ],
+        [
+          null
+        ],
+        [
+          null
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          3
+        ],
+        [
+          4
+        ]
+      ],
+      "expected_original_columns": 1,
+      "original_parser_dialect_observations": "CCCCCCCCCCCCC",
+      "native_duckdb_boundary": null,
+      "truth_probe": {
+        "cartesian_source_sql": "orders l CROSS JOIN customers r",
+        "predicate": "l.id=r.id",
+        "expected_true_pairs": [
+          [
+            0,
+            0
+          ],
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            0
+          ],
+          [
+            1,
+            1
+          ],
+          [
+            2,
+            2
+          ]
+        ],
+        "expected_false_pairs": [
+          [
+            0,
+            2
+          ],
+          [
+            0,
+            3
+          ],
+          [
+            1,
+            2
+          ],
+          [
+            1,
+            3
+          ],
+          [
+            2,
+            0
+          ],
+          [
+            2,
+            1
+          ],
+          [
+            2,
+            3
+          ],
+          [
+            3,
+            0
+          ],
+          [
+            3,
+            1
+          ],
+          [
+            3,
+            2
+          ],
+          [
+            3,
+            3
+          ],
+          [
+            5,
+            0
+          ],
+          [
+            5,
+            1
+          ],
+          [
+            5,
+            2
+          ],
+          [
+            5,
+            3
+          ]
+        ],
+        "expected_unknown_pairs": [
+          [
+            0,
+            4
+          ],
+          [
+            1,
+            4
+          ],
+          [
+            2,
+            4
+          ],
+          [
+            3,
+            4
+          ],
+          [
+            4,
+            0
+          ],
+          [
+            4,
+            1
+          ],
+          [
+            4,
+            2
+          ],
+          [
+            4,
+            3
+          ],
+          [
+            4,
+            4
+          ],
+          [
+            5,
+            4
+          ]
+        ],
+        "expected_pair_count": 30
+      },
+      "expected_public_join_kinds": [
+        "full"
+      ],
+      "expected_physical_dependencies": [
+        "customers",
+        "orders"
+      ],
+      "expected_projection_lineage": [
+        [
+          "orders.id"
+        ]
+      ],
+      "projection_lineage_rule": "exact"
+    },
+    {
+      "case_id": "88-C177-S051",
+      "original_sql": "SELECT l.id FROM orders l LEFT JOIN customers r ON l.id = r.id WHERE r.id IS NULL",
+      "source_instance_sql": "SELECT l.rowid,r.rowid FROM orders l LEFT JOIN customers r ON l.id=r.id WHERE r.id IS NULL",
+      "source_instances": [
+        "orders:l",
+        "customers:r"
+      ],
+      "expected_source_instance_bag": [
+        [
+          3,
+          null
+        ],
+        [
+          4,
+          null
+        ],
+        [
+          5,
+          null
+        ]
+      ],
+      "expected_source_instance_count": 3,
+      "expected_original_terminal_bag": [
+        [
+          null
+        ],
+        [
+          3
+        ],
+        [
+          4
+        ]
+      ],
+      "expected_original_columns": 1,
+      "original_parser_dialect_observations": "CCCCCCCCCCCCC",
+      "native_duckdb_boundary": null,
+      "truth_probe": {
+        "cartesian_source_sql": "orders l CROSS JOIN customers r",
+        "predicate": "l.id=r.id",
+        "expected_true_pairs": [
+          [
+            0,
+            0
+          ],
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            0
+          ],
+          [
+            1,
+            1
+          ],
+          [
+            2,
+            2
+          ]
+        ],
+        "expected_false_pairs": [
+          [
+            0,
+            2
+          ],
+          [
+            0,
+            3
+          ],
+          [
+            1,
+            2
+          ],
+          [
+            1,
+            3
+          ],
+          [
+            2,
+            0
+          ],
+          [
+            2,
+            1
+          ],
+          [
+            2,
+            3
+          ],
+          [
+            3,
+            0
+          ],
+          [
+            3,
+            1
+          ],
+          [
+            3,
+            2
+          ],
+          [
+            3,
+            3
+          ],
+          [
+            5,
+            0
+          ],
+          [
+            5,
+            1
+          ],
+          [
+            5,
+            2
+          ],
+          [
+            5,
+            3
+          ]
+        ],
+        "expected_unknown_pairs": [
+          [
+            0,
+            4
+          ],
+          [
+            1,
+            4
+          ],
+          [
+            2,
+            4
+          ],
+          [
+            3,
+            4
+          ],
+          [
+            4,
+            0
+          ],
+          [
+            4,
+            1
+          ],
+          [
+            4,
+            2
+          ],
+          [
+            4,
+            3
+          ],
+          [
+            4,
+            4
+          ],
+          [
+            5,
+            4
+          ]
+        ],
+        "expected_pair_count": 30
+      },
+      "expected_public_join_kinds": [
+        "left"
+      ],
+      "expected_physical_dependencies": [
+        "customers",
+        "orders"
+      ],
+      "expected_projection_lineage": [
+        [
+          "orders.id"
+        ]
+      ],
+      "projection_lineage_rule": "exact"
+    },
+    {
+      "case_id": "88-C177-S052",
+      "original_sql": "SELECT l.id, r.id FROM orders l LEFT JOIN customers r ON l.id = r.id",
+      "source_instance_sql": "SELECT l.rowid,r.rowid FROM orders l LEFT JOIN customers r ON l.id=r.id",
+      "source_instances": [
+        "orders:l",
+        "customers:r"
+      ],
+      "expected_source_instance_bag": [
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          0
+        ],
+        [
+          1,
+          1
+        ],
+        [
+          2,
+          2
+        ],
+        [
+          3,
+          null
+        ],
+        [
+          4,
+          null
+        ],
+        [
+          5,
+          null
+        ]
+      ],
+      "expected_source_instance_count": 8,
+      "expected_original_terminal_bag": [
+        [
+          null,
+          null
+        ],
+        [
+          1,
+          1
+        ],
+        [
+          1,
+          1
+        ],
+        [
+          1,
+          1
+        ],
+        [
+          1,
+          1
+        ],
+        [
+          2,
+          2
+        ],
+        [
+          3,
+          null
+        ],
+        [
+          4,
+          null
+        ]
+      ],
+      "expected_original_columns": 2,
+      "original_parser_dialect_observations": "CCCCCCCCCCCCC",
+      "native_duckdb_boundary": null,
+      "truth_probe": {
+        "cartesian_source_sql": "orders l CROSS JOIN customers r",
+        "predicate": "l.id=r.id",
+        "expected_true_pairs": [
+          [
+            0,
+            0
+          ],
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            0
+          ],
+          [
+            1,
+            1
+          ],
+          [
+            2,
+            2
+          ]
+        ],
+        "expected_false_pairs": [
+          [
+            0,
+            2
+          ],
+          [
+            0,
+            3
+          ],
+          [
+            1,
+            2
+          ],
+          [
+            1,
+            3
+          ],
+          [
+            2,
+            0
+          ],
+          [
+            2,
+            1
+          ],
+          [
+            2,
+            3
+          ],
+          [
+            3,
+            0
+          ],
+          [
+            3,
+            1
+          ],
+          [
+            3,
+            2
+          ],
+          [
+            3,
+            3
+          ],
+          [
+            5,
+            0
+          ],
+          [
+            5,
+            1
+          ],
+          [
+            5,
+            2
+          ],
+          [
+            5,
+            3
+          ]
+        ],
+        "expected_unknown_pairs": [
+          [
+            0,
+            4
+          ],
+          [
+            1,
+            4
+          ],
+          [
+            2,
+            4
+          ],
+          [
+            3,
+            4
+          ],
+          [
+            4,
+            0
+          ],
+          [
+            4,
+            1
+          ],
+          [
+            4,
+            2
+          ],
+          [
+            4,
+            3
+          ],
+          [
+            4,
+            4
+          ],
+          [
+            5,
+            4
+          ]
+        ],
+        "expected_pair_count": 30
+      },
+      "expected_public_join_kinds": [
+        "left"
+      ],
+      "expected_physical_dependencies": [
+        "customers",
+        "orders"
+      ],
+      "expected_projection_lineage": [
+        [
+          "orders.id"
+        ],
+        [
+          "customers.id"
+        ]
+      ],
+      "projection_lineage_rule": "exact"
+    },
+    {
+      "case_id": "88-C177-S053",
+      "original_sql": "SELECT l.id FROM orders l LEFT JOIN customers r ON l.id = r.id",
+      "source_instance_sql": "SELECT l.rowid,r.rowid FROM orders l LEFT JOIN customers r ON l.id=r.id",
+      "source_instances": [
+        "orders:l",
+        "customers:r"
+      ],
+      "expected_source_instance_bag": [
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          0
+        ],
+        [
+          1,
+          1
+        ],
+        [
+          2,
+          2
+        ],
+        [
+          3,
+          null
+        ],
+        [
+          4,
+          null
+        ],
+        [
+          5,
+          null
+        ]
+      ],
+      "expected_source_instance_count": 8,
+      "expected_original_terminal_bag": [
+        [
+          null
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          3
+        ],
+        [
+          4
+        ]
+      ],
+      "expected_original_columns": 1,
+      "original_parser_dialect_observations": "CCCCCCCCCCCCC",
+      "native_duckdb_boundary": null,
+      "truth_probe": {
+        "cartesian_source_sql": "orders l CROSS JOIN customers r",
+        "predicate": "l.id=r.id",
+        "expected_true_pairs": [
+          [
+            0,
+            0
+          ],
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            0
+          ],
+          [
+            1,
+            1
+          ],
+          [
+            2,
+            2
+          ]
+        ],
+        "expected_false_pairs": [
+          [
+            0,
+            2
+          ],
+          [
+            0,
+            3
+          ],
+          [
+            1,
+            2
+          ],
+          [
+            1,
+            3
+          ],
+          [
+            2,
+            0
+          ],
+          [
+            2,
+            1
+          ],
+          [
+            2,
+            3
+          ],
+          [
+            3,
+            0
+          ],
+          [
+            3,
+            1
+          ],
+          [
+            3,
+            2
+          ],
+          [
+            3,
+            3
+          ],
+          [
+            5,
+            0
+          ],
+          [
+            5,
+            1
+          ],
+          [
+            5,
+            2
+          ],
+          [
+            5,
+            3
+          ]
+        ],
+        "expected_unknown_pairs": [
+          [
+            0,
+            4
+          ],
+          [
+            1,
+            4
+          ],
+          [
+            2,
+            4
+          ],
+          [
+            3,
+            4
+          ],
+          [
+            4,
+            0
+          ],
+          [
+            4,
+            1
+          ],
+          [
+            4,
+            2
+          ],
+          [
+            4,
+            3
+          ],
+          [
+            4,
+            4
+          ],
+          [
+            5,
+            4
+          ]
+        ],
+        "expected_pair_count": 30
+      },
+      "expected_public_join_kinds": [
+        "left"
+      ],
+      "expected_physical_dependencies": [
+        "customers",
+        "orders"
+      ],
+      "expected_projection_lineage": [
+        [
+          "orders.id"
+        ]
+      ],
+      "projection_lineage_rule": "exact"
+    },
+    {
+      "case_id": "88-C177-S054",
+      "original_sql": "SELECT l.id FROM orders l LEFT SEMI JOIN customers r ON l.id = r.id",
+      "source_instance_sql": "SELECT l.rowid FROM orders l SEMI JOIN customers r ON l.id=r.id",
+      "source_instances": [
+        "orders:l",
+        "customers:r"
+      ],
+      "expected_source_instance_bag": [
+        [
+          0
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ]
+      ],
+      "expected_source_instance_count": 3,
+      "expected_original_terminal_bag": [
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ]
+      ],
+      "expected_original_columns": 1,
+      "original_parser_dialect_observations": "CCCCCCCCCCCCC",
+      "native_duckdb_boundary": "DuckDB original LEFT SEMI spelling rejected; equivalent SEMI evaluated",
+      "truth_probe": {
+        "cartesian_source_sql": "orders l CROSS JOIN customers r",
+        "predicate": "l.id=r.id",
+        "expected_true_pairs": [
+          [
+            0,
+            0
+          ],
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            0
+          ],
+          [
+            1,
+            1
+          ],
+          [
+            2,
+            2
+          ]
+        ],
+        "expected_false_pairs": [
+          [
+            0,
+            2
+          ],
+          [
+            0,
+            3
+          ],
+          [
+            1,
+            2
+          ],
+          [
+            1,
+            3
+          ],
+          [
+            2,
+            0
+          ],
+          [
+            2,
+            1
+          ],
+          [
+            2,
+            3
+          ],
+          [
+            3,
+            0
+          ],
+          [
+            3,
+            1
+          ],
+          [
+            3,
+            2
+          ],
+          [
+            3,
+            3
+          ],
+          [
+            5,
+            0
+          ],
+          [
+            5,
+            1
+          ],
+          [
+            5,
+            2
+          ],
+          [
+            5,
+            3
+          ]
+        ],
+        "expected_unknown_pairs": [
+          [
+            0,
+            4
+          ],
+          [
+            1,
+            4
+          ],
+          [
+            2,
+            4
+          ],
+          [
+            3,
+            4
+          ],
+          [
+            4,
+            0
+          ],
+          [
+            4,
+            1
+          ],
+          [
+            4,
+            2
+          ],
+          [
+            4,
+            3
+          ],
+          [
+            4,
+            4
+          ],
+          [
+            5,
+            4
+          ]
+        ],
+        "expected_pair_count": 30
+      },
+      "expected_public_join_kinds": [
+        "left_semi"
+      ],
+      "expected_physical_dependencies": [
+        "customers",
+        "orders"
+      ],
+      "expected_projection_lineage": [
+        [
+          "orders.id"
+        ]
+      ],
+      "projection_lineage_rule": "exact"
+    },
+    {
+      "case_id": "88-C177-S055",
+      "original_sql": "SELECT l.id FROM orders l LEFT ANTI JOIN customers r ON l.id = r.id",
+      "source_instance_sql": "SELECT l.rowid FROM orders l ANTI JOIN customers r ON l.id=r.id",
+      "source_instances": [
+        "orders:l",
+        "customers:r"
+      ],
+      "expected_source_instance_bag": [
+        [
+          3
+        ],
+        [
+          4
+        ],
+        [
+          5
+        ]
+      ],
+      "expected_source_instance_count": 3,
+      "expected_original_terminal_bag": [
+        [
+          null
+        ],
+        [
+          3
+        ],
+        [
+          4
+        ]
+      ],
+      "expected_original_columns": 1,
+      "original_parser_dialect_observations": "CCCCCCCCCCCCC",
+      "native_duckdb_boundary": "DuckDB original LEFT ANTI spelling rejected; equivalent ANTI evaluated",
+      "truth_probe": {
+        "cartesian_source_sql": "orders l CROSS JOIN customers r",
+        "predicate": "l.id=r.id",
+        "expected_true_pairs": [
+          [
+            0,
+            0
+          ],
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            0
+          ],
+          [
+            1,
+            1
+          ],
+          [
+            2,
+            2
+          ]
+        ],
+        "expected_false_pairs": [
+          [
+            0,
+            2
+          ],
+          [
+            0,
+            3
+          ],
+          [
+            1,
+            2
+          ],
+          [
+            1,
+            3
+          ],
+          [
+            2,
+            0
+          ],
+          [
+            2,
+            1
+          ],
+          [
+            2,
+            3
+          ],
+          [
+            3,
+            0
+          ],
+          [
+            3,
+            1
+          ],
+          [
+            3,
+            2
+          ],
+          [
+            3,
+            3
+          ],
+          [
+            5,
+            0
+          ],
+          [
+            5,
+            1
+          ],
+          [
+            5,
+            2
+          ],
+          [
+            5,
+            3
+          ]
+        ],
+        "expected_unknown_pairs": [
+          [
+            0,
+            4
+          ],
+          [
+            1,
+            4
+          ],
+          [
+            2,
+            4
+          ],
+          [
+            3,
+            4
+          ],
+          [
+            4,
+            0
+          ],
+          [
+            4,
+            1
+          ],
+          [
+            4,
+            2
+          ],
+          [
+            4,
+            3
+          ],
+          [
+            4,
+            4
+          ],
+          [
+            5,
+            4
+          ]
+        ],
+        "expected_pair_count": 30
+      },
+      "expected_public_join_kinds": [
+        "left_anti"
+      ],
+      "expected_physical_dependencies": [
+        "customers",
+        "orders"
+      ],
+      "expected_projection_lineage": [
+        [
+          "orders.id"
+        ]
+      ],
+      "projection_lineage_rule": "exact"
+    },
+    {
+      "case_id": "88-C177-S056",
+      "original_sql": "SELECT l.id FROM orders l WHERE EXISTS (SELECT 1 FROM customers r WHERE r.id = l.id)",
+      "source_instance_sql": "SELECT l.rowid FROM orders l WHERE EXISTS (SELECT 1 FROM customers r WHERE r.id=l.id)",
+      "source_instances": [
+        "orders:l",
+        "customers:r (correlated subquery)"
+      ],
+      "expected_source_instance_bag": [
+        [
+          0
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ]
+      ],
+      "expected_source_instance_count": 3,
+      "expected_original_terminal_bag": [
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ]
+      ],
+      "expected_original_columns": 1,
+      "original_parser_dialect_observations": "CCCCCCCCCCCCC",
+      "native_duckdb_boundary": null,
+      "truth_probe": {
+        "cartesian_source_sql": "orders l CROSS JOIN customers r",
+        "predicate": "l.id=r.id",
+        "expected_true_pairs": [
+          [
+            0,
+            0
+          ],
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            0
+          ],
+          [
+            1,
+            1
+          ],
+          [
+            2,
+            2
+          ]
+        ],
+        "expected_false_pairs": [
+          [
+            0,
+            2
+          ],
+          [
+            0,
+            3
+          ],
+          [
+            1,
+            2
+          ],
+          [
+            1,
+            3
+          ],
+          [
+            2,
+            0
+          ],
+          [
+            2,
+            1
+          ],
+          [
+            2,
+            3
+          ],
+          [
+            3,
+            0
+          ],
+          [
+            3,
+            1
+          ],
+          [
+            3,
+            2
+          ],
+          [
+            3,
+            3
+          ],
+          [
+            5,
+            0
+          ],
+          [
+            5,
+            1
+          ],
+          [
+            5,
+            2
+          ],
+          [
+            5,
+            3
+          ]
+        ],
+        "expected_unknown_pairs": [
+          [
+            0,
+            4
+          ],
+          [
+            1,
+            4
+          ],
+          [
+            2,
+            4
+          ],
+          [
+            3,
+            4
+          ],
+          [
+            4,
+            0
+          ],
+          [
+            4,
+            1
+          ],
+          [
+            4,
+            2
+          ],
+          [
+            4,
+            3
+          ],
+          [
+            4,
+            4
+          ],
+          [
+            5,
+            4
+          ]
+        ],
+        "expected_pair_count": 30
+      },
+      "expected_public_join_kinds": [],
+      "expected_physical_dependencies": [
+        "customers",
+        "orders"
+      ],
+      "expected_projection_lineage": [
+        [
+          "orders.id"
+        ]
+      ],
+      "projection_lineage_rule": "exact"
+    },
+    {
+      "case_id": "88-C177-S057",
+      "original_sql": "SELECT l.id FROM orders l WHERE NOT EXISTS (SELECT 1 FROM customers r WHERE r.id = l.id)",
+      "source_instance_sql": "SELECT l.rowid FROM orders l WHERE NOT EXISTS (SELECT 1 FROM customers r WHERE r.id=l.id)",
+      "source_instances": [
+        "orders:l",
+        "customers:r (correlated subquery)"
+      ],
+      "expected_source_instance_bag": [
+        [
+          3
+        ],
+        [
+          4
+        ],
+        [
+          5
+        ]
+      ],
+      "expected_source_instance_count": 3,
+      "expected_original_terminal_bag": [
+        [
+          null
+        ],
+        [
+          3
+        ],
+        [
+          4
+        ]
+      ],
+      "expected_original_columns": 1,
+      "original_parser_dialect_observations": "CCCCCCCCCCCCC",
+      "native_duckdb_boundary": null,
+      "truth_probe": {
+        "cartesian_source_sql": "orders l CROSS JOIN customers r",
+        "predicate": "l.id=r.id",
+        "expected_true_pairs": [
+          [
+            0,
+            0
+          ],
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            0
+          ],
+          [
+            1,
+            1
+          ],
+          [
+            2,
+            2
+          ]
+        ],
+        "expected_false_pairs": [
+          [
+            0,
+            2
+          ],
+          [
+            0,
+            3
+          ],
+          [
+            1,
+            2
+          ],
+          [
+            1,
+            3
+          ],
+          [
+            2,
+            0
+          ],
+          [
+            2,
+            1
+          ],
+          [
+            2,
+            3
+          ],
+          [
+            3,
+            0
+          ],
+          [
+            3,
+            1
+          ],
+          [
+            3,
+            2
+          ],
+          [
+            3,
+            3
+          ],
+          [
+            5,
+            0
+          ],
+          [
+            5,
+            1
+          ],
+          [
+            5,
+            2
+          ],
+          [
+            5,
+            3
+          ]
+        ],
+        "expected_unknown_pairs": [
+          [
+            0,
+            4
+          ],
+          [
+            1,
+            4
+          ],
+          [
+            2,
+            4
+          ],
+          [
+            3,
+            4
+          ],
+          [
+            4,
+            0
+          ],
+          [
+            4,
+            1
+          ],
+          [
+            4,
+            2
+          ],
+          [
+            4,
+            3
+          ],
+          [
+            4,
+            4
+          ],
+          [
+            5,
+            4
+          ]
+        ],
+        "expected_pair_count": 30
+      },
+      "expected_public_join_kinds": [],
+      "expected_physical_dependencies": [
+        "customers",
+        "orders"
+      ],
+      "expected_projection_lineage": [
+        [
+          "orders.id"
+        ]
+      ],
+      "projection_lineage_rule": "exact"
+    },
+    {
+      "case_id": "88-C177-S058",
+      "original_sql": "SELECT l.id FROM orders l JOIN customers r ON l.amount > r.amount",
+      "source_instance_sql": "SELECT l.rowid,r.rowid FROM orders l JOIN customers r ON l.amount>r.amount",
+      "source_instances": [
+        "orders:l",
+        "customers:r"
+      ],
+      "expected_source_instance_bag": [
+        [
+          0,
+          3
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          2,
+          1
+        ],
+        [
+          2,
+          3
+        ],
+        [
+          2,
+          4
+        ],
+        [
+          4,
+          3
+        ]
+      ],
+      "expected_source_instance_count": 7,
+      "expected_original_terminal_bag": [
+        [
+          null
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          2
+        ],
+        [
+          2
+        ],
+        [
+          2
+        ]
+      ],
+      "expected_original_columns": 1,
+      "original_parser_dialect_observations": "CCCCCCCCCCCCC",
+      "native_duckdb_boundary": null,
+      "truth_probe": {
+        "cartesian_source_sql": "orders l CROSS JOIN customers r",
+        "predicate": "l.amount>r.amount",
+        "expected_true_pairs": [
+          [
+            0,
+            3
+          ],
+          [
+            1,
+            3
+          ],
+          [
+            2,
+            0
+          ],
+          [
+            2,
+            1
+          ],
+          [
+            2,
+            3
+          ],
+          [
+            2,
+            4
+          ],
+          [
+            4,
+            3
+          ]
+        ],
+        "expected_false_pairs": [
+          [
+            0,
+            0
+          ],
+          [
+            0,
+            1
+          ],
+          [
+            0,
+            2
+          ],
+          [
+            0,
+            4
+          ],
+          [
+            1,
+            0
+          ],
+          [
+            1,
+            1
+          ],
+          [
+            1,
+            2
+          ],
+          [
+            1,
+            4
+          ],
+          [
+            2,
+            2
+          ],
+          [
+            4,
+            0
+          ],
+          [
+            4,
+            1
+          ],
+          [
+            4,
+            2
+          ],
+          [
+            4,
+            4
+          ],
+          [
+            5,
+            0
+          ],
+          [
+            5,
+            1
+          ],
+          [
+            5,
+            2
+          ],
+          [
+            5,
+            3
+          ],
+          [
+            5,
+            4
+          ]
+        ],
+        "expected_unknown_pairs": [
+          [
+            3,
+            0
+          ],
+          [
+            3,
+            1
+          ],
+          [
+            3,
+            2
+          ],
+          [
+            3,
+            3
+          ],
+          [
+            3,
+            4
+          ]
+        ],
+        "expected_pair_count": 30
+      },
+      "expected_public_join_kinds": [
+        "inner"
+      ],
+      "expected_physical_dependencies": [
+        "customers",
+        "orders"
+      ],
+      "expected_projection_lineage": [
+        [
+          "orders.id"
+        ]
+      ],
+      "projection_lineage_rule": "exact"
+    },
+    {
+      "case_id": "88-C177-S059",
+      "original_sql": "SELECT l.id FROM orders l JOIN customers r ON l.amount <= r.amount",
+      "source_instance_sql": "SELECT l.rowid,r.rowid FROM orders l JOIN customers r ON l.amount<=r.amount",
+      "source_instances": [
+        "orders:l",
+        "customers:r"
+      ],
+      "expected_source_instance_bag": [
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          1
+        ],
+        [
+          0,
+          2
+        ],
+        [
+          0,
+          4
+        ],
+        [
+          1,
+          0
+        ],
+        [
+          1,
+          1
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          1,
+          4
+        ],
+        [
+          2,
+          2
+        ],
+        [
+          4,
+          0
+        ],
+        [
+          4,
+          1
+        ],
+        [
+          4,
+          2
+        ],
+        [
+          4,
+          4
+        ],
+        [
+          5,
+          0
+        ],
+        [
+          5,
+          1
+        ],
+        [
+          5,
+          2
+        ],
+        [
+          5,
+          3
+        ],
+        [
+          5,
+          4
+        ]
+      ],
+      "expected_source_instance_count": 18,
+      "expected_original_terminal_bag": [
+        [
+          null
+        ],
+        [
+          null
+        ],
+        [
+          null
+        ],
+        [
+          null
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          4
+        ],
+        [
+          4
+        ],
+        [
+          4
+        ],
+        [
+          4
+        ],
+        [
+          4
+        ]
+      ],
+      "expected_original_columns": 1,
+      "original_parser_dialect_observations": "CCCCCCCCCCCCC",
+      "native_duckdb_boundary": null,
+      "truth_probe": {
+        "cartesian_source_sql": "orders l CROSS JOIN customers r",
+        "predicate": "l.amount<=r.amount",
+        "expected_true_pairs": [
+          [
+            0,
+            0
+          ],
+          [
+            0,
+            1
+          ],
+          [
+            0,
+            2
+          ],
+          [
+            0,
+            4
+          ],
+          [
+            1,
+            0
+          ],
+          [
+            1,
+            1
+          ],
+          [
+            1,
+            2
+          ],
+          [
+            1,
+            4
+          ],
+          [
+            2,
+            2
+          ],
+          [
+            4,
+            0
+          ],
+          [
+            4,
+            1
+          ],
+          [
+            4,
+            2
+          ],
+          [
+            4,
+            4
+          ],
+          [
+            5,
+            0
+          ],
+          [
+            5,
+            1
+          ],
+          [
+            5,
+            2
+          ],
+          [
+            5,
+            3
+          ],
+          [
+            5,
+            4
+          ]
+        ],
+        "expected_false_pairs": [
+          [
+            0,
+            3
+          ],
+          [
+            1,
+            3
+          ],
+          [
+            2,
+            0
+          ],
+          [
+            2,
+            1
+          ],
+          [
+            2,
+            3
+          ],
+          [
+            2,
+            4
+          ],
+          [
+            4,
+            3
+          ]
+        ],
+        "expected_unknown_pairs": [
+          [
+            3,
+            0
+          ],
+          [
+            3,
+            1
+          ],
+          [
+            3,
+            2
+          ],
+          [
+            3,
+            3
+          ],
+          [
+            3,
+            4
+          ]
+        ],
+        "expected_pair_count": 30
+      },
+      "expected_public_join_kinds": [
+        "inner"
+      ],
+      "expected_physical_dependencies": [
+        "customers",
+        "orders"
+      ],
+      "expected_projection_lineage": [
+        [
+          "orders.id"
+        ]
+      ],
+      "projection_lineage_rule": "exact"
+    },
+    {
+      "case_id": "88-C177-S060",
+      "original_sql": "SELECT l.id FROM orders l JOIN customers r ON l.amount + 1 = r.amount",
+      "source_instance_sql": "SELECT l.rowid,r.rowid FROM orders l JOIN customers r ON l.amount+1=r.amount",
+      "source_instances": [
+        "orders:l",
+        "customers:r"
+      ],
+      "expected_source_instance_bag": [],
+      "expected_source_instance_count": 0,
+      "expected_original_terminal_bag": [],
+      "expected_original_columns": 1,
+      "original_parser_dialect_observations": "CCCCCCCCCCCCC",
+      "native_duckdb_boundary": null,
+      "truth_probe": {
+        "cartesian_source_sql": "orders l CROSS JOIN customers r",
+        "predicate": "l.amount+1=r.amount",
+        "expected_true_pairs": [],
+        "expected_false_pairs": [
+          [
+            0,
+            0
+          ],
+          [
+            0,
+            1
+          ],
+          [
+            0,
+            2
+          ],
+          [
+            0,
+            3
+          ],
+          [
+            0,
+            4
+          ],
+          [
+            1,
+            0
+          ],
+          [
+            1,
+            1
+          ],
+          [
+            1,
+            2
+          ],
+          [
+            1,
+            3
+          ],
+          [
+            1,
+            4
+          ],
+          [
+            2,
+            0
+          ],
+          [
+            2,
+            1
+          ],
+          [
+            2,
+            2
+          ],
+          [
+            2,
+            3
+          ],
+          [
+            2,
+            4
+          ],
+          [
+            4,
+            0
+          ],
+          [
+            4,
+            1
+          ],
+          [
+            4,
+            2
+          ],
+          [
+            4,
+            3
+          ],
+          [
+            4,
+            4
+          ],
+          [
+            5,
+            0
+          ],
+          [
+            5,
+            1
+          ],
+          [
+            5,
+            2
+          ],
+          [
+            5,
+            3
+          ],
+          [
+            5,
+            4
+          ]
+        ],
+        "expected_unknown_pairs": [
+          [
+            3,
+            0
+          ],
+          [
+            3,
+            1
+          ],
+          [
+            3,
+            2
+          ],
+          [
+            3,
+            3
+          ],
+          [
+            3,
+            4
+          ]
+        ],
+        "expected_pair_count": 30
+      },
+      "expected_public_join_kinds": [
+        "inner"
+      ],
+      "expected_physical_dependencies": [
+        "customers",
+        "orders"
+      ],
+      "expected_projection_lineage": [
+        [
+          "orders.id"
+        ]
+      ],
+      "projection_lineage_rule": "exact"
+    },
+    {
+      "case_id": "88-C177-S061",
+      "original_sql": "SELECT l.id FROM orders l JOIN customers r ON (l.id = r.id OR l.amount > r.amount) AND r.amount IS NOT NULL",
+      "source_instance_sql": "SELECT l.rowid,r.rowid FROM orders l JOIN customers r ON (l.id=r.id OR l.amount>r.amount) AND r.amount IS NOT NULL",
+      "source_instances": [
+        "orders:l",
+        "customers:r"
+      ],
+      "expected_source_instance_bag": [
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          1
+        ],
+        [
+          0,
+          3
+        ],
+        [
+          1,
+          0
+        ],
+        [
+          1,
+          1
+        ],
+        [
+          1,
+          3
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          2,
+          1
+        ],
+        [
+          2,
+          2
+        ],
+        [
+          2,
+          3
+        ],
+        [
+          2,
+          4
+        ],
+        [
+          4,
+          3
+        ]
+      ],
+      "expected_source_instance_count": 12,
+      "expected_original_terminal_bag": [
+        [
+          null
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          2
+        ],
+        [
+          2
+        ],
+        [
+          2
+        ],
+        [
+          2
+        ]
+      ],
+      "expected_original_columns": 1,
+      "original_parser_dialect_observations": "CCCCCCCCCCCCC",
+      "native_duckdb_boundary": null,
+      "truth_probe": {
+        "cartesian_source_sql": "orders l CROSS JOIN customers r",
+        "predicate": "(l.id=r.id OR l.amount>r.amount) AND r.amount IS NOT NULL",
+        "expected_true_pairs": [
+          [
+            0,
+            0
+          ],
+          [
+            0,
+            1
+          ],
+          [
+            0,
+            3
+          ],
+          [
+            1,
+            0
+          ],
+          [
+            1,
+            1
+          ],
+          [
+            1,
+            3
+          ],
+          [
+            2,
+            0
+          ],
+          [
+            2,
+            1
+          ],
+          [
+            2,
+            2
+          ],
+          [
+            2,
+            3
+          ],
+          [
+            2,
+            4
+          ],
+          [
+            4,
+            3
+          ]
+        ],
+        "expected_false_pairs": [
+          [
+            0,
+            2
+          ],
+          [
+            1,
+            2
+          ],
+          [
+            5,
+            0
+          ],
+          [
+            5,
+            1
+          ],
+          [
+            5,
+            2
+          ],
+          [
+            5,
+            3
+          ]
+        ],
+        "expected_unknown_pairs": [
+          [
+            0,
+            4
+          ],
+          [
+            1,
+            4
+          ],
+          [
+            3,
+            0
+          ],
+          [
+            3,
+            1
+          ],
+          [
+            3,
+            2
+          ],
+          [
+            3,
+            3
+          ],
+          [
+            3,
+            4
+          ],
+          [
+            4,
+            0
+          ],
+          [
+            4,
+            1
+          ],
+          [
+            4,
+            2
+          ],
+          [
+            4,
+            4
+          ],
+          [
+            5,
+            4
+          ]
+        ],
+        "expected_pair_count": 30
+      },
+      "expected_public_join_kinds": [
+        "inner"
+      ],
+      "expected_physical_dependencies": [
+        "customers",
+        "orders"
+      ],
+      "expected_projection_lineage": [
+        [
+          "orders.id"
+        ]
+      ],
+      "projection_lineage_rule": "exact"
+    },
+    {
+      "case_id": "88-C177-S062",
+      "original_sql": "SELECT a.id FROM orders a JOIN orders b ON a.id = b.id",
+      "source_instance_sql": "SELECT a.rowid,b.rowid FROM orders a JOIN orders b ON a.id=b.id",
+      "source_instances": [
+        "orders:a",
+        "orders:b"
+      ],
+      "expected_source_instance_bag": [
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          0
+        ],
+        [
+          1,
+          1
+        ],
+        [
+          2,
+          2
+        ],
+        [
+          3,
+          3
+        ],
+        [
+          5,
+          5
+        ]
+      ],
+      "expected_source_instance_count": 7,
+      "expected_original_terminal_bag": [
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          3
+        ],
+        [
+          4
+        ]
+      ],
+      "expected_original_columns": 1,
+      "original_parser_dialect_observations": "CCCCCCCCCCCCC",
+      "native_duckdb_boundary": null,
+      "truth_probe": {
+        "cartesian_source_sql": "orders a CROSS JOIN orders b",
+        "predicate": "a.id=b.id",
+        "expected_true_pairs": [
+          [
+            0,
+            0
+          ],
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            0
+          ],
+          [
+            1,
+            1
+          ],
+          [
+            2,
+            2
+          ],
+          [
+            3,
+            3
+          ],
+          [
+            5,
+            5
+          ]
+        ],
+        "expected_false_pairs": [
+          [
+            0,
+            2
+          ],
+          [
+            0,
+            3
+          ],
+          [
+            0,
+            5
+          ],
+          [
+            1,
+            2
+          ],
+          [
+            1,
+            3
+          ],
+          [
+            1,
+            5
+          ],
+          [
+            2,
+            0
+          ],
+          [
+            2,
+            1
+          ],
+          [
+            2,
+            3
+          ],
+          [
+            2,
+            5
+          ],
+          [
+            3,
+            0
+          ],
+          [
+            3,
+            1
+          ],
+          [
+            3,
+            2
+          ],
+          [
+            3,
+            5
+          ],
+          [
+            5,
+            0
+          ],
+          [
+            5,
+            1
+          ],
+          [
+            5,
+            2
+          ],
+          [
+            5,
+            3
+          ]
+        ],
+        "expected_unknown_pairs": [
+          [
+            0,
+            4
+          ],
+          [
+            1,
+            4
+          ],
+          [
+            2,
+            4
+          ],
+          [
+            3,
+            4
+          ],
+          [
+            4,
+            0
+          ],
+          [
+            4,
+            1
+          ],
+          [
+            4,
+            2
+          ],
+          [
+            4,
+            3
+          ],
+          [
+            4,
+            4
+          ],
+          [
+            4,
+            5
+          ],
+          [
+            5,
+            4
+          ]
+        ],
+        "expected_pair_count": 36
+      },
+      "expected_public_join_kinds": [
+        "inner"
+      ],
+      "expected_physical_dependencies": [
+        "orders"
+      ],
+      "expected_projection_lineage": [
+        [
+          "orders.id"
+        ]
+      ],
+      "projection_lineage_rule": "exact"
+    },
+    {
+      "case_id": "88-C177-S063",
+      "original_sql": "SELECT a.id FROM orders a JOIN orders b ON a.id = b.id JOIN orders c ON b.id = c.id",
+      "source_instance_sql": "SELECT a.rowid,b.rowid,c.rowid FROM orders a JOIN orders b ON a.id=b.id JOIN orders c ON b.id=c.id",
+      "source_instances": [
+        "orders:a",
+        "orders:b",
+        "orders:c"
+      ],
+      "expected_source_instance_bag": [
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          1
+        ],
+        [
+          0,
+          1,
+          0
+        ],
+        [
+          0,
+          1,
+          1
+        ],
+        [
+          1,
+          0,
+          0
+        ],
+        [
+          1,
+          0,
+          1
+        ],
+        [
+          1,
+          1,
+          0
+        ],
+        [
+          1,
+          1,
+          1
+        ],
+        [
+          2,
+          2,
+          2
+        ],
+        [
+          3,
+          3,
+          3
+        ],
+        [
+          5,
+          5,
+          5
+        ]
+      ],
+      "expected_source_instance_count": 11,
+      "expected_original_terminal_bag": [
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          3
+        ],
+        [
+          4
+        ]
+      ],
+      "expected_original_columns": 1,
+      "original_parser_dialect_observations": "CCCCCCCCCCCCC",
+      "native_duckdb_boundary": null,
+      "expected_public_join_kinds": [
+        "inner",
+        "inner"
+      ],
+      "expected_physical_dependencies": [
+        "orders"
+      ],
+      "expected_projection_lineage": [
+        [
+          "orders.id"
+        ]
+      ],
+      "projection_lineage_rule": "exact"
+    },
+    {
+      "case_id": "88-C177-S064",
+      "original_sql": "SELECT a.id FROM orders a JOIN customers b ON a.id = b.id JOIN products c ON b.id = c.id",
+      "source_instance_sql": "SELECT a.rowid,b.rowid,c.rowid FROM orders a JOIN customers b ON a.id=b.id JOIN products c ON b.id=c.id",
+      "source_instances": [
+        "orders:a",
+        "customers:b",
+        "products:c"
+      ],
+      "expected_source_instance_bag": [
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          1,
+          0
+        ],
+        [
+          1,
+          0,
+          0
+        ],
+        [
+          1,
+          1,
+          0
+        ],
+        [
+          2,
+          2,
+          1
+        ]
+      ],
+      "expected_source_instance_count": 5,
+      "expected_original_terminal_bag": [
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ]
+      ],
+      "expected_original_columns": 1,
+      "original_parser_dialect_observations": "CCCCCCCCCCCCC",
+      "native_duckdb_boundary": null,
+      "expected_public_join_kinds": [
+        "inner",
+        "inner"
+      ],
+      "expected_physical_dependencies": [
+        "customers",
+        "orders",
+        "products"
+      ],
+      "expected_projection_lineage": [
+        [
+          "orders.id"
+        ]
+      ],
+      "projection_lineage_rule": "exact"
+    },
+    {
+      "case_id": "88-C177-S065",
+      "original_sql": "SELECT a.id FROM orders a JOIN orders b ON a.id = b.id",
+      "source_instance_sql": "SELECT a.rowid,b.rowid FROM orders a JOIN orders b ON a.id=b.id",
+      "source_instances": [
+        "orders:a",
+        "orders:b"
+      ],
+      "expected_source_instance_bag": [
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          0
+        ],
+        [
+          1,
+          1
+        ],
+        [
+          2,
+          2
+        ],
+        [
+          3,
+          3
+        ],
+        [
+          5,
+          5
+        ]
+      ],
+      "expected_source_instance_count": 7,
+      "expected_original_terminal_bag": [
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          3
+        ],
+        [
+          4
+        ]
+      ],
+      "expected_original_columns": 1,
+      "original_parser_dialect_observations": "CCCCCCCCCCCCC",
+      "native_duckdb_boundary": null,
+      "truth_probe": {
+        "cartesian_source_sql": "orders a CROSS JOIN orders b",
+        "predicate": "a.id=b.id",
+        "expected_true_pairs": [
+          [
+            0,
+            0
+          ],
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            0
+          ],
+          [
+            1,
+            1
+          ],
+          [
+            2,
+            2
+          ],
+          [
+            3,
+            3
+          ],
+          [
+            5,
+            5
+          ]
+        ],
+        "expected_false_pairs": [
+          [
+            0,
+            2
+          ],
+          [
+            0,
+            3
+          ],
+          [
+            0,
+            5
+          ],
+          [
+            1,
+            2
+          ],
+          [
+            1,
+            3
+          ],
+          [
+            1,
+            5
+          ],
+          [
+            2,
+            0
+          ],
+          [
+            2,
+            1
+          ],
+          [
+            2,
+            3
+          ],
+          [
+            2,
+            5
+          ],
+          [
+            3,
+            0
+          ],
+          [
+            3,
+            1
+          ],
+          [
+            3,
+            2
+          ],
+          [
+            3,
+            5
+          ],
+          [
+            5,
+            0
+          ],
+          [
+            5,
+            1
+          ],
+          [
+            5,
+            2
+          ],
+          [
+            5,
+            3
+          ]
+        ],
+        "expected_unknown_pairs": [
+          [
+            0,
+            4
+          ],
+          [
+            1,
+            4
+          ],
+          [
+            2,
+            4
+          ],
+          [
+            3,
+            4
+          ],
+          [
+            4,
+            0
+          ],
+          [
+            4,
+            1
+          ],
+          [
+            4,
+            2
+          ],
+          [
+            4,
+            3
+          ],
+          [
+            4,
+            4
+          ],
+          [
+            4,
+            5
+          ],
+          [
+            5,
+            4
+          ]
+        ],
+        "expected_pair_count": 36
+      },
+      "expected_public_join_kinds": [
+        "inner"
+      ],
+      "expected_physical_dependencies": [
+        "orders"
+      ],
+      "expected_projection_lineage": [
+        [
+          "orders.id"
+        ]
+      ],
+      "projection_lineage_rule": "exact"
+    },
+    {
+      "case_id": "88-C177-S152",
+      "original_sql": "SELECT o.id FROM orders o JOIN LATERAL (SELECT o.id) l ON TRUE",
+      "source_instance_sql": "SELECT o.rowid,l.id FROM orders o JOIN LATERAL (SELECT o.id) l ON TRUE",
+      "source_instances": [
+        "orders:o",
+        "derived:l"
+      ],
+      "expected_source_instance_bag": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          1
+        ],
+        [
+          2,
+          2
+        ],
+        [
+          3,
+          3
+        ],
+        [
+          4,
+          null
+        ],
+        [
+          5,
+          4
+        ]
+      ],
+      "expected_source_instance_count": 6,
+      "expected_original_terminal_bag": [
+        [
+          null
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          3
+        ],
+        [
+          4
+        ]
+      ],
+      "expected_original_columns": 1,
+      "original_parser_dialect_observations": "CCCCCCCDCCCCC",
+      "native_duckdb_boundary": "MSSQL AST drift unapproved TASK-179/TASK-191",
+      "expected_public_join_kinds": [
+        "inner"
+      ],
+      "expected_physical_dependencies": [
+        "orders"
+      ],
+      "expected_projection_lineage": [
+        [
+          "orders.id"
+        ]
+      ],
+      "projection_lineage_rule": "exact"
+    }
+  ]
+}

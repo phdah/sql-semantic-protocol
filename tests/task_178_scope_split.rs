@@ -179,6 +179,9 @@ fn new_tasks_and_existing_final_gates_form_one_acyclic_queue() {
     let task_192_done = coverage["task_192_predicate_type_acceptance"]["task_done"]
         .as_bool()
         .expect("bounded TASK-192 status");
+    let task_193_done = coverage["task_193_join_and_source_instance_acceptance"]["task_done"]
+        .as_bool()
+        .expect("bounded TASK-193 status");
     let parent = plan["parents"]
         .as_array()
         .expect("parent queues")
@@ -200,19 +203,22 @@ fn new_tasks_and_existing_final_gates_form_one_acyclic_queue() {
             content.contains(&format!("id: {task}")),
             "{task}: missing file identity"
         );
-        let expected_status = if *task == "TASK-192" {
-            if task_192_done {
+        let valid_status = if *task == "TASK-192" {
+            content.contains(if task_192_done {
                 "status: Done"
             } else {
                 "status: In Progress"
+            })
+        } else if *task == "TASK-193" {
+            if task_193_done {
+                content.contains("status: Done")
+            } else {
+                content.contains("status: To Do") || content.contains("status: In Progress")
             }
         } else {
-            "status: To Do"
+            content.contains("status: To Do")
         };
-        assert!(
-            content.contains(expected_status),
-            "{task}: unexpected backlog lifecycle state"
-        );
+        assert!(valid_status, "{task}: unexpected backlog lifecycle state");
         assert!(
             content.contains(&format!("  - {predecessor}")),
             "{task}: missing dependency"

@@ -1,0 +1,4008 @@
+{
+  "schema_version": 1,
+  "task_id": "TASK-193",
+  "parent": "TASK-88",
+  "status": "preimplementation_task_owned_v1_freeze",
+  "scope": "24 original joins/scopes SQL variants x 13 canonical parser dialects",
+  "positive_fixture_id": "88-C193-P",
+  "negative_fixture_id": "88-C193-N",
+  "original_sql_inventory": "docs/task-178-full-variant-inventory.json",
+  "preexisting_native_source_and_terminal_oracles": "docs/task-177-relational-bag-oracles.json",
+  "source_setup": "CREATE TABLE orders(id INTEGER, amount INTEGER); INSERT INTO orders VALUES (1,10),(1,10),(2,20),(3,NULL),(NULL,10),(4,-5); CREATE TABLE customers(id INTEGER, amount INTEGER); INSERT INTO customers VALUES (1,10),(1,10),(2,100),(5,-5),(NULL,10); CREATE TABLE products(id INTEGER); INSERT INTO products VALUES (1),(2),(3);",
+  "complete_source_bags": {
+    "orders": [
+      [
+        null,
+        10
+      ],
+      [
+        1,
+        10
+      ],
+      [
+        1,
+        10
+      ],
+      [
+        2,
+        20
+      ],
+      [
+        3,
+        null
+      ],
+      [
+        4,
+        -5
+      ]
+    ],
+    "customers": [
+      [
+        null,
+        10
+      ],
+      [
+        1,
+        10
+      ],
+      [
+        1,
+        10
+      ],
+      [
+        2,
+        100
+      ],
+      [
+        5,
+        -5
+      ]
+    ],
+    "products": [
+      [
+        1
+      ],
+      [
+        2
+      ],
+      [
+        3
+      ]
+    ]
+  },
+  "case_count": 24,
+  "parser_cells": 312,
+  "dialects": [
+    "ansi",
+    "bigquery",
+    "clickhouse",
+    "databricks",
+    "duckdb",
+    "generic",
+    "hive",
+    "mssql",
+    "mysql",
+    "postgresql",
+    "redshift",
+    "snowflake",
+    "sqlite"
+  ],
+  "acceptance_mapping": {
+    "1": "freeze 24 original cases and 312 dialect cells",
+    "2": "literal complete DuckDB full bags and physical source-instance pairs",
+    "3": "portable public full-document equivalence, MSSQL lateral exception",
+    "4": "representable direct/dbt/ODCS facts and TASK-197 handoff",
+    "5": "CI, independent review and signoff; task not Done without all"
+  },
+  "conditional_boundaries": [
+    {
+      "id": "88-C177-S054/duckdb",
+      "status": "parser_boundary_native_alternative_only",
+      "owner": "TASK-193"
+    },
+    {
+      "id": "88-C177-S055/duckdb",
+      "status": "parser_boundary_native_alternative_only",
+      "owner": "TASK-193"
+    },
+    {
+      "id": "88-C177-S152/mssql",
+      "status": "canonical_AST_drift_native_vendor_unattested",
+      "owner": "TASK-179/TASK-191"
+    }
+  ],
+  "fixture_domains_are_not_general_sql_value_domain_proofs": true,
+  "task_complete": false,
+  "independent_semantic_review": false,
+  "external_vendor_execution_attested": false,
+  "release_approved": false,
+  "cases": [
+    {
+      "id": "88-C177-S043",
+      "feature_id": "joins.inner",
+      "variant": "ON equality",
+      "sql": "SELECT l.id FROM orders l INNER JOIN customers r ON l.id = r.id",
+      "source_case_id": "88-C177-S043",
+      "closed_source_fixture": "docs/task-177-relational-bag-oracles.json",
+      "native_duckdb_sql": "SELECT l.id FROM orders l INNER JOIN customers r ON l.id = r.id",
+      "original_duckdb_syntax_boundary": null,
+      "expected_terminal_bag": [
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ]
+      ],
+      "expected_columns": 1,
+      "fixture_observed_column_domains": [
+        {
+          "column_index": 0,
+          "source_sql_type": "INTEGER",
+          "source_nullable": true,
+          "fixture_observed_distinct_literals": [
+            1,
+            2
+          ],
+          "fixture_observed_null": false,
+          "fixture_lower": {
+            "value": 1,
+            "inclusive": true
+          },
+          "fixture_upper": {
+            "value": 2,
+            "inclusive": true
+          },
+          "portable_sql_domain_not_inferred_from_fixed_data": true
+        }
+      ],
+      "observed_canonical_mask": "CCCCCCCCCCCCC",
+      "cells": [
+        {
+          "id": "88-C177-S043/ansi",
+          "dialect": "ansi",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S043/bigquery",
+          "dialect": "bigquery",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S043/clickhouse",
+          "dialect": "clickhouse",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S043/databricks",
+          "dialect": "databricks",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S043/duckdb",
+          "dialect": "duckdb",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S043/generic",
+          "dialect": "generic",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S043/hive",
+          "dialect": "hive",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S043/mssql",
+          "dialect": "mssql",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S043/mysql",
+          "dialect": "mysql",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S043/postgresql",
+          "dialect": "postgresql",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S043/redshift",
+          "dialect": "redshift",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S043/snowflake",
+          "dialect": "snowflake",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S043/sqlite",
+          "dialect": "sqlite",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        }
+      ]
+    },
+    {
+      "id": "88-C177-S044",
+      "feature_id": "joins.inner",
+      "variant": "USING",
+      "sql": "SELECT id FROM orders INNER JOIN customers USING (id)",
+      "source_case_id": "88-C177-S044",
+      "closed_source_fixture": "docs/task-177-relational-bag-oracles.json",
+      "native_duckdb_sql": "SELECT id FROM orders INNER JOIN customers USING (id)",
+      "original_duckdb_syntax_boundary": null,
+      "expected_terminal_bag": [
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ]
+      ],
+      "expected_columns": 1,
+      "fixture_observed_column_domains": [
+        {
+          "column_index": 0,
+          "source_sql_type": "INTEGER",
+          "source_nullable": true,
+          "fixture_observed_distinct_literals": [
+            1,
+            2
+          ],
+          "fixture_observed_null": false,
+          "fixture_lower": {
+            "value": 1,
+            "inclusive": true
+          },
+          "fixture_upper": {
+            "value": 2,
+            "inclusive": true
+          },
+          "portable_sql_domain_not_inferred_from_fixed_data": true
+        }
+      ],
+      "observed_canonical_mask": "CCCCCCCCCCCCC",
+      "cells": [
+        {
+          "id": "88-C177-S044/ansi",
+          "dialect": "ansi",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S044/bigquery",
+          "dialect": "bigquery",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S044/clickhouse",
+          "dialect": "clickhouse",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S044/databricks",
+          "dialect": "databricks",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S044/duckdb",
+          "dialect": "duckdb",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S044/generic",
+          "dialect": "generic",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S044/hive",
+          "dialect": "hive",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S044/mssql",
+          "dialect": "mssql",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S044/mysql",
+          "dialect": "mysql",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S044/postgresql",
+          "dialect": "postgresql",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S044/redshift",
+          "dialect": "redshift",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S044/snowflake",
+          "dialect": "snowflake",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S044/sqlite",
+          "dialect": "sqlite",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        }
+      ]
+    },
+    {
+      "id": "88-C177-S045",
+      "feature_id": "joins.inner",
+      "variant": "NATURAL",
+      "sql": "SELECT id FROM orders NATURAL JOIN customers",
+      "source_case_id": "88-C177-S045",
+      "closed_source_fixture": "docs/task-177-relational-bag-oracles.json",
+      "native_duckdb_sql": "SELECT id FROM orders NATURAL JOIN customers",
+      "original_duckdb_syntax_boundary": null,
+      "expected_terminal_bag": [
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ]
+      ],
+      "expected_columns": 1,
+      "fixture_observed_column_domains": [
+        {
+          "column_index": 0,
+          "source_sql_type": "INTEGER",
+          "source_nullable": true,
+          "fixture_observed_distinct_literals": [
+            1
+          ],
+          "fixture_observed_null": false,
+          "fixture_lower": {
+            "value": 1,
+            "inclusive": true
+          },
+          "fixture_upper": {
+            "value": 1,
+            "inclusive": true
+          },
+          "portable_sql_domain_not_inferred_from_fixed_data": true
+        }
+      ],
+      "observed_canonical_mask": "CCCCCCCCCCCCC",
+      "cells": [
+        {
+          "id": "88-C177-S045/ansi",
+          "dialect": "ansi",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S045/bigquery",
+          "dialect": "bigquery",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S045/clickhouse",
+          "dialect": "clickhouse",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S045/databricks",
+          "dialect": "databricks",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S045/duckdb",
+          "dialect": "duckdb",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S045/generic",
+          "dialect": "generic",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S045/hive",
+          "dialect": "hive",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S045/mssql",
+          "dialect": "mssql",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S045/mysql",
+          "dialect": "mysql",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S045/postgresql",
+          "dialect": "postgresql",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S045/redshift",
+          "dialect": "redshift",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S045/snowflake",
+          "dialect": "snowflake",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S045/sqlite",
+          "dialect": "sqlite",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        }
+      ]
+    },
+    {
+      "id": "88-C177-S046",
+      "feature_id": "joins.inner",
+      "variant": "composite keys",
+      "sql": "SELECT l.id FROM orders l INNER JOIN customers r ON l.id = r.id AND l.amount = r.amount",
+      "source_case_id": "88-C177-S046",
+      "closed_source_fixture": "docs/task-177-relational-bag-oracles.json",
+      "native_duckdb_sql": "SELECT l.id FROM orders l INNER JOIN customers r ON l.id = r.id AND l.amount = r.amount",
+      "original_duckdb_syntax_boundary": null,
+      "expected_terminal_bag": [
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ]
+      ],
+      "expected_columns": 1,
+      "fixture_observed_column_domains": [
+        {
+          "column_index": 0,
+          "source_sql_type": "INTEGER",
+          "source_nullable": true,
+          "fixture_observed_distinct_literals": [
+            1
+          ],
+          "fixture_observed_null": false,
+          "fixture_lower": {
+            "value": 1,
+            "inclusive": true
+          },
+          "fixture_upper": {
+            "value": 1,
+            "inclusive": true
+          },
+          "portable_sql_domain_not_inferred_from_fixed_data": true
+        }
+      ],
+      "observed_canonical_mask": "CCCCCCCCCCCCC",
+      "cells": [
+        {
+          "id": "88-C177-S046/ansi",
+          "dialect": "ansi",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S046/bigquery",
+          "dialect": "bigquery",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S046/clickhouse",
+          "dialect": "clickhouse",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S046/databricks",
+          "dialect": "databricks",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S046/duckdb",
+          "dialect": "duckdb",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S046/generic",
+          "dialect": "generic",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S046/hive",
+          "dialect": "hive",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S046/mssql",
+          "dialect": "mssql",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S046/mysql",
+          "dialect": "mysql",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S046/postgresql",
+          "dialect": "postgresql",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S046/redshift",
+          "dialect": "redshift",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S046/snowflake",
+          "dialect": "snowflake",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S046/sqlite",
+          "dialect": "sqlite",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        }
+      ]
+    },
+    {
+      "id": "88-C177-S047",
+      "feature_id": "joins.inner",
+      "variant": "typed NULL equality",
+      "sql": "SELECT l.id FROM orders l INNER JOIN customers r ON l.amount IS NOT DISTINCT FROM r.amount",
+      "source_case_id": "88-C177-S047",
+      "closed_source_fixture": "docs/task-177-relational-bag-oracles.json",
+      "native_duckdb_sql": "SELECT l.id FROM orders l INNER JOIN customers r ON l.amount IS NOT DISTINCT FROM r.amount",
+      "original_duckdb_syntax_boundary": null,
+      "expected_terminal_bag": [
+        [
+          null
+        ],
+        [
+          null
+        ],
+        [
+          null
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          4
+        ]
+      ],
+      "expected_columns": 1,
+      "fixture_observed_column_domains": [
+        {
+          "column_index": 0,
+          "source_sql_type": "INTEGER",
+          "source_nullable": true,
+          "fixture_observed_distinct_literals": [
+            1,
+            4
+          ],
+          "fixture_observed_null": true,
+          "fixture_lower": {
+            "value": 1,
+            "inclusive": true
+          },
+          "fixture_upper": {
+            "value": 4,
+            "inclusive": true
+          },
+          "portable_sql_domain_not_inferred_from_fixed_data": true
+        }
+      ],
+      "observed_canonical_mask": "CCCCCCCCCCCCC",
+      "cells": [
+        {
+          "id": "88-C177-S047/ansi",
+          "dialect": "ansi",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S047/bigquery",
+          "dialect": "bigquery",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S047/clickhouse",
+          "dialect": "clickhouse",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S047/databricks",
+          "dialect": "databricks",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S047/duckdb",
+          "dialect": "duckdb",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S047/generic",
+          "dialect": "generic",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S047/hive",
+          "dialect": "hive",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S047/mssql",
+          "dialect": "mssql",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S047/mysql",
+          "dialect": "mysql",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S047/postgresql",
+          "dialect": "postgresql",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S047/redshift",
+          "dialect": "redshift",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S047/snowflake",
+          "dialect": "snowflake",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S047/sqlite",
+          "dialect": "sqlite",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        }
+      ]
+    },
+    {
+      "id": "88-C177-S048",
+      "feature_id": "joins.outer",
+      "variant": "LEFT",
+      "sql": "SELECT l.id FROM orders l LEFT JOIN customers r ON l.id = r.id",
+      "source_case_id": "88-C177-S048",
+      "closed_source_fixture": "docs/task-177-relational-bag-oracles.json",
+      "native_duckdb_sql": "SELECT l.id FROM orders l LEFT JOIN customers r ON l.id = r.id",
+      "original_duckdb_syntax_boundary": null,
+      "expected_terminal_bag": [
+        [
+          null
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          3
+        ],
+        [
+          4
+        ]
+      ],
+      "expected_columns": 1,
+      "fixture_observed_column_domains": [
+        {
+          "column_index": 0,
+          "source_sql_type": "INTEGER",
+          "source_nullable": true,
+          "fixture_observed_distinct_literals": [
+            1,
+            2,
+            3,
+            4
+          ],
+          "fixture_observed_null": true,
+          "fixture_lower": {
+            "value": 1,
+            "inclusive": true
+          },
+          "fixture_upper": {
+            "value": 4,
+            "inclusive": true
+          },
+          "portable_sql_domain_not_inferred_from_fixed_data": true
+        }
+      ],
+      "observed_canonical_mask": "CCCCCCCCCCCCC",
+      "cells": [
+        {
+          "id": "88-C177-S048/ansi",
+          "dialect": "ansi",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S048/bigquery",
+          "dialect": "bigquery",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S048/clickhouse",
+          "dialect": "clickhouse",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S048/databricks",
+          "dialect": "databricks",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S048/duckdb",
+          "dialect": "duckdb",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S048/generic",
+          "dialect": "generic",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S048/hive",
+          "dialect": "hive",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S048/mssql",
+          "dialect": "mssql",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S048/mysql",
+          "dialect": "mysql",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S048/postgresql",
+          "dialect": "postgresql",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S048/redshift",
+          "dialect": "redshift",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S048/snowflake",
+          "dialect": "snowflake",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S048/sqlite",
+          "dialect": "sqlite",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        }
+      ]
+    },
+    {
+      "id": "88-C177-S049",
+      "feature_id": "joins.outer",
+      "variant": "RIGHT",
+      "sql": "SELECT l.id FROM orders l RIGHT JOIN customers r ON l.id = r.id",
+      "source_case_id": "88-C177-S049",
+      "closed_source_fixture": "docs/task-177-relational-bag-oracles.json",
+      "native_duckdb_sql": "SELECT l.id FROM orders l RIGHT JOIN customers r ON l.id = r.id",
+      "original_duckdb_syntax_boundary": null,
+      "expected_terminal_bag": [
+        [
+          null
+        ],
+        [
+          null
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ]
+      ],
+      "expected_columns": 1,
+      "fixture_observed_column_domains": [
+        {
+          "column_index": 0,
+          "source_sql_type": "INTEGER",
+          "source_nullable": true,
+          "fixture_observed_distinct_literals": [
+            1,
+            2
+          ],
+          "fixture_observed_null": true,
+          "fixture_lower": {
+            "value": 1,
+            "inclusive": true
+          },
+          "fixture_upper": {
+            "value": 2,
+            "inclusive": true
+          },
+          "portable_sql_domain_not_inferred_from_fixed_data": true
+        }
+      ],
+      "observed_canonical_mask": "CCCCCCCCCCCCC",
+      "cells": [
+        {
+          "id": "88-C177-S049/ansi",
+          "dialect": "ansi",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S049/bigquery",
+          "dialect": "bigquery",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S049/clickhouse",
+          "dialect": "clickhouse",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S049/databricks",
+          "dialect": "databricks",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S049/duckdb",
+          "dialect": "duckdb",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S049/generic",
+          "dialect": "generic",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S049/hive",
+          "dialect": "hive",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S049/mssql",
+          "dialect": "mssql",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S049/mysql",
+          "dialect": "mysql",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S049/postgresql",
+          "dialect": "postgresql",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S049/redshift",
+          "dialect": "redshift",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S049/snowflake",
+          "dialect": "snowflake",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S049/sqlite",
+          "dialect": "sqlite",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        }
+      ]
+    },
+    {
+      "id": "88-C177-S050",
+      "feature_id": "joins.outer",
+      "variant": "FULL",
+      "sql": "SELECT l.id FROM orders l FULL OUTER JOIN customers r ON l.id = r.id",
+      "source_case_id": "88-C177-S050",
+      "closed_source_fixture": "docs/task-177-relational-bag-oracles.json",
+      "native_duckdb_sql": "SELECT l.id FROM orders l FULL OUTER JOIN customers r ON l.id = r.id",
+      "original_duckdb_syntax_boundary": null,
+      "expected_terminal_bag": [
+        [
+          null
+        ],
+        [
+          null
+        ],
+        [
+          null
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          3
+        ],
+        [
+          4
+        ]
+      ],
+      "expected_columns": 1,
+      "fixture_observed_column_domains": [
+        {
+          "column_index": 0,
+          "source_sql_type": "INTEGER",
+          "source_nullable": true,
+          "fixture_observed_distinct_literals": [
+            1,
+            2,
+            3,
+            4
+          ],
+          "fixture_observed_null": true,
+          "fixture_lower": {
+            "value": 1,
+            "inclusive": true
+          },
+          "fixture_upper": {
+            "value": 4,
+            "inclusive": true
+          },
+          "portable_sql_domain_not_inferred_from_fixed_data": true
+        }
+      ],
+      "observed_canonical_mask": "CCCCCCCCCCCCC",
+      "cells": [
+        {
+          "id": "88-C177-S050/ansi",
+          "dialect": "ansi",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S050/bigquery",
+          "dialect": "bigquery",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S050/clickhouse",
+          "dialect": "clickhouse",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S050/databricks",
+          "dialect": "databricks",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S050/duckdb",
+          "dialect": "duckdb",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S050/generic",
+          "dialect": "generic",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S050/hive",
+          "dialect": "hive",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S050/mssql",
+          "dialect": "mssql",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S050/mysql",
+          "dialect": "mysql",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S050/postgresql",
+          "dialect": "postgresql",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S050/redshift",
+          "dialect": "redshift",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S050/snowflake",
+          "dialect": "snowflake",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S050/sqlite",
+          "dialect": "sqlite",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        }
+      ]
+    },
+    {
+      "id": "88-C177-S051",
+      "feature_id": "joins.outer",
+      "variant": "preserved side",
+      "sql": "SELECT l.id FROM orders l LEFT JOIN customers r ON l.id = r.id WHERE r.id IS NULL",
+      "source_case_id": "88-C177-S051",
+      "closed_source_fixture": "docs/task-177-relational-bag-oracles.json",
+      "native_duckdb_sql": "SELECT l.id FROM orders l LEFT JOIN customers r ON l.id = r.id WHERE r.id IS NULL",
+      "original_duckdb_syntax_boundary": null,
+      "expected_terminal_bag": [
+        [
+          null
+        ],
+        [
+          3
+        ],
+        [
+          4
+        ]
+      ],
+      "expected_columns": 1,
+      "fixture_observed_column_domains": [
+        {
+          "column_index": 0,
+          "source_sql_type": "INTEGER",
+          "source_nullable": true,
+          "fixture_observed_distinct_literals": [
+            3,
+            4
+          ],
+          "fixture_observed_null": true,
+          "fixture_lower": {
+            "value": 3,
+            "inclusive": true
+          },
+          "fixture_upper": {
+            "value": 4,
+            "inclusive": true
+          },
+          "portable_sql_domain_not_inferred_from_fixed_data": true
+        }
+      ],
+      "observed_canonical_mask": "CCCCCCCCCCCCC",
+      "cells": [
+        {
+          "id": "88-C177-S051/ansi",
+          "dialect": "ansi",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S051/bigquery",
+          "dialect": "bigquery",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S051/clickhouse",
+          "dialect": "clickhouse",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S051/databricks",
+          "dialect": "databricks",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S051/duckdb",
+          "dialect": "duckdb",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S051/generic",
+          "dialect": "generic",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S051/hive",
+          "dialect": "hive",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S051/mssql",
+          "dialect": "mssql",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S051/mysql",
+          "dialect": "mysql",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S051/postgresql",
+          "dialect": "postgresql",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S051/redshift",
+          "dialect": "redshift",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S051/snowflake",
+          "dialect": "snowflake",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S051/sqlite",
+          "dialect": "sqlite",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        }
+      ]
+    },
+    {
+      "id": "88-C177-S052",
+      "feature_id": "joins.outer",
+      "variant": "NULL-extension",
+      "sql": "SELECT l.id, r.id FROM orders l LEFT JOIN customers r ON l.id = r.id",
+      "source_case_id": "88-C177-S052",
+      "closed_source_fixture": "docs/task-177-relational-bag-oracles.json",
+      "native_duckdb_sql": "SELECT l.id, r.id FROM orders l LEFT JOIN customers r ON l.id = r.id",
+      "original_duckdb_syntax_boundary": null,
+      "expected_terminal_bag": [
+        [
+          null,
+          null
+        ],
+        [
+          1,
+          1
+        ],
+        [
+          1,
+          1
+        ],
+        [
+          1,
+          1
+        ],
+        [
+          1,
+          1
+        ],
+        [
+          2,
+          2
+        ],
+        [
+          3,
+          null
+        ],
+        [
+          4,
+          null
+        ]
+      ],
+      "expected_columns": 2,
+      "fixture_observed_column_domains": [
+        {
+          "column_index": 0,
+          "source_sql_type": "INTEGER",
+          "source_nullable": true,
+          "fixture_observed_distinct_literals": [
+            1,
+            2,
+            3,
+            4
+          ],
+          "fixture_observed_null": true,
+          "fixture_lower": {
+            "value": 1,
+            "inclusive": true
+          },
+          "fixture_upper": {
+            "value": 4,
+            "inclusive": true
+          },
+          "portable_sql_domain_not_inferred_from_fixed_data": true
+        },
+        {
+          "column_index": 1,
+          "source_sql_type": "INTEGER",
+          "source_nullable": true,
+          "fixture_observed_distinct_literals": [
+            1,
+            2
+          ],
+          "fixture_observed_null": true,
+          "fixture_lower": {
+            "value": 1,
+            "inclusive": true
+          },
+          "fixture_upper": {
+            "value": 2,
+            "inclusive": true
+          },
+          "portable_sql_domain_not_inferred_from_fixed_data": true
+        }
+      ],
+      "observed_canonical_mask": "CCCCCCCCCCCCC",
+      "cells": [
+        {
+          "id": "88-C177-S052/ansi",
+          "dialect": "ansi",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S052/bigquery",
+          "dialect": "bigquery",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S052/clickhouse",
+          "dialect": "clickhouse",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S052/databricks",
+          "dialect": "databricks",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S052/duckdb",
+          "dialect": "duckdb",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S052/generic",
+          "dialect": "generic",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S052/hive",
+          "dialect": "hive",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S052/mssql",
+          "dialect": "mssql",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S052/mysql",
+          "dialect": "mysql",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S052/postgresql",
+          "dialect": "postgresql",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S052/redshift",
+          "dialect": "redshift",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S052/snowflake",
+          "dialect": "snowflake",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S052/sqlite",
+          "dialect": "sqlite",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        }
+      ]
+    },
+    {
+      "id": "88-C177-S053",
+      "feature_id": "joins.outer",
+      "variant": "multiple matches",
+      "sql": "SELECT l.id FROM orders l LEFT JOIN customers r ON l.id = r.id",
+      "source_case_id": "88-C177-S053",
+      "closed_source_fixture": "docs/task-177-relational-bag-oracles.json",
+      "native_duckdb_sql": "SELECT l.id FROM orders l LEFT JOIN customers r ON l.id = r.id",
+      "original_duckdb_syntax_boundary": null,
+      "expected_terminal_bag": [
+        [
+          null
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          3
+        ],
+        [
+          4
+        ]
+      ],
+      "expected_columns": 1,
+      "fixture_observed_column_domains": [
+        {
+          "column_index": 0,
+          "source_sql_type": "INTEGER",
+          "source_nullable": true,
+          "fixture_observed_distinct_literals": [
+            1,
+            2,
+            3,
+            4
+          ],
+          "fixture_observed_null": true,
+          "fixture_lower": {
+            "value": 1,
+            "inclusive": true
+          },
+          "fixture_upper": {
+            "value": 4,
+            "inclusive": true
+          },
+          "portable_sql_domain_not_inferred_from_fixed_data": true
+        }
+      ],
+      "observed_canonical_mask": "CCCCCCCCCCCCC",
+      "cells": [
+        {
+          "id": "88-C177-S053/ansi",
+          "dialect": "ansi",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S053/bigquery",
+          "dialect": "bigquery",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S053/clickhouse",
+          "dialect": "clickhouse",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S053/databricks",
+          "dialect": "databricks",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S053/duckdb",
+          "dialect": "duckdb",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S053/generic",
+          "dialect": "generic",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S053/hive",
+          "dialect": "hive",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S053/mssql",
+          "dialect": "mssql",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S053/mysql",
+          "dialect": "mysql",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S053/postgresql",
+          "dialect": "postgresql",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S053/redshift",
+          "dialect": "redshift",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S053/snowflake",
+          "dialect": "snowflake",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S053/sqlite",
+          "dialect": "sqlite",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        }
+      ]
+    },
+    {
+      "id": "88-C177-S054",
+      "feature_id": "joins.semi_anti",
+      "variant": "SEMI",
+      "sql": "SELECT l.id FROM orders l LEFT SEMI JOIN customers r ON l.id = r.id",
+      "source_case_id": "88-C177-S054",
+      "closed_source_fixture": "docs/task-177-relational-bag-oracles.json",
+      "native_duckdb_sql": "SELECT l.id FROM orders l SEMI JOIN customers r ON l.id = r.id",
+      "original_duckdb_syntax_boundary": "original_LEFT_SEMI_rejected_by_duckdb_parser",
+      "expected_terminal_bag": [
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ]
+      ],
+      "expected_columns": 1,
+      "fixture_observed_column_domains": [
+        {
+          "column_index": 0,
+          "source_sql_type": "INTEGER",
+          "source_nullable": true,
+          "fixture_observed_distinct_literals": [
+            1,
+            2
+          ],
+          "fixture_observed_null": false,
+          "fixture_lower": {
+            "value": 1,
+            "inclusive": true
+          },
+          "fixture_upper": {
+            "value": 2,
+            "inclusive": true
+          },
+          "portable_sql_domain_not_inferred_from_fixed_data": true
+        }
+      ],
+      "observed_canonical_mask": "CCCCCCCCCCCCC",
+      "cells": [
+        {
+          "id": "88-C177-S054/ansi",
+          "dialect": "ansi",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S054/bigquery",
+          "dialect": "bigquery",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S054/clickhouse",
+          "dialect": "clickhouse",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S054/databricks",
+          "dialect": "databricks",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S054/duckdb",
+          "dialect": "duckdb",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S054/generic",
+          "dialect": "generic",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S054/hive",
+          "dialect": "hive",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S054/mssql",
+          "dialect": "mssql",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S054/mysql",
+          "dialect": "mysql",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S054/postgresql",
+          "dialect": "postgresql",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S054/redshift",
+          "dialect": "redshift",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S054/snowflake",
+          "dialect": "snowflake",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S054/sqlite",
+          "dialect": "sqlite",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        }
+      ]
+    },
+    {
+      "id": "88-C177-S055",
+      "feature_id": "joins.semi_anti",
+      "variant": "ANTI",
+      "sql": "SELECT l.id FROM orders l LEFT ANTI JOIN customers r ON l.id = r.id",
+      "source_case_id": "88-C177-S055",
+      "closed_source_fixture": "docs/task-177-relational-bag-oracles.json",
+      "native_duckdb_sql": "SELECT l.id FROM orders l ANTI JOIN customers r ON l.id = r.id",
+      "original_duckdb_syntax_boundary": "original_LEFT_ANTI_rejected_by_duckdb_parser",
+      "expected_terminal_bag": [
+        [
+          null
+        ],
+        [
+          3
+        ],
+        [
+          4
+        ]
+      ],
+      "expected_columns": 1,
+      "fixture_observed_column_domains": [
+        {
+          "column_index": 0,
+          "source_sql_type": "INTEGER",
+          "source_nullable": true,
+          "fixture_observed_distinct_literals": [
+            3,
+            4
+          ],
+          "fixture_observed_null": true,
+          "fixture_lower": {
+            "value": 3,
+            "inclusive": true
+          },
+          "fixture_upper": {
+            "value": 4,
+            "inclusive": true
+          },
+          "portable_sql_domain_not_inferred_from_fixed_data": true
+        }
+      ],
+      "observed_canonical_mask": "CCCCCCCCCCCCC",
+      "cells": [
+        {
+          "id": "88-C177-S055/ansi",
+          "dialect": "ansi",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S055/bigquery",
+          "dialect": "bigquery",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S055/clickhouse",
+          "dialect": "clickhouse",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S055/databricks",
+          "dialect": "databricks",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S055/duckdb",
+          "dialect": "duckdb",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S055/generic",
+          "dialect": "generic",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S055/hive",
+          "dialect": "hive",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S055/mssql",
+          "dialect": "mssql",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S055/mysql",
+          "dialect": "mysql",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S055/postgresql",
+          "dialect": "postgresql",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S055/redshift",
+          "dialect": "redshift",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S055/snowflake",
+          "dialect": "snowflake",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S055/sqlite",
+          "dialect": "sqlite",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        }
+      ]
+    },
+    {
+      "id": "88-C177-S056",
+      "feature_id": "joins.semi_anti",
+      "variant": "EXISTS-derived semi",
+      "sql": "SELECT l.id FROM orders l WHERE EXISTS (SELECT 1 FROM customers r WHERE r.id = l.id)",
+      "source_case_id": "88-C177-S056",
+      "closed_source_fixture": "docs/task-177-relational-bag-oracles.json",
+      "native_duckdb_sql": "SELECT l.id FROM orders l WHERE EXISTS (SELECT 1 FROM customers r WHERE r.id = l.id)",
+      "original_duckdb_syntax_boundary": null,
+      "expected_terminal_bag": [
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ]
+      ],
+      "expected_columns": 1,
+      "fixture_observed_column_domains": [
+        {
+          "column_index": 0,
+          "source_sql_type": "INTEGER",
+          "source_nullable": true,
+          "fixture_observed_distinct_literals": [
+            1,
+            2
+          ],
+          "fixture_observed_null": false,
+          "fixture_lower": {
+            "value": 1,
+            "inclusive": true
+          },
+          "fixture_upper": {
+            "value": 2,
+            "inclusive": true
+          },
+          "portable_sql_domain_not_inferred_from_fixed_data": true
+        }
+      ],
+      "observed_canonical_mask": "CCCCCCCCCCCCC",
+      "cells": [
+        {
+          "id": "88-C177-S056/ansi",
+          "dialect": "ansi",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S056/bigquery",
+          "dialect": "bigquery",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S056/clickhouse",
+          "dialect": "clickhouse",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S056/databricks",
+          "dialect": "databricks",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S056/duckdb",
+          "dialect": "duckdb",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S056/generic",
+          "dialect": "generic",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S056/hive",
+          "dialect": "hive",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S056/mssql",
+          "dialect": "mssql",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S056/mysql",
+          "dialect": "mysql",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S056/postgresql",
+          "dialect": "postgresql",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S056/redshift",
+          "dialect": "redshift",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S056/snowflake",
+          "dialect": "snowflake",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S056/sqlite",
+          "dialect": "sqlite",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        }
+      ]
+    },
+    {
+      "id": "88-C177-S057",
+      "feature_id": "joins.semi_anti",
+      "variant": "anti with nullable keys",
+      "sql": "SELECT l.id FROM orders l WHERE NOT EXISTS (SELECT 1 FROM customers r WHERE r.id = l.id)",
+      "source_case_id": "88-C177-S057",
+      "closed_source_fixture": "docs/task-177-relational-bag-oracles.json",
+      "native_duckdb_sql": "SELECT l.id FROM orders l WHERE NOT EXISTS (SELECT 1 FROM customers r WHERE r.id = l.id)",
+      "original_duckdb_syntax_boundary": null,
+      "expected_terminal_bag": [
+        [
+          null
+        ],
+        [
+          3
+        ],
+        [
+          4
+        ]
+      ],
+      "expected_columns": 1,
+      "fixture_observed_column_domains": [
+        {
+          "column_index": 0,
+          "source_sql_type": "INTEGER",
+          "source_nullable": true,
+          "fixture_observed_distinct_literals": [
+            3,
+            4
+          ],
+          "fixture_observed_null": true,
+          "fixture_lower": {
+            "value": 3,
+            "inclusive": true
+          },
+          "fixture_upper": {
+            "value": 4,
+            "inclusive": true
+          },
+          "portable_sql_domain_not_inferred_from_fixed_data": true
+        }
+      ],
+      "observed_canonical_mask": "CCCCCCCCCCCCC",
+      "cells": [
+        {
+          "id": "88-C177-S057/ansi",
+          "dialect": "ansi",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S057/bigquery",
+          "dialect": "bigquery",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S057/clickhouse",
+          "dialect": "clickhouse",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S057/databricks",
+          "dialect": "databricks",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S057/duckdb",
+          "dialect": "duckdb",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S057/generic",
+          "dialect": "generic",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S057/hive",
+          "dialect": "hive",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S057/mssql",
+          "dialect": "mssql",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S057/mysql",
+          "dialect": "mysql",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S057/postgresql",
+          "dialect": "postgresql",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S057/redshift",
+          "dialect": "redshift",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S057/snowflake",
+          "dialect": "snowflake",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S057/sqlite",
+          "dialect": "sqlite",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        }
+      ]
+    },
+    {
+      "id": "88-C177-S058",
+      "feature_id": "joins.non_equi",
+      "variant": "theta join",
+      "sql": "SELECT l.id FROM orders l JOIN customers r ON l.amount > r.amount",
+      "source_case_id": "88-C177-S058",
+      "closed_source_fixture": "docs/task-177-relational-bag-oracles.json",
+      "native_duckdb_sql": "SELECT l.id FROM orders l JOIN customers r ON l.amount > r.amount",
+      "original_duckdb_syntax_boundary": null,
+      "expected_terminal_bag": [
+        [
+          null
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          2
+        ],
+        [
+          2
+        ],
+        [
+          2
+        ]
+      ],
+      "expected_columns": 1,
+      "fixture_observed_column_domains": [
+        {
+          "column_index": 0,
+          "source_sql_type": "INTEGER",
+          "source_nullable": true,
+          "fixture_observed_distinct_literals": [
+            1,
+            2
+          ],
+          "fixture_observed_null": true,
+          "fixture_lower": {
+            "value": 1,
+            "inclusive": true
+          },
+          "fixture_upper": {
+            "value": 2,
+            "inclusive": true
+          },
+          "portable_sql_domain_not_inferred_from_fixed_data": true
+        }
+      ],
+      "observed_canonical_mask": "CCCCCCCCCCCCC",
+      "cells": [
+        {
+          "id": "88-C177-S058/ansi",
+          "dialect": "ansi",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S058/bigquery",
+          "dialect": "bigquery",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S058/clickhouse",
+          "dialect": "clickhouse",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S058/databricks",
+          "dialect": "databricks",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S058/duckdb",
+          "dialect": "duckdb",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S058/generic",
+          "dialect": "generic",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S058/hive",
+          "dialect": "hive",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S058/mssql",
+          "dialect": "mssql",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S058/mysql",
+          "dialect": "mysql",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S058/postgresql",
+          "dialect": "postgresql",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S058/redshift",
+          "dialect": "redshift",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S058/snowflake",
+          "dialect": "snowflake",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S058/sqlite",
+          "dialect": "sqlite",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        }
+      ]
+    },
+    {
+      "id": "88-C177-S059",
+      "feature_id": "joins.non_equi",
+      "variant": "inequality",
+      "sql": "SELECT l.id FROM orders l JOIN customers r ON l.amount <= r.amount",
+      "source_case_id": "88-C177-S059",
+      "closed_source_fixture": "docs/task-177-relational-bag-oracles.json",
+      "native_duckdb_sql": "SELECT l.id FROM orders l JOIN customers r ON l.amount <= r.amount",
+      "original_duckdb_syntax_boundary": null,
+      "expected_terminal_bag": [
+        [
+          null
+        ],
+        [
+          null
+        ],
+        [
+          null
+        ],
+        [
+          null
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          4
+        ],
+        [
+          4
+        ],
+        [
+          4
+        ],
+        [
+          4
+        ],
+        [
+          4
+        ]
+      ],
+      "expected_columns": 1,
+      "fixture_observed_column_domains": [
+        {
+          "column_index": 0,
+          "source_sql_type": "INTEGER",
+          "source_nullable": true,
+          "fixture_observed_distinct_literals": [
+            1,
+            2,
+            4
+          ],
+          "fixture_observed_null": true,
+          "fixture_lower": {
+            "value": 1,
+            "inclusive": true
+          },
+          "fixture_upper": {
+            "value": 4,
+            "inclusive": true
+          },
+          "portable_sql_domain_not_inferred_from_fixed_data": true
+        }
+      ],
+      "observed_canonical_mask": "CCCCCCCCCCCCC",
+      "cells": [
+        {
+          "id": "88-C177-S059/ansi",
+          "dialect": "ansi",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S059/bigquery",
+          "dialect": "bigquery",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S059/clickhouse",
+          "dialect": "clickhouse",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S059/databricks",
+          "dialect": "databricks",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S059/duckdb",
+          "dialect": "duckdb",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S059/generic",
+          "dialect": "generic",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S059/hive",
+          "dialect": "hive",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S059/mssql",
+          "dialect": "mssql",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S059/mysql",
+          "dialect": "mysql",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S059/postgresql",
+          "dialect": "postgresql",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S059/redshift",
+          "dialect": "redshift",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S059/snowflake",
+          "dialect": "snowflake",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S059/sqlite",
+          "dialect": "sqlite",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        }
+      ]
+    },
+    {
+      "id": "88-C177-S060",
+      "feature_id": "joins.non_equi",
+      "variant": "expression keys",
+      "sql": "SELECT l.id FROM orders l JOIN customers r ON l.amount + 1 = r.amount",
+      "source_case_id": "88-C177-S060",
+      "closed_source_fixture": "docs/task-177-relational-bag-oracles.json",
+      "native_duckdb_sql": "SELECT l.id FROM orders l JOIN customers r ON l.amount + 1 = r.amount",
+      "original_duckdb_syntax_boundary": null,
+      "expected_terminal_bag": [],
+      "expected_columns": 1,
+      "fixture_observed_column_domains": [
+        {
+          "column_index": 0,
+          "source_sql_type": "INTEGER",
+          "source_nullable": true,
+          "fixture_observed_distinct_literals": [],
+          "fixture_observed_null": false,
+          "fixture_lower": null,
+          "fixture_upper": null,
+          "portable_sql_domain_not_inferred_from_fixed_data": true
+        }
+      ],
+      "observed_canonical_mask": "CCCCCCCCCCCCC",
+      "cells": [
+        {
+          "id": "88-C177-S060/ansi",
+          "dialect": "ansi",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S060/bigquery",
+          "dialect": "bigquery",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S060/clickhouse",
+          "dialect": "clickhouse",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S060/databricks",
+          "dialect": "databricks",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S060/duckdb",
+          "dialect": "duckdb",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S060/generic",
+          "dialect": "generic",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S060/hive",
+          "dialect": "hive",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S060/mssql",
+          "dialect": "mssql",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S060/mysql",
+          "dialect": "mysql",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S060/postgresql",
+          "dialect": "postgresql",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S060/redshift",
+          "dialect": "redshift",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S060/snowflake",
+          "dialect": "snowflake",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S060/sqlite",
+          "dialect": "sqlite",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        }
+      ]
+    },
+    {
+      "id": "88-C177-S061",
+      "feature_id": "joins.non_equi",
+      "variant": "mixed AND/OR ON",
+      "sql": "SELECT l.id FROM orders l JOIN customers r ON (l.id = r.id OR l.amount > r.amount) AND r.amount IS NOT NULL",
+      "source_case_id": "88-C177-S061",
+      "closed_source_fixture": "docs/task-177-relational-bag-oracles.json",
+      "native_duckdb_sql": "SELECT l.id FROM orders l JOIN customers r ON (l.id = r.id OR l.amount > r.amount) AND r.amount IS NOT NULL",
+      "original_duckdb_syntax_boundary": null,
+      "expected_terminal_bag": [
+        [
+          null
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          2
+        ],
+        [
+          2
+        ],
+        [
+          2
+        ],
+        [
+          2
+        ]
+      ],
+      "expected_columns": 1,
+      "fixture_observed_column_domains": [
+        {
+          "column_index": 0,
+          "source_sql_type": "INTEGER",
+          "source_nullable": true,
+          "fixture_observed_distinct_literals": [
+            1,
+            2
+          ],
+          "fixture_observed_null": true,
+          "fixture_lower": {
+            "value": 1,
+            "inclusive": true
+          },
+          "fixture_upper": {
+            "value": 2,
+            "inclusive": true
+          },
+          "portable_sql_domain_not_inferred_from_fixed_data": true
+        }
+      ],
+      "observed_canonical_mask": "CCCCCCCCCCCCC",
+      "cells": [
+        {
+          "id": "88-C177-S061/ansi",
+          "dialect": "ansi",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S061/bigquery",
+          "dialect": "bigquery",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S061/clickhouse",
+          "dialect": "clickhouse",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S061/databricks",
+          "dialect": "databricks",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S061/duckdb",
+          "dialect": "duckdb",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S061/generic",
+          "dialect": "generic",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S061/hive",
+          "dialect": "hive",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S061/mssql",
+          "dialect": "mssql",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S061/mysql",
+          "dialect": "mysql",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S061/postgresql",
+          "dialect": "postgresql",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S061/redshift",
+          "dialect": "redshift",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S061/snowflake",
+          "dialect": "snowflake",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S061/sqlite",
+          "dialect": "sqlite",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        }
+      ]
+    },
+    {
+      "id": "88-C177-S062",
+      "feature_id": "joins.repeated_source",
+      "variant": "self join",
+      "sql": "SELECT a.id FROM orders a JOIN orders b ON a.id = b.id",
+      "source_case_id": "88-C177-S062",
+      "closed_source_fixture": "docs/task-177-relational-bag-oracles.json",
+      "native_duckdb_sql": "SELECT a.id FROM orders a JOIN orders b ON a.id = b.id",
+      "original_duckdb_syntax_boundary": null,
+      "expected_terminal_bag": [
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          3
+        ],
+        [
+          4
+        ]
+      ],
+      "expected_columns": 1,
+      "fixture_observed_column_domains": [
+        {
+          "column_index": 0,
+          "source_sql_type": "INTEGER",
+          "source_nullable": true,
+          "fixture_observed_distinct_literals": [
+            1,
+            2,
+            3,
+            4
+          ],
+          "fixture_observed_null": false,
+          "fixture_lower": {
+            "value": 1,
+            "inclusive": true
+          },
+          "fixture_upper": {
+            "value": 4,
+            "inclusive": true
+          },
+          "portable_sql_domain_not_inferred_from_fixed_data": true
+        }
+      ],
+      "observed_canonical_mask": "CCCCCCCCCCCCC",
+      "cells": [
+        {
+          "id": "88-C177-S062/ansi",
+          "dialect": "ansi",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S062/bigquery",
+          "dialect": "bigquery",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S062/clickhouse",
+          "dialect": "clickhouse",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S062/databricks",
+          "dialect": "databricks",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S062/duckdb",
+          "dialect": "duckdb",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S062/generic",
+          "dialect": "generic",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S062/hive",
+          "dialect": "hive",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S062/mssql",
+          "dialect": "mssql",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S062/mysql",
+          "dialect": "mysql",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S062/postgresql",
+          "dialect": "postgresql",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S062/redshift",
+          "dialect": "redshift",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S062/snowflake",
+          "dialect": "snowflake",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S062/sqlite",
+          "dialect": "sqlite",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        }
+      ]
+    },
+    {
+      "id": "88-C177-S063",
+      "feature_id": "joins.repeated_source",
+      "variant": "repeated aliases",
+      "sql": "SELECT a.id FROM orders a JOIN orders b ON a.id = b.id JOIN orders c ON b.id = c.id",
+      "source_case_id": "88-C177-S063",
+      "closed_source_fixture": "docs/task-177-relational-bag-oracles.json",
+      "native_duckdb_sql": "SELECT a.id FROM orders a JOIN orders b ON a.id = b.id JOIN orders c ON b.id = c.id",
+      "original_duckdb_syntax_boundary": null,
+      "expected_terminal_bag": [
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          3
+        ],
+        [
+          4
+        ]
+      ],
+      "expected_columns": 1,
+      "fixture_observed_column_domains": [
+        {
+          "column_index": 0,
+          "source_sql_type": "INTEGER",
+          "source_nullable": true,
+          "fixture_observed_distinct_literals": [
+            1,
+            2,
+            3,
+            4
+          ],
+          "fixture_observed_null": false,
+          "fixture_lower": {
+            "value": 1,
+            "inclusive": true
+          },
+          "fixture_upper": {
+            "value": 4,
+            "inclusive": true
+          },
+          "portable_sql_domain_not_inferred_from_fixed_data": true
+        }
+      ],
+      "observed_canonical_mask": "CCCCCCCCCCCCC",
+      "cells": [
+        {
+          "id": "88-C177-S063/ansi",
+          "dialect": "ansi",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S063/bigquery",
+          "dialect": "bigquery",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S063/clickhouse",
+          "dialect": "clickhouse",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S063/databricks",
+          "dialect": "databricks",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S063/duckdb",
+          "dialect": "duckdb",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S063/generic",
+          "dialect": "generic",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S063/hive",
+          "dialect": "hive",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S063/mssql",
+          "dialect": "mssql",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S063/mysql",
+          "dialect": "mysql",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S063/postgresql",
+          "dialect": "postgresql",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S063/redshift",
+          "dialect": "redshift",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S063/snowflake",
+          "dialect": "snowflake",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S063/sqlite",
+          "dialect": "sqlite",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        }
+      ]
+    },
+    {
+      "id": "88-C177-S064",
+      "feature_id": "joins.repeated_source",
+      "variant": "multi-join trees",
+      "sql": "SELECT a.id FROM orders a JOIN customers b ON a.id = b.id JOIN products c ON b.id = c.id",
+      "source_case_id": "88-C177-S064",
+      "closed_source_fixture": "docs/task-177-relational-bag-oracles.json",
+      "native_duckdb_sql": "SELECT a.id FROM orders a JOIN customers b ON a.id = b.id JOIN products c ON b.id = c.id",
+      "original_duckdb_syntax_boundary": null,
+      "expected_terminal_bag": [
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ]
+      ],
+      "expected_columns": 1,
+      "fixture_observed_column_domains": [
+        {
+          "column_index": 0,
+          "source_sql_type": "INTEGER",
+          "source_nullable": true,
+          "fixture_observed_distinct_literals": [
+            1,
+            2
+          ],
+          "fixture_observed_null": false,
+          "fixture_lower": {
+            "value": 1,
+            "inclusive": true
+          },
+          "fixture_upper": {
+            "value": 2,
+            "inclusive": true
+          },
+          "portable_sql_domain_not_inferred_from_fixed_data": true
+        }
+      ],
+      "observed_canonical_mask": "CCCCCCCCCCCCC",
+      "cells": [
+        {
+          "id": "88-C177-S064/ansi",
+          "dialect": "ansi",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S064/bigquery",
+          "dialect": "bigquery",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S064/clickhouse",
+          "dialect": "clickhouse",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S064/databricks",
+          "dialect": "databricks",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S064/duckdb",
+          "dialect": "duckdb",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S064/generic",
+          "dialect": "generic",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S064/hive",
+          "dialect": "hive",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S064/mssql",
+          "dialect": "mssql",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S064/mysql",
+          "dialect": "mysql",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S064/postgresql",
+          "dialect": "postgresql",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S064/redshift",
+          "dialect": "redshift",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S064/snowflake",
+          "dialect": "snowflake",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S064/sqlite",
+          "dialect": "sqlite",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        }
+      ]
+    },
+    {
+      "id": "88-C177-S065",
+      "feature_id": "joins.repeated_source",
+      "variant": "shared physical row identities",
+      "sql": "SELECT a.id FROM orders a JOIN orders b ON a.id = b.id",
+      "source_case_id": "88-C177-S065",
+      "closed_source_fixture": "docs/task-177-relational-bag-oracles.json",
+      "native_duckdb_sql": "SELECT a.id FROM orders a JOIN orders b ON a.id = b.id",
+      "original_duckdb_syntax_boundary": null,
+      "expected_terminal_bag": [
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          3
+        ],
+        [
+          4
+        ]
+      ],
+      "expected_columns": 1,
+      "fixture_observed_column_domains": [
+        {
+          "column_index": 0,
+          "source_sql_type": "INTEGER",
+          "source_nullable": true,
+          "fixture_observed_distinct_literals": [
+            1,
+            2,
+            3,
+            4
+          ],
+          "fixture_observed_null": false,
+          "fixture_lower": {
+            "value": 1,
+            "inclusive": true
+          },
+          "fixture_upper": {
+            "value": 4,
+            "inclusive": true
+          },
+          "portable_sql_domain_not_inferred_from_fixed_data": true
+        }
+      ],
+      "observed_canonical_mask": "CCCCCCCCCCCCC",
+      "cells": [
+        {
+          "id": "88-C177-S065/ansi",
+          "dialect": "ansi",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S065/bigquery",
+          "dialect": "bigquery",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S065/clickhouse",
+          "dialect": "clickhouse",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S065/databricks",
+          "dialect": "databricks",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S065/duckdb",
+          "dialect": "duckdb",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S065/generic",
+          "dialect": "generic",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S065/hive",
+          "dialect": "hive",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S065/mssql",
+          "dialect": "mssql",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S065/mysql",
+          "dialect": "mysql",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S065/postgresql",
+          "dialect": "postgresql",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S065/redshift",
+          "dialect": "redshift",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S065/snowflake",
+          "dialect": "snowflake",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S065/sqlite",
+          "dialect": "sqlite",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        }
+      ]
+    },
+    {
+      "id": "88-C177-S152",
+      "feature_id": "scopes.derived_lateral",
+      "variant": "correlated table sources",
+      "sql": "SELECT o.id FROM orders o JOIN LATERAL (SELECT o.id) l ON TRUE",
+      "source_case_id": "88-C177-S152",
+      "closed_source_fixture": "docs/task-177-relational-bag-oracles.json",
+      "native_duckdb_sql": "SELECT o.id FROM orders o JOIN LATERAL (SELECT o.id) l ON TRUE",
+      "original_duckdb_syntax_boundary": "MSSQL_different_AST_requires_TASK_179_TASK_191_adjudication",
+      "expected_terminal_bag": [
+        [
+          null
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          3
+        ],
+        [
+          4
+        ]
+      ],
+      "expected_columns": 1,
+      "fixture_observed_column_domains": [
+        {
+          "column_index": 0,
+          "source_sql_type": "INTEGER",
+          "source_nullable": true,
+          "fixture_observed_distinct_literals": [
+            1,
+            2,
+            3,
+            4
+          ],
+          "fixture_observed_null": true,
+          "fixture_lower": {
+            "value": 1,
+            "inclusive": true
+          },
+          "fixture_upper": {
+            "value": 4,
+            "inclusive": true
+          },
+          "portable_sql_domain_not_inferred_from_fixed_data": true
+        }
+      ],
+      "observed_canonical_mask": "CCCCCCCDCCCCC",
+      "cells": [
+        {
+          "id": "88-C177-S152/ansi",
+          "dialect": "ansi",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S152/bigquery",
+          "dialect": "bigquery",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S152/clickhouse",
+          "dialect": "clickhouse",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S152/databricks",
+          "dialect": "databricks",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S152/duckdb",
+          "dialect": "duckdb",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S152/generic",
+          "dialect": "generic",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S152/hive",
+          "dialect": "hive",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S152/mssql",
+          "dialect": "mssql",
+          "observed_status": "D",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "TASK-179/TASK-191 AST and runtime law"
+        },
+        {
+          "id": "88-C177-S152/mysql",
+          "dialect": "mysql",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S152/postgresql",
+          "dialect": "postgresql",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S152/redshift",
+          "dialect": "redshift",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S152/snowflake",
+          "dialect": "snowflake",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        },
+        {
+          "id": "88-C177-S152/sqlite",
+          "dialect": "sqlite",
+          "observed_status": "C",
+          "native_vendor_execution": "unattested",
+          "semantic_proof_status": "requires_task_193_implementation_oracle",
+          "conditional_boundary": "none"
+        }
+      ]
+    }
+  ]
+}
