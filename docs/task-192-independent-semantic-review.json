@@ -1,0 +1,908 @@
+{
+  "schema_version": 1,
+  "task_id": "TASK-192",
+  "review_kind": "independent_agent_semantic_review_user_authorized",
+  "reviewer": "GPT-6 (ChatGPT independent semantic review; user-authorized)",
+  "review_date": "2026-11-13",
+  "reviewed_code_commit": "eca90dbbd6038eaab8c96d80ffab64133e9d9def",
+  "reviewed_scope": "43 original SQL variants and their 559 public parser cells, not external vendor execution",
+  "checks_performed": 3276,
+  "independent_semantic_oracles": {
+    "manual_sql_shapes": "docs/task-192-original-query-shapes.json",
+    "typed_literals_and_exact_bounds": "docs/task-177-predicate-oracles.json",
+    "native_complete_3vl_cases": 40,
+    "independently_evaluated_numeric_correlated_cases": 25,
+    "independently_evaluated_true_false_unknown_not_true_checks": 100,
+    "other_native_negative_or_struct_or_order_cases": 3,
+    "public_all_dialect_semantics": "tests/task_192_semantic_contract.rs",
+    "all_557_full_wire_documents": "tests/task_192_full_document_goldens.rs",
+    "source_adapter_parity": "tests/task_192_adapter_parity.rs",
+    "signed_arithmetic_and_correlated_bounded_proofs": "docs/task-192-bounded-semantic-closures.json"
+  },
+  "parser_accepted": 557,
+  "parser_rejected": 2,
+  "cell_decisions": 559,
+  "discrepancies": 0,
+  "review_result": "approved_for_TASK_192_bounded_scope",
+  "residual_scope": "Conservative Residual/Conditional/Unknown classifications are approved as accurate descriptions of currently proved public semantics, not approval of absent vendor/session/coercion/STRUCT laws. Bounded source-population exact proofs have explicit type/overflow/completeness preconditions. TASK-179, TASK-191, TASK-193, TASK-180 and TASK-88 remain separately unsigned.",
+  "source_code_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/43399257712",
+  "source_code_ci_result": "9/9 passed",
+  "consumer_test_ci": "https://github.com/phdah/sql-tdg/actions/runs/43399286395",
+  "consumer_migration_ci": "https://github.com/phdah/sql-tdg/actions/runs/43399289335",
+  "consumer_ci_result": "5/5 each passed",
+  "release_approved": false,
+  "parent_approved": false,
+  "cases": [
+    {
+      "case_id": "88-C177-S001",
+      "original_sql": "SELECT amount FROM orders WHERE amount = 10",
+      "independent_expectation": {
+        "physical_source": "orders",
+        "output_column": "amount",
+        "where_operator": "comparison",
+        "projected_domain_kind": "set",
+        "condition_exactness": "exact",
+        "residual_reason": null,
+        "undeclared_session_laws": []
+      },
+      "native_oracle": "docs/task-177-predicate-oracles.json",
+      "full_canonical_document": "docs/task-192-proposed-full-documents.json#88-C177-S001",
+      "parser_cells": 13,
+      "parse_rejections": [],
+      "decision": "approved_for_bounded_TASK_192_public_parser_semantics",
+      "external_vendor_executions": "unattested",
+      "downstream_owner": null
+    },
+    {
+      "case_id": "88-C177-S002",
+      "original_sql": "SELECT amount FROM orders WHERE amount <> 10",
+      "independent_expectation": {
+        "physical_source": "orders",
+        "output_column": "amount",
+        "where_operator": "comparison",
+        "projected_domain_kind": "set",
+        "condition_exactness": "exact",
+        "residual_reason": null,
+        "undeclared_session_laws": []
+      },
+      "native_oracle": "docs/task-177-predicate-oracles.json",
+      "full_canonical_document": "docs/task-192-proposed-full-documents.json#88-C177-S002",
+      "parser_cells": 13,
+      "parse_rejections": [],
+      "decision": "approved_for_bounded_TASK_192_public_parser_semantics",
+      "external_vendor_executions": "unattested",
+      "downstream_owner": null
+    },
+    {
+      "case_id": "88-C177-S003",
+      "original_sql": "SELECT amount FROM orders WHERE amount < 10",
+      "independent_expectation": {
+        "physical_source": "orders",
+        "output_column": "amount",
+        "where_operator": "comparison",
+        "projected_domain_kind": "ranges",
+        "condition_exactness": "exact",
+        "residual_reason": null,
+        "undeclared_session_laws": []
+      },
+      "native_oracle": "docs/task-177-predicate-oracles.json",
+      "full_canonical_document": "docs/task-192-proposed-full-documents.json#88-C177-S003",
+      "parser_cells": 13,
+      "parse_rejections": [],
+      "decision": "approved_for_bounded_TASK_192_public_parser_semantics",
+      "external_vendor_executions": "unattested",
+      "downstream_owner": null
+    },
+    {
+      "case_id": "88-C177-S004",
+      "original_sql": "SELECT amount FROM orders WHERE amount <= 10",
+      "independent_expectation": {
+        "physical_source": "orders",
+        "output_column": "amount",
+        "where_operator": "comparison",
+        "projected_domain_kind": "ranges",
+        "condition_exactness": "exact",
+        "residual_reason": null,
+        "undeclared_session_laws": []
+      },
+      "native_oracle": "docs/task-177-predicate-oracles.json",
+      "full_canonical_document": "docs/task-192-proposed-full-documents.json#88-C177-S004",
+      "parser_cells": 13,
+      "parse_rejections": [],
+      "decision": "approved_for_bounded_TASK_192_public_parser_semantics",
+      "external_vendor_executions": "unattested",
+      "downstream_owner": null
+    },
+    {
+      "case_id": "88-C177-S005",
+      "original_sql": "SELECT amount FROM orders WHERE amount > 10",
+      "independent_expectation": {
+        "physical_source": "orders",
+        "output_column": "amount",
+        "where_operator": "comparison",
+        "projected_domain_kind": "ranges",
+        "condition_exactness": "exact",
+        "residual_reason": null,
+        "undeclared_session_laws": []
+      },
+      "native_oracle": "docs/task-177-predicate-oracles.json",
+      "full_canonical_document": "docs/task-192-proposed-full-documents.json#88-C177-S005",
+      "parser_cells": 13,
+      "parse_rejections": [],
+      "decision": "approved_for_bounded_TASK_192_public_parser_semantics",
+      "external_vendor_executions": "unattested",
+      "downstream_owner": null
+    },
+    {
+      "case_id": "88-C177-S006",
+      "original_sql": "SELECT amount FROM orders WHERE amount >= 10",
+      "independent_expectation": {
+        "physical_source": "orders",
+        "output_column": "amount",
+        "where_operator": "comparison",
+        "projected_domain_kind": "ranges",
+        "condition_exactness": "exact",
+        "residual_reason": null,
+        "undeclared_session_laws": []
+      },
+      "native_oracle": "docs/task-177-predicate-oracles.json",
+      "full_canonical_document": "docs/task-192-proposed-full-documents.json#88-C177-S006",
+      "parser_cells": 13,
+      "parse_rejections": [],
+      "decision": "approved_for_bounded_TASK_192_public_parser_semantics",
+      "external_vendor_executions": "unattested",
+      "downstream_owner": null
+    },
+    {
+      "case_id": "88-C177-S007",
+      "original_sql": "SELECT amount FROM orders WHERE amount BETWEEN 1 AND 10",
+      "independent_expectation": {
+        "physical_source": "orders",
+        "output_column": "amount",
+        "where_operator": "between",
+        "projected_domain_kind": "ranges",
+        "condition_exactness": "exact",
+        "residual_reason": null,
+        "undeclared_session_laws": []
+      },
+      "native_oracle": "docs/task-177-predicate-oracles.json",
+      "full_canonical_document": "docs/task-192-proposed-full-documents.json#88-C177-S007",
+      "parser_cells": 13,
+      "parse_rejections": [],
+      "decision": "approved_for_bounded_TASK_192_public_parser_semantics",
+      "external_vendor_executions": "unattested",
+      "downstream_owner": null
+    },
+    {
+      "case_id": "88-C177-S008",
+      "original_sql": "SELECT amount FROM orders WHERE amount NOT BETWEEN 1 AND 10",
+      "independent_expectation": {
+        "physical_source": "orders",
+        "output_column": "amount",
+        "where_operator": "between",
+        "projected_domain_kind": "ranges",
+        "condition_exactness": "exact",
+        "residual_reason": null,
+        "undeclared_session_laws": []
+      },
+      "native_oracle": "docs/task-177-predicate-oracles.json",
+      "full_canonical_document": "docs/task-192-proposed-full-documents.json#88-C177-S008",
+      "parser_cells": 13,
+      "parse_rejections": [],
+      "decision": "approved_for_bounded_TASK_192_public_parser_semantics",
+      "external_vendor_executions": "unattested",
+      "downstream_owner": null
+    },
+    {
+      "case_id": "88-C177-S009",
+      "original_sql": "SELECT id FROM orders WHERE amount > 1 AND id > 0",
+      "independent_expectation": {
+        "physical_source": "orders",
+        "output_column": "id",
+        "where_operator": "and",
+        "projected_domain_kind": "ranges",
+        "condition_exactness": "exact",
+        "residual_reason": null,
+        "undeclared_session_laws": []
+      },
+      "native_oracle": "docs/task-177-predicate-oracles.json",
+      "full_canonical_document": "docs/task-192-proposed-full-documents.json#88-C177-S009",
+      "parser_cells": 13,
+      "parse_rejections": [],
+      "decision": "approved_for_bounded_TASK_192_public_parser_semantics",
+      "external_vendor_executions": "unattested",
+      "downstream_owner": null
+    },
+    {
+      "case_id": "88-C177-S010",
+      "original_sql": "SELECT id FROM orders WHERE amount > 1 OR id > 0",
+      "independent_expectation": {
+        "physical_source": "orders",
+        "output_column": "id",
+        "where_operator": "or",
+        "projected_domain_kind": "unbounded",
+        "condition_exactness": "residual",
+        "residual_reason": "cross_column_disjunction",
+        "undeclared_session_laws": []
+      },
+      "native_oracle": "docs/task-177-predicate-oracles.json",
+      "full_canonical_document": "docs/task-192-proposed-full-documents.json#88-C177-S010",
+      "parser_cells": 13,
+      "parse_rejections": [],
+      "decision": "approved_for_bounded_TASK_192_public_parser_semantics",
+      "external_vendor_executions": "unattested",
+      "downstream_owner": null
+    },
+    {
+      "case_id": "88-C177-S011",
+      "original_sql": "SELECT id FROM orders WHERE NOT (amount > 1)",
+      "independent_expectation": {
+        "physical_source": "orders",
+        "output_column": "id",
+        "where_operator": "not",
+        "projected_domain_kind": "unbounded",
+        "condition_exactness": "residual",
+        "residual_reason": "logical_not",
+        "undeclared_session_laws": []
+      },
+      "native_oracle": "docs/task-177-predicate-oracles.json",
+      "full_canonical_document": "docs/task-192-proposed-full-documents.json#88-C177-S011",
+      "parser_cells": 13,
+      "parse_rejections": [],
+      "decision": "approved_for_bounded_TASK_192_public_parser_semantics",
+      "external_vendor_executions": "unattested",
+      "downstream_owner": null
+    },
+    {
+      "case_id": "88-C177-S012",
+      "original_sql": "SELECT id FROM orders WHERE (amount > 1 OR amount IS NULL) AND id > 0",
+      "independent_expectation": {
+        "physical_source": "orders",
+        "output_column": "id",
+        "where_operator": "and",
+        "projected_domain_kind": "ranges",
+        "condition_exactness": "exact",
+        "residual_reason": null,
+        "undeclared_session_laws": []
+      },
+      "native_oracle": "docs/task-177-predicate-oracles.json",
+      "full_canonical_document": "docs/task-192-proposed-full-documents.json#88-C177-S012",
+      "parser_cells": 13,
+      "parse_rejections": [],
+      "decision": "approved_for_bounded_TASK_192_public_parser_semantics",
+      "external_vendor_executions": "unattested",
+      "downstream_owner": null
+    },
+    {
+      "case_id": "88-C177-S013",
+      "original_sql": "SELECT o.id FROM orders o WHERE EXISTS (SELECT 1 FROM customers c WHERE c.id = o.id)",
+      "independent_expectation": {
+        "physical_source": "orders",
+        "output_column": "id",
+        "where_operator": "exists",
+        "projected_domain_kind": "unbounded",
+        "condition_exactness": "residual",
+        "residual_reason": "subquery_predicate",
+        "undeclared_session_laws": []
+      },
+      "native_oracle": "docs/task-177-predicate-oracles.json",
+      "full_canonical_document": "docs/task-192-proposed-full-documents.json#88-C177-S013",
+      "parser_cells": 13,
+      "parse_rejections": [],
+      "decision": "approved_for_bounded_TASK_192_public_parser_semantics",
+      "external_vendor_executions": "unattested",
+      "downstream_owner": null
+    },
+    {
+      "case_id": "88-C177-S014",
+      "original_sql": "SELECT id FROM orders WHERE amount IS NULL",
+      "independent_expectation": {
+        "physical_source": "orders",
+        "output_column": "id",
+        "where_operator": "is_null",
+        "projected_domain_kind": "unbounded",
+        "condition_exactness": "exact",
+        "residual_reason": null,
+        "undeclared_session_laws": []
+      },
+      "native_oracle": "docs/task-177-predicate-oracles.json",
+      "full_canonical_document": "docs/task-192-proposed-full-documents.json#88-C177-S014",
+      "parser_cells": 13,
+      "parse_rejections": [],
+      "decision": "approved_for_bounded_TASK_192_public_parser_semantics",
+      "external_vendor_executions": "unattested",
+      "downstream_owner": null
+    },
+    {
+      "case_id": "88-C177-S015",
+      "original_sql": "SELECT id FROM orders WHERE amount IS NOT NULL",
+      "independent_expectation": {
+        "physical_source": "orders",
+        "output_column": "id",
+        "where_operator": "is_null",
+        "projected_domain_kind": "unbounded",
+        "condition_exactness": "exact",
+        "residual_reason": null,
+        "undeclared_session_laws": []
+      },
+      "native_oracle": "docs/task-177-predicate-oracles.json",
+      "full_canonical_document": "docs/task-192-proposed-full-documents.json#88-C177-S015",
+      "parser_cells": 13,
+      "parse_rejections": [],
+      "decision": "approved_for_bounded_TASK_192_public_parser_semantics",
+      "external_vendor_executions": "unattested",
+      "downstream_owner": null
+    },
+    {
+      "case_id": "88-C177-S016",
+      "original_sql": "SELECT id FROM orders WHERE amount > 0 IS TRUE",
+      "independent_expectation": {
+        "physical_source": "orders",
+        "output_column": "id",
+        "where_operator": "and",
+        "projected_domain_kind": "unbounded",
+        "condition_exactness": "exact",
+        "residual_reason": null,
+        "undeclared_session_laws": []
+      },
+      "native_oracle": "docs/task-177-predicate-oracles.json",
+      "full_canonical_document": "docs/task-192-proposed-full-documents.json#88-C177-S016",
+      "parser_cells": 13,
+      "parse_rejections": [],
+      "decision": "approved_for_bounded_TASK_192_public_parser_semantics",
+      "external_vendor_executions": "unattested",
+      "downstream_owner": null
+    },
+    {
+      "case_id": "88-C177-S017",
+      "original_sql": "SELECT id FROM orders WHERE amount > 0 IS FALSE",
+      "independent_expectation": {
+        "physical_source": "orders",
+        "output_column": "id",
+        "where_operator": "and",
+        "projected_domain_kind": "unbounded",
+        "condition_exactness": "exact",
+        "residual_reason": null,
+        "undeclared_session_laws": []
+      },
+      "native_oracle": "docs/task-177-predicate-oracles.json",
+      "full_canonical_document": "docs/task-192-proposed-full-documents.json#88-C177-S017",
+      "parser_cells": 13,
+      "parse_rejections": [],
+      "decision": "approved_for_bounded_TASK_192_public_parser_semantics",
+      "external_vendor_executions": "unattested",
+      "downstream_owner": null
+    },
+    {
+      "case_id": "88-C177-S018",
+      "original_sql": "SELECT id FROM orders WHERE amount > 0 IS UNKNOWN",
+      "independent_expectation": {
+        "physical_source": "orders",
+        "output_column": "id",
+        "where_operator": "is_null",
+        "projected_domain_kind": "unbounded",
+        "condition_exactness": "exact",
+        "residual_reason": null,
+        "undeclared_session_laws": []
+      },
+      "native_oracle": "docs/task-177-predicate-oracles.json",
+      "full_canonical_document": "docs/task-192-proposed-full-documents.json#88-C177-S018",
+      "parser_cells": 13,
+      "parse_rejections": [],
+      "decision": "approved_for_bounded_TASK_192_public_parser_semantics",
+      "external_vendor_executions": "unattested",
+      "downstream_owner": null
+    },
+    {
+      "case_id": "88-C177-S019",
+      "original_sql": "SELECT id FROM orders WHERE amount IN (1, NULL)",
+      "independent_expectation": {
+        "physical_source": "orders",
+        "output_column": "id",
+        "where_operator": "in",
+        "projected_domain_kind": "unbounded",
+        "condition_exactness": "exact",
+        "residual_reason": null,
+        "undeclared_session_laws": []
+      },
+      "native_oracle": "docs/task-177-predicate-oracles.json",
+      "full_canonical_document": "docs/task-192-proposed-full-documents.json#88-C177-S019",
+      "parser_cells": 13,
+      "parse_rejections": [],
+      "decision": "approved_for_bounded_TASK_192_public_parser_semantics",
+      "external_vendor_executions": "unattested",
+      "downstream_owner": null
+    },
+    {
+      "case_id": "88-C177-S020",
+      "original_sql": "SELECT id FROM customers WHERE name LIKE 'A%'",
+      "independent_expectation": {
+        "physical_source": "customers",
+        "output_column": "id",
+        "where_operator": "like_prefix",
+        "projected_domain_kind": "unbounded",
+        "condition_exactness": "residual",
+        "residual_reason": "computed_expression",
+        "undeclared_session_laws": []
+      },
+      "native_oracle": "docs/task-192-acceptance-freeze.json",
+      "full_canonical_document": "docs/task-192-proposed-full-documents.json#88-C177-S020",
+      "parser_cells": 13,
+      "parse_rejections": [],
+      "decision": "approved_for_bounded_TASK_192_public_parser_semantics",
+      "external_vendor_executions": "unattested",
+      "downstream_owner": null
+    },
+    {
+      "case_id": "88-C177-S021",
+      "original_sql": "SELECT id FROM customers WHERE name ILIKE 'a%'",
+      "independent_expectation": {
+        "physical_source": "customers",
+        "output_column": "id",
+        "where_operator": "boolean_expression",
+        "projected_domain_kind": "unbounded",
+        "condition_exactness": "residual",
+        "residual_reason": "computed_expression",
+        "undeclared_session_laws": []
+      },
+      "native_oracle": "docs/task-192-acceptance-freeze.json",
+      "full_canonical_document": "docs/task-192-proposed-full-documents.json#88-C177-S021",
+      "parser_cells": 13,
+      "parse_rejections": [],
+      "decision": "approved_for_bounded_TASK_192_public_parser_semantics",
+      "external_vendor_executions": "unattested",
+      "downstream_owner": null
+    },
+    {
+      "case_id": "88-C177-S022",
+      "original_sql": "SELECT id FROM customers WHERE name LIKE 'A!_%' ESCAPE '!'",
+      "independent_expectation": {
+        "physical_source": "customers",
+        "output_column": "id",
+        "where_operator": "like_prefix",
+        "projected_domain_kind": "unbounded",
+        "condition_exactness": "residual",
+        "residual_reason": "computed_expression",
+        "undeclared_session_laws": []
+      },
+      "native_oracle": "docs/task-192-acceptance-freeze.json",
+      "full_canonical_document": "docs/task-192-proposed-full-documents.json#88-C177-S022",
+      "parser_cells": 13,
+      "parse_rejections": [],
+      "decision": "approved_for_bounded_TASK_192_public_parser_semantics",
+      "external_vendor_executions": "unattested",
+      "downstream_owner": null
+    },
+    {
+      "case_id": "88-C177-S023",
+      "original_sql": "SELECT id FROM customers WHERE name SIMILAR TO '(A|B)%'",
+      "independent_expectation": {
+        "physical_source": "customers",
+        "output_column": "id",
+        "where_operator": "boolean_expression",
+        "projected_domain_kind": "unbounded",
+        "condition_exactness": "residual",
+        "residual_reason": "computed_expression",
+        "undeclared_session_laws": []
+      },
+      "native_oracle": "docs/task-192-native-partitions.json",
+      "full_canonical_document": "docs/task-192-proposed-full-documents.json#88-C177-S023",
+      "parser_cells": 13,
+      "parse_rejections": [],
+      "decision": "approved_for_bounded_TASK_192_public_parser_semantics",
+      "external_vendor_executions": "unattested",
+      "downstream_owner": null
+    },
+    {
+      "case_id": "88-C177-S024",
+      "original_sql": "SELECT id FROM customers WHERE name ~ '^A'",
+      "independent_expectation": {
+        "physical_source": "customers",
+        "output_column": "id",
+        "where_operator": "boolean_expression",
+        "projected_domain_kind": "unbounded",
+        "condition_exactness": "residual",
+        "residual_reason": "computed_expression",
+        "undeclared_session_laws": []
+      },
+      "native_oracle": "docs/task-192-native-partitions.json",
+      "full_canonical_document": "docs/task-192-proposed-full-documents.json#88-C177-S024",
+      "parser_cells": 13,
+      "parse_rejections": [],
+      "decision": "approved_for_bounded_TASK_192_public_parser_semantics",
+      "external_vendor_executions": "unattested",
+      "downstream_owner": null
+    },
+    {
+      "case_id": "88-C177-S025",
+      "original_sql": "SELECT id FROM customers WHERE name LIKE 'ABC%'",
+      "independent_expectation": {
+        "physical_source": "customers",
+        "output_column": "id",
+        "where_operator": "like_prefix",
+        "projected_domain_kind": "unbounded",
+        "condition_exactness": "residual",
+        "residual_reason": "computed_expression",
+        "undeclared_session_laws": []
+      },
+      "native_oracle": "docs/task-192-acceptance-freeze.json",
+      "full_canonical_document": "docs/task-192-proposed-full-documents.json#88-C177-S025",
+      "parser_cells": 13,
+      "parse_rejections": [],
+      "decision": "approved_for_bounded_TASK_192_public_parser_semantics",
+      "external_vendor_executions": "unattested",
+      "downstream_owner": null
+    },
+    {
+      "case_id": "88-C177-S026",
+      "original_sql": "SELECT id FROM customers WHERE name COLLATE en_US = 'a'",
+      "independent_expectation": {
+        "physical_source": "customers",
+        "output_column": "id",
+        "where_operator": "comparison",
+        "projected_domain_kind": "unbounded",
+        "condition_exactness": "residual",
+        "residual_reason": "computed_expression",
+        "undeclared_session_laws": []
+      },
+      "native_oracle": "docs/task-192-native-partitions.json",
+      "full_canonical_document": "docs/task-192-proposed-full-documents.json#88-C177-S026",
+      "parser_cells": 13,
+      "parse_rejections": [],
+      "decision": "approved_for_bounded_TASK_192_public_parser_semantics",
+      "external_vendor_executions": "unattested",
+      "downstream_owner": null
+    },
+    {
+      "case_id": "88-C177-S027",
+      "original_sql": "SELECT id FROM orders WHERE amount + 2 > 10",
+      "independent_expectation": {
+        "physical_source": "orders",
+        "output_column": "id",
+        "where_operator": "comparison",
+        "projected_domain_kind": "unbounded",
+        "condition_exactness": "residual",
+        "residual_reason": "computed_expression",
+        "undeclared_session_laws": []
+      },
+      "native_oracle": "docs/task-177-predicate-oracles.json",
+      "full_canonical_document": "docs/task-192-proposed-full-documents.json#88-C177-S027",
+      "parser_cells": 13,
+      "parse_rejections": [],
+      "decision": "approved_for_bounded_TASK_192_public_parser_semantics",
+      "external_vendor_executions": "unattested",
+      "downstream_owner": null
+    },
+    {
+      "case_id": "88-C177-S028",
+      "original_sql": "SELECT id FROM orders WHERE CAST(amount AS BIGINT) > 10",
+      "independent_expectation": {
+        "physical_source": "orders",
+        "output_column": "id",
+        "where_operator": "comparison",
+        "projected_domain_kind": "unbounded",
+        "condition_exactness": "residual",
+        "residual_reason": "computed_expression",
+        "undeclared_session_laws": []
+      },
+      "native_oracle": "docs/task-177-predicate-oracles.json",
+      "full_canonical_document": "docs/task-192-proposed-full-documents.json#88-C177-S028",
+      "parser_cells": 13,
+      "parse_rejections": [],
+      "decision": "approved_for_bounded_TASK_192_public_parser_semantics",
+      "external_vendor_executions": "unattested",
+      "downstream_owner": null
+    },
+    {
+      "case_id": "88-C177-S029",
+      "original_sql": "SELECT id FROM orders WHERE CASE WHEN amount > 5 THEN 1 ELSE 0 END = 1",
+      "independent_expectation": {
+        "physical_source": "orders",
+        "output_column": "id",
+        "where_operator": "comparison",
+        "projected_domain_kind": "unbounded",
+        "condition_exactness": "residual",
+        "residual_reason": "computed_expression",
+        "undeclared_session_laws": []
+      },
+      "native_oracle": "docs/task-177-predicate-oracles.json",
+      "full_canonical_document": "docs/task-192-proposed-full-documents.json#88-C177-S029",
+      "parser_cells": 13,
+      "parse_rejections": [],
+      "decision": "approved_for_bounded_TASK_192_public_parser_semantics",
+      "external_vendor_executions": "unattested",
+      "downstream_owner": null
+    },
+    {
+      "case_id": "88-C177-S030",
+      "original_sql": "SELECT id FROM orders WHERE COALESCE(amount, 0) >= 0",
+      "independent_expectation": {
+        "physical_source": "orders",
+        "output_column": "id",
+        "where_operator": "comparison",
+        "projected_domain_kind": "unbounded",
+        "condition_exactness": "residual",
+        "residual_reason": "computed_expression",
+        "undeclared_session_laws": []
+      },
+      "native_oracle": "docs/task-177-predicate-oracles.json",
+      "full_canonical_document": "docs/task-192-proposed-full-documents.json#88-C177-S030",
+      "parser_cells": 13,
+      "parse_rejections": [],
+      "decision": "approved_for_bounded_TASK_192_public_parser_semantics",
+      "external_vendor_executions": "unattested",
+      "downstream_owner": null
+    },
+    {
+      "case_id": "88-C177-S031",
+      "original_sql": "SELECT id FROM orders WHERE NULLIF(amount, 0) IS NULL",
+      "independent_expectation": {
+        "physical_source": "orders",
+        "output_column": "id",
+        "where_operator": "is_null",
+        "projected_domain_kind": "unbounded",
+        "condition_exactness": "residual",
+        "residual_reason": "computed_expression",
+        "undeclared_session_laws": []
+      },
+      "native_oracle": "docs/task-177-predicate-oracles.json",
+      "full_canonical_document": "docs/task-192-proposed-full-documents.json#88-C177-S031",
+      "parser_cells": 13,
+      "parse_rejections": [],
+      "decision": "approved_for_bounded_TASK_192_public_parser_semantics",
+      "external_vendor_executions": "unattested",
+      "downstream_owner": null
+    },
+    {
+      "case_id": "88-C177-S032",
+      "original_sql": "SELECT id FROM orders WHERE ABS(amount) > 2",
+      "independent_expectation": {
+        "physical_source": "orders",
+        "output_column": "id",
+        "where_operator": "comparison",
+        "projected_domain_kind": "unbounded",
+        "condition_exactness": "residual",
+        "residual_reason": "computed_expression",
+        "undeclared_session_laws": []
+      },
+      "native_oracle": "docs/task-177-predicate-oracles.json",
+      "full_canonical_document": "docs/task-192-proposed-full-documents.json#88-C177-S032",
+      "parser_cells": 13,
+      "parse_rejections": [],
+      "decision": "approved_for_bounded_TASK_192_public_parser_semantics",
+      "external_vendor_executions": "unattested",
+      "downstream_owner": null
+    },
+    {
+      "case_id": "88-C177-S033",
+      "original_sql": "SELECT 9223372036854775807 + 1 AS overflow_case",
+      "independent_expectation": {
+        "physical_source": null,
+        "output_column": "overflow_case",
+        "where_operator": "none",
+        "projected_domain_kind": "unknown",
+        "condition_exactness": "exact",
+        "residual_reason": null,
+        "undeclared_session_laws": []
+      },
+      "native_oracle": "docs/task-192-native-partitions.json",
+      "full_canonical_document": "docs/task-192-proposed-full-documents.json#88-C177-S033",
+      "parser_cells": 13,
+      "parse_rejections": [],
+      "decision": "approved_for_bounded_TASK_192_public_parser_semantics",
+      "external_vendor_executions": "unattested",
+      "downstream_owner": null
+    },
+    {
+      "case_id": "88-C177-S034",
+      "original_sql": "SELECT id FROM orders WHERE created_at >= TIMESTAMP '2020-01-01 00:00:00' + INTERVAL '1' DAY",
+      "independent_expectation": {
+        "physical_source": "orders",
+        "output_column": "id",
+        "where_operator": "comparison",
+        "projected_domain_kind": "unbounded",
+        "condition_exactness": "residual",
+        "residual_reason": "computed_expression",
+        "undeclared_session_laws": []
+      },
+      "native_oracle": "docs/task-192-native-partitions.json",
+      "full_canonical_document": "docs/task-192-proposed-full-documents.json#88-C177-S034",
+      "parser_cells": 13,
+      "parse_rejections": [],
+      "decision": "approved_for_bounded_TASK_192_public_parser_semantics",
+      "external_vendor_executions": "unattested",
+      "downstream_owner": null
+    },
+    {
+      "case_id": "88-C177-S035",
+      "original_sql": "SELECT id FROM orders WHERE created_at AT TIME ZONE 'UTC' > TIMESTAMP '2020-01-01 00:00:00'",
+      "independent_expectation": {
+        "physical_source": "orders",
+        "output_column": "id",
+        "where_operator": "comparison",
+        "projected_domain_kind": "unbounded",
+        "condition_exactness": "residual",
+        "residual_reason": "computed_expression",
+        "undeclared_session_laws": []
+      },
+      "native_oracle": "docs/task-192-native-partitions.json",
+      "full_canonical_document": "docs/task-192-proposed-full-documents.json#88-C177-S035",
+      "parser_cells": 13,
+      "parse_rejections": [],
+      "decision": "approved_for_bounded_TASK_192_public_parser_semantics",
+      "external_vendor_executions": "unattested",
+      "downstream_owner": null
+    },
+    {
+      "case_id": "88-C177-S036",
+      "original_sql": "SELECT id FROM orders WHERE CAST(created_at AS DATE) = DATE '2020-01-01'",
+      "independent_expectation": {
+        "physical_source": "orders",
+        "output_column": "id",
+        "where_operator": "comparison",
+        "projected_domain_kind": "unbounded",
+        "condition_exactness": "residual",
+        "residual_reason": "computed_expression",
+        "undeclared_session_laws": []
+      },
+      "native_oracle": "docs/task-192-native-partitions.json",
+      "full_canonical_document": "docs/task-192-proposed-full-documents.json#88-C177-S036",
+      "parser_cells": 13,
+      "parse_rejections": [],
+      "decision": "approved_for_bounded_TASK_192_public_parser_semantics",
+      "external_vendor_executions": "unattested",
+      "downstream_owner": null
+    },
+    {
+      "case_id": "88-C177-S037",
+      "original_sql": "SELECT id FROM orders WHERE created_at BETWEEN TIMESTAMP '2020-03-08 01:00:00' AND TIMESTAMP '2020-03-08 03:00:00'",
+      "independent_expectation": {
+        "physical_source": "orders",
+        "output_column": "id",
+        "where_operator": "between",
+        "projected_domain_kind": "unbounded",
+        "condition_exactness": "conditional",
+        "residual_reason": null,
+        "undeclared_session_laws": [
+          "session_time_zone"
+        ]
+      },
+      "native_oracle": "docs/task-192-native-partitions.json",
+      "full_canonical_document": "docs/task-192-proposed-full-documents.json#88-C177-S037",
+      "parser_cells": 13,
+      "parse_rejections": [],
+      "decision": "approved_for_bounded_TASK_192_public_parser_semantics",
+      "external_vendor_executions": "unattested",
+      "downstream_owner": "TASK-179"
+    },
+    {
+      "case_id": "88-C177-S038",
+      "original_sql": "SELECT id FROM customers WHERE name COLLATE en_US = 'abc'",
+      "independent_expectation": {
+        "physical_source": "customers",
+        "output_column": "id",
+        "where_operator": "comparison",
+        "projected_domain_kind": "unbounded",
+        "condition_exactness": "residual",
+        "residual_reason": "computed_expression",
+        "undeclared_session_laws": []
+      },
+      "native_oracle": "docs/task-192-native-partitions.json",
+      "full_canonical_document": "docs/task-192-proposed-full-documents.json#88-C177-S038",
+      "parser_cells": 13,
+      "parse_rejections": [],
+      "decision": "approved_for_bounded_TASK_192_public_parser_semantics",
+      "external_vendor_executions": "unattested",
+      "downstream_owner": null
+    },
+    {
+      "case_id": "88-C177-S039",
+      "original_sql": "SELECT id FROM customers WHERE name = 'abc '",
+      "independent_expectation": {
+        "physical_source": "customers",
+        "output_column": "id",
+        "where_operator": "comparison",
+        "projected_domain_kind": "unbounded",
+        "condition_exactness": "conditional",
+        "residual_reason": null,
+        "undeclared_session_laws": [
+          "binary_collation",
+          "no_char_padding"
+        ]
+      },
+      "native_oracle": "docs/task-192-native-partitions.json",
+      "full_canonical_document": "docs/task-192-proposed-full-documents.json#88-C177-S039",
+      "parser_cells": 13,
+      "parse_rejections": [],
+      "decision": "approved_for_bounded_TASK_192_public_parser_semantics",
+      "external_vendor_executions": "unattested",
+      "downstream_owner": "TASK-179"
+    },
+    {
+      "case_id": "88-C177-S040",
+      "original_sql": "SELECT id FROM orders WHERE amount = 'NaN'",
+      "independent_expectation": {
+        "physical_source": "orders",
+        "output_column": "id",
+        "where_operator": "comparison",
+        "projected_domain_kind": "unbounded",
+        "condition_exactness": "residual",
+        "residual_reason": "comparison_semantics",
+        "undeclared_session_laws": [
+          "binary_collation",
+          "no_char_padding"
+        ]
+      },
+      "native_oracle": "docs/task-192-native-partitions.json",
+      "full_canonical_document": "docs/task-192-proposed-full-documents.json#88-C177-S040",
+      "parser_cells": 13,
+      "parse_rejections": [],
+      "decision": "approved_for_bounded_TASK_192_public_parser_semantics",
+      "external_vendor_executions": "unattested",
+      "downstream_owner": "TASK-179"
+    },
+    {
+      "case_id": "88-C177-S041",
+      "original_sql": "SELECT id FROM orders WHERE amount = -0.0",
+      "independent_expectation": {
+        "physical_source": "orders",
+        "output_column": "id",
+        "where_operator": "comparison",
+        "projected_domain_kind": "unbounded",
+        "condition_exactness": "residual",
+        "residual_reason": "computed_expression",
+        "undeclared_session_laws": []
+      },
+      "native_oracle": "docs/task-192-native-partitions.json",
+      "full_canonical_document": "docs/task-192-proposed-full-documents.json#88-C177-S041",
+      "parser_cells": 13,
+      "parse_rejections": [],
+      "decision": "approved_for_bounded_TASK_192_public_parser_semantics",
+      "external_vendor_executions": "unattested",
+      "downstream_owner": null
+    },
+    {
+      "case_id": "88-C177-S042",
+      "original_sql": "SELECT id FROM orders ORDER BY amount NULLS LAST",
+      "independent_expectation": {
+        "physical_source": "orders",
+        "output_column": "id",
+        "where_operator": "none",
+        "projected_domain_kind": "unbounded",
+        "condition_exactness": "exact",
+        "residual_reason": null,
+        "undeclared_session_laws": []
+      },
+      "native_oracle": "docs/task-192-native-partitions.json",
+      "full_canonical_document": "docs/task-192-proposed-full-documents.json#88-C177-S042",
+      "parser_cells": 13,
+      "parse_rejections": [],
+      "decision": "approved_for_bounded_TASK_192_public_parser_semantics",
+      "external_vendor_executions": "unattested",
+      "downstream_owner": null
+    },
+    {
+      "case_id": "88-C177-S179",
+      "original_sql": "SELECT CAST(ROW(1, 'a') AS STRUCT(a INT, b VARCHAR)) AS v",
+      "independent_expectation": {
+        "physical_source": null,
+        "output_column": "v",
+        "where_operator": "none",
+        "projected_domain_kind": "unknown",
+        "condition_exactness": "exact",
+        "residual_reason": null,
+        "undeclared_session_laws": []
+      },
+      "native_oracle": "docs/task-192-native-partitions.json",
+      "full_canonical_document": "docs/task-192-proposed-full-documents.json#88-C177-S179",
+      "parser_cells": 13,
+      "parse_rejections": [
+        "bigquery",
+        "generic"
+      ],
+      "decision": "approved_for_bounded_TASK_192_public_parser_semantics",
+      "external_vendor_executions": "unattested",
+      "downstream_owner": "TASK-191"
+    }
+  ]
+}
