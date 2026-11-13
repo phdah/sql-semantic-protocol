@@ -99,6 +99,16 @@ Versioned protocol artifacts such as `protocol-v0.1*` and `protocol-v0.2*` remai
 
 The analyzer resolves transformation layers into a deterministic relation dependency graph. It composes semantics through that graph: final outputs expose transitive physical lineage, value domains propagate through safe direct projections and renames, and ambiguous, cyclic, or non-invertible paths remain explicit instead of being guessed. Disconnected pipelines compose independently.
 
+For an ordinary SQL `=` equality used by an `INNER JOIN`, a TRUE match requires
+both column operands to be non-NULL. Source/terminal column domains therefore
+exclude SQL NULL for both keys, including implicit equality joins recognized as
+INNER, without inventing numeric bounds or implying that every source row joins.
+This restriction does **not** apply to `IS NOT DISTINCT FROM`, unmatched
+LEFT/RIGHT/FULL results, or ANTI/NOT EXISTS nonmembership: those paths may
+legitimately preserve SQL NULL. A scalar NOT NULL domain does not itself prove
+whole-bag multiplicity, row identity, or external-vendor execution.
+
+
 ### Bounded source-row Boolean witnesses
 
 The canonical Boolean witness can prove SQL TRUE and NOT TRUE independently for
