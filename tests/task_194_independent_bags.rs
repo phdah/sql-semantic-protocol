@@ -61,7 +61,9 @@ fn subtracted_candidates(candidate: Bag, output: &Bag) -> Bag {
         *counts.entry(row).or_insert(0_u64) += 1;
     }
     for row in output {
-        let remaining = counts.get_mut(row).expect("output subset of source candidates");
+        let remaining = counts
+            .get_mut(row)
+            .expect("output subset of source candidates");
         assert!(*remaining > 0, "candidate multiplicity cannot be negative");
         *remaining -= 1;
     }
@@ -72,7 +74,9 @@ fn subtracted_candidates(candidate: Bag, output: &Bag) -> Bag {
 }
 
 fn inserted_scalar(value: &Value) -> String {
-    value.as_i64().map_or_else(|| "NULL".to_string(), |n| n.to_string())
+    value
+        .as_i64()
+        .map_or_else(|| "NULL".to_string(), |n| n.to_string())
 }
 
 #[test]
@@ -83,12 +87,19 @@ fn original_22_cases_prove_each_physical_occurrence_and_rejected_candidate_bag()
     assert_eq!(reviewed["parser_cells"], 286);
     assert_eq!(reviewed["task88_approved"], false);
     let db = Connection::open_in_memory().expect("independent DuckDB");
-    db.execute_batch(frozen["source_setup"].as_str().expect("complete source setup"))
-        .expect("all physical tables seeded");
+    db.execute_batch(
+        frozen["source_setup"]
+            .as_str()
+            .expect("complete source setup"),
+    )
+    .expect("all physical tables seeded");
     let mut reviewed_ids = BTreeSet::new();
     let mut reviewed_native = 0;
     let mut rejected_occurrences = 0;
-    for case in reviewed["cases"].as_array().expect("every fixed original case") {
+    for case in reviewed["cases"]
+        .as_array()
+        .expect("every fixed original case")
+    {
         let id = case["case_id"].as_str().expect("original identity");
         assert!(reviewed_ids.insert(id), "{id}: duplicate");
         let original = frozen["cases"]
@@ -97,10 +108,19 @@ fn original_22_cases_prove_each_physical_occurrence_and_rejected_candidate_bag()
             .iter()
             .find(|prior| prior["id"] == id)
             .expect("only original bounded SQL cases");
-        assert_eq!(case["sql"], original["sql"], "{id}: independent SQL provenance");
-        assert_eq!(case["expected_column_names"], original["expected_output_column_names"]);
+        assert_eq!(
+            case["sql"], original["sql"],
+            "{id}: independent SQL provenance"
+        );
+        assert_eq!(
+            case["expected_column_names"],
+            original["expected_output_column_names"]
+        );
         let mut actual_candidates = Vec::new();
-        for arm in case["source_arms"].as_array().expect("separate source arms") {
+        for arm in case["source_arms"]
+            .as_array()
+            .expect("separate source arms")
+        {
             let relation = arm["relation"].as_str().expect("real relation");
             let projected = arm["column_order"]
                 .as_array()
@@ -118,7 +138,9 @@ fn original_22_cases_prove_each_physical_occurrence_and_rejected_candidate_bag()
                 bag(&arm["projected_bag"]),
                 "{id}: every physical source occurrence must be included"
             );
-            let ids = arm["source_row_ids"].as_array().expect("source occurrence IDs");
+            let ids = arm["source_row_ids"]
+                .as_array()
+                .expect("source occurrence IDs");
             let indexed = native_rows(
                 &db,
                 &format!("SELECT rowid,{} FROM {relation}", projected.join(",")),
@@ -128,14 +150,18 @@ fn original_22_cases_prove_each_physical_occurrence_and_rejected_candidate_bag()
             for (i, entry) in indexed.iter().enumerate() {
                 assert_eq!(entry[0], Some(i as i64), "{id}: true physical rowid");
                 assert_eq!(
-                    ids[i], format!("{relation}#{i}"),
+                    ids[i],
+                    format!("{relation}#{i}"),
                     "{id}: stable source row identity, including repeated source branches"
                 );
             }
             actual_candidates.extend(actual);
         }
         actual_candidates.sort();
-        match case["reviewed_status"].as_str().expect("review disposition") {
+        match case["reviewed_status"]
+            .as_str()
+            .expect("review disposition")
+        {
             "explicit_noncertified_boundary" => {
                 assert!(case["independent_terminal_bag"].is_null());
                 assert!(case["independent_non_emitted_candidate_bag"].is_null());
@@ -147,11 +173,14 @@ fn original_22_cases_prove_each_physical_occurrence_and_rejected_candidate_bag()
             }
             "independent_typed_set_law_and_native_oracle" => {
                 let sql = case["sql"].as_str().expect("original SQL");
-                let arity = original["expected_output_columns"].as_u64().expect("native width")
-                    as usize;
+                let arity = original["expected_output_columns"]
+                    .as_u64()
+                    .expect("native width") as usize;
                 let candidates = native_rows(
                     &db,
-                    case["candidate_sql"].as_str().expect("all original source candidates"),
+                    case["candidate_sql"]
+                        .as_str()
+                        .expect("all original source candidates"),
                     arity,
                 );
                 assert_eq!(
@@ -184,10 +213,15 @@ fn original_22_cases_prove_each_physical_occurrence_and_rejected_candidate_bag()
                 );
                 let impossible = &case["impossible_count_goal"];
                 let forbidden_tuple = bag(&serde_json::json!([impossible["tuple"]]));
-                let present = actual.iter().filter(|row| *row == &forbidden_tuple[0]).count();
+                let present = actual
+                    .iter()
+                    .filter(|row| *row == &forbidden_tuple[0])
+                    .count();
                 assert_eq!(
                     present + 1,
-                    impossible["count"].as_u64().expect("impossible multiplicity") as usize,
+                    impossible["count"]
+                        .as_u64()
+                        .expect("impossible multiplicity") as usize,
                     "{id}: request for one more occurrence must be Impossible"
                 );
                 rejected_occurrences += rejected.len();
@@ -229,12 +263,19 @@ fn nine_adversarial_two_column_cases_distinguish_tuple_multiplicity_and_null() {
         );
     }
     let mut names = BTreeSet::new();
-    for case in adversarial["cases"].as_array().expect("all nine adversarial laws") {
+    for case in adversarial["cases"]
+        .as_array()
+        .expect("all nine adversarial laws")
+    {
         let id = case["id"].as_str().expect("adversarial identity");
         assert!(names.insert(id), "{id}: duplicate");
         let original = native_rows(&db, case["sql"].as_str().expect("SQL"), 2);
         let candidates = native_rows(&db, case["candidate_sql"].as_str().expect("source bags"), 2);
-        assert_eq!(original, bag(&case["expected_terminal_bag"]), "{id}: output bag");
+        assert_eq!(
+            original,
+            bag(&case["expected_terminal_bag"]),
+            "{id}: output bag"
+        );
         assert_eq!(
             candidates,
             bag(&case["expected_candidate_bag"]),
@@ -246,8 +287,16 @@ fn nine_adversarial_two_column_cases_distinguish_tuple_multiplicity_and_null() {
             bag(&case["expected_non_emitted_candidate_bag"]),
             "{id}: tuple-level negative bag"
         );
-        assert_eq!(original.len() as u64, case["expected_terminal_count"], "{id}");
-        assert_eq!(rejected.len() as u64, case["expected_rejected_count"], "{id}");
+        assert_eq!(
+            original.len() as u64,
+            case["expected_terminal_count"],
+            "{id}"
+        );
+        assert_eq!(
+            rejected.len() as u64,
+            case["expected_rejected_count"],
+            "{id}"
+        );
         assert!(
             !original.contains(&vec![Some(1), Some(2)]),
             "{id}: cannot synthesize an unattested tuple from separate column values"
@@ -263,7 +312,11 @@ fn nine_adversarial_two_column_cases_distinguish_tuple_multiplicity_and_null() {
         .unwrap();
     assert_eq!(
         bag(&inter["expected_terminal_bag"]),
-        vec![vec![None, Some(1)], vec![Some(1), None], vec![Some(1), None]]
+        vec![
+            vec![None, Some(1)],
+            vec![Some(1), None],
+            vec![Some(1), None]
+        ]
     );
     // EXCEPT ALL requires saturated subtraction, retaining two (NULL,1) rows.
     let except = adversarial["cases"]
