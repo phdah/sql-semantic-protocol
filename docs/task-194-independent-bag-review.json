@@ -3840,7 +3840,8 @@
           1,
           2
         ],
-        "expected_impossible_tuple_count": 0
+        "expected_impossible_tuple_count": 0,
+        "candidate_sql": "SELECT a,b FROM l UNION ALL SELECT a,b FROM r"
       },
       {
         "id": "union_distinct",
@@ -3970,7 +3971,8 @@
           1,
           2
         ],
-        "expected_impossible_tuple_count": 0
+        "expected_impossible_tuple_count": 0,
+        "candidate_sql": "SELECT a,b FROM l UNION ALL SELECT a,b FROM r"
       },
       {
         "id": "intersect_all",
@@ -4100,7 +4102,8 @@
           1,
           2
         ],
-        "expected_impossible_tuple_count": 0
+        "expected_impossible_tuple_count": 0,
+        "candidate_sql": "SELECT a,b FROM l UNION ALL SELECT a,b FROM r"
       },
       {
         "id": "intersect_distinct",
@@ -4230,7 +4233,8 @@
           1,
           2
         ],
-        "expected_impossible_tuple_count": 0
+        "expected_impossible_tuple_count": 0,
+        "candidate_sql": "SELECT a,b FROM l UNION ALL SELECT a,b FROM r"
       },
       {
         "id": "except_all",
@@ -4360,7 +4364,8 @@
           1,
           2
         ],
-        "expected_impossible_tuple_count": 0
+        "expected_impossible_tuple_count": 0,
+        "candidate_sql": "SELECT a,b FROM l UNION ALL SELECT a,b FROM r"
       },
       {
         "id": "except_distinct",
@@ -4490,7 +4495,8 @@
           1,
           2
         ],
-        "expected_impossible_tuple_count": 0
+        "expected_impossible_tuple_count": 0,
+        "candidate_sql": "SELECT a,b FROM l UNION ALL SELECT a,b FROM r"
       },
       {
         "id": "union_by_name",
@@ -4620,7 +4626,8 @@
           1,
           2
         ],
-        "expected_impossible_tuple_count": 0
+        "expected_impossible_tuple_count": 0,
+        "candidate_sql": "SELECT a,b FROM l UNION ALL SELECT a,b FROM r"
       },
       {
         "id": "union_positional",
@@ -4750,7 +4757,8 @@
           1,
           2
         ],
-        "expected_impossible_tuple_count": 0
+        "expected_impossible_tuple_count": 0,
+        "candidate_sql": "SELECT a,b FROM l UNION ALL SELECT b,a FROM r"
       },
       {
         "id": "nested_union_all",
@@ -4943,7 +4951,8 @@
           1,
           2
         ],
-        "expected_impossible_tuple_count": 0
+        "expected_impossible_tuple_count": 0,
+        "candidate_sql": "SELECT a,b FROM l UNION ALL SELECT a,b FROM r UNION ALL SELECT a,b FROM l"
       }
     ]
   },
