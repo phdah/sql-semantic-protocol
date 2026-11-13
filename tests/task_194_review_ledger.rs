@@ -27,10 +27,12 @@ fn all_22_original_cases_and_286_parser_cells_have_distinct_reviewed_evidence() 
     assert_eq!(review["adversarial_two_column_native_cases"], 9);
     assert_eq!(review["original_non_emitted_candidate_occurrences"], 106);
     assert_eq!(review["parent_task_88_approved"], false);
-    assert_eq!(review["review_result"], "approved_for_TASK_194_bounded_scope_only");
     assert_eq!(
-        coverage["task_194_set_operator_acceptance"]["task_done"],
-        true,
+        review["review_result"],
+        "approved_for_TASK_194_bounded_scope_only"
+    );
+    assert_eq!(
+        coverage["task_194_set_operator_acceptance"]["task_done"], true,
         "a reviewed child cannot remain in progress after all five gates"
     );
     assert_eq!(
