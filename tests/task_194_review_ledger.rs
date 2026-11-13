@@ -35,8 +35,12 @@ fn all_22_original_cases_and_286_parser_cells_have_distinct_reviewed_evidence() 
     );
 
     let original = frozen["cases"].as_array().expect("fixed variants");
-    let reviewed = review["cases"].as_array().expect("separate per-case SQL review");
-    let physical = source["cases"].as_array().expect("independent source bag review");
+    let reviewed = review["cases"]
+        .as_array()
+        .expect("separate per-case SQL review");
+    let physical = source["cases"]
+        .as_array()
+        .expect("independent source bag review");
     assert_eq!(original.len(), 22);
     assert_eq!(reviewed.len(), 22);
     assert_eq!(physical.len(), 22);
@@ -45,22 +49,45 @@ fn all_22_original_cases_and_286_parser_cells_have_distinct_reviewed_evidence() 
     for case in reviewed {
         let id = case["case_id"].as_str().expect("original case ID");
         assert!(seen.insert(id), "{id}: duplicate review decision");
-        let f = original.iter().find(|c| c["id"] == id).expect("original SQL");
-        let p = physical.iter().find(|c| c["case_id"] == id).expect("physical SQL law");
-        assert_eq!(case["original_sql"], f["sql"], "{id}: original SQL must not drift");
-        assert_eq!(case["semantic_law"], p["semantic_rule"], "{id}: independently derived law");
-        assert_eq!(case["expected_output_column_names"], f["expected_output_column_names"]);
-        assert_eq!(case["expected_terminal_occurrences"], p["expected_terminal_occurrences"]);
+        let f = original
+            .iter()
+            .find(|c| c["id"] == id)
+            .expect("original SQL");
+        let p = physical
+            .iter()
+            .find(|c| c["case_id"] == id)
+            .expect("physical SQL law");
+        assert_eq!(
+            case["original_sql"], f["sql"],
+            "{id}: original SQL must not drift"
+        );
+        assert_eq!(
+            case["semantic_law"], p["semantic_rule"],
+            "{id}: independently derived law"
+        );
+        assert_eq!(
+            case["expected_output_column_names"],
+            f["expected_output_column_names"]
+        );
+        assert_eq!(
+            case["expected_terminal_occurrences"],
+            p["expected_terminal_occurrences"]
+        );
         assert_eq!(
             case["expected_non_emitted_candidate_occurrences"],
             p["expected_rejected_candidate_occurrences"]
         );
         assert_eq!(
-            case["source_arm_instances"].as_array().expect("physical arms").len(),
+            case["source_arm_instances"]
+                .as_array()
+                .expect("physical arms")
+                .len(),
             p["source_arms"].as_array().expect("independent arms").len(),
             "{id}: physical occurrence identities"
         );
-        let disposition = case["review_disposition"].as_str().expect("reviewed classification");
+        let disposition = case["review_disposition"]
+            .as_str()
+            .expect("reviewed classification");
         if id == "88-C177-S084" {
             assert_eq!(
                 disposition,
@@ -68,13 +95,22 @@ fn all_22_original_cases_and_286_parser_cells_have_distinct_reviewed_evidence() 
             );
             assert!(p["independent_terminal_bag"].is_null());
         } else if id == "88-C177-S086" {
-            assert_eq!(disposition, "approved_fail_closed_arity_without_fake_terminal");
+            assert_eq!(
+                disposition,
+                "approved_fail_closed_arity_without_fake_terminal"
+            );
             assert!(p["independent_terminal_bag"].is_null());
         } else {
-            assert_eq!(disposition, "reviewed_exact_original_SQL_typed_portable_semantics");
+            assert_eq!(
+                disposition,
+                "reviewed_exact_original_SQL_typed_portable_semantics"
+            );
             assert_eq!(
                 case["expected_terminal_occurrences"],
-                p["independent_terminal_bag"].as_array().expect("full bag").len() as u64
+                p["independent_terminal_bag"]
+                    .as_array()
+                    .expect("full bag")
+                    .len() as u64
             );
             assert_eq!(
                 case["expected_non_emitted_candidate_occurrences"],
@@ -102,18 +138,27 @@ fn all_22_original_cases_and_286_parser_cells_have_distinct_reviewed_evidence() 
         let key = cell["cell_id"].as_str().expect("fixed reviewed cell ID");
         assert!(seen_cells.insert(key), "{key}: duplicate parser cell");
         let case_id = cell["case_id"].as_str().expect("case owner");
-        let f = original.iter().find(|c| c["id"] == case_id).expect("original SQL");
+        let f = original
+            .iter()
+            .find(|c| c["id"] == case_id)
+            .expect("original SQL");
         let frozen_cell = f["cells"]
             .as_array()
             .expect("13 original parser dialects")
             .iter()
             .find(|source| source["id"] == key)
             .expect("canonical dialect cell");
-        assert_eq!(cell["parser_observation"], frozen_cell["original_observed_status"]);
+        assert_eq!(
+            cell["parser_observation"],
+            frozen_cell["original_observed_status"]
+        );
         assert_eq!(cell["parser_dialect"], frozen_cell["dialect"]);
         assert_eq!(cell["vendor_execution"], "unattested");
         assert_eq!(cell["pending_whole_matrix_owner"], "TASK-180");
-        match cell["review_disposition"].as_str().expect("explicit decision") {
+        match cell["review_disposition"]
+            .as_str()
+            .expect("explicit decision")
+        {
             "reviewed_bounded_typed_canonical_and_independent_duckdb" => {
                 assert_eq!(cell["parser_observation"], "C");
                 assert!(cell["typed_adapter_evidence"].is_string());
