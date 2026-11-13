@@ -308,12 +308,26 @@ pub(super) fn analyze_select_output_with_outer_scope(
     let scope = build_output_scope(select, local_outputs, outer_scope, diagnostics, metadata);
     let mut columns = Vec::new();
     for item in &select.projection {
-        columns.extend(analyze_output_item(
-            item,
-            &scope,
-            &select.named_window,
-            diagnostics,
-        ));
+        let coalesced_lineage = match item {
+            SelectItem::UnnamedExpr(Expr::Identifier(name))
+            | SelectItem::ExprWithAlias {
+                expr: Expr::Identifier(name),
+                ..
+            } => coalesced_join_column_lineage(select, &name.value, &scope),
+            _ => None,
+        };
+        let mut projected = analyze_output_item(item, &scope, &select.named_window, diagnostics);
+        if let (Some(lineage), [column]) = (coalesced_lineage, projected.as_mut_slice()) {
+            // USING/NATURAL exposes one coalesced column, even though each input
+            // independently owns the name. Retain both physical provenances.
+            *column = OutputColumn::new(
+                column.name().to_string(),
+                column.expression().clone(),
+                column.domain().clone(),
+                lineage,
+            );
+        }
+        columns.extend(projected);
     }
 
     // A plain copy from one local row source cannot introduce new values.
@@ -327,6 +341,79 @@ pub(super) fn analyze_select_output_with_outer_scope(
     }
 
     Output::new(columns)
+}
+
+/// Recover the two physical inputs of a single coalesced USING/NATURAL
+/// projection. NATURAL needs complete source schemas; no column is inferred
+/// from the syntax alone. Complex join trees retain conservative lineage.
+fn coalesced_join_column_lineage(
+    select: &Select,
+    column: &str,
+    scope: &[OutputRelation],
+) -> Option<Vec<LineageSource>> {
+    let [from] = select.from.as_slice() else {
+        return None;
+    };
+    let [join] = from.joins.as_slice() else {
+        return None;
+    };
+    let qualifier = |factor: &TableFactor| match factor {
+        TableFactor::Table { name, alias, args: None, .. } => Some(
+            alias.as_ref().map_or_else(|| name.to_string(), |a| a.name.to_string()),
+        ),
+        _ => None,
+    };
+    let left = qualifier(&from.relation)?;
+    let right = qualifier(&join.relation)?;
+    if left == right {
+        return None;
+    }
+    let (_, constraint, _) = analyze_join_operator(&join.join_operator);
+    match constraint? {
+        JoinConstraint::Using(names) if names.iter().any(|name| name.value == column) => {}
+        JoinConstraint::Natural => {
+            // Without complete source metadata, NATURAL's shared names are
+            // unknown. An untyped reference must not fabricate provenance.
+            for name in [&left, &right] {
+                let mut matching = scope.iter().filter(|relation| {
+                    relation.qualifiers.iter().any(|qualifier| qualifier == name)
+                });
+                let relation = matching.next()?;
+                if matching.next().is_some() {
+                    return None;
+                }
+                let present = match &relation.source {
+                    OutputRelationSource::Physical {
+                        columns: Some(columns),
+                        ..
+                    } => columns.iter().any(|name| name == column),
+                    OutputRelationSource::Local(output) => {
+                        output.columns().iter().any(|item| item.name() == column)
+                    }
+                    OutputRelationSource::Physical { columns: None, .. } => false,
+                };
+                if !present {
+                    return None;
+                }
+            }
+        }
+        _ => return None,
+    }
+    let [left_source] = output_column_candidates(Some(&left), column, scope).as_slice() else {
+        return None;
+    };
+    let [right_source] = output_column_candidates(Some(&right), column, scope).as_slice() else {
+        return None;
+    };
+    if left_source.is_empty() || right_source.is_empty() {
+        return None;
+    }
+    let lineage = left_source
+        .iter()
+        .chain(right_source)
+        .cloned()
+        .collect::<BTreeSet<_>>();
+    Some(lineage.into_iter().collect())
 }
 
 fn inherit_single_local_output_domains(
