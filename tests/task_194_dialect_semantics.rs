@@ -225,14 +225,15 @@ fn by_name_rejects_unmatched_and_duplicated_column_names_instead_of_guessing() {
     }
 }
 
-
 #[test]
 fn minus_spelling_keeps_the_original_except_semantics_in_all_13_parsers() {
     let dialects = parse(FREEZE)["dialects"]
         .as_array()
         .expect("frozen dialect list")
         .clone();
-    let exception: Value = parse(include_str!("../docs/task-178-syntax-dialect-boundaries.json"));
+    let exception: Value = parse(include_str!(
+        "../docs/task-178-syntax-dialect-boundaries.json"
+    ));
     let spelling = exception["cases"]
         .as_array()
         .expect("separately frozen syntax variants")
@@ -241,7 +242,9 @@ fn minus_spelling_keeps_the_original_except_semantics_in_all_13_parsers() {
         .expect("named MINUS portability exception");
     assert_eq!(spelling["expected_mask"], "CCCCCCCCCCCCC");
     let sql = spelling["sql"].as_str().expect("original MINUS syntax");
-    let reference = spelling["reference"].as_str().expect("canonical EXCEPT spelling");
+    let reference = spelling["reference"]
+        .as_str()
+        .expect("canonical EXCEPT spelling");
     for dialect in &dialects {
         let name = dialect.as_str().expect("parser dialect");
         let parser = dialect_from_name(name).expect("exposed dialect");
