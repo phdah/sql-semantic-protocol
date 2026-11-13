@@ -25,7 +25,9 @@ fn integer_bag(db: &Connection, sql: &str, columns: usize) -> Vec<Vec<Option<i64
                 .collect::<Result<Vec<_>, _>>()
         })
         .expect("complete native rowset");
-    let mut result: Vec<_> = rows.map(|row| row.expect("native integer/NULL row")).collect();
+    let mut result: Vec<_> = rows
+        .map(|row| row.expect("native integer/NULL row"))
+        .collect();
     result.sort();
     result
 }
@@ -40,7 +42,9 @@ fn expected_bag(value: &Value) -> Vec<Vec<Option<i64>>> {
 fn new_db(freeze: &Value) -> Connection {
     let db = Connection::open_in_memory().expect("DuckDB in-memory source");
     db.execute_batch(
-        freeze["source_setup"].as_str().expect("exact physical source setup"),
+        freeze["source_setup"]
+            .as_str()
+            .expect("exact physical source setup"),
     )
     .expect("closed source population");
     db
@@ -58,9 +62,10 @@ fn all_24_original_join_and_lateral_terminal_bags_match_native_oracles() {
         let id = case["id"].as_str().expect("stable original case");
         assert!(seen.insert(id), "{id}: duplicated join SQL variant");
         let sql = case["sql"].as_str().expect("unaltered TASK-66 SQL");
-        if case["original_duckdb_syntax_boundary"].as_str().is_some_and(|name| {
-            name.contains("rejected_by_duckdb_parser")
-        }) {
+        if case["original_duckdb_syntax_boundary"]
+            .as_str()
+            .is_some_and(|name| name.contains("rejected_by_duckdb_parser"))
+        {
             assert!(
                 db.prepare(sql).is_err(),
                 "{id}: the original native LEFT SEMI/ANTI spelling is not executable"
@@ -119,10 +124,15 @@ fn source_instances_prove_equal_matches_and_complete_false_or_unknown_complement
         "partner source preserves duplicates and physical NULL"
     );
     let mut seen = BTreeSet::new();
-    for case in oracles["cases"].as_array().expect("eleven independent rowid oracles") {
+    for case in oracles["cases"]
+        .as_array()
+        .expect("eleven independent rowid oracles")
+    {
         let id = case["id"].as_str().expect("stable occurrence fixture ID");
         assert!(seen.insert(id), "{id}: repeated occurrence proof");
-        let sql = case["sql"].as_str().expect("native SQL over original tables");
+        let sql = case["sql"]
+            .as_str()
+            .expect("native SQL over original tables");
         let expected = expected_bag(&case["expected_rows"]);
         let arity = case["expected_arity"].as_u64().expect("expected arity") as usize;
         assert_eq!(
@@ -149,9 +159,12 @@ fn source_instances_prove_equal_matches_and_complete_false_or_unknown_complement
         .iter()
         .find(|case| case["id"] == "88-C193-N01")
         .expect("NOT TRUE complement");
-    let true_pairs: BTreeSet<_> = expected_bag(&matched["expected_rows"]).into_iter().collect();
-    let not_true_pairs: BTreeSet<_> =
-        expected_bag(&nonmatched["expected_rows"]).into_iter().collect();
+    let true_pairs: BTreeSet<_> = expected_bag(&matched["expected_rows"])
+        .into_iter()
+        .collect();
+    let not_true_pairs: BTreeSet<_> = expected_bag(&nonmatched["expected_rows"])
+        .into_iter()
+        .collect();
     assert!(true_pairs.is_disjoint(&not_true_pairs));
     assert_eq!(true_pairs.len() + not_true_pairs.len(), 30);
 }
