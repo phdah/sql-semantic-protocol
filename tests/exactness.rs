@@ -2,8 +2,8 @@ mod common;
 
 use common::DIALECTS;
 use sql_semantic_protocol::{
-    analyze_sql, ConditionClause, ConditionExactnessStatus, Expression, Predicate, Protocol,
-    ProtocolStatement, QueryStatement, ResidualConditionReason, SetMode, LiteralValue, ValueDomain,
+    analyze_sql, ConditionClause, ConditionExactnessStatus, Expression, LiteralValue, Predicate,
+    Protocol, ProtocolStatement, QueryStatement, ResidualConditionReason, SetMode, ValueDomain,
 };
 use sqlparser::dialect::{dialect_from_str, GenericDialect};
 
@@ -192,7 +192,11 @@ fn implicit_where_equi_join_is_exact_without_unknown_scalar_domains() {
 
     assert!(query.condition_exactness().is_exact());
     let domains = query.column_domains();
-    assert_eq!(domains.len(), 2, "TRUE equality requires both inputs to be non-NULL");
+    assert_eq!(
+        domains.len(),
+        2,
+        "TRUE equality requires both inputs to be non-NULL"
+    );
     for domain in domains {
         let ValueDomain::Set(set) = domain.domain() else {
             panic!("expected exact SQL NULL exclusion without invented numeric bounds");
