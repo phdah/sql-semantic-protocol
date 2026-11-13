@@ -27,6 +27,10 @@ fn direct_catalog() -> RelationCatalog {
 }
 
 fn dbt_catalog(sql: &str) -> RelationCatalog {
+    let mut dependencies = vec!["source.task194.orders"];
+    if sql.contains("customers") {
+        dependencies.push("source.task194.customers");
+    }
     let manifest = json!({
         "metadata": {
             "dbt_schema_version": "https://schemas.getdbt.com/dbt/manifest/v12.json",
@@ -40,7 +44,7 @@ fn dbt_catalog(sql: &str) -> RelationCatalog {
                 "config": {"materialized": "view"},
                 "relation_name": "task194_set_result", "compiled_code": sql,
                 "depends_on": {
-                    "nodes": ["source.task194.orders", "source.task194.customers"]
+                    "nodes": dependencies
                 }
             }
         },
