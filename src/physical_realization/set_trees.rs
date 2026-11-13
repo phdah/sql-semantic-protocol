@@ -5,7 +5,9 @@
 //! no branch can fabricate an independently writable intermediate bag.
 
 use super::*;
-use crate::protocol::{ComparisonOperator, LiteralValue, SetBranch, SetMultiplicityRule, SetQuantifier};
+use crate::protocol::{
+    ComparisonOperator, LiteralValue, SetBranch, SetMultiplicityRule, SetOperator, SetQuantifier,
+};
 
 /// Per-leaf proof of SQL TRUE and NOT TRUE source-row membership.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -378,7 +380,10 @@ fn branch_page_survivors(
 
 // Unlike a scalar set witness, a complete physical plan can independently
 // establish exact case-sensitive name alignment from every typed leaf.
-fn bijective_name_alignment(operation: &SetOperation, output: &[String]) -> Option<Vec<Vec<usize>>> {
+fn bijective_name_alignment(
+    operation: &SetOperation,
+    output: &[String],
+) -> Option<Vec<Vec<usize>>> {
     if operation.operator() != SetOperator::Union
         || operation.branches().len() != 2
         || !matches!(operation.left(), SetOperand::Query)
@@ -652,7 +657,9 @@ pub fn physical_finite_set_tree_plan(
             return residual("set source multiplicity overflow");
         };
         let mut cursor = 0;
-        let Ok(output_count) = tree_count(operation, &counts, &mut cursor, name_alignment.is_some()) else {
+        let Ok(output_count) =
+            tree_count(operation, &counts, &mut cursor, name_alignment.is_some())
+        else {
             return residual("nested set operator has no exact multiplicity law");
         };
         if cursor != branches.len() {
