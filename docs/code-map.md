@@ -1,3 +1,5 @@
+TASK-194 original 22 set variants: `docs/task-194-independent-bag-review.json` owns independently reconstructed original source-arm, terminal and non-emitted candidate tuple bags, plus nine adversarial two-column/NULL cases; `tests/task_194_independent_bags.rs` executes DuckDB originals and impossible goals. `src/analysis/output.rs` owns exact unique-name canonical BY NAME output alignment. `src/physical_realization/set_trees.rs` certifies the strictly bijective, two-branch, complete physical UNION BY NAME tuple law with separate row identities. `tests/task_194_physical_by_name.rs` checks all 13 exposed parser dialects and closed-world impossibility. `tests/task_194_{dialect_semantics,adapter_parity,native_set_bags}.rs` own full-document, SQL/dbt/ODCS source fact and baseline DuckDB comparisons. `docs/task-194-independent-semantic-review.json` and coverage manifest own scoped signoff, with CORRESPONDING parser rejections routed to TASK-191, vendor laws to TASK-179 and release-matrix signoff to TASK-180.
+
 TASK-193 original 24 join/scopes variants: `src/analysis/domains.rs::derive_inner_join_predicate_domains` owns the conservative ordinary equality NOT NULL domain refinement; it does not prove a finite join population. `tests/task_193_{native_join_bags,source_instance_matrix,join_nullability,typed_soundness,adapter_parity,dialect_semantics,lineage_contract}.rs` and `docs/task-193-{acceptance-freeze,source-instance-matrix-v2,source-instance-oracles}.json` own literal complete DuckDB source/terminal and per-dialect physical-identity assertions. SQL/dbt/ODCS only contribute matching source facts; MSSQL correlated LATERAL native semantics remain TASK-179/TASK-191, not an approved Exact claim. TASK-88/TASK-91 remain release-blocking.
 
 TASK-192 bounded computed arithmetic and relational EXISTS:
@@ -298,8 +300,9 @@ literal LIMIT/OFFSET and FETCH ONLY with named ORDER BY output positions;
 `src/protocol/sets.rs` owns canonical sort keys and row shaping without AST;
 `src/physical_realization/set_trees.rs` certifies closed-world integer tuples,
 explicit NULL order, total tie-safe sorting and final exact output domains.
-Unattested coercion, BY NAME/CORRESPONDING and nested branch LIMIT remain
-Residual. Oracles: `tests/task_119_ordered_set_bags.rs`,
+Unattested coercion, CORRESPONDING, non-bijective BY NAME and nested
+branch LIMIT remain Residual. TASK-194 certifies a separate, type-attested
+bijective two-branch BY NAME source-bag path, not vendor name-folding laws. Oracles: `tests/task_119_ordered_set_bags.rs`,
 `docs/task-119-acceptance-freeze.json`.
 
 TASK-118 finite nested source-bag proof: `src/analysis/sets.rs` certifies the strict,
