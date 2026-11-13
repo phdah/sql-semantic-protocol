@@ -11,6 +11,7 @@ use sql_semantic_protocol::{analyze_sql, dialect_from_name, Predicate, ProtocolS
 
 const EXPECTED: &str = include_str!("../docs/task-192-original-query-shapes.json");
 const ORIGINAL: &str = include_str!("../docs/task-192-acceptance-freeze.json");
+const REVIEW: &str = include_str!("../docs/task-192-review-queue.json");
 
 fn predicate_shape(predicate: Option<&Predicate>) -> &'static str {
     match predicate {
@@ -46,7 +47,11 @@ fn all_original_sqls_have_independently_frozen_outer_source_and_predicate_shapes
     assert_eq!(fixed["schema_version"], 1);
     assert_eq!(fixed["owner"], "TASK-192");
     assert_eq!(fixed["case_count"], 43);
-    assert_eq!(fixed["independent_review_signed_off"], false);
+    let review: Value = serde_json::from_str(REVIEW).expect("recorded review decisions");
+    assert_eq!(
+        fixed["independent_review_signed_off"], review["independent_signoff"],
+        "independent query-shape status must follow recorded semantic approval"
+    );
     assert_eq!(
         (expected.len(), original_cases.len(), dialects.len()),
         (43, 43, 13)
