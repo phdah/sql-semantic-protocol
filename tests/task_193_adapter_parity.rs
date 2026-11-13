@@ -5,8 +5,8 @@
 use serde_json::{json, Value};
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, analyze_dbt_manifest_with_schemas, analyze_inputs,
-    dialect_from_name, parse_dbt_manifest, ComposedSemantics, ConfiguredSqlInput, ProducerExecution,
-    RelationCatalog, SqlInput, ValueDomain,
+    dialect_from_name, parse_dbt_manifest, ComposedSemantics, ConfiguredSqlInput,
+    ProducerExecution, RelationCatalog, SqlInput, ValueDomain,
 };
 
 const FREEZE: &str = include_str!("../docs/task-193-acceptance-freeze.json");
@@ -227,8 +227,14 @@ fn every_21_original_native_join_cases_keep_typed_odcs_parity() {
 fn exceptional_original_syntax_and_vendor_ast_cells_are_not_approved_as_portable_native() {
     let freeze: Value = serde_json::from_str(FREEZE).expect("acceptance freeze");
     for (id, expected_boundary) in [
-        ("88-C177-S054", "original_LEFT_SEMI_rejected_by_duckdb_parser"),
-        ("88-C177-S055", "original_LEFT_ANTI_rejected_by_duckdb_parser"),
+        (
+            "88-C177-S054",
+            "original_LEFT_SEMI_rejected_by_duckdb_parser",
+        ),
+        (
+            "88-C177-S055",
+            "original_LEFT_ANTI_rejected_by_duckdb_parser",
+        ),
         (
             "88-C177-S152",
             "MSSQL_different_AST_requires_TASK_179_TASK_191_adjudication",
