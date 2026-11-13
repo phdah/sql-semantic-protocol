@@ -371,8 +371,23 @@ fn minus_normalizes_to_except_and_by_name_never_claims_positional_laws() {
                 if id.ends_with("-minus") {
                     assert_eq!(operation.operator(), SetOperator::Except);
                 } else {
+                    // TASK-194 resolves provably bijective BY NAME output typing,
+                    // not the separate tuple-multiplicity/physical membership law.
                     assert!(operation.multiplicity_rule().is_none());
-                    assert!(!query.diagnostics().is_empty());
+                    assert_eq!(query.output().columns().len(), 2);
+                    let (positive, negative) = operation.witness_directions();
+                    for direction in [positive, negative] {
+                        assert!(
+                            matches!(
+                                direction,
+                                sql_semantic_protocol::SetWitnessDirection::Residual {
+                                    reason: "unsupported_alignment",
+                                    ..
+                                }
+                            ),
+                            "{id}: BY NAME typed output is not a positional count proof"
+                        );
+                    }
                 }
             }
             Err(_) => {
