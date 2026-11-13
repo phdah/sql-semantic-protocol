@@ -17,7 +17,10 @@ fn parsed(s: &str) -> Value {
 }
 
 fn without_input_dialect(mut wire: Value) -> Value {
-    for input in wire["inputs"].as_array_mut().expect("canonical input array") {
+    for input in wire["inputs"]
+        .as_array_mut()
+        .expect("canonical input array")
+    {
         input["dialect"] = Value::Null;
     }
     wire
@@ -39,7 +42,9 @@ fn freeze_preserves_all_original_sql_and_observed_parser_cells() {
         coverage["task_193_join_and_source_instance_acceptance"]["freeze"],
         "docs/task-193-acceptance-freeze.json"
     );
-    let originals = original["cases"].as_array().expect("original 163 SQL variants");
+    let originals = original["cases"]
+        .as_array()
+        .expect("original 163 SQL variants");
     let mut seen = BTreeSet::new();
     let mut cells = BTreeSet::new();
     for case in freeze["cases"].as_array().expect("24 cases") {
@@ -49,9 +54,15 @@ fn freeze_preserves_all_original_sql_and_observed_parser_cells() {
             .iter()
             .find(|row| row["id"] == id)
             .expect("source SQL exists in original reviewed inventory");
-        assert_eq!(case["sql"], prior["sql"], "{id}: SQL cannot be silently edited");
+        assert_eq!(
+            case["sql"], prior["sql"],
+            "{id}: SQL cannot be silently edited"
+        );
         assert_eq!(case["variant"], prior["variant"], "{id}: fixed variant");
-        assert_eq!(case["feature_id"], prior["feature_id"], "{id}: family owner");
+        assert_eq!(
+            case["feature_id"], prior["feature_id"],
+            "{id}: family owner"
+        );
         assert!(
             case["feature_id"]
                 .as_str()
@@ -59,8 +70,7 @@ fn freeze_preserves_all_original_sql_and_observed_parser_cells() {
             "{id}: TASK-193 owns joins and correlated scopes only"
         );
         assert_eq!(
-            case["observed_canonical_mask"],
-            prior["full_document_classification"],
+            case["observed_canonical_mask"], prior["full_document_classification"],
             "{id}: original 13-dialect observation cannot be replaced with a passing claim"
         );
         let variants = case["cells"].as_array().expect("13 named dialect cells");
@@ -72,7 +82,10 @@ fn freeze_preserves_all_original_sql_and_observed_parser_cells() {
             assert_eq!(identity, format!("{id}/{name}"));
             assert!(cells.insert(identity), "{identity}: repeated dialect cell");
             assert_eq!(cell["native_vendor_execution"], "unattested");
-            assert_eq!(cell["observed_status"], prior["dialect_cells"][index]["observed_status"]);
+            assert_eq!(
+                cell["observed_status"],
+                prior["dialect_cells"][index]["observed_status"]
+            );
         }
     }
     assert_eq!(seen.len(), 24);
@@ -105,7 +118,9 @@ fn all_shared_join_sql_forms_emit_identical_public_documents_across_13_parsers()
                 .expect("every SQL output has canonical columns");
             assert_eq!(
                 columns.len(),
-                case["expected_columns"].as_u64().expect("native projection arity") as usize,
+                case["expected_columns"]
+                    .as_u64()
+                    .expect("native projection arity") as usize,
                 "{id}/{name}: canonical output arity"
             );
             for column in columns {
