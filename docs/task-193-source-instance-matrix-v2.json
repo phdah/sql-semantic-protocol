@@ -194,7 +194,20 @@
           ]
         ],
         "expected_pair_count": 30
-      }
+      },
+      "expected_public_join_kinds": [
+        "inner"
+      ],
+      "expected_physical_dependencies": [
+        "customers",
+        "orders"
+      ],
+      "expected_projection_lineage": [
+        [
+          "orders.id"
+        ]
+      ],
+      "projection_lineage_rule": "exact"
     },
     {
       "case_id": "88-C177-S044",
@@ -377,7 +390,21 @@
           ]
         ],
         "expected_pair_count": 30
-      }
+      },
+      "expected_public_join_kinds": [
+        "inner"
+      ],
+      "expected_physical_dependencies": [
+        "customers",
+        "orders"
+      ],
+      "expected_projection_lineage": [
+        [
+          "orders.id",
+          "customers.id"
+        ]
+      ],
+      "projection_lineage_rule": "nonempty_subset_of_candidates"
     },
     {
       "case_id": "88-C177-S045",
@@ -553,7 +580,21 @@
           ]
         ],
         "expected_pair_count": 30
-      }
+      },
+      "expected_public_join_kinds": [
+        "inner"
+      ],
+      "expected_physical_dependencies": [
+        "customers",
+        "orders"
+      ],
+      "expected_projection_lineage": [
+        [
+          "orders.id",
+          "customers.id"
+        ]
+      ],
+      "projection_lineage_rule": "nonempty_subset_of_candidates"
     },
     {
       "case_id": "88-C177-S046",
@@ -729,7 +770,20 @@
           ]
         ],
         "expected_pair_count": 30
-      }
+      },
+      "expected_public_join_kinds": [
+        "inner"
+      ],
+      "expected_physical_dependencies": [
+        "customers",
+        "orders"
+      ],
+      "expected_projection_lineage": [
+        [
+          "orders.id"
+        ]
+      ],
+      "projection_lineage_rule": "exact"
     },
     {
       "case_id": "88-C177-S047",
@@ -946,7 +1000,20 @@
         ],
         "expected_unknown_pairs": [],
         "expected_pair_count": 30
-      }
+      },
+      "expected_public_join_kinds": [
+        "inner"
+      ],
+      "expected_physical_dependencies": [
+        "customers",
+        "orders"
+      ],
+      "expected_projection_lineage": [
+        [
+          "orders.id"
+        ]
+      ],
+      "projection_lineage_rule": "exact"
     },
     {
       "case_id": "88-C177-S048",
@@ -1150,7 +1217,20 @@
           ]
         ],
         "expected_pair_count": 30
-      }
+      },
+      "expected_public_join_kinds": [
+        "left"
+      ],
+      "expected_physical_dependencies": [
+        "customers",
+        "orders"
+      ],
+      "expected_projection_lineage": [
+        [
+          "orders.id"
+        ]
+      ],
+      "projection_lineage_rule": "exact"
     },
     {
       "case_id": "88-C177-S049",
@@ -1347,7 +1427,20 @@
           ]
         ],
         "expected_pair_count": 30
-      }
+      },
+      "expected_public_join_kinds": [
+        "right"
+      ],
+      "expected_physical_dependencies": [
+        "customers",
+        "orders"
+      ],
+      "expected_projection_lineage": [
+        [
+          "orders.id"
+        ]
+      ],
+      "projection_lineage_rule": "exact"
     },
     {
       "case_id": "88-C177-S050",
@@ -1565,7 +1658,20 @@
           ]
         ],
         "expected_pair_count": 30
-      }
+      },
+      "expected_public_join_kinds": [
+        "full"
+      ],
+      "expected_physical_dependencies": [
+        "customers",
+        "orders"
+      ],
+      "expected_projection_lineage": [
+        [
+          "orders.id"
+        ]
+      ],
+      "projection_lineage_rule": "exact"
     },
     {
       "case_id": "88-C177-S051",
@@ -1734,7 +1840,20 @@
           ]
         ],
         "expected_pair_count": 30
-      }
+      },
+      "expected_public_join_kinds": [
+        "left"
+      ],
+      "expected_physical_dependencies": [
+        "customers",
+        "orders"
+      ],
+      "expected_projection_lineage": [
+        [
+          "orders.id"
+        ]
+      ],
+      "projection_lineage_rule": "exact"
     },
     {
       "case_id": "88-C177-S052",
@@ -1946,7 +2065,23 @@
           ]
         ],
         "expected_pair_count": 30
-      }
+      },
+      "expected_public_join_kinds": [
+        "left"
+      ],
+      "expected_physical_dependencies": [
+        "customers",
+        "orders"
+      ],
+      "expected_projection_lineage": [
+        [
+          "orders.id"
+        ],
+        [
+          "customers.id"
+        ]
+      ],
+      "projection_lineage_rule": "exact"
     },
     {
       "case_id": "88-C177-S053",
@@ -2150,7 +2285,20 @@
           ]
         ],
         "expected_pair_count": 30
-      }
+      },
+      "expected_public_join_kinds": [
+        "left"
+      ],
+      "expected_physical_dependencies": [
+        "customers",
+        "orders"
+      ],
+      "expected_projection_lineage": [
+        [
+          "orders.id"
+        ]
+      ],
+      "projection_lineage_rule": "exact"
     },
     {
       "case_id": "88-C177-S054",
@@ -2316,7 +2464,20 @@
           ]
         ],
         "expected_pair_count": 30
-      }
+      },
+      "expected_public_join_kinds": [
+        "left_semi"
+      ],
+      "expected_physical_dependencies": [
+        "customers",
+        "orders"
+      ],
+      "expected_projection_lineage": [
+        [
+          "orders.id"
+        ]
+      ],
+      "projection_lineage_rule": "exact"
     },
     {
       "case_id": "88-C177-S055",
@@ -2482,7 +2643,20 @@
           ]
         ],
         "expected_pair_count": 30
-      }
+      },
+      "expected_public_join_kinds": [
+        "left_anti"
+      ],
+      "expected_physical_dependencies": [
+        "customers",
+        "orders"
+      ],
+      "expected_projection_lineage": [
+        [
+          "orders.id"
+        ]
+      ],
+      "projection_lineage_rule": "exact"
     },
     {
       "case_id": "88-C177-S056",
@@ -2648,7 +2822,18 @@
           ]
         ],
         "expected_pair_count": 30
-      }
+      },
+      "expected_public_join_kinds": [],
+      "expected_physical_dependencies": [
+        "customers",
+        "orders"
+      ],
+      "expected_projection_lineage": [
+        [
+          "orders.id"
+        ]
+      ],
+      "projection_lineage_rule": "exact"
     },
     {
       "case_id": "88-C177-S057",
@@ -2814,7 +2999,18 @@
           ]
         ],
         "expected_pair_count": 30
-      }
+      },
+      "expected_public_join_kinds": [],
+      "expected_physical_dependencies": [
+        "customers",
+        "orders"
+      ],
+      "expected_projection_lineage": [
+        [
+          "orders.id"
+        ]
+      ],
+      "projection_lineage_rule": "exact"
     },
     {
       "case_id": "88-C177-S058",
@@ -3011,7 +3207,20 @@
           ]
         ],
         "expected_pair_count": 30
-      }
+      },
+      "expected_public_join_kinds": [
+        "inner"
+      ],
+      "expected_physical_dependencies": [
+        "customers",
+        "orders"
+      ],
+      "expected_projection_lineage": [
+        [
+          "orders.id"
+        ]
+      ],
+      "projection_lineage_rule": "exact"
     },
     {
       "case_id": "88-C177-S059",
@@ -3285,7 +3494,20 @@
           ]
         ],
         "expected_pair_count": 30
-      }
+      },
+      "expected_public_join_kinds": [
+        "inner"
+      ],
+      "expected_physical_dependencies": [
+        "customers",
+        "orders"
+      ],
+      "expected_projection_lineage": [
+        [
+          "orders.id"
+        ]
+      ],
+      "projection_lineage_rule": "exact"
     },
     {
       "case_id": "88-C177-S060",
@@ -3430,7 +3652,20 @@
           ]
         ],
         "expected_pair_count": 30
-      }
+      },
+      "expected_public_join_kinds": [
+        "inner"
+      ],
+      "expected_physical_dependencies": [
+        "customers",
+        "orders"
+      ],
+      "expected_projection_lineage": [
+        [
+          "orders.id"
+        ]
+      ],
+      "projection_lineage_rule": "exact"
     },
     {
       "case_id": "88-C177-S061",
@@ -3662,7 +3897,20 @@
           ]
         ],
         "expected_pair_count": 30
-      }
+      },
+      "expected_public_join_kinds": [
+        "inner"
+      ],
+      "expected_physical_dependencies": [
+        "customers",
+        "orders"
+      ],
+      "expected_projection_lineage": [
+        [
+          "orders.id"
+        ]
+      ],
+      "projection_lineage_rule": "exact"
     },
     {
       "case_id": "88-C177-S062",
@@ -3883,7 +4131,19 @@
           ]
         ],
         "expected_pair_count": 36
-      }
+      },
+      "expected_public_join_kinds": [
+        "inner"
+      ],
+      "expected_physical_dependencies": [
+        "orders"
+      ],
+      "expected_projection_lineage": [
+        [
+          "orders.id"
+        ]
+      ],
+      "projection_lineage_rule": "exact"
     },
     {
       "case_id": "88-C177-S063",
@@ -3989,7 +4249,20 @@
       ],
       "expected_original_columns": 1,
       "original_parser_dialect_observations": "CCCCCCCCCCCCC",
-      "native_duckdb_boundary": null
+      "native_duckdb_boundary": null,
+      "expected_public_join_kinds": [
+        "inner",
+        "inner"
+      ],
+      "expected_physical_dependencies": [
+        "orders"
+      ],
+      "expected_projection_lineage": [
+        [
+          "orders.id"
+        ]
+      ],
+      "projection_lineage_rule": "exact"
     },
     {
       "case_id": "88-C177-S064",
@@ -4047,7 +4320,22 @@
       ],
       "expected_original_columns": 1,
       "original_parser_dialect_observations": "CCCCCCCCCCCCC",
-      "native_duckdb_boundary": null
+      "native_duckdb_boundary": null,
+      "expected_public_join_kinds": [
+        "inner",
+        "inner"
+      ],
+      "expected_physical_dependencies": [
+        "customers",
+        "orders",
+        "products"
+      ],
+      "expected_projection_lineage": [
+        [
+          "orders.id"
+        ]
+      ],
+      "projection_lineage_rule": "exact"
     },
     {
       "case_id": "88-C177-S065",
@@ -4268,7 +4556,19 @@
           ]
         ],
         "expected_pair_count": 36
-      }
+      },
+      "expected_public_join_kinds": [
+        "inner"
+      ],
+      "expected_physical_dependencies": [
+        "orders"
+      ],
+      "expected_projection_lineage": [
+        [
+          "orders.id"
+        ]
+      ],
+      "projection_lineage_rule": "exact"
     },
     {
       "case_id": "88-C177-S152",
@@ -4327,7 +4627,19 @@
       ],
       "expected_original_columns": 1,
       "original_parser_dialect_observations": "CCCCCCCDCCCCC",
-      "native_duckdb_boundary": "MSSQL AST drift unapproved TASK-179/TASK-191"
+      "native_duckdb_boundary": "MSSQL AST drift unapproved TASK-179/TASK-191",
+      "expected_public_join_kinds": [
+        "inner"
+      ],
+      "expected_physical_dependencies": [
+        "orders"
+      ],
+      "expected_projection_lineage": [
+        [
+          "orders.id"
+        ]
+      ],
+      "projection_lineage_rule": "exact"
     }
   ]
 }
