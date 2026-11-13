@@ -133,7 +133,12 @@ fn task_192_inventory_contains_all_original_cases_without_false_semantic_certifi
                 "{id}: cannot retroactively alter observed parser evidence"
             );
             assert_eq!(
-                observation["semantic_certification"], "pending_independent_task_192_verification",
+                observation["semantic_certification"],
+                if signed_off {
+                    "reviewed_bounded_task_192_semantics"
+                } else {
+                    "pending_independent_task_192_verification"
+                },
                 "{id}: parser equality is not semantic proof"
             );
             assert_eq!(observation["native_vendor_certification"], "unattested");

@@ -1,9 +1,15 @@
 # TASK-192 independent semantic review handoff
 
-**Status: awaiting independent reviewer and mandatory residual dispositions.**
+**Status: bounded TASK-192 semantic review signed off 2026-11-13.**
 This is a review aid, not a signoff. Neither parser acceptance nor successful
 DuckDB sample execution is evidence that all 13 native vendors implement the
 same runtime behavior.
+
+## Final user-authorized review (supersedes historical handoff text)
+
+The [independent 43-case/559-cell audit](task-192-independent-semantic-review.json) used manually specified SQL source, projection, predicate, signed-domain and 3VL expectations against complete public canonical outcomes and independent DuckDB physical/terminal bags; 3,276 assertions passed, as did 25 independent numeric/correlated four-direction truth tables. All 557 accepted parser documents and two original rejected structural parser cells now have approved dispositions and evidence refs in the [review queue](task-192-review-queue.json), pinned to implementation SHA `eca90dbbd6038eaab8c96d80ffab64133e9d9def`. This is a user-authorized GPT-6 technical signoff, not a claim of a separate human reviewer. Code-head protocol CI 9/9 and pinned consumers 5/5 each passed; final metadata-only head requires its own CI before merge.
+
+**Scope:** Approvals validate the strongest sound **bounded public parser/typed outcomes**, accurately named Unsupported/Residual/Conditional laws, and physical source/terminal evidence. They do **not** approve external native vendor behavior or promise universal finite source constraints. TASK-179, TASK-191, TASK-193, TASK-180, TASK-88 and TASK-91 remain under their original ownership and release gates. The remaining handoff instructions below are preserved as the historical pre-review procedure, not new blockers for TASK-192.
 
 ## Fixed acceptance boundaries
 
@@ -130,4 +136,4 @@ re-labelled as approval.
 - [Downstream production migration draft](https://github.com/phdah/sql-tdg/pull/50)
 - [Temporary pin-only compatibility harness](https://github.com/phdah/sql-tdg/pull/49)
 
-**This document intentionally contains no signed-off reviewer identity.**
+**Reviewer identity, code SHA and the 559 checked decisions are recorded in the independent semantic review evidence and queue.**

@@ -2,7 +2,7 @@
   "schema_version": 1,
   "owner": "TASK-192",
   "scope": "independently specified fixed original SQL source and output-shape checks, no generated-output golden or vendor runtime attestations",
-  "independent_review_signed_off": false,
+  "independent_review_signed_off": true,
   "case_count": 43,
   "cases": [
     {

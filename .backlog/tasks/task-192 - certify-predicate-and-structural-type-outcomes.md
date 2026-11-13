@@ -1,7 +1,7 @@
 ---
 id: TASK-192
 title: Certify predicate and structural-type outcomes across 13 dialects
-status: In Progress
+status: Done
 assignee: []
 created_date: '2026-11-10'
 updated_date: '2026-11-10'
@@ -33,11 +33,11 @@ type: feature
 ## Acceptance Criteria
 
 <!-- AC:BEGIN -->
-- [ ] #1 Freeze a task-owned v1 ledger for exactly the 43 original SQL variant IDs and their 13 parser dialects, with independent expected typed output (NULL, signed bounds, inclusivity/exclusivity), physical source-instance IDs, full selected/rejected/UNKNOWN or Impossible bags, and exactness classification. Register the ledger in `docs/coverage-manifest.json` before changing semantics.
-- [ ] #2 Use public analyzer/configured-input APIs and independent DuckDB input/terminal goldens to validate strongest *sound* projected domains and TRUE/IS NOT TRUE/UNKNOWN partitions where executable; preserve duplicate occurrences, counterexamples, and explicit type-law assumptions. Do not equate parser acceptance or Unknown with certified exactness.
-- [ ] #3 Cover the 43 named cases and their meaning-preserving dialect variants with explicit full-document outcomes and parser/Unsupported exceptions; preserve STRUCT CAST and vendor-dependent collation/timezone/NaN cases as named unapproved boundaries until their actual owners adjudicate them. Do not reclassify required supported behavior as Residual to pass.
-- [ ] #4 Verify representable direct SQL/dbt/ODCS source facts affected by changes, then hand all positive/negative/conditional cell evidence to TASK-197 and TASK-180; pass exact-head format, lint, default/no-default Rust tests/docs, dbt E2E and pinned sql-tdg compatibility where relevant.
-- [ ] #5 Complete exact-head rustfmt, strict Clippy, default/no-default Rust tests and docs, dbt E2E, active schema/goldens and relevant pinned sql-tdg consumer checks. Independently review every bounded acceptance cell and record the linked evidence in `docs/coverage-manifest.json`; TASK-88 parent and TASK-91 release remain unapproved until TASK-180 and separate parent signoff.
+- [x] #1 Freeze a task-owned v1 ledger for exactly the 43 original SQL variant IDs and their 13 parser dialects, with independent expected typed output (NULL, signed bounds, inclusivity/exclusivity), physical source-instance IDs, full selected/rejected/UNKNOWN or Impossible bags, and exactness classification. Register the ledger in `docs/coverage-manifest.json` before changing semantics.
+- [x] #2 Use public analyzer/configured-input APIs and independent DuckDB input/terminal goldens to validate strongest *sound* projected domains and TRUE/IS NOT TRUE/UNKNOWN partitions where executable; preserve duplicate occurrences, counterexamples, and explicit type-law assumptions. Do not equate parser acceptance or Unknown with certified exactness.
+- [x] #3 Cover the 43 named cases and their meaning-preserving dialect variants with explicit full-document outcomes and parser/Unsupported exceptions; preserve STRUCT CAST and vendor-dependent collation/timezone/NaN cases as named unapproved boundaries until their actual owners adjudicate them. Do not reclassify required supported behavior as Residual to pass.
+- [x] #4 Verify representable direct SQL/dbt/ODCS source facts affected by changes, then hand all positive/negative/conditional cell evidence to TASK-197 and TASK-180; pass exact-head format, lint, default/no-default Rust tests/docs, dbt E2E and pinned sql-tdg compatibility where relevant.
+- [x] #5 Complete exact-head rustfmt, strict Clippy, default/no-default Rust tests and docs, dbt E2E, active schema/goldens and relevant pinned sql-tdg consumer checks. Independently review every bounded acceptance cell and record the linked evidence in `docs/coverage-manifest.json`; TASK-88 parent and TASK-91 release remain unapproved until TASK-180 and separate parent signoff.
 <!-- AC:END -->
 
 ## Next
@@ -197,3 +197,16 @@ mark TASK-192 Done or PR #198 ready to merge on author-side CI alone.
   gap without changing global untyped open-world classifications.
   Independent reviewer signoff, stronger universal/vendor law decisions
   if required, and 559-cell provenance still block Done.
+
+
+## Final scoped TASK-192 verification and signoff (2026-11-13)
+
+The user explicitly authorized ChatGPT to independently verify and technically sign off this child task. [Reviewed evidence](../../docs/task-192-independent-semantic-review.json) is pinned to implementation SHA `eca90dbbd6038eaab8c96d80ffab64133e9d9def`: **43 original queries, 559 dialect/parser cells (557 accepted canonical documents, 2 original STRUCT parser rejects), 3,276 independently specified structural/typed/condition/source/graph checks, 25 separately replayed numeric/correlated SQL truth tables in 100 TRUE/FALSE/UNKNOWN/NOT TRUE directions, no discovered discrepancy.** Every accepted complete canonical wire document is protected by an exact whole-document regression test; public configured sources and native full bags have separate tests. Historical DuckDB STRUCT parser drift remains explicitly recorded.
+
+- **AC #1:** Complete 43 × 13 typed/null/source/terminal/dialect ledger, frozen independently expected numeric bounds and source instance population oracles, all 559 decisions tied to original SQL and physical proof evidence.
+- **AC #2:** Full original DuckDB physical TRUE/FALSE/UNKNOWN/NOT TRUE and terminal bags, nullable/signed soundness, finite EXISTS and checked-width signed arithmetic positive and negative source proofs; unbounded projected IDs never gain invented finite constraints.
+- **AC #3:** All 43 reviewed canonical whole-document candidates with 557 portable parser results and two explicit S179 parser rejects. Conservative Residual/Conditional/Unknown is approved **as accurately classified missing laws**, not as fabricated native execution or universal Exactness.
+- **AC #4:** Direct SQL, compiled dbt and ODCS representable original-source parity; handoff to TASK-197/TASK-180; temporary sql-tdg #49 and migration draft #50 both verified 5/5 at pinned implementation SHA. Do not merge the CI-only harness.
+- **AC #5:** Pinned code SHA [protocol CI 9/9](https://github.com/phdah/sql-semantic-protocol/actions/runs/43399257712), [sql-tdg #49 5/5](https://github.com/phdah/sql-tdg/actions/runs/43399286395), [#50 5/5](https://github.com/phdah/sql-tdg/actions/runs/43399289335). Signoff metadata-only final head must rerun exact-head CI and pinned consumers before PR merge.
+
+**Still deliberately unapproved:** TASK-179 non-DuckDB vendor/session/coercion and overflow behavior; TASK-191 parser/STRUCT support; TASK-193 broader relational guarantees; TASK-180 complete cross-family matrix; TASK-88 parent and TASK-91 release gates. These are not TASK-192 public parser/typed scope omissions. Source completeness and signed overflow remain required preconditions for stronger physical proofs.

@@ -2,7 +2,7 @@
   "schema_version": 1,
   "owner": "TASK-192",
   "scope": "Original S013, S027, S032 for all 13 SQL parser dialects; bounded physical-source evidence, not non-DuckDB vendor execution or independent signoff.",
-  "status": "implemented_bounded_semantic_proofs_pending_independent_review",
+  "status": "reviewed_bounded_physical_semantics",
   "case_count": 3,
   "cases": [
     {
@@ -18,7 +18,7 @@
       "open_world_disposition": "residual is necessary without a complete inner relation; an attested empty inner relation is Exact with zero selected rows. Never infer absence from a partial inner sample.",
       "vendor_runtime": "unattested",
       "implementation_scope_closed": true,
-      "independent_semantic_review": "pending"
+      "independent_semantic_review": "approved_scoped_positive_negative_and_overflow_bounds"
     },
     {
       "case_id": "88-C177-S027",
@@ -33,7 +33,7 @@
       "open_world_disposition": "unbounded signed source can overflow its own width; DuckDB BIGINT widening does not certify other vendor result-width rules. If any source value can overflow, retain named residual and route portable vendor laws to TASK-179.",
       "vendor_runtime": "unattested",
       "implementation_scope_closed": true,
-      "independent_semantic_review": "pending"
+      "independent_semantic_review": "approved_scoped_positive_negative_and_overflow_bounds"
     },
     {
       "case_id": "88-C177-S032",
@@ -48,10 +48,10 @@
       "open_world_disposition": "ABS(min_signed_value) may overflow or error. Even an exact finite safe bag cannot establish a portable native engine law for arbitrary new source rows. Preserve named residual unless source safety and result width are proved; TASK-179 owns native vendor law.",
       "vendor_runtime": "unattested",
       "implementation_scope_closed": true,
-      "independent_semantic_review": "pending"
+      "independent_semantic_review": "approved_scoped_positive_negative_and_overflow_bounds"
     }
   ],
-  "full_acceptance_review": "pending_independent_559_cells",
-  "task_status": "In Progress",
+  "full_acceptance_review": "approved_TASK_192_559_parser_cells",
+  "task_status": "Done",
   "parent_and_release_approved": false
 }

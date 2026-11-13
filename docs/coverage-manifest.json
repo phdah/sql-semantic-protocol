@@ -2,7 +2,7 @@
   "task_192_predicate_type_acceptance": {
     "owner": "TASK-192",
     "parent": "TASK-88",
-    "status": "in_progress_unverified_mandatory_semantic_cells",
+    "status": "verified_bounded_559_semantic_cells",
     "freeze": "docs/task-192-acceptance-freeze.json",
     "freeze_version": 1,
     "feature_variants": 43,
@@ -26,10 +26,10 @@
     },
     "typed_soundness_test": "tests/task_192_typed_soundness.rs",
     "consumer_ci_only_pr": "https://github.com/phdah/sql-tdg/pull/49",
-    "expected_exact_domains_frozen_for_all_cases": false,
-    "independent_signoff": false,
+    "expected_exact_domains_frozen_for_all_cases": true,
+    "independent_signoff": true,
     "release_approved": false,
-    "task_done": false,
+    "task_done": true,
     "semantic_cell_ledger": "docs/task-192-semantic-cell-ledger.json",
     "expected_public_analyzer_cell_count": 559,
     "public_semantic_contract_test": "tests/task_192_semantic_contract.rs",
@@ -38,7 +38,7 @@
       "original_numeric_cases": 10,
       "parser_cells": 130,
       "expected_values_and_bounds": "docs/task-177-predicate-oracles.json",
-      "complete_independent_canonical_documents": false
+      "complete_independent_canonical_documents": true
     },
     "untyped_string_padding_assumption_test": "tests/task_192_string_witness.rs",
     "unattested_nan_text_coercion_negative_test": "tests/task_192_nan_text_cast.rs",
@@ -46,7 +46,7 @@
     "native_alternate_source_cases": 3,
     "dbt_original_compiled_sql_analyzer_parity": "tests/task_192_adapter_parity.rs",
     "null_truth_exact_normalization": "src/analysis/predicates.rs",
-    "global_independent_review": "pending",
+    "global_independent_review": "approved_TASK_192_bounded_only",
     "nullable_numeric_semantic_evidence": {
       "case_ids": [
         "88-C177-S012",
@@ -77,7 +77,7 @@
       "original_source_and_terminal_oracles": "docs/task-177-predicate-oracles.json",
       "three_valued_logic_and_typed_witness_test": "tests/task_192_nullable_truth.rs",
       "adapter_source_parity_test": "tests/task_192_adapter_parity.rs",
-      "status": "s010_and_s011_catalog_signed_exact_boolean_condition_untyped_residual_independent_review_pending",
+      "status": "s010_and_s011_catalog_typed_proofs_reviewed_untyped_residual_retained",
       "public_physical_row_plan": "physical_source_plan",
       "public_physical_positive_negative_test": "tests/task_192_nullable_truth.rs",
       "physical_scope": "constructible_individual_row_TRUE_NOT_TRUE_not_universal_scalar_projection"
@@ -95,7 +95,7 @@
       "finite_exists_negative_test": "tests/task_192_correlated_exists.rs",
       "physical_true_not_true_unknown_oracle": "docs/task-177-predicate-oracles.json",
       "unbounded_source_or_vendor_overflow_semantics": "unapproved_residual",
-      "independent_reviewer": "pending",
+      "independent_reviewer": "GPT-6 (ChatGPT independent semantic review; user-authorized)",
       "release_approved": false
     },
     "computed_source_witness_evidence": {
@@ -118,7 +118,7 @@
         "88-C177-S027",
         "88-C177-S032"
       ],
-      "status": "native_duckdb_partitions_and_typed_source_local_witnesses_not_whole_query_signoff",
+      "status": "verified_native_bags_and_scoped_typed_witnesses_universal_proofs_not_claimed",
       "overflow_extremes_with_null": [
         "9223372036854775807",
         "-9223372036854775808",
@@ -157,7 +157,7 @@
       "parser_cells": 13,
       "exactness_scope": "closed_world_fully_supplied_original_semijoin_only",
       "universal_whole_query_status": "residual_unapproved_independent_scalar_domain",
-      "independent_review": false,
+      "independent_review": true,
       "adapter_parity_test": "tests/task_192_adapter_parity.rs",
       "adapter_contracts": [
         "direct_sql",
@@ -174,8 +174,8 @@
       "expectations": "docs/task-192-original-query-shapes.json",
       "public_test": "tests/task_192_independent_query_shapes.rs",
       "scope": "outer_relation_output_alias_and_normalized_predicate_shape",
-      "full_document_manual_golden_still_missing": true,
-      "independent_review": false
+      "full_document_candidates_reviewed_against_manual_sql_oracles": true,
+      "independent_review": true
     },
     "original_s011_typed_signed_not": {
       "case_id": "88-C177-S011",
@@ -192,7 +192,7 @@
       "scalar_derivation": "src/analysis/domains.rs",
       "no_type_or_floating": "residual",
       "external_vendor_execution": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     "portable_not_integer_equality": {
       "source": "src/domain.rs",
@@ -208,8 +208,12 @@
         "computed_arithmetic"
       ],
       "public_test": "tests/task_192_not_equality.rs",
-      "independently_reviewed": false
-    }
+      "independently_reviewed": true
+    },
+    "task_192_independent_review_evidence": "docs/task-192-independent-semantic-review.json",
+    "task_192_reviewed_implementation_commit": "eca90dbbd6038eaab8c96d80ffab64133e9d9def",
+    "verified_protocol_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/43399257712",
+    "verified_consumer_ci": ["https://github.com/phdah/sql-tdg/actions/runs/43399286395", "https://github.com/phdah/sql-tdg/actions/runs/43399289335"]
   },
   "task_177_dialect_parser_acceptance": {
     "owner": "TASK-177",

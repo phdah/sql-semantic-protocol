@@ -1,9 +1,17 @@
 # TASK-192 predicate and structural-type acceptance audit
 
-Status: **In Progress, mandatory global signoff blocked.** This file records the
+Status: **TASK-192 bounded semantic signoff complete; global parent/release gates remain unsigned.** This file records the
 bounded evidence on PR #198 without upgrading prior parser observations into
 native engine certification. Original TASK-178 and TASK-88 acceptance criteria
 are unchanged.
+
+## Final TASK-192 acceptance closure (2026-11-13)
+
+[Independent review evidence](task-192-independent-semantic-review.json) checked **all 43 original SQL cases × 13 dialects = 559 cells** with 3,276 independently specified source, output, predicate, exactness, physical graph and parser claims; it separately replayed 100 TRUE/FALSE/UNKNOWN/NOT TRUE checks on 25 numeric/correlated SQL variants. There were no discrepancies. The 557 complete candidate wire documents were independently reviewed against original SQL and native source/terminal oracles; two S179 parser rejects were validated. All scoped review decisions have explicit linked evidence and a pinned code SHA `eca90dbbd6038eaab8c96d80ffab64133e9d9def`.
+
+**AC #1:** frozen full typed/NULL/bounds/13-dialect ledger with 40 native full physical predicate partitions and 3 non-predicate boundaries. **AC #2:** public typed/outcome soundness and complete native 3VL/source instance/terminal witness tests, including negative guards. **AC #3:** reviewed all 43 full-document expected candidates and all parser/unsupported cases. **AC #4:** direct/dbt/ODCS applicable source parity and TASK-197/TASK-180 handoff, both pinned consumer test runs passed 5/5 at reviewed SHA. **AC #5:** [protocol source CI 9/9](https://github.com/phdah/sql-semantic-protocol/actions/runs/43399257712), [consumer #49 5/5](https://github.com/phdah/sql-tdg/actions/runs/43399286395), [#50 5/5](https://github.com/phdah/sql-tdg/actions/runs/43399289335), final metadata-head CI to follow before merge.
+
+Approval is bounded to public/parser/typed semantic certification, not external vendor law. Remaining TASK-179 vendor/session, TASK-191 parser/STRUCT support, TASK-193 broader relation, TASK-180 all-family global matrix and TASK-88/TASK-91 parent/release approvals remain separately unapproved. Historical pending sections below describe the original pre-review gaps, now closed for TASK-192 only.
 
 ## Source of truth
 

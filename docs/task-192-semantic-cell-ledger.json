@@ -919,7 +919,7 @@
       "expected_typed_domain_case_ref": "88-C177-S001",
       "native_source_terminal_case_ref": "88-C177-S001",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S001/bigquery",
@@ -934,7 +934,7 @@
       "expected_typed_domain_case_ref": "88-C177-S001",
       "native_source_terminal_case_ref": "88-C177-S001",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S001/clickhouse",
@@ -949,7 +949,7 @@
       "expected_typed_domain_case_ref": "88-C177-S001",
       "native_source_terminal_case_ref": "88-C177-S001",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S001/databricks",
@@ -964,7 +964,7 @@
       "expected_typed_domain_case_ref": "88-C177-S001",
       "native_source_terminal_case_ref": "88-C177-S001",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S001/duckdb",
@@ -979,7 +979,7 @@
       "expected_typed_domain_case_ref": "88-C177-S001",
       "native_source_terminal_case_ref": "88-C177-S001",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S001/generic",
@@ -994,7 +994,7 @@
       "expected_typed_domain_case_ref": "88-C177-S001",
       "native_source_terminal_case_ref": "88-C177-S001",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S001/hive",
@@ -1009,7 +1009,7 @@
       "expected_typed_domain_case_ref": "88-C177-S001",
       "native_source_terminal_case_ref": "88-C177-S001",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S001/mssql",
@@ -1024,7 +1024,7 @@
       "expected_typed_domain_case_ref": "88-C177-S001",
       "native_source_terminal_case_ref": "88-C177-S001",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S001/mysql",
@@ -1039,7 +1039,7 @@
       "expected_typed_domain_case_ref": "88-C177-S001",
       "native_source_terminal_case_ref": "88-C177-S001",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S001/postgresql",
@@ -1054,7 +1054,7 @@
       "expected_typed_domain_case_ref": "88-C177-S001",
       "native_source_terminal_case_ref": "88-C177-S001",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S001/redshift",
@@ -1069,7 +1069,7 @@
       "expected_typed_domain_case_ref": "88-C177-S001",
       "native_source_terminal_case_ref": "88-C177-S001",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S001/snowflake",
@@ -1084,7 +1084,7 @@
       "expected_typed_domain_case_ref": "88-C177-S001",
       "native_source_terminal_case_ref": "88-C177-S001",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S001/sqlite",
@@ -1099,7 +1099,7 @@
       "expected_typed_domain_case_ref": "88-C177-S001",
       "native_source_terminal_case_ref": "88-C177-S001",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S002/ansi",
@@ -1114,7 +1114,7 @@
       "expected_typed_domain_case_ref": "88-C177-S002",
       "native_source_terminal_case_ref": "88-C177-S002",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S002/bigquery",
@@ -1129,7 +1129,7 @@
       "expected_typed_domain_case_ref": "88-C177-S002",
       "native_source_terminal_case_ref": "88-C177-S002",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S002/clickhouse",
@@ -1144,7 +1144,7 @@
       "expected_typed_domain_case_ref": "88-C177-S002",
       "native_source_terminal_case_ref": "88-C177-S002",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S002/databricks",
@@ -1159,7 +1159,7 @@
       "expected_typed_domain_case_ref": "88-C177-S002",
       "native_source_terminal_case_ref": "88-C177-S002",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S002/duckdb",
@@ -1174,7 +1174,7 @@
       "expected_typed_domain_case_ref": "88-C177-S002",
       "native_source_terminal_case_ref": "88-C177-S002",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S002/generic",
@@ -1189,7 +1189,7 @@
       "expected_typed_domain_case_ref": "88-C177-S002",
       "native_source_terminal_case_ref": "88-C177-S002",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S002/hive",
@@ -1204,7 +1204,7 @@
       "expected_typed_domain_case_ref": "88-C177-S002",
       "native_source_terminal_case_ref": "88-C177-S002",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S002/mssql",
@@ -1219,7 +1219,7 @@
       "expected_typed_domain_case_ref": "88-C177-S002",
       "native_source_terminal_case_ref": "88-C177-S002",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S002/mysql",
@@ -1234,7 +1234,7 @@
       "expected_typed_domain_case_ref": "88-C177-S002",
       "native_source_terminal_case_ref": "88-C177-S002",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S002/postgresql",
@@ -1249,7 +1249,7 @@
       "expected_typed_domain_case_ref": "88-C177-S002",
       "native_source_terminal_case_ref": "88-C177-S002",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S002/redshift",
@@ -1264,7 +1264,7 @@
       "expected_typed_domain_case_ref": "88-C177-S002",
       "native_source_terminal_case_ref": "88-C177-S002",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S002/snowflake",
@@ -1279,7 +1279,7 @@
       "expected_typed_domain_case_ref": "88-C177-S002",
       "native_source_terminal_case_ref": "88-C177-S002",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S002/sqlite",
@@ -1294,7 +1294,7 @@
       "expected_typed_domain_case_ref": "88-C177-S002",
       "native_source_terminal_case_ref": "88-C177-S002",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S003/ansi",
@@ -1309,7 +1309,7 @@
       "expected_typed_domain_case_ref": "88-C177-S003",
       "native_source_terminal_case_ref": "88-C177-S003",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S003/bigquery",
@@ -1324,7 +1324,7 @@
       "expected_typed_domain_case_ref": "88-C177-S003",
       "native_source_terminal_case_ref": "88-C177-S003",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S003/clickhouse",
@@ -1339,7 +1339,7 @@
       "expected_typed_domain_case_ref": "88-C177-S003",
       "native_source_terminal_case_ref": "88-C177-S003",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S003/databricks",
@@ -1354,7 +1354,7 @@
       "expected_typed_domain_case_ref": "88-C177-S003",
       "native_source_terminal_case_ref": "88-C177-S003",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S003/duckdb",
@@ -1369,7 +1369,7 @@
       "expected_typed_domain_case_ref": "88-C177-S003",
       "native_source_terminal_case_ref": "88-C177-S003",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S003/generic",
@@ -1384,7 +1384,7 @@
       "expected_typed_domain_case_ref": "88-C177-S003",
       "native_source_terminal_case_ref": "88-C177-S003",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S003/hive",
@@ -1399,7 +1399,7 @@
       "expected_typed_domain_case_ref": "88-C177-S003",
       "native_source_terminal_case_ref": "88-C177-S003",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S003/mssql",
@@ -1414,7 +1414,7 @@
       "expected_typed_domain_case_ref": "88-C177-S003",
       "native_source_terminal_case_ref": "88-C177-S003",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S003/mysql",
@@ -1429,7 +1429,7 @@
       "expected_typed_domain_case_ref": "88-C177-S003",
       "native_source_terminal_case_ref": "88-C177-S003",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S003/postgresql",
@@ -1444,7 +1444,7 @@
       "expected_typed_domain_case_ref": "88-C177-S003",
       "native_source_terminal_case_ref": "88-C177-S003",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S003/redshift",
@@ -1459,7 +1459,7 @@
       "expected_typed_domain_case_ref": "88-C177-S003",
       "native_source_terminal_case_ref": "88-C177-S003",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S003/snowflake",
@@ -1474,7 +1474,7 @@
       "expected_typed_domain_case_ref": "88-C177-S003",
       "native_source_terminal_case_ref": "88-C177-S003",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S003/sqlite",
@@ -1489,7 +1489,7 @@
       "expected_typed_domain_case_ref": "88-C177-S003",
       "native_source_terminal_case_ref": "88-C177-S003",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S004/ansi",
@@ -1504,7 +1504,7 @@
       "expected_typed_domain_case_ref": "88-C177-S004",
       "native_source_terminal_case_ref": "88-C177-S004",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S004/bigquery",
@@ -1519,7 +1519,7 @@
       "expected_typed_domain_case_ref": "88-C177-S004",
       "native_source_terminal_case_ref": "88-C177-S004",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S004/clickhouse",
@@ -1534,7 +1534,7 @@
       "expected_typed_domain_case_ref": "88-C177-S004",
       "native_source_terminal_case_ref": "88-C177-S004",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S004/databricks",
@@ -1549,7 +1549,7 @@
       "expected_typed_domain_case_ref": "88-C177-S004",
       "native_source_terminal_case_ref": "88-C177-S004",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S004/duckdb",
@@ -1564,7 +1564,7 @@
       "expected_typed_domain_case_ref": "88-C177-S004",
       "native_source_terminal_case_ref": "88-C177-S004",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S004/generic",
@@ -1579,7 +1579,7 @@
       "expected_typed_domain_case_ref": "88-C177-S004",
       "native_source_terminal_case_ref": "88-C177-S004",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S004/hive",
@@ -1594,7 +1594,7 @@
       "expected_typed_domain_case_ref": "88-C177-S004",
       "native_source_terminal_case_ref": "88-C177-S004",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S004/mssql",
@@ -1609,7 +1609,7 @@
       "expected_typed_domain_case_ref": "88-C177-S004",
       "native_source_terminal_case_ref": "88-C177-S004",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S004/mysql",
@@ -1624,7 +1624,7 @@
       "expected_typed_domain_case_ref": "88-C177-S004",
       "native_source_terminal_case_ref": "88-C177-S004",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S004/postgresql",
@@ -1639,7 +1639,7 @@
       "expected_typed_domain_case_ref": "88-C177-S004",
       "native_source_terminal_case_ref": "88-C177-S004",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S004/redshift",
@@ -1654,7 +1654,7 @@
       "expected_typed_domain_case_ref": "88-C177-S004",
       "native_source_terminal_case_ref": "88-C177-S004",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S004/snowflake",
@@ -1669,7 +1669,7 @@
       "expected_typed_domain_case_ref": "88-C177-S004",
       "native_source_terminal_case_ref": "88-C177-S004",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S004/sqlite",
@@ -1684,7 +1684,7 @@
       "expected_typed_domain_case_ref": "88-C177-S004",
       "native_source_terminal_case_ref": "88-C177-S004",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S005/ansi",
@@ -1699,7 +1699,7 @@
       "expected_typed_domain_case_ref": "88-C177-S005",
       "native_source_terminal_case_ref": "88-C177-S005",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S005/bigquery",
@@ -1714,7 +1714,7 @@
       "expected_typed_domain_case_ref": "88-C177-S005",
       "native_source_terminal_case_ref": "88-C177-S005",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S005/clickhouse",
@@ -1729,7 +1729,7 @@
       "expected_typed_domain_case_ref": "88-C177-S005",
       "native_source_terminal_case_ref": "88-C177-S005",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S005/databricks",
@@ -1744,7 +1744,7 @@
       "expected_typed_domain_case_ref": "88-C177-S005",
       "native_source_terminal_case_ref": "88-C177-S005",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S005/duckdb",
@@ -1759,7 +1759,7 @@
       "expected_typed_domain_case_ref": "88-C177-S005",
       "native_source_terminal_case_ref": "88-C177-S005",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S005/generic",
@@ -1774,7 +1774,7 @@
       "expected_typed_domain_case_ref": "88-C177-S005",
       "native_source_terminal_case_ref": "88-C177-S005",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S005/hive",
@@ -1789,7 +1789,7 @@
       "expected_typed_domain_case_ref": "88-C177-S005",
       "native_source_terminal_case_ref": "88-C177-S005",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S005/mssql",
@@ -1804,7 +1804,7 @@
       "expected_typed_domain_case_ref": "88-C177-S005",
       "native_source_terminal_case_ref": "88-C177-S005",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S005/mysql",
@@ -1819,7 +1819,7 @@
       "expected_typed_domain_case_ref": "88-C177-S005",
       "native_source_terminal_case_ref": "88-C177-S005",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S005/postgresql",
@@ -1834,7 +1834,7 @@
       "expected_typed_domain_case_ref": "88-C177-S005",
       "native_source_terminal_case_ref": "88-C177-S005",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S005/redshift",
@@ -1849,7 +1849,7 @@
       "expected_typed_domain_case_ref": "88-C177-S005",
       "native_source_terminal_case_ref": "88-C177-S005",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S005/snowflake",
@@ -1864,7 +1864,7 @@
       "expected_typed_domain_case_ref": "88-C177-S005",
       "native_source_terminal_case_ref": "88-C177-S005",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S005/sqlite",
@@ -1879,7 +1879,7 @@
       "expected_typed_domain_case_ref": "88-C177-S005",
       "native_source_terminal_case_ref": "88-C177-S005",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S006/ansi",
@@ -1894,7 +1894,7 @@
       "expected_typed_domain_case_ref": "88-C177-S006",
       "native_source_terminal_case_ref": "88-C177-S006",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S006/bigquery",
@@ -1909,7 +1909,7 @@
       "expected_typed_domain_case_ref": "88-C177-S006",
       "native_source_terminal_case_ref": "88-C177-S006",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S006/clickhouse",
@@ -1924,7 +1924,7 @@
       "expected_typed_domain_case_ref": "88-C177-S006",
       "native_source_terminal_case_ref": "88-C177-S006",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S006/databricks",
@@ -1939,7 +1939,7 @@
       "expected_typed_domain_case_ref": "88-C177-S006",
       "native_source_terminal_case_ref": "88-C177-S006",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S006/duckdb",
@@ -1954,7 +1954,7 @@
       "expected_typed_domain_case_ref": "88-C177-S006",
       "native_source_terminal_case_ref": "88-C177-S006",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S006/generic",
@@ -1969,7 +1969,7 @@
       "expected_typed_domain_case_ref": "88-C177-S006",
       "native_source_terminal_case_ref": "88-C177-S006",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S006/hive",
@@ -1984,7 +1984,7 @@
       "expected_typed_domain_case_ref": "88-C177-S006",
       "native_source_terminal_case_ref": "88-C177-S006",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S006/mssql",
@@ -1999,7 +1999,7 @@
       "expected_typed_domain_case_ref": "88-C177-S006",
       "native_source_terminal_case_ref": "88-C177-S006",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S006/mysql",
@@ -2014,7 +2014,7 @@
       "expected_typed_domain_case_ref": "88-C177-S006",
       "native_source_terminal_case_ref": "88-C177-S006",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S006/postgresql",
@@ -2029,7 +2029,7 @@
       "expected_typed_domain_case_ref": "88-C177-S006",
       "native_source_terminal_case_ref": "88-C177-S006",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S006/redshift",
@@ -2044,7 +2044,7 @@
       "expected_typed_domain_case_ref": "88-C177-S006",
       "native_source_terminal_case_ref": "88-C177-S006",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S006/snowflake",
@@ -2059,7 +2059,7 @@
       "expected_typed_domain_case_ref": "88-C177-S006",
       "native_source_terminal_case_ref": "88-C177-S006",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S006/sqlite",
@@ -2074,7 +2074,7 @@
       "expected_typed_domain_case_ref": "88-C177-S006",
       "native_source_terminal_case_ref": "88-C177-S006",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S007/ansi",
@@ -2089,7 +2089,7 @@
       "expected_typed_domain_case_ref": "88-C177-S007",
       "native_source_terminal_case_ref": "88-C177-S007",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S007/bigquery",
@@ -2104,7 +2104,7 @@
       "expected_typed_domain_case_ref": "88-C177-S007",
       "native_source_terminal_case_ref": "88-C177-S007",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S007/clickhouse",
@@ -2119,7 +2119,7 @@
       "expected_typed_domain_case_ref": "88-C177-S007",
       "native_source_terminal_case_ref": "88-C177-S007",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S007/databricks",
@@ -2134,7 +2134,7 @@
       "expected_typed_domain_case_ref": "88-C177-S007",
       "native_source_terminal_case_ref": "88-C177-S007",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S007/duckdb",
@@ -2149,7 +2149,7 @@
       "expected_typed_domain_case_ref": "88-C177-S007",
       "native_source_terminal_case_ref": "88-C177-S007",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S007/generic",
@@ -2164,7 +2164,7 @@
       "expected_typed_domain_case_ref": "88-C177-S007",
       "native_source_terminal_case_ref": "88-C177-S007",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S007/hive",
@@ -2179,7 +2179,7 @@
       "expected_typed_domain_case_ref": "88-C177-S007",
       "native_source_terminal_case_ref": "88-C177-S007",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S007/mssql",
@@ -2194,7 +2194,7 @@
       "expected_typed_domain_case_ref": "88-C177-S007",
       "native_source_terminal_case_ref": "88-C177-S007",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S007/mysql",
@@ -2209,7 +2209,7 @@
       "expected_typed_domain_case_ref": "88-C177-S007",
       "native_source_terminal_case_ref": "88-C177-S007",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S007/postgresql",
@@ -2224,7 +2224,7 @@
       "expected_typed_domain_case_ref": "88-C177-S007",
       "native_source_terminal_case_ref": "88-C177-S007",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S007/redshift",
@@ -2239,7 +2239,7 @@
       "expected_typed_domain_case_ref": "88-C177-S007",
       "native_source_terminal_case_ref": "88-C177-S007",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S007/snowflake",
@@ -2254,7 +2254,7 @@
       "expected_typed_domain_case_ref": "88-C177-S007",
       "native_source_terminal_case_ref": "88-C177-S007",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S007/sqlite",
@@ -2269,7 +2269,7 @@
       "expected_typed_domain_case_ref": "88-C177-S007",
       "native_source_terminal_case_ref": "88-C177-S007",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S008/ansi",
@@ -2284,7 +2284,7 @@
       "expected_typed_domain_case_ref": "88-C177-S008",
       "native_source_terminal_case_ref": "88-C177-S008",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S008/bigquery",
@@ -2299,7 +2299,7 @@
       "expected_typed_domain_case_ref": "88-C177-S008",
       "native_source_terminal_case_ref": "88-C177-S008",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S008/clickhouse",
@@ -2314,7 +2314,7 @@
       "expected_typed_domain_case_ref": "88-C177-S008",
       "native_source_terminal_case_ref": "88-C177-S008",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S008/databricks",
@@ -2329,7 +2329,7 @@
       "expected_typed_domain_case_ref": "88-C177-S008",
       "native_source_terminal_case_ref": "88-C177-S008",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S008/duckdb",
@@ -2344,7 +2344,7 @@
       "expected_typed_domain_case_ref": "88-C177-S008",
       "native_source_terminal_case_ref": "88-C177-S008",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S008/generic",
@@ -2359,7 +2359,7 @@
       "expected_typed_domain_case_ref": "88-C177-S008",
       "native_source_terminal_case_ref": "88-C177-S008",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S008/hive",
@@ -2374,7 +2374,7 @@
       "expected_typed_domain_case_ref": "88-C177-S008",
       "native_source_terminal_case_ref": "88-C177-S008",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S008/mssql",
@@ -2389,7 +2389,7 @@
       "expected_typed_domain_case_ref": "88-C177-S008",
       "native_source_terminal_case_ref": "88-C177-S008",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S008/mysql",
@@ -2404,7 +2404,7 @@
       "expected_typed_domain_case_ref": "88-C177-S008",
       "native_source_terminal_case_ref": "88-C177-S008",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S008/postgresql",
@@ -2419,7 +2419,7 @@
       "expected_typed_domain_case_ref": "88-C177-S008",
       "native_source_terminal_case_ref": "88-C177-S008",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S008/redshift",
@@ -2434,7 +2434,7 @@
       "expected_typed_domain_case_ref": "88-C177-S008",
       "native_source_terminal_case_ref": "88-C177-S008",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S008/snowflake",
@@ -2449,7 +2449,7 @@
       "expected_typed_domain_case_ref": "88-C177-S008",
       "native_source_terminal_case_ref": "88-C177-S008",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S008/sqlite",
@@ -2464,7 +2464,7 @@
       "expected_typed_domain_case_ref": "88-C177-S008",
       "native_source_terminal_case_ref": "88-C177-S008",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S009/ansi",
@@ -2479,7 +2479,7 @@
       "expected_typed_domain_case_ref": "88-C177-S009",
       "native_source_terminal_case_ref": "88-C177-S009",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S009/bigquery",
@@ -2494,7 +2494,7 @@
       "expected_typed_domain_case_ref": "88-C177-S009",
       "native_source_terminal_case_ref": "88-C177-S009",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S009/clickhouse",
@@ -2509,7 +2509,7 @@
       "expected_typed_domain_case_ref": "88-C177-S009",
       "native_source_terminal_case_ref": "88-C177-S009",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S009/databricks",
@@ -2524,7 +2524,7 @@
       "expected_typed_domain_case_ref": "88-C177-S009",
       "native_source_terminal_case_ref": "88-C177-S009",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S009/duckdb",
@@ -2539,7 +2539,7 @@
       "expected_typed_domain_case_ref": "88-C177-S009",
       "native_source_terminal_case_ref": "88-C177-S009",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S009/generic",
@@ -2554,7 +2554,7 @@
       "expected_typed_domain_case_ref": "88-C177-S009",
       "native_source_terminal_case_ref": "88-C177-S009",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S009/hive",
@@ -2569,7 +2569,7 @@
       "expected_typed_domain_case_ref": "88-C177-S009",
       "native_source_terminal_case_ref": "88-C177-S009",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S009/mssql",
@@ -2584,7 +2584,7 @@
       "expected_typed_domain_case_ref": "88-C177-S009",
       "native_source_terminal_case_ref": "88-C177-S009",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S009/mysql",
@@ -2599,7 +2599,7 @@
       "expected_typed_domain_case_ref": "88-C177-S009",
       "native_source_terminal_case_ref": "88-C177-S009",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S009/postgresql",
@@ -2614,7 +2614,7 @@
       "expected_typed_domain_case_ref": "88-C177-S009",
       "native_source_terminal_case_ref": "88-C177-S009",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S009/redshift",
@@ -2629,7 +2629,7 @@
       "expected_typed_domain_case_ref": "88-C177-S009",
       "native_source_terminal_case_ref": "88-C177-S009",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S009/snowflake",
@@ -2644,7 +2644,7 @@
       "expected_typed_domain_case_ref": "88-C177-S009",
       "native_source_terminal_case_ref": "88-C177-S009",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S009/sqlite",
@@ -2659,7 +2659,7 @@
       "expected_typed_domain_case_ref": "88-C177-S009",
       "native_source_terminal_case_ref": "88-C177-S009",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S010/ansi",
@@ -2674,7 +2674,7 @@
       "expected_typed_domain_case_ref": "88-C177-S010",
       "native_source_terminal_case_ref": "88-C177-S010",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S010/bigquery",
@@ -2689,7 +2689,7 @@
       "expected_typed_domain_case_ref": "88-C177-S010",
       "native_source_terminal_case_ref": "88-C177-S010",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S010/clickhouse",
@@ -2704,7 +2704,7 @@
       "expected_typed_domain_case_ref": "88-C177-S010",
       "native_source_terminal_case_ref": "88-C177-S010",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S010/databricks",
@@ -2719,7 +2719,7 @@
       "expected_typed_domain_case_ref": "88-C177-S010",
       "native_source_terminal_case_ref": "88-C177-S010",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S010/duckdb",
@@ -2734,7 +2734,7 @@
       "expected_typed_domain_case_ref": "88-C177-S010",
       "native_source_terminal_case_ref": "88-C177-S010",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S010/generic",
@@ -2749,7 +2749,7 @@
       "expected_typed_domain_case_ref": "88-C177-S010",
       "native_source_terminal_case_ref": "88-C177-S010",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S010/hive",
@@ -2764,7 +2764,7 @@
       "expected_typed_domain_case_ref": "88-C177-S010",
       "native_source_terminal_case_ref": "88-C177-S010",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S010/mssql",
@@ -2779,7 +2779,7 @@
       "expected_typed_domain_case_ref": "88-C177-S010",
       "native_source_terminal_case_ref": "88-C177-S010",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S010/mysql",
@@ -2794,7 +2794,7 @@
       "expected_typed_domain_case_ref": "88-C177-S010",
       "native_source_terminal_case_ref": "88-C177-S010",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S010/postgresql",
@@ -2809,7 +2809,7 @@
       "expected_typed_domain_case_ref": "88-C177-S010",
       "native_source_terminal_case_ref": "88-C177-S010",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S010/redshift",
@@ -2824,7 +2824,7 @@
       "expected_typed_domain_case_ref": "88-C177-S010",
       "native_source_terminal_case_ref": "88-C177-S010",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S010/snowflake",
@@ -2839,7 +2839,7 @@
       "expected_typed_domain_case_ref": "88-C177-S010",
       "native_source_terminal_case_ref": "88-C177-S010",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S010/sqlite",
@@ -2854,7 +2854,7 @@
       "expected_typed_domain_case_ref": "88-C177-S010",
       "native_source_terminal_case_ref": "88-C177-S010",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S011/ansi",
@@ -2869,7 +2869,7 @@
       "expected_typed_domain_case_ref": "88-C177-S011",
       "native_source_terminal_case_ref": "88-C177-S011",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S011/bigquery",
@@ -2884,7 +2884,7 @@
       "expected_typed_domain_case_ref": "88-C177-S011",
       "native_source_terminal_case_ref": "88-C177-S011",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S011/clickhouse",
@@ -2899,7 +2899,7 @@
       "expected_typed_domain_case_ref": "88-C177-S011",
       "native_source_terminal_case_ref": "88-C177-S011",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S011/databricks",
@@ -2914,7 +2914,7 @@
       "expected_typed_domain_case_ref": "88-C177-S011",
       "native_source_terminal_case_ref": "88-C177-S011",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S011/duckdb",
@@ -2929,7 +2929,7 @@
       "expected_typed_domain_case_ref": "88-C177-S011",
       "native_source_terminal_case_ref": "88-C177-S011",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S011/generic",
@@ -2944,7 +2944,7 @@
       "expected_typed_domain_case_ref": "88-C177-S011",
       "native_source_terminal_case_ref": "88-C177-S011",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S011/hive",
@@ -2959,7 +2959,7 @@
       "expected_typed_domain_case_ref": "88-C177-S011",
       "native_source_terminal_case_ref": "88-C177-S011",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S011/mssql",
@@ -2974,7 +2974,7 @@
       "expected_typed_domain_case_ref": "88-C177-S011",
       "native_source_terminal_case_ref": "88-C177-S011",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S011/mysql",
@@ -2989,7 +2989,7 @@
       "expected_typed_domain_case_ref": "88-C177-S011",
       "native_source_terminal_case_ref": "88-C177-S011",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S011/postgresql",
@@ -3004,7 +3004,7 @@
       "expected_typed_domain_case_ref": "88-C177-S011",
       "native_source_terminal_case_ref": "88-C177-S011",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S011/redshift",
@@ -3019,7 +3019,7 @@
       "expected_typed_domain_case_ref": "88-C177-S011",
       "native_source_terminal_case_ref": "88-C177-S011",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S011/snowflake",
@@ -3034,7 +3034,7 @@
       "expected_typed_domain_case_ref": "88-C177-S011",
       "native_source_terminal_case_ref": "88-C177-S011",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S011/sqlite",
@@ -3049,7 +3049,7 @@
       "expected_typed_domain_case_ref": "88-C177-S011",
       "native_source_terminal_case_ref": "88-C177-S011",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S012/ansi",
@@ -3064,7 +3064,7 @@
       "expected_typed_domain_case_ref": "88-C177-S012",
       "native_source_terminal_case_ref": "88-C177-S012",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S012/bigquery",
@@ -3079,7 +3079,7 @@
       "expected_typed_domain_case_ref": "88-C177-S012",
       "native_source_terminal_case_ref": "88-C177-S012",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S012/clickhouse",
@@ -3094,7 +3094,7 @@
       "expected_typed_domain_case_ref": "88-C177-S012",
       "native_source_terminal_case_ref": "88-C177-S012",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S012/databricks",
@@ -3109,7 +3109,7 @@
       "expected_typed_domain_case_ref": "88-C177-S012",
       "native_source_terminal_case_ref": "88-C177-S012",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S012/duckdb",
@@ -3124,7 +3124,7 @@
       "expected_typed_domain_case_ref": "88-C177-S012",
       "native_source_terminal_case_ref": "88-C177-S012",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S012/generic",
@@ -3139,7 +3139,7 @@
       "expected_typed_domain_case_ref": "88-C177-S012",
       "native_source_terminal_case_ref": "88-C177-S012",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S012/hive",
@@ -3154,7 +3154,7 @@
       "expected_typed_domain_case_ref": "88-C177-S012",
       "native_source_terminal_case_ref": "88-C177-S012",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S012/mssql",
@@ -3169,7 +3169,7 @@
       "expected_typed_domain_case_ref": "88-C177-S012",
       "native_source_terminal_case_ref": "88-C177-S012",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S012/mysql",
@@ -3184,7 +3184,7 @@
       "expected_typed_domain_case_ref": "88-C177-S012",
       "native_source_terminal_case_ref": "88-C177-S012",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S012/postgresql",
@@ -3199,7 +3199,7 @@
       "expected_typed_domain_case_ref": "88-C177-S012",
       "native_source_terminal_case_ref": "88-C177-S012",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S012/redshift",
@@ -3214,7 +3214,7 @@
       "expected_typed_domain_case_ref": "88-C177-S012",
       "native_source_terminal_case_ref": "88-C177-S012",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S012/snowflake",
@@ -3229,7 +3229,7 @@
       "expected_typed_domain_case_ref": "88-C177-S012",
       "native_source_terminal_case_ref": "88-C177-S012",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S012/sqlite",
@@ -3244,7 +3244,7 @@
       "expected_typed_domain_case_ref": "88-C177-S012",
       "native_source_terminal_case_ref": "88-C177-S012",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S013/ansi",
@@ -3259,7 +3259,7 @@
       "expected_typed_domain_case_ref": "88-C177-S013",
       "native_source_terminal_case_ref": "88-C177-S013",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S013/bigquery",
@@ -3274,7 +3274,7 @@
       "expected_typed_domain_case_ref": "88-C177-S013",
       "native_source_terminal_case_ref": "88-C177-S013",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S013/clickhouse",
@@ -3289,7 +3289,7 @@
       "expected_typed_domain_case_ref": "88-C177-S013",
       "native_source_terminal_case_ref": "88-C177-S013",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S013/databricks",
@@ -3304,7 +3304,7 @@
       "expected_typed_domain_case_ref": "88-C177-S013",
       "native_source_terminal_case_ref": "88-C177-S013",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S013/duckdb",
@@ -3319,7 +3319,7 @@
       "expected_typed_domain_case_ref": "88-C177-S013",
       "native_source_terminal_case_ref": "88-C177-S013",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S013/generic",
@@ -3334,7 +3334,7 @@
       "expected_typed_domain_case_ref": "88-C177-S013",
       "native_source_terminal_case_ref": "88-C177-S013",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S013/hive",
@@ -3349,7 +3349,7 @@
       "expected_typed_domain_case_ref": "88-C177-S013",
       "native_source_terminal_case_ref": "88-C177-S013",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S013/mssql",
@@ -3364,7 +3364,7 @@
       "expected_typed_domain_case_ref": "88-C177-S013",
       "native_source_terminal_case_ref": "88-C177-S013",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S013/mysql",
@@ -3379,7 +3379,7 @@
       "expected_typed_domain_case_ref": "88-C177-S013",
       "native_source_terminal_case_ref": "88-C177-S013",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S013/postgresql",
@@ -3394,7 +3394,7 @@
       "expected_typed_domain_case_ref": "88-C177-S013",
       "native_source_terminal_case_ref": "88-C177-S013",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S013/redshift",
@@ -3409,7 +3409,7 @@
       "expected_typed_domain_case_ref": "88-C177-S013",
       "native_source_terminal_case_ref": "88-C177-S013",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S013/snowflake",
@@ -3424,7 +3424,7 @@
       "expected_typed_domain_case_ref": "88-C177-S013",
       "native_source_terminal_case_ref": "88-C177-S013",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S013/sqlite",
@@ -3439,7 +3439,7 @@
       "expected_typed_domain_case_ref": "88-C177-S013",
       "native_source_terminal_case_ref": "88-C177-S013",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S014/ansi",
@@ -3454,7 +3454,7 @@
       "expected_typed_domain_case_ref": "88-C177-S014",
       "native_source_terminal_case_ref": "88-C177-S014",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S014/bigquery",
@@ -3469,7 +3469,7 @@
       "expected_typed_domain_case_ref": "88-C177-S014",
       "native_source_terminal_case_ref": "88-C177-S014",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S014/clickhouse",
@@ -3484,7 +3484,7 @@
       "expected_typed_domain_case_ref": "88-C177-S014",
       "native_source_terminal_case_ref": "88-C177-S014",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S014/databricks",
@@ -3499,7 +3499,7 @@
       "expected_typed_domain_case_ref": "88-C177-S014",
       "native_source_terminal_case_ref": "88-C177-S014",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S014/duckdb",
@@ -3514,7 +3514,7 @@
       "expected_typed_domain_case_ref": "88-C177-S014",
       "native_source_terminal_case_ref": "88-C177-S014",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S014/generic",
@@ -3529,7 +3529,7 @@
       "expected_typed_domain_case_ref": "88-C177-S014",
       "native_source_terminal_case_ref": "88-C177-S014",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S014/hive",
@@ -3544,7 +3544,7 @@
       "expected_typed_domain_case_ref": "88-C177-S014",
       "native_source_terminal_case_ref": "88-C177-S014",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S014/mssql",
@@ -3559,7 +3559,7 @@
       "expected_typed_domain_case_ref": "88-C177-S014",
       "native_source_terminal_case_ref": "88-C177-S014",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S014/mysql",
@@ -3574,7 +3574,7 @@
       "expected_typed_domain_case_ref": "88-C177-S014",
       "native_source_terminal_case_ref": "88-C177-S014",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S014/postgresql",
@@ -3589,7 +3589,7 @@
       "expected_typed_domain_case_ref": "88-C177-S014",
       "native_source_terminal_case_ref": "88-C177-S014",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S014/redshift",
@@ -3604,7 +3604,7 @@
       "expected_typed_domain_case_ref": "88-C177-S014",
       "native_source_terminal_case_ref": "88-C177-S014",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S014/snowflake",
@@ -3619,7 +3619,7 @@
       "expected_typed_domain_case_ref": "88-C177-S014",
       "native_source_terminal_case_ref": "88-C177-S014",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S014/sqlite",
@@ -3634,7 +3634,7 @@
       "expected_typed_domain_case_ref": "88-C177-S014",
       "native_source_terminal_case_ref": "88-C177-S014",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S015/ansi",
@@ -3649,7 +3649,7 @@
       "expected_typed_domain_case_ref": "88-C177-S015",
       "native_source_terminal_case_ref": "88-C177-S015",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S015/bigquery",
@@ -3664,7 +3664,7 @@
       "expected_typed_domain_case_ref": "88-C177-S015",
       "native_source_terminal_case_ref": "88-C177-S015",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S015/clickhouse",
@@ -3679,7 +3679,7 @@
       "expected_typed_domain_case_ref": "88-C177-S015",
       "native_source_terminal_case_ref": "88-C177-S015",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S015/databricks",
@@ -3694,7 +3694,7 @@
       "expected_typed_domain_case_ref": "88-C177-S015",
       "native_source_terminal_case_ref": "88-C177-S015",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S015/duckdb",
@@ -3709,7 +3709,7 @@
       "expected_typed_domain_case_ref": "88-C177-S015",
       "native_source_terminal_case_ref": "88-C177-S015",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S015/generic",
@@ -3724,7 +3724,7 @@
       "expected_typed_domain_case_ref": "88-C177-S015",
       "native_source_terminal_case_ref": "88-C177-S015",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S015/hive",
@@ -3739,7 +3739,7 @@
       "expected_typed_domain_case_ref": "88-C177-S015",
       "native_source_terminal_case_ref": "88-C177-S015",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S015/mssql",
@@ -3754,7 +3754,7 @@
       "expected_typed_domain_case_ref": "88-C177-S015",
       "native_source_terminal_case_ref": "88-C177-S015",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S015/mysql",
@@ -3769,7 +3769,7 @@
       "expected_typed_domain_case_ref": "88-C177-S015",
       "native_source_terminal_case_ref": "88-C177-S015",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S015/postgresql",
@@ -3784,7 +3784,7 @@
       "expected_typed_domain_case_ref": "88-C177-S015",
       "native_source_terminal_case_ref": "88-C177-S015",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S015/redshift",
@@ -3799,7 +3799,7 @@
       "expected_typed_domain_case_ref": "88-C177-S015",
       "native_source_terminal_case_ref": "88-C177-S015",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S015/snowflake",
@@ -3814,7 +3814,7 @@
       "expected_typed_domain_case_ref": "88-C177-S015",
       "native_source_terminal_case_ref": "88-C177-S015",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S015/sqlite",
@@ -3829,7 +3829,7 @@
       "expected_typed_domain_case_ref": "88-C177-S015",
       "native_source_terminal_case_ref": "88-C177-S015",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S016/ansi",
@@ -3844,7 +3844,7 @@
       "expected_typed_domain_case_ref": "88-C177-S016",
       "native_source_terminal_case_ref": "88-C177-S016",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S016/bigquery",
@@ -3859,7 +3859,7 @@
       "expected_typed_domain_case_ref": "88-C177-S016",
       "native_source_terminal_case_ref": "88-C177-S016",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S016/clickhouse",
@@ -3874,7 +3874,7 @@
       "expected_typed_domain_case_ref": "88-C177-S016",
       "native_source_terminal_case_ref": "88-C177-S016",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S016/databricks",
@@ -3889,7 +3889,7 @@
       "expected_typed_domain_case_ref": "88-C177-S016",
       "native_source_terminal_case_ref": "88-C177-S016",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S016/duckdb",
@@ -3904,7 +3904,7 @@
       "expected_typed_domain_case_ref": "88-C177-S016",
       "native_source_terminal_case_ref": "88-C177-S016",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S016/generic",
@@ -3919,7 +3919,7 @@
       "expected_typed_domain_case_ref": "88-C177-S016",
       "native_source_terminal_case_ref": "88-C177-S016",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S016/hive",
@@ -3934,7 +3934,7 @@
       "expected_typed_domain_case_ref": "88-C177-S016",
       "native_source_terminal_case_ref": "88-C177-S016",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S016/mssql",
@@ -3949,7 +3949,7 @@
       "expected_typed_domain_case_ref": "88-C177-S016",
       "native_source_terminal_case_ref": "88-C177-S016",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S016/mysql",
@@ -3964,7 +3964,7 @@
       "expected_typed_domain_case_ref": "88-C177-S016",
       "native_source_terminal_case_ref": "88-C177-S016",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S016/postgresql",
@@ -3979,7 +3979,7 @@
       "expected_typed_domain_case_ref": "88-C177-S016",
       "native_source_terminal_case_ref": "88-C177-S016",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S016/redshift",
@@ -3994,7 +3994,7 @@
       "expected_typed_domain_case_ref": "88-C177-S016",
       "native_source_terminal_case_ref": "88-C177-S016",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S016/snowflake",
@@ -4009,7 +4009,7 @@
       "expected_typed_domain_case_ref": "88-C177-S016",
       "native_source_terminal_case_ref": "88-C177-S016",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S016/sqlite",
@@ -4024,7 +4024,7 @@
       "expected_typed_domain_case_ref": "88-C177-S016",
       "native_source_terminal_case_ref": "88-C177-S016",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S017/ansi",
@@ -4039,7 +4039,7 @@
       "expected_typed_domain_case_ref": "88-C177-S017",
       "native_source_terminal_case_ref": "88-C177-S017",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S017/bigquery",
@@ -4054,7 +4054,7 @@
       "expected_typed_domain_case_ref": "88-C177-S017",
       "native_source_terminal_case_ref": "88-C177-S017",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S017/clickhouse",
@@ -4069,7 +4069,7 @@
       "expected_typed_domain_case_ref": "88-C177-S017",
       "native_source_terminal_case_ref": "88-C177-S017",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S017/databricks",
@@ -4084,7 +4084,7 @@
       "expected_typed_domain_case_ref": "88-C177-S017",
       "native_source_terminal_case_ref": "88-C177-S017",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S017/duckdb",
@@ -4099,7 +4099,7 @@
       "expected_typed_domain_case_ref": "88-C177-S017",
       "native_source_terminal_case_ref": "88-C177-S017",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S017/generic",
@@ -4114,7 +4114,7 @@
       "expected_typed_domain_case_ref": "88-C177-S017",
       "native_source_terminal_case_ref": "88-C177-S017",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S017/hive",
@@ -4129,7 +4129,7 @@
       "expected_typed_domain_case_ref": "88-C177-S017",
       "native_source_terminal_case_ref": "88-C177-S017",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S017/mssql",
@@ -4144,7 +4144,7 @@
       "expected_typed_domain_case_ref": "88-C177-S017",
       "native_source_terminal_case_ref": "88-C177-S017",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S017/mysql",
@@ -4159,7 +4159,7 @@
       "expected_typed_domain_case_ref": "88-C177-S017",
       "native_source_terminal_case_ref": "88-C177-S017",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S017/postgresql",
@@ -4174,7 +4174,7 @@
       "expected_typed_domain_case_ref": "88-C177-S017",
       "native_source_terminal_case_ref": "88-C177-S017",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S017/redshift",
@@ -4189,7 +4189,7 @@
       "expected_typed_domain_case_ref": "88-C177-S017",
       "native_source_terminal_case_ref": "88-C177-S017",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S017/snowflake",
@@ -4204,7 +4204,7 @@
       "expected_typed_domain_case_ref": "88-C177-S017",
       "native_source_terminal_case_ref": "88-C177-S017",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S017/sqlite",
@@ -4219,7 +4219,7 @@
       "expected_typed_domain_case_ref": "88-C177-S017",
       "native_source_terminal_case_ref": "88-C177-S017",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S018/ansi",
@@ -4234,7 +4234,7 @@
       "expected_typed_domain_case_ref": "88-C177-S018",
       "native_source_terminal_case_ref": "88-C177-S018",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S018/bigquery",
@@ -4249,7 +4249,7 @@
       "expected_typed_domain_case_ref": "88-C177-S018",
       "native_source_terminal_case_ref": "88-C177-S018",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S018/clickhouse",
@@ -4264,7 +4264,7 @@
       "expected_typed_domain_case_ref": "88-C177-S018",
       "native_source_terminal_case_ref": "88-C177-S018",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S018/databricks",
@@ -4279,7 +4279,7 @@
       "expected_typed_domain_case_ref": "88-C177-S018",
       "native_source_terminal_case_ref": "88-C177-S018",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S018/duckdb",
@@ -4294,7 +4294,7 @@
       "expected_typed_domain_case_ref": "88-C177-S018",
       "native_source_terminal_case_ref": "88-C177-S018",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S018/generic",
@@ -4309,7 +4309,7 @@
       "expected_typed_domain_case_ref": "88-C177-S018",
       "native_source_terminal_case_ref": "88-C177-S018",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S018/hive",
@@ -4324,7 +4324,7 @@
       "expected_typed_domain_case_ref": "88-C177-S018",
       "native_source_terminal_case_ref": "88-C177-S018",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S018/mssql",
@@ -4339,7 +4339,7 @@
       "expected_typed_domain_case_ref": "88-C177-S018",
       "native_source_terminal_case_ref": "88-C177-S018",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S018/mysql",
@@ -4354,7 +4354,7 @@
       "expected_typed_domain_case_ref": "88-C177-S018",
       "native_source_terminal_case_ref": "88-C177-S018",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S018/postgresql",
@@ -4369,7 +4369,7 @@
       "expected_typed_domain_case_ref": "88-C177-S018",
       "native_source_terminal_case_ref": "88-C177-S018",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S018/redshift",
@@ -4384,7 +4384,7 @@
       "expected_typed_domain_case_ref": "88-C177-S018",
       "native_source_terminal_case_ref": "88-C177-S018",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S018/snowflake",
@@ -4399,7 +4399,7 @@
       "expected_typed_domain_case_ref": "88-C177-S018",
       "native_source_terminal_case_ref": "88-C177-S018",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S018/sqlite",
@@ -4414,7 +4414,7 @@
       "expected_typed_domain_case_ref": "88-C177-S018",
       "native_source_terminal_case_ref": "88-C177-S018",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S019/ansi",
@@ -4429,7 +4429,7 @@
       "expected_typed_domain_case_ref": "88-C177-S019",
       "native_source_terminal_case_ref": "88-C177-S019",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S019/bigquery",
@@ -4444,7 +4444,7 @@
       "expected_typed_domain_case_ref": "88-C177-S019",
       "native_source_terminal_case_ref": "88-C177-S019",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S019/clickhouse",
@@ -4459,7 +4459,7 @@
       "expected_typed_domain_case_ref": "88-C177-S019",
       "native_source_terminal_case_ref": "88-C177-S019",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S019/databricks",
@@ -4474,7 +4474,7 @@
       "expected_typed_domain_case_ref": "88-C177-S019",
       "native_source_terminal_case_ref": "88-C177-S019",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S019/duckdb",
@@ -4489,7 +4489,7 @@
       "expected_typed_domain_case_ref": "88-C177-S019",
       "native_source_terminal_case_ref": "88-C177-S019",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S019/generic",
@@ -4504,7 +4504,7 @@
       "expected_typed_domain_case_ref": "88-C177-S019",
       "native_source_terminal_case_ref": "88-C177-S019",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S019/hive",
@@ -4519,7 +4519,7 @@
       "expected_typed_domain_case_ref": "88-C177-S019",
       "native_source_terminal_case_ref": "88-C177-S019",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S019/mssql",
@@ -4534,7 +4534,7 @@
       "expected_typed_domain_case_ref": "88-C177-S019",
       "native_source_terminal_case_ref": "88-C177-S019",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S019/mysql",
@@ -4549,7 +4549,7 @@
       "expected_typed_domain_case_ref": "88-C177-S019",
       "native_source_terminal_case_ref": "88-C177-S019",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S019/postgresql",
@@ -4564,7 +4564,7 @@
       "expected_typed_domain_case_ref": "88-C177-S019",
       "native_source_terminal_case_ref": "88-C177-S019",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S019/redshift",
@@ -4579,7 +4579,7 @@
       "expected_typed_domain_case_ref": "88-C177-S019",
       "native_source_terminal_case_ref": "88-C177-S019",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S019/snowflake",
@@ -4594,7 +4594,7 @@
       "expected_typed_domain_case_ref": "88-C177-S019",
       "native_source_terminal_case_ref": "88-C177-S019",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S019/sqlite",
@@ -4609,7 +4609,7 @@
       "expected_typed_domain_case_ref": "88-C177-S019",
       "native_source_terminal_case_ref": "88-C177-S019",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S020/ansi",
@@ -4624,7 +4624,7 @@
       "expected_typed_domain_case_ref": "88-C177-S020",
       "native_source_terminal_case_ref": "88-C177-S020",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S020/bigquery",
@@ -4639,7 +4639,7 @@
       "expected_typed_domain_case_ref": "88-C177-S020",
       "native_source_terminal_case_ref": "88-C177-S020",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S020/clickhouse",
@@ -4654,7 +4654,7 @@
       "expected_typed_domain_case_ref": "88-C177-S020",
       "native_source_terminal_case_ref": "88-C177-S020",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S020/databricks",
@@ -4669,7 +4669,7 @@
       "expected_typed_domain_case_ref": "88-C177-S020",
       "native_source_terminal_case_ref": "88-C177-S020",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S020/duckdb",
@@ -4684,7 +4684,7 @@
       "expected_typed_domain_case_ref": "88-C177-S020",
       "native_source_terminal_case_ref": "88-C177-S020",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S020/generic",
@@ -4699,7 +4699,7 @@
       "expected_typed_domain_case_ref": "88-C177-S020",
       "native_source_terminal_case_ref": "88-C177-S020",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S020/hive",
@@ -4714,7 +4714,7 @@
       "expected_typed_domain_case_ref": "88-C177-S020",
       "native_source_terminal_case_ref": "88-C177-S020",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S020/mssql",
@@ -4729,7 +4729,7 @@
       "expected_typed_domain_case_ref": "88-C177-S020",
       "native_source_terminal_case_ref": "88-C177-S020",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S020/mysql",
@@ -4744,7 +4744,7 @@
       "expected_typed_domain_case_ref": "88-C177-S020",
       "native_source_terminal_case_ref": "88-C177-S020",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S020/postgresql",
@@ -4759,7 +4759,7 @@
       "expected_typed_domain_case_ref": "88-C177-S020",
       "native_source_terminal_case_ref": "88-C177-S020",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S020/redshift",
@@ -4774,7 +4774,7 @@
       "expected_typed_domain_case_ref": "88-C177-S020",
       "native_source_terminal_case_ref": "88-C177-S020",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S020/snowflake",
@@ -4789,7 +4789,7 @@
       "expected_typed_domain_case_ref": "88-C177-S020",
       "native_source_terminal_case_ref": "88-C177-S020",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S020/sqlite",
@@ -4804,7 +4804,7 @@
       "expected_typed_domain_case_ref": "88-C177-S020",
       "native_source_terminal_case_ref": "88-C177-S020",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S021/ansi",
@@ -4819,7 +4819,7 @@
       "expected_typed_domain_case_ref": "88-C177-S021",
       "native_source_terminal_case_ref": "88-C177-S021",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S021/bigquery",
@@ -4834,7 +4834,7 @@
       "expected_typed_domain_case_ref": "88-C177-S021",
       "native_source_terminal_case_ref": "88-C177-S021",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S021/clickhouse",
@@ -4849,7 +4849,7 @@
       "expected_typed_domain_case_ref": "88-C177-S021",
       "native_source_terminal_case_ref": "88-C177-S021",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S021/databricks",
@@ -4864,7 +4864,7 @@
       "expected_typed_domain_case_ref": "88-C177-S021",
       "native_source_terminal_case_ref": "88-C177-S021",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S021/duckdb",
@@ -4879,7 +4879,7 @@
       "expected_typed_domain_case_ref": "88-C177-S021",
       "native_source_terminal_case_ref": "88-C177-S021",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S021/generic",
@@ -4894,7 +4894,7 @@
       "expected_typed_domain_case_ref": "88-C177-S021",
       "native_source_terminal_case_ref": "88-C177-S021",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S021/hive",
@@ -4909,7 +4909,7 @@
       "expected_typed_domain_case_ref": "88-C177-S021",
       "native_source_terminal_case_ref": "88-C177-S021",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S021/mssql",
@@ -4924,7 +4924,7 @@
       "expected_typed_domain_case_ref": "88-C177-S021",
       "native_source_terminal_case_ref": "88-C177-S021",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S021/mysql",
@@ -4939,7 +4939,7 @@
       "expected_typed_domain_case_ref": "88-C177-S021",
       "native_source_terminal_case_ref": "88-C177-S021",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S021/postgresql",
@@ -4954,7 +4954,7 @@
       "expected_typed_domain_case_ref": "88-C177-S021",
       "native_source_terminal_case_ref": "88-C177-S021",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S021/redshift",
@@ -4969,7 +4969,7 @@
       "expected_typed_domain_case_ref": "88-C177-S021",
       "native_source_terminal_case_ref": "88-C177-S021",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S021/snowflake",
@@ -4984,7 +4984,7 @@
       "expected_typed_domain_case_ref": "88-C177-S021",
       "native_source_terminal_case_ref": "88-C177-S021",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S021/sqlite",
@@ -4999,7 +4999,7 @@
       "expected_typed_domain_case_ref": "88-C177-S021",
       "native_source_terminal_case_ref": "88-C177-S021",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S022/ansi",
@@ -5014,7 +5014,7 @@
       "expected_typed_domain_case_ref": "88-C177-S022",
       "native_source_terminal_case_ref": "88-C177-S022",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S022/bigquery",
@@ -5029,7 +5029,7 @@
       "expected_typed_domain_case_ref": "88-C177-S022",
       "native_source_terminal_case_ref": "88-C177-S022",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S022/clickhouse",
@@ -5044,7 +5044,7 @@
       "expected_typed_domain_case_ref": "88-C177-S022",
       "native_source_terminal_case_ref": "88-C177-S022",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S022/databricks",
@@ -5059,7 +5059,7 @@
       "expected_typed_domain_case_ref": "88-C177-S022",
       "native_source_terminal_case_ref": "88-C177-S022",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S022/duckdb",
@@ -5074,7 +5074,7 @@
       "expected_typed_domain_case_ref": "88-C177-S022",
       "native_source_terminal_case_ref": "88-C177-S022",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S022/generic",
@@ -5089,7 +5089,7 @@
       "expected_typed_domain_case_ref": "88-C177-S022",
       "native_source_terminal_case_ref": "88-C177-S022",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S022/hive",
@@ -5104,7 +5104,7 @@
       "expected_typed_domain_case_ref": "88-C177-S022",
       "native_source_terminal_case_ref": "88-C177-S022",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S022/mssql",
@@ -5119,7 +5119,7 @@
       "expected_typed_domain_case_ref": "88-C177-S022",
       "native_source_terminal_case_ref": "88-C177-S022",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S022/mysql",
@@ -5134,7 +5134,7 @@
       "expected_typed_domain_case_ref": "88-C177-S022",
       "native_source_terminal_case_ref": "88-C177-S022",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S022/postgresql",
@@ -5149,7 +5149,7 @@
       "expected_typed_domain_case_ref": "88-C177-S022",
       "native_source_terminal_case_ref": "88-C177-S022",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S022/redshift",
@@ -5164,7 +5164,7 @@
       "expected_typed_domain_case_ref": "88-C177-S022",
       "native_source_terminal_case_ref": "88-C177-S022",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S022/snowflake",
@@ -5179,7 +5179,7 @@
       "expected_typed_domain_case_ref": "88-C177-S022",
       "native_source_terminal_case_ref": "88-C177-S022",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S022/sqlite",
@@ -5194,7 +5194,7 @@
       "expected_typed_domain_case_ref": "88-C177-S022",
       "native_source_terminal_case_ref": "88-C177-S022",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S023/ansi",
@@ -5209,7 +5209,7 @@
       "expected_typed_domain_case_ref": "88-C177-S023",
       "native_source_terminal_case_ref": "88-C177-S023",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S023/bigquery",
@@ -5224,7 +5224,7 @@
       "expected_typed_domain_case_ref": "88-C177-S023",
       "native_source_terminal_case_ref": "88-C177-S023",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S023/clickhouse",
@@ -5239,7 +5239,7 @@
       "expected_typed_domain_case_ref": "88-C177-S023",
       "native_source_terminal_case_ref": "88-C177-S023",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S023/databricks",
@@ -5254,7 +5254,7 @@
       "expected_typed_domain_case_ref": "88-C177-S023",
       "native_source_terminal_case_ref": "88-C177-S023",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S023/duckdb",
@@ -5269,7 +5269,7 @@
       "expected_typed_domain_case_ref": "88-C177-S023",
       "native_source_terminal_case_ref": "88-C177-S023",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S023/generic",
@@ -5284,7 +5284,7 @@
       "expected_typed_domain_case_ref": "88-C177-S023",
       "native_source_terminal_case_ref": "88-C177-S023",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S023/hive",
@@ -5299,7 +5299,7 @@
       "expected_typed_domain_case_ref": "88-C177-S023",
       "native_source_terminal_case_ref": "88-C177-S023",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S023/mssql",
@@ -5314,7 +5314,7 @@
       "expected_typed_domain_case_ref": "88-C177-S023",
       "native_source_terminal_case_ref": "88-C177-S023",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S023/mysql",
@@ -5329,7 +5329,7 @@
       "expected_typed_domain_case_ref": "88-C177-S023",
       "native_source_terminal_case_ref": "88-C177-S023",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S023/postgresql",
@@ -5344,7 +5344,7 @@
       "expected_typed_domain_case_ref": "88-C177-S023",
       "native_source_terminal_case_ref": "88-C177-S023",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S023/redshift",
@@ -5359,7 +5359,7 @@
       "expected_typed_domain_case_ref": "88-C177-S023",
       "native_source_terminal_case_ref": "88-C177-S023",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S023/snowflake",
@@ -5374,7 +5374,7 @@
       "expected_typed_domain_case_ref": "88-C177-S023",
       "native_source_terminal_case_ref": "88-C177-S023",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S023/sqlite",
@@ -5389,7 +5389,7 @@
       "expected_typed_domain_case_ref": "88-C177-S023",
       "native_source_terminal_case_ref": "88-C177-S023",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S024/ansi",
@@ -5404,7 +5404,7 @@
       "expected_typed_domain_case_ref": "88-C177-S024",
       "native_source_terminal_case_ref": "88-C177-S024",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S024/bigquery",
@@ -5419,7 +5419,7 @@
       "expected_typed_domain_case_ref": "88-C177-S024",
       "native_source_terminal_case_ref": "88-C177-S024",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S024/clickhouse",
@@ -5434,7 +5434,7 @@
       "expected_typed_domain_case_ref": "88-C177-S024",
       "native_source_terminal_case_ref": "88-C177-S024",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S024/databricks",
@@ -5449,7 +5449,7 @@
       "expected_typed_domain_case_ref": "88-C177-S024",
       "native_source_terminal_case_ref": "88-C177-S024",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S024/duckdb",
@@ -5464,7 +5464,7 @@
       "expected_typed_domain_case_ref": "88-C177-S024",
       "native_source_terminal_case_ref": "88-C177-S024",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S024/generic",
@@ -5479,7 +5479,7 @@
       "expected_typed_domain_case_ref": "88-C177-S024",
       "native_source_terminal_case_ref": "88-C177-S024",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S024/hive",
@@ -5494,7 +5494,7 @@
       "expected_typed_domain_case_ref": "88-C177-S024",
       "native_source_terminal_case_ref": "88-C177-S024",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S024/mssql",
@@ -5509,7 +5509,7 @@
       "expected_typed_domain_case_ref": "88-C177-S024",
       "native_source_terminal_case_ref": "88-C177-S024",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S024/mysql",
@@ -5524,7 +5524,7 @@
       "expected_typed_domain_case_ref": "88-C177-S024",
       "native_source_terminal_case_ref": "88-C177-S024",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S024/postgresql",
@@ -5539,7 +5539,7 @@
       "expected_typed_domain_case_ref": "88-C177-S024",
       "native_source_terminal_case_ref": "88-C177-S024",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S024/redshift",
@@ -5554,7 +5554,7 @@
       "expected_typed_domain_case_ref": "88-C177-S024",
       "native_source_terminal_case_ref": "88-C177-S024",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S024/snowflake",
@@ -5569,7 +5569,7 @@
       "expected_typed_domain_case_ref": "88-C177-S024",
       "native_source_terminal_case_ref": "88-C177-S024",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S024/sqlite",
@@ -5584,7 +5584,7 @@
       "expected_typed_domain_case_ref": "88-C177-S024",
       "native_source_terminal_case_ref": "88-C177-S024",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S025/ansi",
@@ -5599,7 +5599,7 @@
       "expected_typed_domain_case_ref": "88-C177-S025",
       "native_source_terminal_case_ref": "88-C177-S025",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S025/bigquery",
@@ -5614,7 +5614,7 @@
       "expected_typed_domain_case_ref": "88-C177-S025",
       "native_source_terminal_case_ref": "88-C177-S025",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S025/clickhouse",
@@ -5629,7 +5629,7 @@
       "expected_typed_domain_case_ref": "88-C177-S025",
       "native_source_terminal_case_ref": "88-C177-S025",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S025/databricks",
@@ -5644,7 +5644,7 @@
       "expected_typed_domain_case_ref": "88-C177-S025",
       "native_source_terminal_case_ref": "88-C177-S025",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S025/duckdb",
@@ -5659,7 +5659,7 @@
       "expected_typed_domain_case_ref": "88-C177-S025",
       "native_source_terminal_case_ref": "88-C177-S025",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S025/generic",
@@ -5674,7 +5674,7 @@
       "expected_typed_domain_case_ref": "88-C177-S025",
       "native_source_terminal_case_ref": "88-C177-S025",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S025/hive",
@@ -5689,7 +5689,7 @@
       "expected_typed_domain_case_ref": "88-C177-S025",
       "native_source_terminal_case_ref": "88-C177-S025",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S025/mssql",
@@ -5704,7 +5704,7 @@
       "expected_typed_domain_case_ref": "88-C177-S025",
       "native_source_terminal_case_ref": "88-C177-S025",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S025/mysql",
@@ -5719,7 +5719,7 @@
       "expected_typed_domain_case_ref": "88-C177-S025",
       "native_source_terminal_case_ref": "88-C177-S025",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S025/postgresql",
@@ -5734,7 +5734,7 @@
       "expected_typed_domain_case_ref": "88-C177-S025",
       "native_source_terminal_case_ref": "88-C177-S025",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S025/redshift",
@@ -5749,7 +5749,7 @@
       "expected_typed_domain_case_ref": "88-C177-S025",
       "native_source_terminal_case_ref": "88-C177-S025",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S025/snowflake",
@@ -5764,7 +5764,7 @@
       "expected_typed_domain_case_ref": "88-C177-S025",
       "native_source_terminal_case_ref": "88-C177-S025",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S025/sqlite",
@@ -5779,7 +5779,7 @@
       "expected_typed_domain_case_ref": "88-C177-S025",
       "native_source_terminal_case_ref": "88-C177-S025",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S026/ansi",
@@ -5794,7 +5794,7 @@
       "expected_typed_domain_case_ref": "88-C177-S026",
       "native_source_terminal_case_ref": "88-C177-S026",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S026/bigquery",
@@ -5809,7 +5809,7 @@
       "expected_typed_domain_case_ref": "88-C177-S026",
       "native_source_terminal_case_ref": "88-C177-S026",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S026/clickhouse",
@@ -5824,7 +5824,7 @@
       "expected_typed_domain_case_ref": "88-C177-S026",
       "native_source_terminal_case_ref": "88-C177-S026",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S026/databricks",
@@ -5839,7 +5839,7 @@
       "expected_typed_domain_case_ref": "88-C177-S026",
       "native_source_terminal_case_ref": "88-C177-S026",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S026/duckdb",
@@ -5854,7 +5854,7 @@
       "expected_typed_domain_case_ref": "88-C177-S026",
       "native_source_terminal_case_ref": "88-C177-S026",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S026/generic",
@@ -5869,7 +5869,7 @@
       "expected_typed_domain_case_ref": "88-C177-S026",
       "native_source_terminal_case_ref": "88-C177-S026",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S026/hive",
@@ -5884,7 +5884,7 @@
       "expected_typed_domain_case_ref": "88-C177-S026",
       "native_source_terminal_case_ref": "88-C177-S026",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S026/mssql",
@@ -5899,7 +5899,7 @@
       "expected_typed_domain_case_ref": "88-C177-S026",
       "native_source_terminal_case_ref": "88-C177-S026",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S026/mysql",
@@ -5914,7 +5914,7 @@
       "expected_typed_domain_case_ref": "88-C177-S026",
       "native_source_terminal_case_ref": "88-C177-S026",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S026/postgresql",
@@ -5929,7 +5929,7 @@
       "expected_typed_domain_case_ref": "88-C177-S026",
       "native_source_terminal_case_ref": "88-C177-S026",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S026/redshift",
@@ -5944,7 +5944,7 @@
       "expected_typed_domain_case_ref": "88-C177-S026",
       "native_source_terminal_case_ref": "88-C177-S026",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S026/snowflake",
@@ -5959,7 +5959,7 @@
       "expected_typed_domain_case_ref": "88-C177-S026",
       "native_source_terminal_case_ref": "88-C177-S026",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S026/sqlite",
@@ -5974,7 +5974,7 @@
       "expected_typed_domain_case_ref": "88-C177-S026",
       "native_source_terminal_case_ref": "88-C177-S026",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S027/ansi",
@@ -5989,7 +5989,7 @@
       "expected_typed_domain_case_ref": "88-C177-S027",
       "native_source_terminal_case_ref": "88-C177-S027",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S027/bigquery",
@@ -6004,7 +6004,7 @@
       "expected_typed_domain_case_ref": "88-C177-S027",
       "native_source_terminal_case_ref": "88-C177-S027",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S027/clickhouse",
@@ -6019,7 +6019,7 @@
       "expected_typed_domain_case_ref": "88-C177-S027",
       "native_source_terminal_case_ref": "88-C177-S027",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S027/databricks",
@@ -6034,7 +6034,7 @@
       "expected_typed_domain_case_ref": "88-C177-S027",
       "native_source_terminal_case_ref": "88-C177-S027",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S027/duckdb",
@@ -6049,7 +6049,7 @@
       "expected_typed_domain_case_ref": "88-C177-S027",
       "native_source_terminal_case_ref": "88-C177-S027",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S027/generic",
@@ -6064,7 +6064,7 @@
       "expected_typed_domain_case_ref": "88-C177-S027",
       "native_source_terminal_case_ref": "88-C177-S027",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S027/hive",
@@ -6079,7 +6079,7 @@
       "expected_typed_domain_case_ref": "88-C177-S027",
       "native_source_terminal_case_ref": "88-C177-S027",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S027/mssql",
@@ -6094,7 +6094,7 @@
       "expected_typed_domain_case_ref": "88-C177-S027",
       "native_source_terminal_case_ref": "88-C177-S027",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S027/mysql",
@@ -6109,7 +6109,7 @@
       "expected_typed_domain_case_ref": "88-C177-S027",
       "native_source_terminal_case_ref": "88-C177-S027",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S027/postgresql",
@@ -6124,7 +6124,7 @@
       "expected_typed_domain_case_ref": "88-C177-S027",
       "native_source_terminal_case_ref": "88-C177-S027",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S027/redshift",
@@ -6139,7 +6139,7 @@
       "expected_typed_domain_case_ref": "88-C177-S027",
       "native_source_terminal_case_ref": "88-C177-S027",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S027/snowflake",
@@ -6154,7 +6154,7 @@
       "expected_typed_domain_case_ref": "88-C177-S027",
       "native_source_terminal_case_ref": "88-C177-S027",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S027/sqlite",
@@ -6169,7 +6169,7 @@
       "expected_typed_domain_case_ref": "88-C177-S027",
       "native_source_terminal_case_ref": "88-C177-S027",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S028/ansi",
@@ -6184,7 +6184,7 @@
       "expected_typed_domain_case_ref": "88-C177-S028",
       "native_source_terminal_case_ref": "88-C177-S028",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S028/bigquery",
@@ -6199,7 +6199,7 @@
       "expected_typed_domain_case_ref": "88-C177-S028",
       "native_source_terminal_case_ref": "88-C177-S028",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S028/clickhouse",
@@ -6214,7 +6214,7 @@
       "expected_typed_domain_case_ref": "88-C177-S028",
       "native_source_terminal_case_ref": "88-C177-S028",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S028/databricks",
@@ -6229,7 +6229,7 @@
       "expected_typed_domain_case_ref": "88-C177-S028",
       "native_source_terminal_case_ref": "88-C177-S028",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S028/duckdb",
@@ -6244,7 +6244,7 @@
       "expected_typed_domain_case_ref": "88-C177-S028",
       "native_source_terminal_case_ref": "88-C177-S028",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S028/generic",
@@ -6259,7 +6259,7 @@
       "expected_typed_domain_case_ref": "88-C177-S028",
       "native_source_terminal_case_ref": "88-C177-S028",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S028/hive",
@@ -6274,7 +6274,7 @@
       "expected_typed_domain_case_ref": "88-C177-S028",
       "native_source_terminal_case_ref": "88-C177-S028",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S028/mssql",
@@ -6289,7 +6289,7 @@
       "expected_typed_domain_case_ref": "88-C177-S028",
       "native_source_terminal_case_ref": "88-C177-S028",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S028/mysql",
@@ -6304,7 +6304,7 @@
       "expected_typed_domain_case_ref": "88-C177-S028",
       "native_source_terminal_case_ref": "88-C177-S028",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S028/postgresql",
@@ -6319,7 +6319,7 @@
       "expected_typed_domain_case_ref": "88-C177-S028",
       "native_source_terminal_case_ref": "88-C177-S028",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S028/redshift",
@@ -6334,7 +6334,7 @@
       "expected_typed_domain_case_ref": "88-C177-S028",
       "native_source_terminal_case_ref": "88-C177-S028",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S028/snowflake",
@@ -6349,7 +6349,7 @@
       "expected_typed_domain_case_ref": "88-C177-S028",
       "native_source_terminal_case_ref": "88-C177-S028",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S028/sqlite",
@@ -6364,7 +6364,7 @@
       "expected_typed_domain_case_ref": "88-C177-S028",
       "native_source_terminal_case_ref": "88-C177-S028",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S029/ansi",
@@ -6379,7 +6379,7 @@
       "expected_typed_domain_case_ref": "88-C177-S029",
       "native_source_terminal_case_ref": "88-C177-S029",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S029/bigquery",
@@ -6394,7 +6394,7 @@
       "expected_typed_domain_case_ref": "88-C177-S029",
       "native_source_terminal_case_ref": "88-C177-S029",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S029/clickhouse",
@@ -6409,7 +6409,7 @@
       "expected_typed_domain_case_ref": "88-C177-S029",
       "native_source_terminal_case_ref": "88-C177-S029",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S029/databricks",
@@ -6424,7 +6424,7 @@
       "expected_typed_domain_case_ref": "88-C177-S029",
       "native_source_terminal_case_ref": "88-C177-S029",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S029/duckdb",
@@ -6439,7 +6439,7 @@
       "expected_typed_domain_case_ref": "88-C177-S029",
       "native_source_terminal_case_ref": "88-C177-S029",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S029/generic",
@@ -6454,7 +6454,7 @@
       "expected_typed_domain_case_ref": "88-C177-S029",
       "native_source_terminal_case_ref": "88-C177-S029",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S029/hive",
@@ -6469,7 +6469,7 @@
       "expected_typed_domain_case_ref": "88-C177-S029",
       "native_source_terminal_case_ref": "88-C177-S029",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S029/mssql",
@@ -6484,7 +6484,7 @@
       "expected_typed_domain_case_ref": "88-C177-S029",
       "native_source_terminal_case_ref": "88-C177-S029",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S029/mysql",
@@ -6499,7 +6499,7 @@
       "expected_typed_domain_case_ref": "88-C177-S029",
       "native_source_terminal_case_ref": "88-C177-S029",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S029/postgresql",
@@ -6514,7 +6514,7 @@
       "expected_typed_domain_case_ref": "88-C177-S029",
       "native_source_terminal_case_ref": "88-C177-S029",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S029/redshift",
@@ -6529,7 +6529,7 @@
       "expected_typed_domain_case_ref": "88-C177-S029",
       "native_source_terminal_case_ref": "88-C177-S029",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S029/snowflake",
@@ -6544,7 +6544,7 @@
       "expected_typed_domain_case_ref": "88-C177-S029",
       "native_source_terminal_case_ref": "88-C177-S029",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S029/sqlite",
@@ -6559,7 +6559,7 @@
       "expected_typed_domain_case_ref": "88-C177-S029",
       "native_source_terminal_case_ref": "88-C177-S029",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S030/ansi",
@@ -6574,7 +6574,7 @@
       "expected_typed_domain_case_ref": "88-C177-S030",
       "native_source_terminal_case_ref": "88-C177-S030",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S030/bigquery",
@@ -6589,7 +6589,7 @@
       "expected_typed_domain_case_ref": "88-C177-S030",
       "native_source_terminal_case_ref": "88-C177-S030",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S030/clickhouse",
@@ -6604,7 +6604,7 @@
       "expected_typed_domain_case_ref": "88-C177-S030",
       "native_source_terminal_case_ref": "88-C177-S030",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S030/databricks",
@@ -6619,7 +6619,7 @@
       "expected_typed_domain_case_ref": "88-C177-S030",
       "native_source_terminal_case_ref": "88-C177-S030",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S030/duckdb",
@@ -6634,7 +6634,7 @@
       "expected_typed_domain_case_ref": "88-C177-S030",
       "native_source_terminal_case_ref": "88-C177-S030",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S030/generic",
@@ -6649,7 +6649,7 @@
       "expected_typed_domain_case_ref": "88-C177-S030",
       "native_source_terminal_case_ref": "88-C177-S030",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S030/hive",
@@ -6664,7 +6664,7 @@
       "expected_typed_domain_case_ref": "88-C177-S030",
       "native_source_terminal_case_ref": "88-C177-S030",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S030/mssql",
@@ -6679,7 +6679,7 @@
       "expected_typed_domain_case_ref": "88-C177-S030",
       "native_source_terminal_case_ref": "88-C177-S030",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S030/mysql",
@@ -6694,7 +6694,7 @@
       "expected_typed_domain_case_ref": "88-C177-S030",
       "native_source_terminal_case_ref": "88-C177-S030",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S030/postgresql",
@@ -6709,7 +6709,7 @@
       "expected_typed_domain_case_ref": "88-C177-S030",
       "native_source_terminal_case_ref": "88-C177-S030",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S030/redshift",
@@ -6724,7 +6724,7 @@
       "expected_typed_domain_case_ref": "88-C177-S030",
       "native_source_terminal_case_ref": "88-C177-S030",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S030/snowflake",
@@ -6739,7 +6739,7 @@
       "expected_typed_domain_case_ref": "88-C177-S030",
       "native_source_terminal_case_ref": "88-C177-S030",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S030/sqlite",
@@ -6754,7 +6754,7 @@
       "expected_typed_domain_case_ref": "88-C177-S030",
       "native_source_terminal_case_ref": "88-C177-S030",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S031/ansi",
@@ -6769,7 +6769,7 @@
       "expected_typed_domain_case_ref": "88-C177-S031",
       "native_source_terminal_case_ref": "88-C177-S031",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S031/bigquery",
@@ -6784,7 +6784,7 @@
       "expected_typed_domain_case_ref": "88-C177-S031",
       "native_source_terminal_case_ref": "88-C177-S031",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S031/clickhouse",
@@ -6799,7 +6799,7 @@
       "expected_typed_domain_case_ref": "88-C177-S031",
       "native_source_terminal_case_ref": "88-C177-S031",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S031/databricks",
@@ -6814,7 +6814,7 @@
       "expected_typed_domain_case_ref": "88-C177-S031",
       "native_source_terminal_case_ref": "88-C177-S031",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S031/duckdb",
@@ -6829,7 +6829,7 @@
       "expected_typed_domain_case_ref": "88-C177-S031",
       "native_source_terminal_case_ref": "88-C177-S031",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S031/generic",
@@ -6844,7 +6844,7 @@
       "expected_typed_domain_case_ref": "88-C177-S031",
       "native_source_terminal_case_ref": "88-C177-S031",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S031/hive",
@@ -6859,7 +6859,7 @@
       "expected_typed_domain_case_ref": "88-C177-S031",
       "native_source_terminal_case_ref": "88-C177-S031",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S031/mssql",
@@ -6874,7 +6874,7 @@
       "expected_typed_domain_case_ref": "88-C177-S031",
       "native_source_terminal_case_ref": "88-C177-S031",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S031/mysql",
@@ -6889,7 +6889,7 @@
       "expected_typed_domain_case_ref": "88-C177-S031",
       "native_source_terminal_case_ref": "88-C177-S031",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S031/postgresql",
@@ -6904,7 +6904,7 @@
       "expected_typed_domain_case_ref": "88-C177-S031",
       "native_source_terminal_case_ref": "88-C177-S031",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S031/redshift",
@@ -6919,7 +6919,7 @@
       "expected_typed_domain_case_ref": "88-C177-S031",
       "native_source_terminal_case_ref": "88-C177-S031",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S031/snowflake",
@@ -6934,7 +6934,7 @@
       "expected_typed_domain_case_ref": "88-C177-S031",
       "native_source_terminal_case_ref": "88-C177-S031",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S031/sqlite",
@@ -6949,7 +6949,7 @@
       "expected_typed_domain_case_ref": "88-C177-S031",
       "native_source_terminal_case_ref": "88-C177-S031",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S032/ansi",
@@ -6964,7 +6964,7 @@
       "expected_typed_domain_case_ref": "88-C177-S032",
       "native_source_terminal_case_ref": "88-C177-S032",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S032/bigquery",
@@ -6979,7 +6979,7 @@
       "expected_typed_domain_case_ref": "88-C177-S032",
       "native_source_terminal_case_ref": "88-C177-S032",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S032/clickhouse",
@@ -6994,7 +6994,7 @@
       "expected_typed_domain_case_ref": "88-C177-S032",
       "native_source_terminal_case_ref": "88-C177-S032",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S032/databricks",
@@ -7009,7 +7009,7 @@
       "expected_typed_domain_case_ref": "88-C177-S032",
       "native_source_terminal_case_ref": "88-C177-S032",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S032/duckdb",
@@ -7024,7 +7024,7 @@
       "expected_typed_domain_case_ref": "88-C177-S032",
       "native_source_terminal_case_ref": "88-C177-S032",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S032/generic",
@@ -7039,7 +7039,7 @@
       "expected_typed_domain_case_ref": "88-C177-S032",
       "native_source_terminal_case_ref": "88-C177-S032",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S032/hive",
@@ -7054,7 +7054,7 @@
       "expected_typed_domain_case_ref": "88-C177-S032",
       "native_source_terminal_case_ref": "88-C177-S032",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S032/mssql",
@@ -7069,7 +7069,7 @@
       "expected_typed_domain_case_ref": "88-C177-S032",
       "native_source_terminal_case_ref": "88-C177-S032",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S032/mysql",
@@ -7084,7 +7084,7 @@
       "expected_typed_domain_case_ref": "88-C177-S032",
       "native_source_terminal_case_ref": "88-C177-S032",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S032/postgresql",
@@ -7099,7 +7099,7 @@
       "expected_typed_domain_case_ref": "88-C177-S032",
       "native_source_terminal_case_ref": "88-C177-S032",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S032/redshift",
@@ -7114,7 +7114,7 @@
       "expected_typed_domain_case_ref": "88-C177-S032",
       "native_source_terminal_case_ref": "88-C177-S032",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S032/snowflake",
@@ -7129,7 +7129,7 @@
       "expected_typed_domain_case_ref": "88-C177-S032",
       "native_source_terminal_case_ref": "88-C177-S032",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S032/sqlite",
@@ -7144,7 +7144,7 @@
       "expected_typed_domain_case_ref": "88-C177-S032",
       "native_source_terminal_case_ref": "88-C177-S032",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S033/ansi",
@@ -7159,7 +7159,7 @@
       "expected_typed_domain_case_ref": "88-C177-S033",
       "native_source_terminal_case_ref": "88-C177-S033",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S033/bigquery",
@@ -7174,7 +7174,7 @@
       "expected_typed_domain_case_ref": "88-C177-S033",
       "native_source_terminal_case_ref": "88-C177-S033",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S033/clickhouse",
@@ -7189,7 +7189,7 @@
       "expected_typed_domain_case_ref": "88-C177-S033",
       "native_source_terminal_case_ref": "88-C177-S033",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S033/databricks",
@@ -7204,7 +7204,7 @@
       "expected_typed_domain_case_ref": "88-C177-S033",
       "native_source_terminal_case_ref": "88-C177-S033",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S033/duckdb",
@@ -7219,7 +7219,7 @@
       "expected_typed_domain_case_ref": "88-C177-S033",
       "native_source_terminal_case_ref": "88-C177-S033",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S033/generic",
@@ -7234,7 +7234,7 @@
       "expected_typed_domain_case_ref": "88-C177-S033",
       "native_source_terminal_case_ref": "88-C177-S033",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S033/hive",
@@ -7249,7 +7249,7 @@
       "expected_typed_domain_case_ref": "88-C177-S033",
       "native_source_terminal_case_ref": "88-C177-S033",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S033/mssql",
@@ -7264,7 +7264,7 @@
       "expected_typed_domain_case_ref": "88-C177-S033",
       "native_source_terminal_case_ref": "88-C177-S033",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S033/mysql",
@@ -7279,7 +7279,7 @@
       "expected_typed_domain_case_ref": "88-C177-S033",
       "native_source_terminal_case_ref": "88-C177-S033",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S033/postgresql",
@@ -7294,7 +7294,7 @@
       "expected_typed_domain_case_ref": "88-C177-S033",
       "native_source_terminal_case_ref": "88-C177-S033",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S033/redshift",
@@ -7309,7 +7309,7 @@
       "expected_typed_domain_case_ref": "88-C177-S033",
       "native_source_terminal_case_ref": "88-C177-S033",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S033/snowflake",
@@ -7324,7 +7324,7 @@
       "expected_typed_domain_case_ref": "88-C177-S033",
       "native_source_terminal_case_ref": "88-C177-S033",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S033/sqlite",
@@ -7339,7 +7339,7 @@
       "expected_typed_domain_case_ref": "88-C177-S033",
       "native_source_terminal_case_ref": "88-C177-S033",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S034/ansi",
@@ -7354,7 +7354,7 @@
       "expected_typed_domain_case_ref": "88-C177-S034",
       "native_source_terminal_case_ref": "88-C177-S034",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S034/bigquery",
@@ -7369,7 +7369,7 @@
       "expected_typed_domain_case_ref": "88-C177-S034",
       "native_source_terminal_case_ref": "88-C177-S034",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S034/clickhouse",
@@ -7384,7 +7384,7 @@
       "expected_typed_domain_case_ref": "88-C177-S034",
       "native_source_terminal_case_ref": "88-C177-S034",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S034/databricks",
@@ -7399,7 +7399,7 @@
       "expected_typed_domain_case_ref": "88-C177-S034",
       "native_source_terminal_case_ref": "88-C177-S034",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S034/duckdb",
@@ -7414,7 +7414,7 @@
       "expected_typed_domain_case_ref": "88-C177-S034",
       "native_source_terminal_case_ref": "88-C177-S034",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S034/generic",
@@ -7429,7 +7429,7 @@
       "expected_typed_domain_case_ref": "88-C177-S034",
       "native_source_terminal_case_ref": "88-C177-S034",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S034/hive",
@@ -7444,7 +7444,7 @@
       "expected_typed_domain_case_ref": "88-C177-S034",
       "native_source_terminal_case_ref": "88-C177-S034",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S034/mssql",
@@ -7459,7 +7459,7 @@
       "expected_typed_domain_case_ref": "88-C177-S034",
       "native_source_terminal_case_ref": "88-C177-S034",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S034/mysql",
@@ -7474,7 +7474,7 @@
       "expected_typed_domain_case_ref": "88-C177-S034",
       "native_source_terminal_case_ref": "88-C177-S034",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S034/postgresql",
@@ -7489,7 +7489,7 @@
       "expected_typed_domain_case_ref": "88-C177-S034",
       "native_source_terminal_case_ref": "88-C177-S034",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S034/redshift",
@@ -7504,7 +7504,7 @@
       "expected_typed_domain_case_ref": "88-C177-S034",
       "native_source_terminal_case_ref": "88-C177-S034",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S034/snowflake",
@@ -7519,7 +7519,7 @@
       "expected_typed_domain_case_ref": "88-C177-S034",
       "native_source_terminal_case_ref": "88-C177-S034",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S034/sqlite",
@@ -7534,7 +7534,7 @@
       "expected_typed_domain_case_ref": "88-C177-S034",
       "native_source_terminal_case_ref": "88-C177-S034",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S035/ansi",
@@ -7549,7 +7549,7 @@
       "expected_typed_domain_case_ref": "88-C177-S035",
       "native_source_terminal_case_ref": "88-C177-S035",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S035/bigquery",
@@ -7564,7 +7564,7 @@
       "expected_typed_domain_case_ref": "88-C177-S035",
       "native_source_terminal_case_ref": "88-C177-S035",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S035/clickhouse",
@@ -7579,7 +7579,7 @@
       "expected_typed_domain_case_ref": "88-C177-S035",
       "native_source_terminal_case_ref": "88-C177-S035",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S035/databricks",
@@ -7594,7 +7594,7 @@
       "expected_typed_domain_case_ref": "88-C177-S035",
       "native_source_terminal_case_ref": "88-C177-S035",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S035/duckdb",
@@ -7609,7 +7609,7 @@
       "expected_typed_domain_case_ref": "88-C177-S035",
       "native_source_terminal_case_ref": "88-C177-S035",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S035/generic",
@@ -7624,7 +7624,7 @@
       "expected_typed_domain_case_ref": "88-C177-S035",
       "native_source_terminal_case_ref": "88-C177-S035",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S035/hive",
@@ -7639,7 +7639,7 @@
       "expected_typed_domain_case_ref": "88-C177-S035",
       "native_source_terminal_case_ref": "88-C177-S035",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S035/mssql",
@@ -7654,7 +7654,7 @@
       "expected_typed_domain_case_ref": "88-C177-S035",
       "native_source_terminal_case_ref": "88-C177-S035",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S035/mysql",
@@ -7669,7 +7669,7 @@
       "expected_typed_domain_case_ref": "88-C177-S035",
       "native_source_terminal_case_ref": "88-C177-S035",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S035/postgresql",
@@ -7684,7 +7684,7 @@
       "expected_typed_domain_case_ref": "88-C177-S035",
       "native_source_terminal_case_ref": "88-C177-S035",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S035/redshift",
@@ -7699,7 +7699,7 @@
       "expected_typed_domain_case_ref": "88-C177-S035",
       "native_source_terminal_case_ref": "88-C177-S035",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S035/snowflake",
@@ -7714,7 +7714,7 @@
       "expected_typed_domain_case_ref": "88-C177-S035",
       "native_source_terminal_case_ref": "88-C177-S035",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S035/sqlite",
@@ -7729,7 +7729,7 @@
       "expected_typed_domain_case_ref": "88-C177-S035",
       "native_source_terminal_case_ref": "88-C177-S035",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S036/ansi",
@@ -7744,7 +7744,7 @@
       "expected_typed_domain_case_ref": "88-C177-S036",
       "native_source_terminal_case_ref": "88-C177-S036",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S036/bigquery",
@@ -7759,7 +7759,7 @@
       "expected_typed_domain_case_ref": "88-C177-S036",
       "native_source_terminal_case_ref": "88-C177-S036",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S036/clickhouse",
@@ -7774,7 +7774,7 @@
       "expected_typed_domain_case_ref": "88-C177-S036",
       "native_source_terminal_case_ref": "88-C177-S036",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S036/databricks",
@@ -7789,7 +7789,7 @@
       "expected_typed_domain_case_ref": "88-C177-S036",
       "native_source_terminal_case_ref": "88-C177-S036",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S036/duckdb",
@@ -7804,7 +7804,7 @@
       "expected_typed_domain_case_ref": "88-C177-S036",
       "native_source_terminal_case_ref": "88-C177-S036",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S036/generic",
@@ -7819,7 +7819,7 @@
       "expected_typed_domain_case_ref": "88-C177-S036",
       "native_source_terminal_case_ref": "88-C177-S036",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S036/hive",
@@ -7834,7 +7834,7 @@
       "expected_typed_domain_case_ref": "88-C177-S036",
       "native_source_terminal_case_ref": "88-C177-S036",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S036/mssql",
@@ -7849,7 +7849,7 @@
       "expected_typed_domain_case_ref": "88-C177-S036",
       "native_source_terminal_case_ref": "88-C177-S036",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S036/mysql",
@@ -7864,7 +7864,7 @@
       "expected_typed_domain_case_ref": "88-C177-S036",
       "native_source_terminal_case_ref": "88-C177-S036",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S036/postgresql",
@@ -7879,7 +7879,7 @@
       "expected_typed_domain_case_ref": "88-C177-S036",
       "native_source_terminal_case_ref": "88-C177-S036",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S036/redshift",
@@ -7894,7 +7894,7 @@
       "expected_typed_domain_case_ref": "88-C177-S036",
       "native_source_terminal_case_ref": "88-C177-S036",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S036/snowflake",
@@ -7909,7 +7909,7 @@
       "expected_typed_domain_case_ref": "88-C177-S036",
       "native_source_terminal_case_ref": "88-C177-S036",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S036/sqlite",
@@ -7924,7 +7924,7 @@
       "expected_typed_domain_case_ref": "88-C177-S036",
       "native_source_terminal_case_ref": "88-C177-S036",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S037/ansi",
@@ -7939,7 +7939,7 @@
       "expected_typed_domain_case_ref": "88-C177-S037",
       "native_source_terminal_case_ref": "88-C177-S037",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S037/bigquery",
@@ -7954,7 +7954,7 @@
       "expected_typed_domain_case_ref": "88-C177-S037",
       "native_source_terminal_case_ref": "88-C177-S037",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S037/clickhouse",
@@ -7969,7 +7969,7 @@
       "expected_typed_domain_case_ref": "88-C177-S037",
       "native_source_terminal_case_ref": "88-C177-S037",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S037/databricks",
@@ -7984,7 +7984,7 @@
       "expected_typed_domain_case_ref": "88-C177-S037",
       "native_source_terminal_case_ref": "88-C177-S037",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S037/duckdb",
@@ -7999,7 +7999,7 @@
       "expected_typed_domain_case_ref": "88-C177-S037",
       "native_source_terminal_case_ref": "88-C177-S037",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S037/generic",
@@ -8014,7 +8014,7 @@
       "expected_typed_domain_case_ref": "88-C177-S037",
       "native_source_terminal_case_ref": "88-C177-S037",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S037/hive",
@@ -8029,7 +8029,7 @@
       "expected_typed_domain_case_ref": "88-C177-S037",
       "native_source_terminal_case_ref": "88-C177-S037",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S037/mssql",
@@ -8044,7 +8044,7 @@
       "expected_typed_domain_case_ref": "88-C177-S037",
       "native_source_terminal_case_ref": "88-C177-S037",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S037/mysql",
@@ -8059,7 +8059,7 @@
       "expected_typed_domain_case_ref": "88-C177-S037",
       "native_source_terminal_case_ref": "88-C177-S037",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S037/postgresql",
@@ -8074,7 +8074,7 @@
       "expected_typed_domain_case_ref": "88-C177-S037",
       "native_source_terminal_case_ref": "88-C177-S037",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S037/redshift",
@@ -8089,7 +8089,7 @@
       "expected_typed_domain_case_ref": "88-C177-S037",
       "native_source_terminal_case_ref": "88-C177-S037",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S037/snowflake",
@@ -8104,7 +8104,7 @@
       "expected_typed_domain_case_ref": "88-C177-S037",
       "native_source_terminal_case_ref": "88-C177-S037",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S037/sqlite",
@@ -8119,7 +8119,7 @@
       "expected_typed_domain_case_ref": "88-C177-S037",
       "native_source_terminal_case_ref": "88-C177-S037",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S038/ansi",
@@ -8134,7 +8134,7 @@
       "expected_typed_domain_case_ref": "88-C177-S038",
       "native_source_terminal_case_ref": "88-C177-S038",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S038/bigquery",
@@ -8149,7 +8149,7 @@
       "expected_typed_domain_case_ref": "88-C177-S038",
       "native_source_terminal_case_ref": "88-C177-S038",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S038/clickhouse",
@@ -8164,7 +8164,7 @@
       "expected_typed_domain_case_ref": "88-C177-S038",
       "native_source_terminal_case_ref": "88-C177-S038",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S038/databricks",
@@ -8179,7 +8179,7 @@
       "expected_typed_domain_case_ref": "88-C177-S038",
       "native_source_terminal_case_ref": "88-C177-S038",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S038/duckdb",
@@ -8194,7 +8194,7 @@
       "expected_typed_domain_case_ref": "88-C177-S038",
       "native_source_terminal_case_ref": "88-C177-S038",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S038/generic",
@@ -8209,7 +8209,7 @@
       "expected_typed_domain_case_ref": "88-C177-S038",
       "native_source_terminal_case_ref": "88-C177-S038",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S038/hive",
@@ -8224,7 +8224,7 @@
       "expected_typed_domain_case_ref": "88-C177-S038",
       "native_source_terminal_case_ref": "88-C177-S038",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S038/mssql",
@@ -8239,7 +8239,7 @@
       "expected_typed_domain_case_ref": "88-C177-S038",
       "native_source_terminal_case_ref": "88-C177-S038",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S038/mysql",
@@ -8254,7 +8254,7 @@
       "expected_typed_domain_case_ref": "88-C177-S038",
       "native_source_terminal_case_ref": "88-C177-S038",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S038/postgresql",
@@ -8269,7 +8269,7 @@
       "expected_typed_domain_case_ref": "88-C177-S038",
       "native_source_terminal_case_ref": "88-C177-S038",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S038/redshift",
@@ -8284,7 +8284,7 @@
       "expected_typed_domain_case_ref": "88-C177-S038",
       "native_source_terminal_case_ref": "88-C177-S038",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S038/snowflake",
@@ -8299,7 +8299,7 @@
       "expected_typed_domain_case_ref": "88-C177-S038",
       "native_source_terminal_case_ref": "88-C177-S038",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S038/sqlite",
@@ -8314,7 +8314,7 @@
       "expected_typed_domain_case_ref": "88-C177-S038",
       "native_source_terminal_case_ref": "88-C177-S038",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S039/ansi",
@@ -8329,7 +8329,7 @@
       "expected_typed_domain_case_ref": "88-C177-S039",
       "native_source_terminal_case_ref": "88-C177-S039",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S039/bigquery",
@@ -8344,7 +8344,7 @@
       "expected_typed_domain_case_ref": "88-C177-S039",
       "native_source_terminal_case_ref": "88-C177-S039",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S039/clickhouse",
@@ -8359,7 +8359,7 @@
       "expected_typed_domain_case_ref": "88-C177-S039",
       "native_source_terminal_case_ref": "88-C177-S039",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S039/databricks",
@@ -8374,7 +8374,7 @@
       "expected_typed_domain_case_ref": "88-C177-S039",
       "native_source_terminal_case_ref": "88-C177-S039",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S039/duckdb",
@@ -8389,7 +8389,7 @@
       "expected_typed_domain_case_ref": "88-C177-S039",
       "native_source_terminal_case_ref": "88-C177-S039",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S039/generic",
@@ -8404,7 +8404,7 @@
       "expected_typed_domain_case_ref": "88-C177-S039",
       "native_source_terminal_case_ref": "88-C177-S039",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S039/hive",
@@ -8419,7 +8419,7 @@
       "expected_typed_domain_case_ref": "88-C177-S039",
       "native_source_terminal_case_ref": "88-C177-S039",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S039/mssql",
@@ -8434,7 +8434,7 @@
       "expected_typed_domain_case_ref": "88-C177-S039",
       "native_source_terminal_case_ref": "88-C177-S039",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S039/mysql",
@@ -8449,7 +8449,7 @@
       "expected_typed_domain_case_ref": "88-C177-S039",
       "native_source_terminal_case_ref": "88-C177-S039",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S039/postgresql",
@@ -8464,7 +8464,7 @@
       "expected_typed_domain_case_ref": "88-C177-S039",
       "native_source_terminal_case_ref": "88-C177-S039",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S039/redshift",
@@ -8479,7 +8479,7 @@
       "expected_typed_domain_case_ref": "88-C177-S039",
       "native_source_terminal_case_ref": "88-C177-S039",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S039/snowflake",
@@ -8494,7 +8494,7 @@
       "expected_typed_domain_case_ref": "88-C177-S039",
       "native_source_terminal_case_ref": "88-C177-S039",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S039/sqlite",
@@ -8509,7 +8509,7 @@
       "expected_typed_domain_case_ref": "88-C177-S039",
       "native_source_terminal_case_ref": "88-C177-S039",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S040/ansi",
@@ -8524,7 +8524,7 @@
       "expected_typed_domain_case_ref": "88-C177-S040",
       "native_source_terminal_case_ref": "88-C177-S040",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S040/bigquery",
@@ -8539,7 +8539,7 @@
       "expected_typed_domain_case_ref": "88-C177-S040",
       "native_source_terminal_case_ref": "88-C177-S040",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S040/clickhouse",
@@ -8554,7 +8554,7 @@
       "expected_typed_domain_case_ref": "88-C177-S040",
       "native_source_terminal_case_ref": "88-C177-S040",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S040/databricks",
@@ -8569,7 +8569,7 @@
       "expected_typed_domain_case_ref": "88-C177-S040",
       "native_source_terminal_case_ref": "88-C177-S040",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S040/duckdb",
@@ -8584,7 +8584,7 @@
       "expected_typed_domain_case_ref": "88-C177-S040",
       "native_source_terminal_case_ref": "88-C177-S040",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S040/generic",
@@ -8599,7 +8599,7 @@
       "expected_typed_domain_case_ref": "88-C177-S040",
       "native_source_terminal_case_ref": "88-C177-S040",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S040/hive",
@@ -8614,7 +8614,7 @@
       "expected_typed_domain_case_ref": "88-C177-S040",
       "native_source_terminal_case_ref": "88-C177-S040",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S040/mssql",
@@ -8629,7 +8629,7 @@
       "expected_typed_domain_case_ref": "88-C177-S040",
       "native_source_terminal_case_ref": "88-C177-S040",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S040/mysql",
@@ -8644,7 +8644,7 @@
       "expected_typed_domain_case_ref": "88-C177-S040",
       "native_source_terminal_case_ref": "88-C177-S040",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S040/postgresql",
@@ -8659,7 +8659,7 @@
       "expected_typed_domain_case_ref": "88-C177-S040",
       "native_source_terminal_case_ref": "88-C177-S040",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S040/redshift",
@@ -8674,7 +8674,7 @@
       "expected_typed_domain_case_ref": "88-C177-S040",
       "native_source_terminal_case_ref": "88-C177-S040",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S040/snowflake",
@@ -8689,7 +8689,7 @@
       "expected_typed_domain_case_ref": "88-C177-S040",
       "native_source_terminal_case_ref": "88-C177-S040",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S040/sqlite",
@@ -8704,7 +8704,7 @@
       "expected_typed_domain_case_ref": "88-C177-S040",
       "native_source_terminal_case_ref": "88-C177-S040",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S041/ansi",
@@ -8719,7 +8719,7 @@
       "expected_typed_domain_case_ref": "88-C177-S041",
       "native_source_terminal_case_ref": "88-C177-S041",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S041/bigquery",
@@ -8734,7 +8734,7 @@
       "expected_typed_domain_case_ref": "88-C177-S041",
       "native_source_terminal_case_ref": "88-C177-S041",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S041/clickhouse",
@@ -8749,7 +8749,7 @@
       "expected_typed_domain_case_ref": "88-C177-S041",
       "native_source_terminal_case_ref": "88-C177-S041",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S041/databricks",
@@ -8764,7 +8764,7 @@
       "expected_typed_domain_case_ref": "88-C177-S041",
       "native_source_terminal_case_ref": "88-C177-S041",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S041/duckdb",
@@ -8779,7 +8779,7 @@
       "expected_typed_domain_case_ref": "88-C177-S041",
       "native_source_terminal_case_ref": "88-C177-S041",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S041/generic",
@@ -8794,7 +8794,7 @@
       "expected_typed_domain_case_ref": "88-C177-S041",
       "native_source_terminal_case_ref": "88-C177-S041",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S041/hive",
@@ -8809,7 +8809,7 @@
       "expected_typed_domain_case_ref": "88-C177-S041",
       "native_source_terminal_case_ref": "88-C177-S041",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S041/mssql",
@@ -8824,7 +8824,7 @@
       "expected_typed_domain_case_ref": "88-C177-S041",
       "native_source_terminal_case_ref": "88-C177-S041",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S041/mysql",
@@ -8839,7 +8839,7 @@
       "expected_typed_domain_case_ref": "88-C177-S041",
       "native_source_terminal_case_ref": "88-C177-S041",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S041/postgresql",
@@ -8854,7 +8854,7 @@
       "expected_typed_domain_case_ref": "88-C177-S041",
       "native_source_terminal_case_ref": "88-C177-S041",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S041/redshift",
@@ -8869,7 +8869,7 @@
       "expected_typed_domain_case_ref": "88-C177-S041",
       "native_source_terminal_case_ref": "88-C177-S041",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S041/snowflake",
@@ -8884,7 +8884,7 @@
       "expected_typed_domain_case_ref": "88-C177-S041",
       "native_source_terminal_case_ref": "88-C177-S041",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S041/sqlite",
@@ -8899,7 +8899,7 @@
       "expected_typed_domain_case_ref": "88-C177-S041",
       "native_source_terminal_case_ref": "88-C177-S041",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S042/ansi",
@@ -8914,7 +8914,7 @@
       "expected_typed_domain_case_ref": "88-C177-S042",
       "native_source_terminal_case_ref": "88-C177-S042",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S042/bigquery",
@@ -8929,7 +8929,7 @@
       "expected_typed_domain_case_ref": "88-C177-S042",
       "native_source_terminal_case_ref": "88-C177-S042",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S042/clickhouse",
@@ -8944,7 +8944,7 @@
       "expected_typed_domain_case_ref": "88-C177-S042",
       "native_source_terminal_case_ref": "88-C177-S042",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S042/databricks",
@@ -8959,7 +8959,7 @@
       "expected_typed_domain_case_ref": "88-C177-S042",
       "native_source_terminal_case_ref": "88-C177-S042",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S042/duckdb",
@@ -8974,7 +8974,7 @@
       "expected_typed_domain_case_ref": "88-C177-S042",
       "native_source_terminal_case_ref": "88-C177-S042",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S042/generic",
@@ -8989,7 +8989,7 @@
       "expected_typed_domain_case_ref": "88-C177-S042",
       "native_source_terminal_case_ref": "88-C177-S042",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S042/hive",
@@ -9004,7 +9004,7 @@
       "expected_typed_domain_case_ref": "88-C177-S042",
       "native_source_terminal_case_ref": "88-C177-S042",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S042/mssql",
@@ -9019,7 +9019,7 @@
       "expected_typed_domain_case_ref": "88-C177-S042",
       "native_source_terminal_case_ref": "88-C177-S042",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S042/mysql",
@@ -9034,7 +9034,7 @@
       "expected_typed_domain_case_ref": "88-C177-S042",
       "native_source_terminal_case_ref": "88-C177-S042",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S042/postgresql",
@@ -9049,7 +9049,7 @@
       "expected_typed_domain_case_ref": "88-C177-S042",
       "native_source_terminal_case_ref": "88-C177-S042",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S042/redshift",
@@ -9064,7 +9064,7 @@
       "expected_typed_domain_case_ref": "88-C177-S042",
       "native_source_terminal_case_ref": "88-C177-S042",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S042/snowflake",
@@ -9079,7 +9079,7 @@
       "expected_typed_domain_case_ref": "88-C177-S042",
       "native_source_terminal_case_ref": "88-C177-S042",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S042/sqlite",
@@ -9094,7 +9094,7 @@
       "expected_typed_domain_case_ref": "88-C177-S042",
       "native_source_terminal_case_ref": "88-C177-S042",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S179/ansi",
@@ -9109,7 +9109,7 @@
       "expected_typed_domain_case_ref": "88-C177-S179",
       "native_source_terminal_case_ref": "88-C177-S179",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S179/bigquery",
@@ -9124,7 +9124,7 @@
       "expected_typed_domain_case_ref": "88-C177-S179",
       "native_source_terminal_case_ref": "88-C177-S179",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S179/clickhouse",
@@ -9139,7 +9139,7 @@
       "expected_typed_domain_case_ref": "88-C177-S179",
       "native_source_terminal_case_ref": "88-C177-S179",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S179/databricks",
@@ -9154,7 +9154,7 @@
       "expected_typed_domain_case_ref": "88-C177-S179",
       "native_source_terminal_case_ref": "88-C177-S179",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S179/duckdb",
@@ -9169,7 +9169,7 @@
       "expected_typed_domain_case_ref": "88-C177-S179",
       "native_source_terminal_case_ref": "88-C177-S179",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S179/generic",
@@ -9184,7 +9184,7 @@
       "expected_typed_domain_case_ref": "88-C177-S179",
       "native_source_terminal_case_ref": "88-C177-S179",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S179/hive",
@@ -9199,7 +9199,7 @@
       "expected_typed_domain_case_ref": "88-C177-S179",
       "native_source_terminal_case_ref": "88-C177-S179",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S179/mssql",
@@ -9214,7 +9214,7 @@
       "expected_typed_domain_case_ref": "88-C177-S179",
       "native_source_terminal_case_ref": "88-C177-S179",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S179/mysql",
@@ -9229,7 +9229,7 @@
       "expected_typed_domain_case_ref": "88-C177-S179",
       "native_source_terminal_case_ref": "88-C177-S179",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S179/postgresql",
@@ -9244,7 +9244,7 @@
       "expected_typed_domain_case_ref": "88-C177-S179",
       "native_source_terminal_case_ref": "88-C177-S179",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S179/redshift",
@@ -9259,7 +9259,7 @@
       "expected_typed_domain_case_ref": "88-C177-S179",
       "native_source_terminal_case_ref": "88-C177-S179",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S179/snowflake",
@@ -9274,7 +9274,7 @@
       "expected_typed_domain_case_ref": "88-C177-S179",
       "native_source_terminal_case_ref": "88-C177-S179",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     },
     {
       "id": "88-C177-S179/sqlite",
@@ -9289,11 +9289,11 @@
       "expected_typed_domain_case_ref": "88-C177-S179",
       "native_source_terminal_case_ref": "88-C177-S179",
       "external_vendor_runtime": "unattested",
-      "independently_reviewed": false
+      "independently_reviewed": true
     }
   ],
-  "task_completed": false,
-  "independent_review_signed_off": false,
+  "task_completed": true,
+  "independent_review_signed_off": true,
   "release_approved": false,
   "nullable_numeric_boolean_laws": {
     "original_case_ids": [
