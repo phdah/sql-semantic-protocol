@@ -358,8 +358,15 @@ fn coalesced_join_column_lineage(
         return None;
     };
     let qualifier = |factor: &TableFactor| match factor {
-        TableFactor::Table { name, alias, args: None, .. } => Some(
-            alias.as_ref().map_or_else(|| name.to_string(), |a| a.name.to_string()),
+        TableFactor::Table {
+            name,
+            alias,
+            args: None,
+            ..
+        } => Some(
+            alias
+                .as_ref()
+                .map_or_else(|| name.to_string(), |a| a.name.to_string()),
         ),
         _ => None,
     };
@@ -370,13 +377,16 @@ fn coalesced_join_column_lineage(
     }
     let (_, constraint, _) = analyze_join_operator(&join.join_operator);
     match constraint? {
-        JoinConstraint::Using(names) if names.iter().any(|name| name.value == column) => {}
+        JoinConstraint::Using(names) if names.iter().any(|name| name.to_string() == column) => {}
         JoinConstraint::Natural => {
             // Without complete source metadata, NATURAL's shared names are
             // unknown. An untyped reference must not fabricate provenance.
             for name in [&left, &right] {
                 let mut matching = scope.iter().filter(|relation| {
-                    relation.qualifiers.iter().any(|qualifier| qualifier == name)
+                    relation
+                        .qualifiers
+                        .iter()
+                        .any(|qualifier| qualifier == name)
                 });
                 let relation = matching.next()?;
                 if matching.next().is_some() {
