@@ -198,7 +198,6 @@ fn every_accepted_set_form_has_one_canonical_public_document_and_explicit_fail_c
     assert_eq!(checked, 286);
 }
 
-
 #[test]
 fn by_name_rejects_unmatched_and_duplicated_column_names_instead_of_guessing() {
     let dialect = dialect_from_name("generic").expect("generic parser");
