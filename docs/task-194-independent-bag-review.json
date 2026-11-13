@@ -1,0 +1,4953 @@
+{
+  "schema_version": 1,
+  "task_id": "TASK-194",
+  "origin": "independent_typed_multiset_arithmetic_from_frozen_physical_rows_not_emitted_analyzer",
+  "source_complete_reference": "docs/task-194-acceptance-freeze.json",
+  "status": "candidate_independent_review_until_tests_and_ci",
+  "meaning_of_rejected": "a candidate occurrence in the concatenation of every leaf branch which is not present in the terminal multiset; this is a bag conservation measure, not SQL WHERE FALSE",
+  "reviewer_scope": "closed_world_duckdb_original_SQL_and_13_parser_dialect_typed_semantics_only",
+  "count": 22,
+  "parser_cells": 286,
+  "source_bags": {
+    "orders": [
+      [
+        null,
+        10
+      ],
+      [
+        1,
+        10
+      ],
+      [
+        1,
+        10
+      ],
+      [
+        2,
+        20
+      ],
+      [
+        3,
+        null
+      ],
+      [
+        4,
+        -5
+      ]
+    ],
+    "customers": [
+      [
+        null,
+        10
+      ],
+      [
+        1,
+        10
+      ],
+      [
+        1,
+        10
+      ],
+      [
+        2,
+        100
+      ],
+      [
+        5,
+        -5
+      ]
+    ],
+    "products": [
+      [
+        1
+      ],
+      [
+        2
+      ],
+      [
+        3
+      ]
+    ]
+  },
+  "cases": [
+    {
+      "case_id": "88-C177-S066",
+      "sql": "SELECT id FROM orders UNION ALL SELECT id FROM customers",
+      "semantic_rule": "union_all",
+      "source_arms": [
+        {
+          "identity": "orders:arm1",
+          "relation": "orders",
+          "column_order": [
+            "id"
+          ],
+          "source_row_ids": [
+            "orders#0",
+            "orders#1",
+            "orders#2",
+            "orders#3",
+            "orders#4",
+            "orders#5"
+          ],
+          "projected_bag": [
+            [
+              null
+            ],
+            [
+              1
+            ],
+            [
+              1
+            ],
+            [
+              2
+            ],
+            [
+              3
+            ],
+            [
+              4
+            ]
+          ]
+        },
+        {
+          "identity": "customers:arm2",
+          "relation": "customers",
+          "column_order": [
+            "id"
+          ],
+          "source_row_ids": [
+            "customers#0",
+            "customers#1",
+            "customers#2",
+            "customers#3",
+            "customers#4"
+          ],
+          "projected_bag": [
+            [
+              null
+            ],
+            [
+              1
+            ],
+            [
+              1
+            ],
+            [
+              2
+            ],
+            [
+              5
+            ]
+          ]
+        }
+      ],
+      "independent_terminal_bag": [
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          2
+        ],
+        [
+          3
+        ],
+        [
+          4
+        ],
+        [
+          5
+        ],
+        [
+          null
+        ],
+        [
+          null
+        ]
+      ],
+      "independent_non_emitted_candidate_bag": [],
+      "independent_source_candidate_bag": [
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          2
+        ],
+        [
+          3
+        ],
+        [
+          4
+        ],
+        [
+          5
+        ],
+        [
+          null
+        ],
+        [
+          null
+        ]
+      ],
+      "candidate_sql": "SELECT id FROM orders UNION ALL SELECT id FROM customers",
+      "expected_column_names": [
+        "id"
+      ],
+      "expected_column_types": [
+        "INTEGER"
+      ],
+      "expected_terminal_occurrences": 11,
+      "expected_rejected_candidate_occurrences": 0,
+      "impossible_count_goal": {
+        "tuple": [
+          1
+        ],
+        "count": 5
+      },
+      "reviewed_status": "independent_typed_set_law_and_native_oracle"
+    },
+    {
+      "case_id": "88-C177-S067",
+      "sql": "SELECT id AS k FROM orders UNION ALL SELECT id AS other FROM customers",
+      "semantic_rule": "union_all",
+      "source_arms": [
+        {
+          "identity": "orders:arm1",
+          "relation": "orders",
+          "column_order": [
+            "id"
+          ],
+          "source_row_ids": [
+            "orders#0",
+            "orders#1",
+            "orders#2",
+            "orders#3",
+            "orders#4",
+            "orders#5"
+          ],
+          "projected_bag": [
+            [
+              null
+            ],
+            [
+              1
+            ],
+            [
+              1
+            ],
+            [
+              2
+            ],
+            [
+              3
+            ],
+            [
+              4
+            ]
+          ]
+        },
+        {
+          "identity": "customers:arm2",
+          "relation": "customers",
+          "column_order": [
+            "id"
+          ],
+          "source_row_ids": [
+            "customers#0",
+            "customers#1",
+            "customers#2",
+            "customers#3",
+            "customers#4"
+          ],
+          "projected_bag": [
+            [
+              null
+            ],
+            [
+              1
+            ],
+            [
+              1
+            ],
+            [
+              2
+            ],
+            [
+              5
+            ]
+          ]
+        }
+      ],
+      "independent_terminal_bag": [
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          2
+        ],
+        [
+          3
+        ],
+        [
+          4
+        ],
+        [
+          5
+        ],
+        [
+          null
+        ],
+        [
+          null
+        ]
+      ],
+      "independent_non_emitted_candidate_bag": [],
+      "independent_source_candidate_bag": [
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          2
+        ],
+        [
+          3
+        ],
+        [
+          4
+        ],
+        [
+          5
+        ],
+        [
+          null
+        ],
+        [
+          null
+        ]
+      ],
+      "candidate_sql": "SELECT id FROM orders UNION ALL SELECT id FROM customers",
+      "expected_column_names": [
+        "k"
+      ],
+      "expected_column_types": [
+        "INTEGER"
+      ],
+      "expected_terminal_occurrences": 11,
+      "expected_rejected_candidate_occurrences": 0,
+      "impossible_count_goal": {
+        "tuple": [
+          1
+        ],
+        "count": 5
+      },
+      "reviewed_status": "independent_typed_set_law_and_native_oracle"
+    },
+    {
+      "case_id": "88-C177-S068",
+      "sql": "SELECT id FROM orders UNION ALL SELECT id FROM orders",
+      "semantic_rule": "union_all",
+      "source_arms": [
+        {
+          "identity": "orders:arm1",
+          "relation": "orders",
+          "column_order": [
+            "id"
+          ],
+          "source_row_ids": [
+            "orders#0",
+            "orders#1",
+            "orders#2",
+            "orders#3",
+            "orders#4",
+            "orders#5"
+          ],
+          "projected_bag": [
+            [
+              null
+            ],
+            [
+              1
+            ],
+            [
+              1
+            ],
+            [
+              2
+            ],
+            [
+              3
+            ],
+            [
+              4
+            ]
+          ]
+        },
+        {
+          "identity": "orders:arm2",
+          "relation": "orders",
+          "column_order": [
+            "id"
+          ],
+          "source_row_ids": [
+            "orders#0",
+            "orders#1",
+            "orders#2",
+            "orders#3",
+            "orders#4",
+            "orders#5"
+          ],
+          "projected_bag": [
+            [
+              null
+            ],
+            [
+              1
+            ],
+            [
+              1
+            ],
+            [
+              2
+            ],
+            [
+              3
+            ],
+            [
+              4
+            ]
+          ]
+        }
+      ],
+      "independent_terminal_bag": [
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          2
+        ],
+        [
+          3
+        ],
+        [
+          3
+        ],
+        [
+          4
+        ],
+        [
+          4
+        ],
+        [
+          null
+        ],
+        [
+          null
+        ]
+      ],
+      "independent_non_emitted_candidate_bag": [],
+      "independent_source_candidate_bag": [
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          2
+        ],
+        [
+          3
+        ],
+        [
+          3
+        ],
+        [
+          4
+        ],
+        [
+          4
+        ],
+        [
+          null
+        ],
+        [
+          null
+        ]
+      ],
+      "candidate_sql": "SELECT id FROM orders UNION ALL SELECT id FROM orders",
+      "expected_column_names": [
+        "id"
+      ],
+      "expected_column_types": [
+        "INTEGER"
+      ],
+      "expected_terminal_occurrences": 12,
+      "expected_rejected_candidate_occurrences": 0,
+      "impossible_count_goal": {
+        "tuple": [
+          1
+        ],
+        "count": 5
+      },
+      "reviewed_status": "independent_typed_set_law_and_native_oracle"
+    },
+    {
+      "case_id": "88-C177-S069",
+      "sql": "SELECT amount FROM orders UNION ALL SELECT amount FROM customers",
+      "semantic_rule": "union_all",
+      "source_arms": [
+        {
+          "identity": "orders:arm1",
+          "relation": "orders",
+          "column_order": [
+            "amount"
+          ],
+          "source_row_ids": [
+            "orders#0",
+            "orders#1",
+            "orders#2",
+            "orders#3",
+            "orders#4",
+            "orders#5"
+          ],
+          "projected_bag": [
+            [
+              10
+            ],
+            [
+              10
+            ],
+            [
+              10
+            ],
+            [
+              20
+            ],
+            [
+              null
+            ],
+            [
+              -5
+            ]
+          ]
+        },
+        {
+          "identity": "customers:arm2",
+          "relation": "customers",
+          "column_order": [
+            "amount"
+          ],
+          "source_row_ids": [
+            "customers#0",
+            "customers#1",
+            "customers#2",
+            "customers#3",
+            "customers#4"
+          ],
+          "projected_bag": [
+            [
+              10
+            ],
+            [
+              10
+            ],
+            [
+              10
+            ],
+            [
+              100
+            ],
+            [
+              -5
+            ]
+          ]
+        }
+      ],
+      "independent_terminal_bag": [
+        [
+          -5
+        ],
+        [
+          -5
+        ],
+        [
+          10
+        ],
+        [
+          10
+        ],
+        [
+          10
+        ],
+        [
+          10
+        ],
+        [
+          10
+        ],
+        [
+          10
+        ],
+        [
+          100
+        ],
+        [
+          20
+        ],
+        [
+          null
+        ]
+      ],
+      "independent_non_emitted_candidate_bag": [],
+      "independent_source_candidate_bag": [
+        [
+          -5
+        ],
+        [
+          -5
+        ],
+        [
+          10
+        ],
+        [
+          10
+        ],
+        [
+          10
+        ],
+        [
+          10
+        ],
+        [
+          10
+        ],
+        [
+          10
+        ],
+        [
+          100
+        ],
+        [
+          20
+        ],
+        [
+          null
+        ]
+      ],
+      "candidate_sql": "SELECT amount FROM orders UNION ALL SELECT amount FROM customers",
+      "expected_column_names": [
+        "amount"
+      ],
+      "expected_column_types": [
+        "INTEGER"
+      ],
+      "expected_terminal_occurrences": 11,
+      "expected_rejected_candidate_occurrences": 0,
+      "impossible_count_goal": {
+        "tuple": [
+          -5
+        ],
+        "count": 3
+      },
+      "reviewed_status": "independent_typed_set_law_and_native_oracle"
+    },
+    {
+      "case_id": "88-C177-S070",
+      "sql": "SELECT id FROM orders UNION DISTINCT SELECT id FROM customers",
+      "semantic_rule": "union_distinct",
+      "source_arms": [
+        {
+          "identity": "orders:arm1",
+          "relation": "orders",
+          "column_order": [
+            "id"
+          ],
+          "source_row_ids": [
+            "orders#0",
+            "orders#1",
+            "orders#2",
+            "orders#3",
+            "orders#4",
+            "orders#5"
+          ],
+          "projected_bag": [
+            [
+              null
+            ],
+            [
+              1
+            ],
+            [
+              1
+            ],
+            [
+              2
+            ],
+            [
+              3
+            ],
+            [
+              4
+            ]
+          ]
+        },
+        {
+          "identity": "customers:arm2",
+          "relation": "customers",
+          "column_order": [
+            "id"
+          ],
+          "source_row_ids": [
+            "customers#0",
+            "customers#1",
+            "customers#2",
+            "customers#3",
+            "customers#4"
+          ],
+          "projected_bag": [
+            [
+              null
+            ],
+            [
+              1
+            ],
+            [
+              1
+            ],
+            [
+              2
+            ],
+            [
+              5
+            ]
+          ]
+        }
+      ],
+      "independent_terminal_bag": [
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          3
+        ],
+        [
+          4
+        ],
+        [
+          5
+        ],
+        [
+          null
+        ]
+      ],
+      "independent_non_emitted_candidate_bag": [
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          null
+        ]
+      ],
+      "independent_source_candidate_bag": [
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          2
+        ],
+        [
+          3
+        ],
+        [
+          4
+        ],
+        [
+          5
+        ],
+        [
+          null
+        ],
+        [
+          null
+        ]
+      ],
+      "candidate_sql": "SELECT id FROM orders UNION ALL SELECT id FROM customers",
+      "expected_column_names": [
+        "id"
+      ],
+      "expected_column_types": [
+        "INTEGER"
+      ],
+      "expected_terminal_occurrences": 6,
+      "expected_rejected_candidate_occurrences": 5,
+      "impossible_count_goal": {
+        "tuple": [
+          1
+        ],
+        "count": 2
+      },
+      "reviewed_status": "independent_typed_set_law_and_native_oracle"
+    },
+    {
+      "case_id": "88-C177-S071",
+      "sql": "SELECT id FROM orders UNION SELECT id FROM orders",
+      "semantic_rule": "union_distinct",
+      "source_arms": [
+        {
+          "identity": "orders:arm1",
+          "relation": "orders",
+          "column_order": [
+            "id"
+          ],
+          "source_row_ids": [
+            "orders#0",
+            "orders#1",
+            "orders#2",
+            "orders#3",
+            "orders#4",
+            "orders#5"
+          ],
+          "projected_bag": [
+            [
+              null
+            ],
+            [
+              1
+            ],
+            [
+              1
+            ],
+            [
+              2
+            ],
+            [
+              3
+            ],
+            [
+              4
+            ]
+          ]
+        },
+        {
+          "identity": "orders:arm2",
+          "relation": "orders",
+          "column_order": [
+            "id"
+          ],
+          "source_row_ids": [
+            "orders#0",
+            "orders#1",
+            "orders#2",
+            "orders#3",
+            "orders#4",
+            "orders#5"
+          ],
+          "projected_bag": [
+            [
+              null
+            ],
+            [
+              1
+            ],
+            [
+              1
+            ],
+            [
+              2
+            ],
+            [
+              3
+            ],
+            [
+              4
+            ]
+          ]
+        }
+      ],
+      "independent_terminal_bag": [
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          3
+        ],
+        [
+          4
+        ],
+        [
+          null
+        ]
+      ],
+      "independent_non_emitted_candidate_bag": [
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          3
+        ],
+        [
+          4
+        ],
+        [
+          null
+        ]
+      ],
+      "independent_source_candidate_bag": [
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          2
+        ],
+        [
+          3
+        ],
+        [
+          3
+        ],
+        [
+          4
+        ],
+        [
+          4
+        ],
+        [
+          null
+        ],
+        [
+          null
+        ]
+      ],
+      "candidate_sql": "SELECT id FROM orders UNION ALL SELECT id FROM orders",
+      "expected_column_names": [
+        "id"
+      ],
+      "expected_column_types": [
+        "INTEGER"
+      ],
+      "expected_terminal_occurrences": 5,
+      "expected_rejected_candidate_occurrences": 7,
+      "impossible_count_goal": {
+        "tuple": [
+          1
+        ],
+        "count": 2
+      },
+      "reviewed_status": "independent_typed_set_law_and_native_oracle"
+    },
+    {
+      "case_id": "88-C177-S072",
+      "sql": "SELECT id FROM orders UNION SELECT id FROM customers",
+      "semantic_rule": "union_distinct",
+      "source_arms": [
+        {
+          "identity": "orders:arm1",
+          "relation": "orders",
+          "column_order": [
+            "id"
+          ],
+          "source_row_ids": [
+            "orders#0",
+            "orders#1",
+            "orders#2",
+            "orders#3",
+            "orders#4",
+            "orders#5"
+          ],
+          "projected_bag": [
+            [
+              null
+            ],
+            [
+              1
+            ],
+            [
+              1
+            ],
+            [
+              2
+            ],
+            [
+              3
+            ],
+            [
+              4
+            ]
+          ]
+        },
+        {
+          "identity": "customers:arm2",
+          "relation": "customers",
+          "column_order": [
+            "id"
+          ],
+          "source_row_ids": [
+            "customers#0",
+            "customers#1",
+            "customers#2",
+            "customers#3",
+            "customers#4"
+          ],
+          "projected_bag": [
+            [
+              null
+            ],
+            [
+              1
+            ],
+            [
+              1
+            ],
+            [
+              2
+            ],
+            [
+              5
+            ]
+          ]
+        }
+      ],
+      "independent_terminal_bag": [
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          3
+        ],
+        [
+          4
+        ],
+        [
+          5
+        ],
+        [
+          null
+        ]
+      ],
+      "independent_non_emitted_candidate_bag": [
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          null
+        ]
+      ],
+      "independent_source_candidate_bag": [
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          2
+        ],
+        [
+          3
+        ],
+        [
+          4
+        ],
+        [
+          5
+        ],
+        [
+          null
+        ],
+        [
+          null
+        ]
+      ],
+      "candidate_sql": "SELECT id FROM orders UNION ALL SELECT id FROM customers",
+      "expected_column_names": [
+        "id"
+      ],
+      "expected_column_types": [
+        "INTEGER"
+      ],
+      "expected_terminal_occurrences": 6,
+      "expected_rejected_candidate_occurrences": 5,
+      "impossible_count_goal": {
+        "tuple": [
+          1
+        ],
+        "count": 2
+      },
+      "reviewed_status": "independent_typed_set_law_and_native_oracle"
+    },
+    {
+      "case_id": "88-C177-S073",
+      "sql": "SELECT amount FROM orders UNION SELECT amount FROM customers",
+      "semantic_rule": "union_distinct",
+      "source_arms": [
+        {
+          "identity": "orders:arm1",
+          "relation": "orders",
+          "column_order": [
+            "amount"
+          ],
+          "source_row_ids": [
+            "orders#0",
+            "orders#1",
+            "orders#2",
+            "orders#3",
+            "orders#4",
+            "orders#5"
+          ],
+          "projected_bag": [
+            [
+              10
+            ],
+            [
+              10
+            ],
+            [
+              10
+            ],
+            [
+              20
+            ],
+            [
+              null
+            ],
+            [
+              -5
+            ]
+          ]
+        },
+        {
+          "identity": "customers:arm2",
+          "relation": "customers",
+          "column_order": [
+            "amount"
+          ],
+          "source_row_ids": [
+            "customers#0",
+            "customers#1",
+            "customers#2",
+            "customers#3",
+            "customers#4"
+          ],
+          "projected_bag": [
+            [
+              10
+            ],
+            [
+              10
+            ],
+            [
+              10
+            ],
+            [
+              100
+            ],
+            [
+              -5
+            ]
+          ]
+        }
+      ],
+      "independent_terminal_bag": [
+        [
+          -5
+        ],
+        [
+          10
+        ],
+        [
+          100
+        ],
+        [
+          20
+        ],
+        [
+          null
+        ]
+      ],
+      "independent_non_emitted_candidate_bag": [
+        [
+          -5
+        ],
+        [
+          10
+        ],
+        [
+          10
+        ],
+        [
+          10
+        ],
+        [
+          10
+        ],
+        [
+          10
+        ]
+      ],
+      "independent_source_candidate_bag": [
+        [
+          -5
+        ],
+        [
+          -5
+        ],
+        [
+          10
+        ],
+        [
+          10
+        ],
+        [
+          10
+        ],
+        [
+          10
+        ],
+        [
+          10
+        ],
+        [
+          10
+        ],
+        [
+          100
+        ],
+        [
+          20
+        ],
+        [
+          null
+        ]
+      ],
+      "candidate_sql": "SELECT amount FROM orders UNION ALL SELECT amount FROM customers",
+      "expected_column_names": [
+        "amount"
+      ],
+      "expected_column_types": [
+        "INTEGER"
+      ],
+      "expected_terminal_occurrences": 5,
+      "expected_rejected_candidate_occurrences": 6,
+      "impossible_count_goal": {
+        "tuple": [
+          -5
+        ],
+        "count": 2
+      },
+      "reviewed_status": "independent_typed_set_law_and_native_oracle"
+    },
+    {
+      "case_id": "88-C177-S074",
+      "sql": "SELECT id FROM orders INTERSECT SELECT id FROM customers",
+      "semantic_rule": "intersect_distinct",
+      "source_arms": [
+        {
+          "identity": "orders:arm1",
+          "relation": "orders",
+          "column_order": [
+            "id"
+          ],
+          "source_row_ids": [
+            "orders#0",
+            "orders#1",
+            "orders#2",
+            "orders#3",
+            "orders#4",
+            "orders#5"
+          ],
+          "projected_bag": [
+            [
+              null
+            ],
+            [
+              1
+            ],
+            [
+              1
+            ],
+            [
+              2
+            ],
+            [
+              3
+            ],
+            [
+              4
+            ]
+          ]
+        },
+        {
+          "identity": "customers:arm2",
+          "relation": "customers",
+          "column_order": [
+            "id"
+          ],
+          "source_row_ids": [
+            "customers#0",
+            "customers#1",
+            "customers#2",
+            "customers#3",
+            "customers#4"
+          ],
+          "projected_bag": [
+            [
+              null
+            ],
+            [
+              1
+            ],
+            [
+              1
+            ],
+            [
+              2
+            ],
+            [
+              5
+            ]
+          ]
+        }
+      ],
+      "independent_terminal_bag": [
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          null
+        ]
+      ],
+      "independent_non_emitted_candidate_bag": [
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          3
+        ],
+        [
+          4
+        ],
+        [
+          5
+        ],
+        [
+          null
+        ]
+      ],
+      "independent_source_candidate_bag": [
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          2
+        ],
+        [
+          3
+        ],
+        [
+          4
+        ],
+        [
+          5
+        ],
+        [
+          null
+        ],
+        [
+          null
+        ]
+      ],
+      "candidate_sql": "SELECT id FROM orders UNION ALL SELECT id FROM customers",
+      "expected_column_names": [
+        "id"
+      ],
+      "expected_column_types": [
+        "INTEGER"
+      ],
+      "expected_terminal_occurrences": 3,
+      "expected_rejected_candidate_occurrences": 8,
+      "impossible_count_goal": {
+        "tuple": [
+          1
+        ],
+        "count": 2
+      },
+      "reviewed_status": "independent_typed_set_law_and_native_oracle"
+    },
+    {
+      "case_id": "88-C177-S075",
+      "sql": "SELECT id FROM orders INTERSECT ALL SELECT id FROM customers",
+      "semantic_rule": "intersect_all",
+      "source_arms": [
+        {
+          "identity": "orders:arm1",
+          "relation": "orders",
+          "column_order": [
+            "id"
+          ],
+          "source_row_ids": [
+            "orders#0",
+            "orders#1",
+            "orders#2",
+            "orders#3",
+            "orders#4",
+            "orders#5"
+          ],
+          "projected_bag": [
+            [
+              null
+            ],
+            [
+              1
+            ],
+            [
+              1
+            ],
+            [
+              2
+            ],
+            [
+              3
+            ],
+            [
+              4
+            ]
+          ]
+        },
+        {
+          "identity": "customers:arm2",
+          "relation": "customers",
+          "column_order": [
+            "id"
+          ],
+          "source_row_ids": [
+            "customers#0",
+            "customers#1",
+            "customers#2",
+            "customers#3",
+            "customers#4"
+          ],
+          "projected_bag": [
+            [
+              null
+            ],
+            [
+              1
+            ],
+            [
+              1
+            ],
+            [
+              2
+            ],
+            [
+              5
+            ]
+          ]
+        }
+      ],
+      "independent_terminal_bag": [
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          null
+        ]
+      ],
+      "independent_non_emitted_candidate_bag": [
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          3
+        ],
+        [
+          4
+        ],
+        [
+          5
+        ],
+        [
+          null
+        ]
+      ],
+      "independent_source_candidate_bag": [
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          2
+        ],
+        [
+          3
+        ],
+        [
+          4
+        ],
+        [
+          5
+        ],
+        [
+          null
+        ],
+        [
+          null
+        ]
+      ],
+      "candidate_sql": "SELECT id FROM orders UNION ALL SELECT id FROM customers",
+      "expected_column_names": [
+        "id"
+      ],
+      "expected_column_types": [
+        "INTEGER"
+      ],
+      "expected_terminal_occurrences": 4,
+      "expected_rejected_candidate_occurrences": 7,
+      "impossible_count_goal": {
+        "tuple": [
+          1
+        ],
+        "count": 3
+      },
+      "reviewed_status": "independent_typed_set_law_and_native_oracle"
+    },
+    {
+      "case_id": "88-C177-S076",
+      "sql": "SELECT id FROM orders INTERSECT ALL SELECT id FROM customers",
+      "semantic_rule": "intersect_all",
+      "source_arms": [
+        {
+          "identity": "orders:arm1",
+          "relation": "orders",
+          "column_order": [
+            "id"
+          ],
+          "source_row_ids": [
+            "orders#0",
+            "orders#1",
+            "orders#2",
+            "orders#3",
+            "orders#4",
+            "orders#5"
+          ],
+          "projected_bag": [
+            [
+              null
+            ],
+            [
+              1
+            ],
+            [
+              1
+            ],
+            [
+              2
+            ],
+            [
+              3
+            ],
+            [
+              4
+            ]
+          ]
+        },
+        {
+          "identity": "customers:arm2",
+          "relation": "customers",
+          "column_order": [
+            "id"
+          ],
+          "source_row_ids": [
+            "customers#0",
+            "customers#1",
+            "customers#2",
+            "customers#3",
+            "customers#4"
+          ],
+          "projected_bag": [
+            [
+              null
+            ],
+            [
+              1
+            ],
+            [
+              1
+            ],
+            [
+              2
+            ],
+            [
+              5
+            ]
+          ]
+        }
+      ],
+      "independent_terminal_bag": [
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          null
+        ]
+      ],
+      "independent_non_emitted_candidate_bag": [
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          3
+        ],
+        [
+          4
+        ],
+        [
+          5
+        ],
+        [
+          null
+        ]
+      ],
+      "independent_source_candidate_bag": [
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          2
+        ],
+        [
+          3
+        ],
+        [
+          4
+        ],
+        [
+          5
+        ],
+        [
+          null
+        ],
+        [
+          null
+        ]
+      ],
+      "candidate_sql": "SELECT id FROM orders UNION ALL SELECT id FROM customers",
+      "expected_column_names": [
+        "id"
+      ],
+      "expected_column_types": [
+        "INTEGER"
+      ],
+      "expected_terminal_occurrences": 4,
+      "expected_rejected_candidate_occurrences": 7,
+      "impossible_count_goal": {
+        "tuple": [
+          1
+        ],
+        "count": 3
+      },
+      "reviewed_status": "independent_typed_set_law_and_native_oracle"
+    },
+    {
+      "case_id": "88-C177-S077",
+      "sql": "SELECT amount FROM orders INTERSECT SELECT amount FROM customers",
+      "semantic_rule": "intersect_distinct",
+      "source_arms": [
+        {
+          "identity": "orders:arm1",
+          "relation": "orders",
+          "column_order": [
+            "amount"
+          ],
+          "source_row_ids": [
+            "orders#0",
+            "orders#1",
+            "orders#2",
+            "orders#3",
+            "orders#4",
+            "orders#5"
+          ],
+          "projected_bag": [
+            [
+              10
+            ],
+            [
+              10
+            ],
+            [
+              10
+            ],
+            [
+              20
+            ],
+            [
+              null
+            ],
+            [
+              -5
+            ]
+          ]
+        },
+        {
+          "identity": "customers:arm2",
+          "relation": "customers",
+          "column_order": [
+            "amount"
+          ],
+          "source_row_ids": [
+            "customers#0",
+            "customers#1",
+            "customers#2",
+            "customers#3",
+            "customers#4"
+          ],
+          "projected_bag": [
+            [
+              10
+            ],
+            [
+              10
+            ],
+            [
+              10
+            ],
+            [
+              100
+            ],
+            [
+              -5
+            ]
+          ]
+        }
+      ],
+      "independent_terminal_bag": [
+        [
+          -5
+        ],
+        [
+          10
+        ]
+      ],
+      "independent_non_emitted_candidate_bag": [
+        [
+          -5
+        ],
+        [
+          10
+        ],
+        [
+          10
+        ],
+        [
+          10
+        ],
+        [
+          10
+        ],
+        [
+          10
+        ],
+        [
+          100
+        ],
+        [
+          20
+        ],
+        [
+          null
+        ]
+      ],
+      "independent_source_candidate_bag": [
+        [
+          -5
+        ],
+        [
+          -5
+        ],
+        [
+          10
+        ],
+        [
+          10
+        ],
+        [
+          10
+        ],
+        [
+          10
+        ],
+        [
+          10
+        ],
+        [
+          10
+        ],
+        [
+          100
+        ],
+        [
+          20
+        ],
+        [
+          null
+        ]
+      ],
+      "candidate_sql": "SELECT amount FROM orders UNION ALL SELECT amount FROM customers",
+      "expected_column_names": [
+        "amount"
+      ],
+      "expected_column_types": [
+        "INTEGER"
+      ],
+      "expected_terminal_occurrences": 2,
+      "expected_rejected_candidate_occurrences": 9,
+      "impossible_count_goal": {
+        "tuple": [
+          -5
+        ],
+        "count": 2
+      },
+      "reviewed_status": "independent_typed_set_law_and_native_oracle"
+    },
+    {
+      "case_id": "88-C177-S078",
+      "sql": "SELECT id FROM orders EXCEPT SELECT id FROM customers",
+      "semantic_rule": "except_distinct",
+      "source_arms": [
+        {
+          "identity": "orders:arm1",
+          "relation": "orders",
+          "column_order": [
+            "id"
+          ],
+          "source_row_ids": [
+            "orders#0",
+            "orders#1",
+            "orders#2",
+            "orders#3",
+            "orders#4",
+            "orders#5"
+          ],
+          "projected_bag": [
+            [
+              null
+            ],
+            [
+              1
+            ],
+            [
+              1
+            ],
+            [
+              2
+            ],
+            [
+              3
+            ],
+            [
+              4
+            ]
+          ]
+        },
+        {
+          "identity": "customers:arm2",
+          "relation": "customers",
+          "column_order": [
+            "id"
+          ],
+          "source_row_ids": [
+            "customers#0",
+            "customers#1",
+            "customers#2",
+            "customers#3",
+            "customers#4"
+          ],
+          "projected_bag": [
+            [
+              null
+            ],
+            [
+              1
+            ],
+            [
+              1
+            ],
+            [
+              2
+            ],
+            [
+              5
+            ]
+          ]
+        }
+      ],
+      "independent_terminal_bag": [
+        [
+          3
+        ],
+        [
+          4
+        ]
+      ],
+      "independent_non_emitted_candidate_bag": [
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          2
+        ],
+        [
+          5
+        ],
+        [
+          null
+        ],
+        [
+          null
+        ]
+      ],
+      "independent_source_candidate_bag": [
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          2
+        ],
+        [
+          3
+        ],
+        [
+          4
+        ],
+        [
+          5
+        ],
+        [
+          null
+        ],
+        [
+          null
+        ]
+      ],
+      "candidate_sql": "SELECT id FROM orders UNION ALL SELECT id FROM customers",
+      "expected_column_names": [
+        "id"
+      ],
+      "expected_column_types": [
+        "INTEGER"
+      ],
+      "expected_terminal_occurrences": 2,
+      "expected_rejected_candidate_occurrences": 9,
+      "impossible_count_goal": {
+        "tuple": [
+          3
+        ],
+        "count": 2
+      },
+      "reviewed_status": "independent_typed_set_law_and_native_oracle"
+    },
+    {
+      "case_id": "88-C177-S079",
+      "sql": "SELECT id FROM orders EXCEPT ALL SELECT id FROM customers",
+      "semantic_rule": "except_all",
+      "source_arms": [
+        {
+          "identity": "orders:arm1",
+          "relation": "orders",
+          "column_order": [
+            "id"
+          ],
+          "source_row_ids": [
+            "orders#0",
+            "orders#1",
+            "orders#2",
+            "orders#3",
+            "orders#4",
+            "orders#5"
+          ],
+          "projected_bag": [
+            [
+              null
+            ],
+            [
+              1
+            ],
+            [
+              1
+            ],
+            [
+              2
+            ],
+            [
+              3
+            ],
+            [
+              4
+            ]
+          ]
+        },
+        {
+          "identity": "customers:arm2",
+          "relation": "customers",
+          "column_order": [
+            "id"
+          ],
+          "source_row_ids": [
+            "customers#0",
+            "customers#1",
+            "customers#2",
+            "customers#3",
+            "customers#4"
+          ],
+          "projected_bag": [
+            [
+              null
+            ],
+            [
+              1
+            ],
+            [
+              1
+            ],
+            [
+              2
+            ],
+            [
+              5
+            ]
+          ]
+        }
+      ],
+      "independent_terminal_bag": [
+        [
+          3
+        ],
+        [
+          4
+        ]
+      ],
+      "independent_non_emitted_candidate_bag": [
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          2
+        ],
+        [
+          5
+        ],
+        [
+          null
+        ],
+        [
+          null
+        ]
+      ],
+      "independent_source_candidate_bag": [
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          2
+        ],
+        [
+          3
+        ],
+        [
+          4
+        ],
+        [
+          5
+        ],
+        [
+          null
+        ],
+        [
+          null
+        ]
+      ],
+      "candidate_sql": "SELECT id FROM orders UNION ALL SELECT id FROM customers",
+      "expected_column_names": [
+        "id"
+      ],
+      "expected_column_types": [
+        "INTEGER"
+      ],
+      "expected_terminal_occurrences": 2,
+      "expected_rejected_candidate_occurrences": 9,
+      "impossible_count_goal": {
+        "tuple": [
+          3
+        ],
+        "count": 2
+      },
+      "reviewed_status": "independent_typed_set_law_and_native_oracle"
+    },
+    {
+      "case_id": "88-C177-S080",
+      "sql": "SELECT id FROM orders EXCEPT SELECT id FROM customers",
+      "semantic_rule": "except_distinct",
+      "source_arms": [
+        {
+          "identity": "orders:arm1",
+          "relation": "orders",
+          "column_order": [
+            "id"
+          ],
+          "source_row_ids": [
+            "orders#0",
+            "orders#1",
+            "orders#2",
+            "orders#3",
+            "orders#4",
+            "orders#5"
+          ],
+          "projected_bag": [
+            [
+              null
+            ],
+            [
+              1
+            ],
+            [
+              1
+            ],
+            [
+              2
+            ],
+            [
+              3
+            ],
+            [
+              4
+            ]
+          ]
+        },
+        {
+          "identity": "customers:arm2",
+          "relation": "customers",
+          "column_order": [
+            "id"
+          ],
+          "source_row_ids": [
+            "customers#0",
+            "customers#1",
+            "customers#2",
+            "customers#3",
+            "customers#4"
+          ],
+          "projected_bag": [
+            [
+              null
+            ],
+            [
+              1
+            ],
+            [
+              1
+            ],
+            [
+              2
+            ],
+            [
+              5
+            ]
+          ]
+        }
+      ],
+      "independent_terminal_bag": [
+        [
+          3
+        ],
+        [
+          4
+        ]
+      ],
+      "independent_non_emitted_candidate_bag": [
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          2
+        ],
+        [
+          5
+        ],
+        [
+          null
+        ],
+        [
+          null
+        ]
+      ],
+      "independent_source_candidate_bag": [
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          2
+        ],
+        [
+          3
+        ],
+        [
+          4
+        ],
+        [
+          5
+        ],
+        [
+          null
+        ],
+        [
+          null
+        ]
+      ],
+      "candidate_sql": "SELECT id FROM orders UNION ALL SELECT id FROM customers",
+      "expected_column_names": [
+        "id"
+      ],
+      "expected_column_types": [
+        "INTEGER"
+      ],
+      "expected_terminal_occurrences": 2,
+      "expected_rejected_candidate_occurrences": 9,
+      "impossible_count_goal": {
+        "tuple": [
+          3
+        ],
+        "count": 2
+      },
+      "reviewed_status": "independent_typed_set_law_and_native_oracle"
+    },
+    {
+      "case_id": "88-C177-S081",
+      "sql": "SELECT id FROM orders EXCEPT ALL SELECT id FROM customers",
+      "semantic_rule": "except_all",
+      "source_arms": [
+        {
+          "identity": "orders:arm1",
+          "relation": "orders",
+          "column_order": [
+            "id"
+          ],
+          "source_row_ids": [
+            "orders#0",
+            "orders#1",
+            "orders#2",
+            "orders#3",
+            "orders#4",
+            "orders#5"
+          ],
+          "projected_bag": [
+            [
+              null
+            ],
+            [
+              1
+            ],
+            [
+              1
+            ],
+            [
+              2
+            ],
+            [
+              3
+            ],
+            [
+              4
+            ]
+          ]
+        },
+        {
+          "identity": "customers:arm2",
+          "relation": "customers",
+          "column_order": [
+            "id"
+          ],
+          "source_row_ids": [
+            "customers#0",
+            "customers#1",
+            "customers#2",
+            "customers#3",
+            "customers#4"
+          ],
+          "projected_bag": [
+            [
+              null
+            ],
+            [
+              1
+            ],
+            [
+              1
+            ],
+            [
+              2
+            ],
+            [
+              5
+            ]
+          ]
+        }
+      ],
+      "independent_terminal_bag": [
+        [
+          3
+        ],
+        [
+          4
+        ]
+      ],
+      "independent_non_emitted_candidate_bag": [
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          2
+        ],
+        [
+          5
+        ],
+        [
+          null
+        ],
+        [
+          null
+        ]
+      ],
+      "independent_source_candidate_bag": [
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          2
+        ],
+        [
+          3
+        ],
+        [
+          4
+        ],
+        [
+          5
+        ],
+        [
+          null
+        ],
+        [
+          null
+        ]
+      ],
+      "candidate_sql": "SELECT id FROM orders UNION ALL SELECT id FROM customers",
+      "expected_column_names": [
+        "id"
+      ],
+      "expected_column_types": [
+        "INTEGER"
+      ],
+      "expected_terminal_occurrences": 2,
+      "expected_rejected_candidate_occurrences": 9,
+      "impossible_count_goal": {
+        "tuple": [
+          3
+        ],
+        "count": 2
+      },
+      "reviewed_status": "independent_typed_set_law_and_native_oracle"
+    },
+    {
+      "case_id": "88-C177-S082",
+      "sql": "SELECT id FROM customers EXCEPT SELECT id FROM orders",
+      "semantic_rule": "except_distinct",
+      "source_arms": [
+        {
+          "identity": "customers:arm1",
+          "relation": "customers",
+          "column_order": [
+            "id"
+          ],
+          "source_row_ids": [
+            "customers#0",
+            "customers#1",
+            "customers#2",
+            "customers#3",
+            "customers#4"
+          ],
+          "projected_bag": [
+            [
+              null
+            ],
+            [
+              1
+            ],
+            [
+              1
+            ],
+            [
+              2
+            ],
+            [
+              5
+            ]
+          ]
+        },
+        {
+          "identity": "orders:arm2",
+          "relation": "orders",
+          "column_order": [
+            "id"
+          ],
+          "source_row_ids": [
+            "orders#0",
+            "orders#1",
+            "orders#2",
+            "orders#3",
+            "orders#4",
+            "orders#5"
+          ],
+          "projected_bag": [
+            [
+              null
+            ],
+            [
+              1
+            ],
+            [
+              1
+            ],
+            [
+              2
+            ],
+            [
+              3
+            ],
+            [
+              4
+            ]
+          ]
+        }
+      ],
+      "independent_terminal_bag": [
+        [
+          5
+        ]
+      ],
+      "independent_non_emitted_candidate_bag": [
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          2
+        ],
+        [
+          3
+        ],
+        [
+          4
+        ],
+        [
+          null
+        ],
+        [
+          null
+        ]
+      ],
+      "independent_source_candidate_bag": [
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          2
+        ],
+        [
+          3
+        ],
+        [
+          4
+        ],
+        [
+          5
+        ],
+        [
+          null
+        ],
+        [
+          null
+        ]
+      ],
+      "candidate_sql": "SELECT id FROM customers UNION ALL SELECT id FROM orders",
+      "expected_column_names": [
+        "id"
+      ],
+      "expected_column_types": [
+        "INTEGER"
+      ],
+      "expected_terminal_occurrences": 1,
+      "expected_rejected_candidate_occurrences": 10,
+      "impossible_count_goal": {
+        "tuple": [
+          5
+        ],
+        "count": 2
+      },
+      "reviewed_status": "independent_typed_set_law_and_native_oracle"
+    },
+    {
+      "case_id": "88-C177-S083",
+      "sql": "SELECT id, amount FROM orders UNION BY NAME SELECT amount, id FROM customers",
+      "semantic_rule": "union_distinct",
+      "source_arms": [
+        {
+          "identity": "orders:arm1",
+          "relation": "orders",
+          "column_order": [
+            "id",
+            "amount"
+          ],
+          "source_row_ids": [
+            "orders#0",
+            "orders#1",
+            "orders#2",
+            "orders#3",
+            "orders#4",
+            "orders#5"
+          ],
+          "projected_bag": [
+            [
+              null,
+              10
+            ],
+            [
+              1,
+              10
+            ],
+            [
+              1,
+              10
+            ],
+            [
+              2,
+              20
+            ],
+            [
+              3,
+              null
+            ],
+            [
+              4,
+              -5
+            ]
+          ]
+        },
+        {
+          "identity": "customers:arm2",
+          "relation": "customers",
+          "column_order": [
+            "id",
+            "amount"
+          ],
+          "source_row_ids": [
+            "customers#0",
+            "customers#1",
+            "customers#2",
+            "customers#3",
+            "customers#4"
+          ],
+          "projected_bag": [
+            [
+              null,
+              10
+            ],
+            [
+              1,
+              10
+            ],
+            [
+              1,
+              10
+            ],
+            [
+              2,
+              100
+            ],
+            [
+              5,
+              -5
+            ]
+          ]
+        }
+      ],
+      "independent_terminal_bag": [
+        [
+          1,
+          10
+        ],
+        [
+          2,
+          100
+        ],
+        [
+          2,
+          20
+        ],
+        [
+          3,
+          null
+        ],
+        [
+          4,
+          -5
+        ],
+        [
+          5,
+          -5
+        ],
+        [
+          null,
+          10
+        ]
+      ],
+      "independent_non_emitted_candidate_bag": [
+        [
+          1,
+          10
+        ],
+        [
+          1,
+          10
+        ],
+        [
+          1,
+          10
+        ],
+        [
+          null,
+          10
+        ]
+      ],
+      "independent_source_candidate_bag": [
+        [
+          1,
+          10
+        ],
+        [
+          1,
+          10
+        ],
+        [
+          1,
+          10
+        ],
+        [
+          1,
+          10
+        ],
+        [
+          2,
+          100
+        ],
+        [
+          2,
+          20
+        ],
+        [
+          3,
+          null
+        ],
+        [
+          4,
+          -5
+        ],
+        [
+          5,
+          -5
+        ],
+        [
+          null,
+          10
+        ],
+        [
+          null,
+          10
+        ]
+      ],
+      "candidate_sql": "SELECT id,amount FROM orders UNION ALL SELECT id,amount FROM customers",
+      "expected_column_names": [
+        "id",
+        "amount"
+      ],
+      "expected_column_types": [
+        "INTEGER",
+        "INTEGER"
+      ],
+      "expected_terminal_occurrences": 7,
+      "expected_rejected_candidate_occurrences": 4,
+      "impossible_count_goal": {
+        "tuple": [
+          1,
+          10
+        ],
+        "count": 2
+      },
+      "reviewed_status": "independent_typed_set_law_and_native_oracle"
+    },
+    {
+      "case_id": "88-C177-S084",
+      "sql": "SELECT id, amount FROM orders UNION CORRESPONDING SELECT amount, id FROM customers",
+      "semantic_rule": "parser_rejected_TASK_191",
+      "source_arms": [
+        {
+          "identity": "orders:arm1",
+          "relation": "orders",
+          "column_order": [
+            "id",
+            "amount"
+          ],
+          "source_row_ids": [
+            "orders#0",
+            "orders#1",
+            "orders#2",
+            "orders#3",
+            "orders#4",
+            "orders#5"
+          ],
+          "projected_bag": [
+            [
+              null,
+              10
+            ],
+            [
+              1,
+              10
+            ],
+            [
+              1,
+              10
+            ],
+            [
+              2,
+              20
+            ],
+            [
+              3,
+              null
+            ],
+            [
+              4,
+              -5
+            ]
+          ]
+        },
+        {
+          "identity": "customers:arm2",
+          "relation": "customers",
+          "column_order": [
+            "amount",
+            "id"
+          ],
+          "source_row_ids": [
+            "customers#0",
+            "customers#1",
+            "customers#2",
+            "customers#3",
+            "customers#4"
+          ],
+          "projected_bag": [
+            [
+              10,
+              null
+            ],
+            [
+              10,
+              1
+            ],
+            [
+              10,
+              1
+            ],
+            [
+              100,
+              2
+            ],
+            [
+              -5,
+              5
+            ]
+          ]
+        }
+      ],
+      "independent_terminal_bag": null,
+      "independent_non_emitted_candidate_bag": null,
+      "independent_source_candidate_bag": null,
+      "candidate_sql": null,
+      "expected_column_names": null,
+      "expected_column_types": null,
+      "expected_terminal_occurrences": null,
+      "expected_rejected_candidate_occurrences": null,
+      "impossible_count_goal": null,
+      "reviewed_status": "explicit_noncertified_boundary"
+    },
+    {
+      "case_id": "88-C177-S085",
+      "sql": "SELECT id, amount FROM orders UNION SELECT amount, id FROM customers",
+      "semantic_rule": "union_distinct",
+      "source_arms": [
+        {
+          "identity": "orders:arm1",
+          "relation": "orders",
+          "column_order": [
+            "id",
+            "amount"
+          ],
+          "source_row_ids": [
+            "orders#0",
+            "orders#1",
+            "orders#2",
+            "orders#3",
+            "orders#4",
+            "orders#5"
+          ],
+          "projected_bag": [
+            [
+              null,
+              10
+            ],
+            [
+              1,
+              10
+            ],
+            [
+              1,
+              10
+            ],
+            [
+              2,
+              20
+            ],
+            [
+              3,
+              null
+            ],
+            [
+              4,
+              -5
+            ]
+          ]
+        },
+        {
+          "identity": "customers:arm2",
+          "relation": "customers",
+          "column_order": [
+            "amount",
+            "id"
+          ],
+          "source_row_ids": [
+            "customers#0",
+            "customers#1",
+            "customers#2",
+            "customers#3",
+            "customers#4"
+          ],
+          "projected_bag": [
+            [
+              10,
+              null
+            ],
+            [
+              10,
+              1
+            ],
+            [
+              10,
+              1
+            ],
+            [
+              100,
+              2
+            ],
+            [
+              -5,
+              5
+            ]
+          ]
+        }
+      ],
+      "independent_terminal_bag": [
+        [
+          -5,
+          5
+        ],
+        [
+          1,
+          10
+        ],
+        [
+          10,
+          1
+        ],
+        [
+          10,
+          null
+        ],
+        [
+          100,
+          2
+        ],
+        [
+          2,
+          20
+        ],
+        [
+          3,
+          null
+        ],
+        [
+          4,
+          -5
+        ],
+        [
+          null,
+          10
+        ]
+      ],
+      "independent_non_emitted_candidate_bag": [
+        [
+          1,
+          10
+        ],
+        [
+          10,
+          1
+        ]
+      ],
+      "independent_source_candidate_bag": [
+        [
+          -5,
+          5
+        ],
+        [
+          1,
+          10
+        ],
+        [
+          1,
+          10
+        ],
+        [
+          10,
+          1
+        ],
+        [
+          10,
+          1
+        ],
+        [
+          10,
+          null
+        ],
+        [
+          100,
+          2
+        ],
+        [
+          2,
+          20
+        ],
+        [
+          3,
+          null
+        ],
+        [
+          4,
+          -5
+        ],
+        [
+          null,
+          10
+        ]
+      ],
+      "candidate_sql": "SELECT id,amount FROM orders UNION ALL SELECT amount,id FROM customers",
+      "expected_column_names": [
+        "id",
+        "amount"
+      ],
+      "expected_column_types": [
+        "INTEGER",
+        "INTEGER"
+      ],
+      "expected_terminal_occurrences": 9,
+      "expected_rejected_candidate_occurrences": 2,
+      "impossible_count_goal": {
+        "tuple": [
+          -5,
+          5
+        ],
+        "count": 2
+      },
+      "reviewed_status": "independent_typed_set_law_and_native_oracle"
+    },
+    {
+      "case_id": "88-C177-S086",
+      "sql": "SELECT id FROM orders UNION SELECT id, amount FROM customers",
+      "semantic_rule": "semantic_impossible_incompatible_arity",
+      "source_arms": [
+        {
+          "identity": "orders:arm1",
+          "relation": "orders",
+          "column_order": [
+            "id"
+          ],
+          "source_row_ids": [
+            "orders#0",
+            "orders#1",
+            "orders#2",
+            "orders#3",
+            "orders#4",
+            "orders#5"
+          ],
+          "projected_bag": [
+            [
+              null
+            ],
+            [
+              1
+            ],
+            [
+              1
+            ],
+            [
+              2
+            ],
+            [
+              3
+            ],
+            [
+              4
+            ]
+          ]
+        },
+        {
+          "identity": "customers:arm2",
+          "relation": "customers",
+          "column_order": [
+            "id",
+            "amount"
+          ],
+          "source_row_ids": [
+            "customers#0",
+            "customers#1",
+            "customers#2",
+            "customers#3",
+            "customers#4"
+          ],
+          "projected_bag": [
+            [
+              null,
+              10
+            ],
+            [
+              1,
+              10
+            ],
+            [
+              1,
+              10
+            ],
+            [
+              2,
+              100
+            ],
+            [
+              5,
+              -5
+            ]
+          ]
+        }
+      ],
+      "independent_terminal_bag": null,
+      "independent_non_emitted_candidate_bag": null,
+      "independent_source_candidate_bag": null,
+      "candidate_sql": null,
+      "expected_column_names": [],
+      "expected_column_types": null,
+      "expected_terminal_occurrences": null,
+      "expected_rejected_candidate_occurrences": null,
+      "impossible_count_goal": null,
+      "reviewed_status": "explicit_noncertified_boundary"
+    },
+    {
+      "case_id": "88-C177-S087",
+      "sql": "SELECT id FROM orders UNION ALL (SELECT id FROM customers UNION ALL SELECT id FROM orders)",
+      "semantic_rule": "union_all",
+      "source_arms": [
+        {
+          "identity": "orders:arm1",
+          "relation": "orders",
+          "column_order": [
+            "id"
+          ],
+          "source_row_ids": [
+            "orders#0",
+            "orders#1",
+            "orders#2",
+            "orders#3",
+            "orders#4",
+            "orders#5"
+          ],
+          "projected_bag": [
+            [
+              null
+            ],
+            [
+              1
+            ],
+            [
+              1
+            ],
+            [
+              2
+            ],
+            [
+              3
+            ],
+            [
+              4
+            ]
+          ]
+        },
+        {
+          "identity": "customers:arm2",
+          "relation": "customers",
+          "column_order": [
+            "id"
+          ],
+          "source_row_ids": [
+            "customers#0",
+            "customers#1",
+            "customers#2",
+            "customers#3",
+            "customers#4"
+          ],
+          "projected_bag": [
+            [
+              null
+            ],
+            [
+              1
+            ],
+            [
+              1
+            ],
+            [
+              2
+            ],
+            [
+              5
+            ]
+          ]
+        },
+        {
+          "identity": "orders:arm3",
+          "relation": "orders",
+          "column_order": [
+            "id"
+          ],
+          "source_row_ids": [
+            "orders#0",
+            "orders#1",
+            "orders#2",
+            "orders#3",
+            "orders#4",
+            "orders#5"
+          ],
+          "projected_bag": [
+            [
+              null
+            ],
+            [
+              1
+            ],
+            [
+              1
+            ],
+            [
+              2
+            ],
+            [
+              3
+            ],
+            [
+              4
+            ]
+          ]
+        }
+      ],
+      "independent_terminal_bag": [
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          2
+        ],
+        [
+          2
+        ],
+        [
+          3
+        ],
+        [
+          3
+        ],
+        [
+          4
+        ],
+        [
+          4
+        ],
+        [
+          5
+        ],
+        [
+          null
+        ],
+        [
+          null
+        ],
+        [
+          null
+        ]
+      ],
+      "independent_non_emitted_candidate_bag": [],
+      "independent_source_candidate_bag": [
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          2
+        ],
+        [
+          2
+        ],
+        [
+          3
+        ],
+        [
+          3
+        ],
+        [
+          4
+        ],
+        [
+          4
+        ],
+        [
+          5
+        ],
+        [
+          null
+        ],
+        [
+          null
+        ],
+        [
+          null
+        ]
+      ],
+      "candidate_sql": "SELECT id FROM orders UNION ALL SELECT id FROM customers UNION ALL SELECT id FROM orders",
+      "expected_column_names": [
+        "id"
+      ],
+      "expected_column_types": [
+        "INTEGER"
+      ],
+      "expected_terminal_occurrences": 17,
+      "expected_rejected_candidate_occurrences": 0,
+      "impossible_count_goal": {
+        "tuple": [
+          1
+        ],
+        "count": 7
+      },
+      "reviewed_status": "independent_typed_set_law_and_native_oracle"
+    }
+  ],
+  "adversarial": {
+    "schema": {
+      "l": [
+        "a INTEGER",
+        "b INTEGER"
+      ],
+      "r": [
+        "a INTEGER",
+        "b INTEGER"
+      ]
+    },
+    "source_bags": {
+      "left": [
+        [
+          null,
+          1
+        ],
+        [
+          null,
+          1
+        ],
+        [
+          null,
+          1
+        ],
+        [
+          1,
+          null
+        ],
+        [
+          1,
+          null
+        ],
+        [
+          2,
+          2
+        ],
+        [
+          2,
+          2
+        ],
+        [
+          3,
+          3
+        ]
+      ],
+      "right": [
+        [
+          null,
+          1
+        ],
+        [
+          1,
+          null
+        ],
+        [
+          1,
+          null
+        ],
+        [
+          2,
+          9
+        ],
+        [
+          2,
+          9
+        ],
+        [
+          4,
+          4
+        ]
+      ]
+    },
+    "case_count": 9,
+    "cases": [
+      {
+        "id": "union_all",
+        "sql": "SELECT a,b FROM l UNION ALL SELECT a,b FROM r",
+        "semantic_rule": "union_all",
+        "expected_terminal_bag": [
+          [
+            1,
+            null
+          ],
+          [
+            1,
+            null
+          ],
+          [
+            1,
+            null
+          ],
+          [
+            1,
+            null
+          ],
+          [
+            2,
+            2
+          ],
+          [
+            2,
+            2
+          ],
+          [
+            2,
+            9
+          ],
+          [
+            2,
+            9
+          ],
+          [
+            3,
+            3
+          ],
+          [
+            4,
+            4
+          ],
+          [
+            null,
+            1
+          ],
+          [
+            null,
+            1
+          ],
+          [
+            null,
+            1
+          ],
+          [
+            null,
+            1
+          ]
+        ],
+        "expected_non_emitted_candidate_bag": [],
+        "expected_candidate_bag": [
+          [
+            1,
+            null
+          ],
+          [
+            1,
+            null
+          ],
+          [
+            1,
+            null
+          ],
+          [
+            1,
+            null
+          ],
+          [
+            2,
+            2
+          ],
+          [
+            2,
+            2
+          ],
+          [
+            2,
+            9
+          ],
+          [
+            2,
+            9
+          ],
+          [
+            3,
+            3
+          ],
+          [
+            4,
+            4
+          ],
+          [
+            null,
+            1
+          ],
+          [
+            null,
+            1
+          ],
+          [
+            null,
+            1
+          ],
+          [
+            null,
+            1
+          ]
+        ],
+        "expected_terminal_count": 14,
+        "expected_rejected_count": 0,
+        "impossible_tuple": [
+          1,
+          2
+        ],
+        "expected_impossible_tuple_count": 0
+      },
+      {
+        "id": "union_distinct",
+        "sql": "SELECT a,b FROM l UNION SELECT a,b FROM r",
+        "semantic_rule": "union_distinct",
+        "expected_terminal_bag": [
+          [
+            1,
+            null
+          ],
+          [
+            2,
+            2
+          ],
+          [
+            2,
+            9
+          ],
+          [
+            3,
+            3
+          ],
+          [
+            4,
+            4
+          ],
+          [
+            null,
+            1
+          ]
+        ],
+        "expected_non_emitted_candidate_bag": [
+          [
+            1,
+            null
+          ],
+          [
+            1,
+            null
+          ],
+          [
+            1,
+            null
+          ],
+          [
+            2,
+            2
+          ],
+          [
+            2,
+            9
+          ],
+          [
+            null,
+            1
+          ],
+          [
+            null,
+            1
+          ],
+          [
+            null,
+            1
+          ]
+        ],
+        "expected_candidate_bag": [
+          [
+            1,
+            null
+          ],
+          [
+            1,
+            null
+          ],
+          [
+            1,
+            null
+          ],
+          [
+            1,
+            null
+          ],
+          [
+            2,
+            2
+          ],
+          [
+            2,
+            2
+          ],
+          [
+            2,
+            9
+          ],
+          [
+            2,
+            9
+          ],
+          [
+            3,
+            3
+          ],
+          [
+            4,
+            4
+          ],
+          [
+            null,
+            1
+          ],
+          [
+            null,
+            1
+          ],
+          [
+            null,
+            1
+          ],
+          [
+            null,
+            1
+          ]
+        ],
+        "expected_terminal_count": 6,
+        "expected_rejected_count": 8,
+        "impossible_tuple": [
+          1,
+          2
+        ],
+        "expected_impossible_tuple_count": 0
+      },
+      {
+        "id": "intersect_all",
+        "sql": "SELECT a,b FROM l INTERSECT ALL SELECT a,b FROM r",
+        "semantic_rule": "intersect_all",
+        "expected_terminal_bag": [
+          [
+            1,
+            null
+          ],
+          [
+            1,
+            null
+          ],
+          [
+            null,
+            1
+          ]
+        ],
+        "expected_non_emitted_candidate_bag": [
+          [
+            1,
+            null
+          ],
+          [
+            1,
+            null
+          ],
+          [
+            2,
+            2
+          ],
+          [
+            2,
+            2
+          ],
+          [
+            2,
+            9
+          ],
+          [
+            2,
+            9
+          ],
+          [
+            3,
+            3
+          ],
+          [
+            4,
+            4
+          ],
+          [
+            null,
+            1
+          ],
+          [
+            null,
+            1
+          ],
+          [
+            null,
+            1
+          ]
+        ],
+        "expected_candidate_bag": [
+          [
+            1,
+            null
+          ],
+          [
+            1,
+            null
+          ],
+          [
+            1,
+            null
+          ],
+          [
+            1,
+            null
+          ],
+          [
+            2,
+            2
+          ],
+          [
+            2,
+            2
+          ],
+          [
+            2,
+            9
+          ],
+          [
+            2,
+            9
+          ],
+          [
+            3,
+            3
+          ],
+          [
+            4,
+            4
+          ],
+          [
+            null,
+            1
+          ],
+          [
+            null,
+            1
+          ],
+          [
+            null,
+            1
+          ],
+          [
+            null,
+            1
+          ]
+        ],
+        "expected_terminal_count": 3,
+        "expected_rejected_count": 11,
+        "impossible_tuple": [
+          1,
+          2
+        ],
+        "expected_impossible_tuple_count": 0
+      },
+      {
+        "id": "intersect_distinct",
+        "sql": "SELECT a,b FROM l INTERSECT SELECT a,b FROM r",
+        "semantic_rule": "intersect_distinct",
+        "expected_terminal_bag": [
+          [
+            1,
+            null
+          ],
+          [
+            null,
+            1
+          ]
+        ],
+        "expected_non_emitted_candidate_bag": [
+          [
+            1,
+            null
+          ],
+          [
+            1,
+            null
+          ],
+          [
+            1,
+            null
+          ],
+          [
+            2,
+            2
+          ],
+          [
+            2,
+            2
+          ],
+          [
+            2,
+            9
+          ],
+          [
+            2,
+            9
+          ],
+          [
+            3,
+            3
+          ],
+          [
+            4,
+            4
+          ],
+          [
+            null,
+            1
+          ],
+          [
+            null,
+            1
+          ],
+          [
+            null,
+            1
+          ]
+        ],
+        "expected_candidate_bag": [
+          [
+            1,
+            null
+          ],
+          [
+            1,
+            null
+          ],
+          [
+            1,
+            null
+          ],
+          [
+            1,
+            null
+          ],
+          [
+            2,
+            2
+          ],
+          [
+            2,
+            2
+          ],
+          [
+            2,
+            9
+          ],
+          [
+            2,
+            9
+          ],
+          [
+            3,
+            3
+          ],
+          [
+            4,
+            4
+          ],
+          [
+            null,
+            1
+          ],
+          [
+            null,
+            1
+          ],
+          [
+            null,
+            1
+          ],
+          [
+            null,
+            1
+          ]
+        ],
+        "expected_terminal_count": 2,
+        "expected_rejected_count": 12,
+        "impossible_tuple": [
+          1,
+          2
+        ],
+        "expected_impossible_tuple_count": 0
+      },
+      {
+        "id": "except_all",
+        "sql": "SELECT a,b FROM l EXCEPT ALL SELECT a,b FROM r",
+        "semantic_rule": "except_all",
+        "expected_terminal_bag": [
+          [
+            2,
+            2
+          ],
+          [
+            2,
+            2
+          ],
+          [
+            3,
+            3
+          ],
+          [
+            null,
+            1
+          ],
+          [
+            null,
+            1
+          ]
+        ],
+        "expected_non_emitted_candidate_bag": [
+          [
+            1,
+            null
+          ],
+          [
+            1,
+            null
+          ],
+          [
+            1,
+            null
+          ],
+          [
+            1,
+            null
+          ],
+          [
+            2,
+            9
+          ],
+          [
+            2,
+            9
+          ],
+          [
+            4,
+            4
+          ],
+          [
+            null,
+            1
+          ],
+          [
+            null,
+            1
+          ]
+        ],
+        "expected_candidate_bag": [
+          [
+            1,
+            null
+          ],
+          [
+            1,
+            null
+          ],
+          [
+            1,
+            null
+          ],
+          [
+            1,
+            null
+          ],
+          [
+            2,
+            2
+          ],
+          [
+            2,
+            2
+          ],
+          [
+            2,
+            9
+          ],
+          [
+            2,
+            9
+          ],
+          [
+            3,
+            3
+          ],
+          [
+            4,
+            4
+          ],
+          [
+            null,
+            1
+          ],
+          [
+            null,
+            1
+          ],
+          [
+            null,
+            1
+          ],
+          [
+            null,
+            1
+          ]
+        ],
+        "expected_terminal_count": 5,
+        "expected_rejected_count": 9,
+        "impossible_tuple": [
+          1,
+          2
+        ],
+        "expected_impossible_tuple_count": 0
+      },
+      {
+        "id": "except_distinct",
+        "sql": "SELECT a,b FROM l EXCEPT SELECT a,b FROM r",
+        "semantic_rule": "except_distinct",
+        "expected_terminal_bag": [
+          [
+            2,
+            2
+          ],
+          [
+            3,
+            3
+          ]
+        ],
+        "expected_non_emitted_candidate_bag": [
+          [
+            1,
+            null
+          ],
+          [
+            1,
+            null
+          ],
+          [
+            1,
+            null
+          ],
+          [
+            1,
+            null
+          ],
+          [
+            2,
+            2
+          ],
+          [
+            2,
+            9
+          ],
+          [
+            2,
+            9
+          ],
+          [
+            4,
+            4
+          ],
+          [
+            null,
+            1
+          ],
+          [
+            null,
+            1
+          ],
+          [
+            null,
+            1
+          ],
+          [
+            null,
+            1
+          ]
+        ],
+        "expected_candidate_bag": [
+          [
+            1,
+            null
+          ],
+          [
+            1,
+            null
+          ],
+          [
+            1,
+            null
+          ],
+          [
+            1,
+            null
+          ],
+          [
+            2,
+            2
+          ],
+          [
+            2,
+            2
+          ],
+          [
+            2,
+            9
+          ],
+          [
+            2,
+            9
+          ],
+          [
+            3,
+            3
+          ],
+          [
+            4,
+            4
+          ],
+          [
+            null,
+            1
+          ],
+          [
+            null,
+            1
+          ],
+          [
+            null,
+            1
+          ],
+          [
+            null,
+            1
+          ]
+        ],
+        "expected_terminal_count": 2,
+        "expected_rejected_count": 12,
+        "impossible_tuple": [
+          1,
+          2
+        ],
+        "expected_impossible_tuple_count": 0
+      },
+      {
+        "id": "union_by_name",
+        "sql": "SELECT a AS x,b AS y FROM l UNION BY NAME SELECT b AS y,a AS x FROM r",
+        "semantic_rule": "union_distinct",
+        "expected_terminal_bag": [
+          [
+            1,
+            null
+          ],
+          [
+            2,
+            2
+          ],
+          [
+            2,
+            9
+          ],
+          [
+            3,
+            3
+          ],
+          [
+            4,
+            4
+          ],
+          [
+            null,
+            1
+          ]
+        ],
+        "expected_non_emitted_candidate_bag": [
+          [
+            1,
+            null
+          ],
+          [
+            1,
+            null
+          ],
+          [
+            1,
+            null
+          ],
+          [
+            2,
+            2
+          ],
+          [
+            2,
+            9
+          ],
+          [
+            null,
+            1
+          ],
+          [
+            null,
+            1
+          ],
+          [
+            null,
+            1
+          ]
+        ],
+        "expected_candidate_bag": [
+          [
+            1,
+            null
+          ],
+          [
+            1,
+            null
+          ],
+          [
+            1,
+            null
+          ],
+          [
+            1,
+            null
+          ],
+          [
+            2,
+            2
+          ],
+          [
+            2,
+            2
+          ],
+          [
+            2,
+            9
+          ],
+          [
+            2,
+            9
+          ],
+          [
+            3,
+            3
+          ],
+          [
+            4,
+            4
+          ],
+          [
+            null,
+            1
+          ],
+          [
+            null,
+            1
+          ],
+          [
+            null,
+            1
+          ],
+          [
+            null,
+            1
+          ]
+        ],
+        "expected_terminal_count": 6,
+        "expected_rejected_count": 8,
+        "impossible_tuple": [
+          1,
+          2
+        ],
+        "expected_impossible_tuple_count": 0
+      },
+      {
+        "id": "union_positional",
+        "sql": "SELECT a,b FROM l UNION SELECT b,a FROM r",
+        "semantic_rule": "union_distinct",
+        "expected_terminal_bag": [
+          [
+            1,
+            null
+          ],
+          [
+            2,
+            2
+          ],
+          [
+            3,
+            3
+          ],
+          [
+            4,
+            4
+          ],
+          [
+            9,
+            2
+          ],
+          [
+            null,
+            1
+          ]
+        ],
+        "expected_non_emitted_candidate_bag": [
+          [
+            1,
+            null
+          ],
+          [
+            1,
+            null
+          ],
+          [
+            2,
+            2
+          ],
+          [
+            9,
+            2
+          ],
+          [
+            null,
+            1
+          ],
+          [
+            null,
+            1
+          ],
+          [
+            null,
+            1
+          ],
+          [
+            null,
+            1
+          ]
+        ],
+        "expected_candidate_bag": [
+          [
+            1,
+            null
+          ],
+          [
+            1,
+            null
+          ],
+          [
+            1,
+            null
+          ],
+          [
+            2,
+            2
+          ],
+          [
+            2,
+            2
+          ],
+          [
+            3,
+            3
+          ],
+          [
+            4,
+            4
+          ],
+          [
+            9,
+            2
+          ],
+          [
+            9,
+            2
+          ],
+          [
+            null,
+            1
+          ],
+          [
+            null,
+            1
+          ],
+          [
+            null,
+            1
+          ],
+          [
+            null,
+            1
+          ],
+          [
+            null,
+            1
+          ]
+        ],
+        "expected_terminal_count": 6,
+        "expected_rejected_count": 8,
+        "impossible_tuple": [
+          1,
+          2
+        ],
+        "expected_impossible_tuple_count": 0
+      },
+      {
+        "id": "nested_union_all",
+        "sql": "SELECT a,b FROM l UNION ALL (SELECT a,b FROM r UNION ALL SELECT a,b FROM l)",
+        "semantic_rule": "union_all",
+        "expected_terminal_bag": [
+          [
+            1,
+            null
+          ],
+          [
+            1,
+            null
+          ],
+          [
+            1,
+            null
+          ],
+          [
+            1,
+            null
+          ],
+          [
+            1,
+            null
+          ],
+          [
+            1,
+            null
+          ],
+          [
+            2,
+            2
+          ],
+          [
+            2,
+            2
+          ],
+          [
+            2,
+            2
+          ],
+          [
+            2,
+            2
+          ],
+          [
+            2,
+            9
+          ],
+          [
+            2,
+            9
+          ],
+          [
+            3,
+            3
+          ],
+          [
+            3,
+            3
+          ],
+          [
+            4,
+            4
+          ],
+          [
+            null,
+            1
+          ],
+          [
+            null,
+            1
+          ],
+          [
+            null,
+            1
+          ],
+          [
+            null,
+            1
+          ],
+          [
+            null,
+            1
+          ],
+          [
+            null,
+            1
+          ],
+          [
+            null,
+            1
+          ]
+        ],
+        "expected_non_emitted_candidate_bag": [],
+        "expected_candidate_bag": [
+          [
+            1,
+            null
+          ],
+          [
+            1,
+            null
+          ],
+          [
+            1,
+            null
+          ],
+          [
+            1,
+            null
+          ],
+          [
+            1,
+            null
+          ],
+          [
+            1,
+            null
+          ],
+          [
+            2,
+            2
+          ],
+          [
+            2,
+            2
+          ],
+          [
+            2,
+            2
+          ],
+          [
+            2,
+            2
+          ],
+          [
+            2,
+            9
+          ],
+          [
+            2,
+            9
+          ],
+          [
+            3,
+            3
+          ],
+          [
+            3,
+            3
+          ],
+          [
+            4,
+            4
+          ],
+          [
+            null,
+            1
+          ],
+          [
+            null,
+            1
+          ],
+          [
+            null,
+            1
+          ],
+          [
+            null,
+            1
+          ],
+          [
+            null,
+            1
+          ],
+          [
+            null,
+            1
+          ],
+          [
+            null,
+            1
+          ]
+        ],
+        "expected_terminal_count": 22,
+        "expected_rejected_count": 0,
+        "impossible_tuple": [
+          1,
+          2
+        ],
+        "expected_impossible_tuple_count": 0
+      }
+    ]
+  },
+  "external_vendor_execution_attested": false,
+  "task88_approved": false,
+  "release_approved": false
+}
