@@ -147,6 +147,18 @@ fn every_accepted_set_form_has_one_canonical_public_document_and_explicit_fail_c
                     .expect("positional output names");
                 for (column, expected) in query.output().columns().iter().zip(expected_names) {
                     assert_eq!(column.name(), expected.as_str().expect("leftmost name"));
+                    if id == "88-C177-S083" {
+                        let names = column
+                            .lineage()
+                            .iter()
+                            .map(|origin| origin.column())
+                            .collect::<Vec<_>>();
+                        assert_eq!(
+                            names,
+                            vec![column.name(), column.name()],
+                            "{cell_id}: BY NAME output must keep matching source-column lineage"
+                        );
+                    }
                 }
                 let deps = query
                     .dependencies()
@@ -184,4 +196,32 @@ fn every_accepted_set_form_has_one_canonical_public_document_and_explicit_fail_c
         }
     }
     assert_eq!(checked, 286);
+}
+
+
+#[test]
+fn by_name_rejects_unmatched_and_duplicated_column_names_instead_of_guessing() {
+    let dialect = dialect_from_name("generic").expect("generic parser");
+    for sql in [
+        "SELECT id, amount FROM orders UNION BY NAME SELECT id FROM customers",
+        "SELECT id FROM orders UNION BY NAME SELECT id, amount FROM customers",
+        "SELECT id AS key, amount AS key FROM orders UNION BY NAME SELECT id AS key, amount AS other FROM customers",
+    ] {
+        let protocol = analyze_sql(sql, "generic", dialect.as_ref())
+            .expect("BY NAME syntax must remain parsed for diagnostic");
+        let Some(ProtocolStatement::Query(query)) = protocol.statements().first() else {
+            panic!("BY NAME query lost: {sql}");
+        };
+        assert!(
+            query.output().columns().is_empty(),
+            "{sql}: no safe output bijection was proved"
+        );
+        assert!(
+            query
+                .diagnostics()
+                .iter()
+                .any(|diagnostic| diagnostic.code() == "unsupported_set_operation_alignment"),
+            "{sql}: unresolved semantics require an explicit fail-closed diagnostic"
+        );
+    }
 }
