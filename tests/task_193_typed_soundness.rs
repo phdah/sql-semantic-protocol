@@ -100,17 +100,27 @@ fn all_312_original_source_typed_public_cells_admit_complete_literal_terminal_ba
             let dialect = dialect_from_name(name).expect("one of 13 parsers");
             let source = SqlInput::inline(sql);
             let selected = [ConfiguredSqlInput::new(
-                &cell_id, &source, name, dialect.as_ref(),
+                &cell_id,
+                &source,
+                name,
+                dialect.as_ref(),
             )];
             let bundle = analyze_configured_inputs_with_catalog(&selected, &direct)
                 .unwrap_or_else(|error| panic!("{cell_id}: source-typed analysis: {error}"));
             let ComposedSemantics::Resolved(semantics) = bundle
-                .layers().last().expect("one original SQL layer").composed_semantics()
+                .layers()
+                .last()
+                .expect("one original SQL layer")
+                .composed_semantics()
             else {
                 panic!("{cell_id}: original SQL may not silently lose its typed output");
             };
             let outputs = semantics.output().columns();
-            assert_eq!(outputs.len(), expected_columns, "{cell_id}: projection arity");
+            assert_eq!(
+                outputs.len(),
+                expected_columns,
+                "{cell_id}: projection arity"
+            );
             for row in terminals {
                 let values = row.as_array().expect("native literal output row");
                 assert_eq!(values.len(), outputs.len(), "{cell_id}: native width");
@@ -126,5 +136,8 @@ fn all_312_original_source_typed_public_cells_admit_complete_literal_terminal_ba
         }
     }
     assert_eq!(cells.len(), 312);
-    assert!(checked_rows > 1500, "verify every duplicate and NULL terminal occurrence");
+    assert!(
+        checked_rows > 1500,
+        "verify every duplicate and NULL terminal occurrence"
+    );
 }
