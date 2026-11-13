@@ -7,8 +7,19 @@ use sql_semantic_protocol::{
 };
 
 const DIALECTS: &[&str] = &[
-    "ansi", "bigquery", "clickhouse", "databricks", "duckdb", "generic",
-    "hive", "mssql", "mysql", "postgresql", "redshift", "snowflake", "sqlite",
+    "ansi",
+    "bigquery",
+    "clickhouse",
+    "databricks",
+    "duckdb",
+    "generic",
+    "hive",
+    "mssql",
+    "mysql",
+    "postgresql",
+    "redshift",
+    "snowflake",
+    "sqlite",
 ];
 
 fn projected_id_domain(sql: &str, dialect_name: &str) -> ValueDomain {
