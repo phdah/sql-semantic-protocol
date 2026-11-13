@@ -78,8 +78,12 @@ fn all_312_join_cells_preserve_expected_join_kinds_sources_and_lineage() {
             );
             let parser = dialect_from_name(dialect_name).expect("project dialect");
             let input = SqlInput::inline(sql);
-            let configured =
-                [ConfiguredSqlInput::new(&identity, &input, dialect_name, parser.as_ref())];
+            let configured = [ConfiguredSqlInput::new(
+                &identity,
+                &input,
+                dialect_name,
+                parser.as_ref(),
+            )];
             let bundle = analyze_configured_inputs_with_catalog(&configured, &catalog)
                 .unwrap_or_else(|e| panic!("{identity}: typed original SQL: {e}"));
             let [ProtocolStatement::Query(query)] = bundle.inputs()[0].statements() else {
