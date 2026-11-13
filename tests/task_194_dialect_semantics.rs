@@ -16,7 +16,10 @@ fn parse(source: &str) -> Value {
 }
 
 fn without_dialect(mut document: Value) -> Value {
-    for input in document["inputs"].as_array_mut().expect("canonical input array") {
+    for input in document["inputs"]
+        .as_array_mut()
+        .expect("canonical input array")
+    {
         input["dialect"] = Value::Null;
     }
     document
@@ -34,7 +37,9 @@ fn freeze_contains_only_the_original_22_set_variants_and_all_286_dialect_cells()
     assert_eq!(fixture["task_complete"], false);
     assert_eq!(fixture["release_approved"], false);
 
-    let originals = inventory["cases"].as_array().expect("complete original inventory");
+    let originals = inventory["cases"]
+        .as_array()
+        .expect("complete original inventory");
     let original_sets = originals
         .iter()
         .filter(|row| {
@@ -56,10 +61,12 @@ fn freeze_contains_only_the_original_22_set_variants_and_all_286_dialect_cells()
             .expect("fixed source SQL");
         assert_eq!(row["sql"], prior["sql"], "{id}: immutable original SQL");
         assert_eq!(row["variant"], prior["variant"], "{id}: immutable variant");
-        assert_eq!(row["feature_id"], prior["feature_id"], "{id}: owned set family");
         assert_eq!(
-            row["original_observed_mask"],
-            prior["full_document_classification"],
+            row["feature_id"], prior["feature_id"],
+            "{id}: owned set family"
+        );
+        assert_eq!(
+            row["original_observed_mask"], prior["full_document_classification"],
             "{id}: preserve historical parser observation, not a signoff"
         );
         let dialects = row["cells"].as_array().expect("all 13 named dialect cells");
@@ -110,8 +117,14 @@ fn every_accepted_set_form_has_one_canonical_public_document_and_explicit_fail_c
             let Some(ProtocolStatement::Query(query)) = protocol.statements().first() else {
                 panic!("{cell_id}: set operator must not be silently dropped");
             };
-            let width = case["expected_output_columns"].as_u64().expect("native arity") as usize;
-            assert_eq!(query.output().columns().len(), width, "{cell_id}: output arity");
+            let width = case["expected_output_columns"]
+                .as_u64()
+                .expect("native arity") as usize;
+            assert_eq!(
+                query.output().columns().len(),
+                width,
+                "{cell_id}: output arity"
+            );
             if id == "88-C177-S086" {
                 assert_eq!(width, 0);
                 assert!(
@@ -123,9 +136,10 @@ fn every_accepted_set_form_has_one_canonical_public_document_and_explicit_fail_c
                 );
             } else {
                 assert!(
-                    query.diagnostics().iter().all(|diagnostic| {
-                        diagnostic.code() != "set_operation_arity_mismatch"
-                    }),
+                    query
+                        .diagnostics()
+                        .iter()
+                        .all(|diagnostic| { diagnostic.code() != "set_operation_arity_mismatch" }),
                     "{cell_id}: valid arity cannot become unsupported"
                 );
                 let expected_names = case["expected_output_column_names"]
@@ -158,7 +172,10 @@ fn every_accepted_set_form_has_one_canonical_public_document_and_explicit_fail_c
                 "{cell_id}: output value domains must be explicit"
             );
             if let Some(previous) = &baseline {
-                assert_eq!(&doc, previous, "{cell_id}: same SQL must emit same semantics");
+                assert_eq!(
+                    &doc, previous,
+                    "{cell_id}: same SQL must emit same semantics"
+                );
             } else {
                 baseline = Some(doc);
             }
