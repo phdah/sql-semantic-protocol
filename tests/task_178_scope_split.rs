@@ -200,19 +200,20 @@ fn new_tasks_and_existing_final_gates_form_one_acyclic_queue() {
             content.contains(&format!("id: {task}")),
             "{task}: missing file identity"
         );
-        let expected_status = if *task == "TASK-192" {
-            if task_192_done {
+        let valid_status = if *task == "TASK-192" {
+            content.contains(if task_192_done {
                 "status: Done"
             } else {
                 "status: In Progress"
-            }
+            })
+        } else if *task == "TASK-193" {
+            // The next child may be under implementation in its own PR.
+            // Neither To Do nor In Progress can unblock TASK-194.
+            content.contains("status: To Do") || content.contains("status: In Progress")
         } else {
-            "status: To Do"
+            content.contains("status: To Do")
         };
-        assert!(
-            content.contains(expected_status),
-            "{task}: unexpected backlog lifecycle state"
-        );
+        assert!(valid_status, "{task}: unexpected backlog lifecycle state");
         assert!(
             content.contains(&format!("  - {predecessor}")),
             "{task}: missing dependency"
