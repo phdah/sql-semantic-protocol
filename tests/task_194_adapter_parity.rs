@@ -196,7 +196,9 @@ fn twenty_original_set_queries_preserve_direct_and_compiled_dbt_domain_parity() 
             let expected = domains(&direct, sql, name);
             assert_eq!(
                 expected.len(),
-                case["expected_output_columns"].as_u64().expect("expected arity") as usize,
+                case["expected_output_columns"]
+                    .as_u64()
+                    .expect("expected arity") as usize,
                 "{id}/{name}: all positional output domains"
             );
             assert_eq!(
@@ -204,7 +206,10 @@ fn twenty_original_set_queries_preserve_direct_and_compiled_dbt_domain_parity() 
                 expected,
                 "{id}/{name}: compiled dbt must preserve the same source facts"
             );
-            for tuple in case["expected_terminal_bag"].as_array().expect("native bag") {
+            for tuple in case["expected_terminal_bag"]
+                .as_array()
+                .expect("native bag")
+            {
                 for (domain, value) in expected.iter().zip(tuple.as_array().expect("tuple")) {
                     assert!(
                         admits(domain, value),
@@ -237,7 +242,8 @@ fn twenty_original_set_queries_preserve_odcs_and_direct_typed_domains() {
                 domains(&odcs, sql, name),
                 domains(&direct, sql, name),
                 "{}/{}: equivalent typed evidence source cannot change canonical outcome",
-                case["id"], name
+                case["id"],
+                name
             );
             checked += 1;
         }
