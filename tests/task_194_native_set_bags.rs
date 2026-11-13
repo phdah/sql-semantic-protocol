@@ -62,7 +62,10 @@ fn twenty_original_executable_set_queries_match_complete_duckdb_terminal_bags() 
         let source_sql = format!("SELECT id, amount FROM {source}");
         let physical = query_rows(&db, &source_sql, 2);
         let expected = expected_rows(&fixture["complete_source_bags"][source]);
-        assert_eq!(physical, expected, "{source}: complete source bag with duplicates");
+        assert_eq!(
+            physical, expected,
+            "{source}: complete source bag with duplicates"
+        );
     }
 
     let mut checked = BTreeSet::new();
@@ -79,7 +82,10 @@ fn twenty_original_executable_set_queries_match_complete_duckdb_terminal_bags() 
             assert!(case["expected_terminal_bag"].is_null(), "{id}");
             continue;
         };
-        assert_eq!(case["sql"], sql, "{id}: native oracle must execute ORIGINAL SQL");
+        assert_eq!(
+            case["sql"], sql,
+            "{id}: native oracle must execute ORIGINAL SQL"
+        );
         let arity = case["expected_output_columns"].as_u64().expect("arity") as usize;
         let expected = expected_rows(&case["expected_terminal_bag"]);
         let observed = query_rows(&db, sql, arity);
@@ -90,7 +96,10 @@ fn twenty_original_executable_set_queries_match_complete_duckdb_terminal_bags() 
     }
     assert_eq!(checked.len(), 22);
     assert_eq!(executed, 20);
-    assert!(total_output_occurrences > 100, "all duplicate occurrences verified");
+    assert!(
+        total_output_occurrences > 100,
+        "all duplicate occurrences verified"
+    );
 }
 
 #[test]
@@ -137,5 +146,9 @@ fn tuple_multiplicity_and_null_equality_are_not_set_membership_shortcuts() {
     assert_ne!(by_name, positional, "BY NAME must align by column identity");
     assert!(by_name.contains(&vec![Some(5), Some(-5)]));
     assert!(positional.contains(&vec![Some(-5), Some(5)]));
-    assert_eq!(terminal("88-C177-S087").len(), 17, "two orders bags plus customers");
+    assert_eq!(
+        terminal("88-C177-S087").len(),
+        17,
+        "two orders bags plus customers"
+    );
 }
