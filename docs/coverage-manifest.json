@@ -1,4 +1,32 @@
 {
+  "task_194_set_operator_acceptance": {
+    "owner": "TASK-194",
+    "parent": "TASK-88",
+    "status": "implementation_under_review_not_signed_off",
+    "freeze": "docs/task-194-acceptance-freeze.json",
+    "freeze_version": 1,
+    "original_cases": 22,
+    "dialect_cells": 286,
+    "native_complete_bag_cases": 20,
+    "source_oracles": "docs/task-177-relational-bag-oracles.json",
+    "original_positive_fixture": "88-C194-P",
+    "original_negative_fixture": "88-C194-N",
+    "dialect_and_fail_closed_test": "tests/task_194_dialect_semantics.rs",
+    "native_terminal_bag_test": "tests/task_194_native_set_bags.rs",
+    "sql_dbt_odcs_domain_parity_test": "tests/task_194_adapter_parity.rs",
+    "parser_only_corresponding_boundary": "88-C177-S084/*",
+    "arity_diagnostic_case": "88-C177-S086/*",
+    "independently_verified_semantic_cells": 0,
+    "pending_independent_review": true,
+    "pending_final_head_ci": true,
+    "pending_pinned_consumer_ci": true,
+    "adapter_equivalence_owner": "TASK-197",
+    "parser_boundary_owner": "TASK-191",
+    "final_matrix_signoff_owner": "TASK-180",
+    "task_done": false,
+    "task88_parent_approved": false,
+    "release_approved": false
+  },
   "task_193_join_and_source_instance_acceptance": {
     "owner": "TASK-193",
     "parent": "TASK-88",
@@ -250,7 +278,10 @@
     "task_192_independent_review_evidence": "docs/task-192-independent-semantic-review.json",
     "task_192_reviewed_implementation_commit": "eca90dbbd6038eaab8c96d80ffab64133e9d9def",
     "verified_protocol_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/43399257712",
-    "verified_consumer_ci": ["https://github.com/phdah/sql-tdg/actions/runs/43399286395", "https://github.com/phdah/sql-tdg/actions/runs/43399289335"]
+    "verified_consumer_ci": [
+      "https://github.com/phdah/sql-tdg/actions/runs/43399286395",
+      "https://github.com/phdah/sql-tdg/actions/runs/43399289335"
+    ]
   },
   "task_177_dialect_parser_acceptance": {
     "owner": "TASK-177",
