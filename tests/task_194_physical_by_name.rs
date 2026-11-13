@@ -7,9 +7,9 @@ use std::collections::BTreeMap;
 use serde_json::Value;
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, dialect_from_name,
-    physical_finite_set_tree_membership_plan, physical_finite_set_tree_plan,
-    ConfiguredSqlInput, LiteralValue, PhysicalFiniteSetTreeProof, PhysicalWriteRow,
-    PhysicalWriteState, RelationCatalog, RelationSchema, SchemaColumn, SqlInput,
+    physical_finite_set_tree_membership_plan, physical_finite_set_tree_plan, ConfiguredSqlInput,
+    LiteralValue, PhysicalFiniteSetTreeProof, PhysicalWriteRow, PhysicalWriteState,
+    RelationCatalog, RelationSchema, SchemaColumn, SqlInput,
 };
 
 const FREEZE: &str = include_str!("../docs/task-194-acceptance-freeze.json");
@@ -36,7 +36,11 @@ fn sources() -> (RelationCatalog, Vec<PhysicalWriteState>) {
                     .map(|column| {
                         SchemaColumn::from_sql_type(
                             column,
-                            if column == "__physical_row_id" { "VARCHAR" } else { "INTEGER" },
+                            if column == "__physical_row_id" {
+                                "VARCHAR"
+                            } else {
+                                "INTEGER"
+                            },
                             "duckdb",
                         )
                         .expect("authoritative physical datatype")
@@ -71,7 +75,11 @@ fn sources() -> (RelationCatalog, Vec<PhysicalWriteState>) {
     )
 }
 
-fn analyze(sql: &str, dialect_name: &str, catalog: &RelationCatalog) -> sql_semantic_protocol::AnalysisBundle {
+fn analyze(
+    sql: &str,
+    dialect_name: &str,
+    catalog: &RelationCatalog,
+) -> sql_semantic_protocol::AnalysisBundle {
     let dialect = dialect_from_name(dialect_name).expect("one of 13 SQL parser dialects");
     let input = SqlInput::inline(sql);
     let chosen = [ConfiguredSqlInput::new(
@@ -127,7 +135,10 @@ fn all_13_parsers_certify_original_by_name_complete_physical_bags() {
         result
     };
     let (catalog, states) = sources();
-    for dialect in fixture["dialects"].as_array().expect("13 original parser cells") {
+    for dialect in fixture["dialects"]
+        .as_array()
+        .expect("13 original parser cells")
+    {
         let name = dialect.as_str().expect("dialect");
         let bundle = analyze(case["sql"].as_str().expect("original SQL"), name, &catalog);
         let target = bundle.layers().last().expect("terminal set").id();
@@ -135,15 +146,23 @@ fn all_13_parsers_certify_original_by_name_complete_physical_bags() {
         let PhysicalFiniteSetTreeProof::Exact(exact) = plan else {
             panic!("88-C177-S083/{name}: original BY NAME physical proof must be exact: {plan:?}");
         };
-        assert_eq!(decoded_terminal(&exact.terminal), expected, "{name}: SQL tuple bag");
+        assert_eq!(
+            decoded_terminal(&exact.terminal),
+            expected,
+            "{name}: SQL tuple bag"
+        );
         assert_eq!(exact.branches.len(), 2);
         assert_eq!(exact.branches[0].selected_row_ids.len(), 6);
         assert_eq!(exact.branches[1].selected_row_ids.len(), 5);
         assert_eq!(exact.tuples.iter().map(|t| t.output_count).sum::<u64>(), 7);
         assert_eq!(
-            exact.tuples
+            exact
+                .tuples
                 .iter()
-                .map(|t| t.branch_row_ids.iter().map(Vec::len).sum::<usize>() as u64 - t.output_count)
+                .map(
+                    |t| t.branch_row_ids.iter().map(Vec::len).sum::<usize>() as u64
+                        - t.output_count
+                )
                 .sum::<u64>(),
             4,
             "{name}: 4 duplicate source occurrences discarded by UNION BY NAME DISTINCT"
