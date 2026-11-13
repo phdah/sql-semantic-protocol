@@ -182,6 +182,35 @@ pub(super) fn derive_inner_join_predicate_domains(
                 .map(|operand| derive_inner_join_predicate_domains(operand, sources)),
         ),
         Predicate::Comparison(comparison)
+            if comparison.operator() == ComparisonOperator::Eq
+                && matches!(
+                    (comparison.left(), comparison.right()),
+                    (Expression::Column(_), Expression::Column(_))
+                ) =>
+        {
+            // Ordinary SQL equality can be TRUE only when both operands are
+            // non-NULL. Do not infer a numeric value or collapse aliases:
+            // source-side IS NOT NULL is the strongest universally safe
+            // scalar domain for two unconstrained equality columns.
+            intersect_column_domain_sets(
+                [comparison.left(), comparison.right()]
+                    .into_iter()
+                    .map(|expression| {
+                        derive_column_domains(
+                            &Predicates::new(
+                                Some(Predicate::IsNull(IsNullPredicate::new(
+                                    expression.clone(),
+                                    true,
+                                ))),
+                                None,
+                                None,
+                            ),
+                            sources,
+                        )
+                    }),
+            )
+        }
+        Predicate::Comparison(comparison)
             if matches!(
                 (comparison.left(), comparison.right()),
                 (Expression::Column(_), Expression::Literal(_))
