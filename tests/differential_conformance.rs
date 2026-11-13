@@ -869,14 +869,29 @@ fn known_soundness_reproductions_stay_in_the_conformance_matrix() {
     let protocol = analyze_duckdb(exists);
     assert!(!first_query(&protocol).condition_exactness().is_exact());
 
-    // TASK-45: implicit cross-relation equality is a canonical join correlation, not a
-    // scalar domain, so the row-condition contract remains exact.
+    // TASK-45 / TASK-193: implicit cross-relation equality is a canonical
+    // join correlation. Every TRUE pair has two non-NULL keys; no concrete
+    // numeric bound or independent source-population count is inferred.
     let implicit =
         "SELECT left_rows.row_id FROM left_rows, right_rows WHERE left_rows.x = right_rows.y";
     let protocol = analyze_duckdb(implicit);
     let query = first_query(&protocol);
     assert!(query.condition_exactness().is_exact());
-    assert!(query.column_domains().is_empty());
+    let domains = query.column_domains();
+    assert_eq!(domains.len(), 2);
+    for (domain, relation, key) in [
+        (&domains[0], "left_rows", "x"),
+        (&domains[1], "right_rows", "y"),
+    ] {
+        assert_eq!(domain.column().relation(), Some(relation));
+        assert_eq!(domain.column().name(), key);
+        let ValueDomain::Set(set) = domain.domain() else {
+            panic!("ordinary equality joins must exclude only SQL NULL");
+        };
+        assert_eq!(set.mode(), SetMode::Exclude);
+        assert_eq!(set.values().len(), 1);
+        assert!(matches!(set.values()[0].value(), LiteralValue::Null));
+    }
 
     // TASK-43: cross-column correlation stays residual.
     let correlated =
