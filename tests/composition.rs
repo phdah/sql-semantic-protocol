@@ -4,7 +4,7 @@ use common::DIALECTS;
 use sql_semantic_protocol::{
     analyze_inputs, AnalysisBundle, CaseSourceDomains, ComposedSemantics, CompositionFailureReason,
     DatasetRef, Expression, JoinKind, LiteralValue, ResolvedComposedSemantics, SqlInput,
-    TransformationLayer, ValueDomain,
+    TransformationLayer, ValueDomain, SetMode,
 };
 use sqlparser::dialect::{dialect_from_str, GenericDialect};
 
@@ -571,7 +571,19 @@ fn implicit_where_equi_join_is_a_composed_inner_equality() {
 
     let semantics = resolved(layer_for_relation(&bundle, "mart.links"));
     assert!(semantics.condition_exactness().is_exact());
-    assert!(semantics.column_domains().is_empty());
+    // TRUE equality between two physical columns excludes SQL NULL on
+    // both participating sources without inventing a numeric value.
+    let domains = semantics.column_domains();
+    assert_eq!(domains.len(), 2);
+    for (actual, relation) in domains.iter().zip(["raw.t", "raw.u"]) {
+        assert_eq!(actual.column().relation(), Some(relation));
+        assert_eq!(actual.column().name(), "id");
+        let ValueDomain::Set(set) = actual.domain() else {
+            panic!("implicit INNER equality must yield a typed NOT NULL domain");
+        };
+        assert_eq!(set.mode(), SetMode::Exclude);
+        assert!(set.values().iter().any(|v| matches!(v.value(), LiteralValue::Null)));
+    }
 
     let [equality] = semantics.join_equalities() else {
         panic!("expected one implicit join equality");
