@@ -3,7 +3,7 @@
   "task_id": "TASK-194",
   "origin": "independent_typed_multiset_arithmetic_from_frozen_physical_rows_not_emitted_analyzer",
   "source_complete_reference": "docs/task-194-acceptance-freeze.json",
-  "status": "candidate_independent_review_until_tests_and_ci",
+  "status": "independently_reviewed_original_SQL_and_complete_duckdb_source_bags",
   "meaning_of_rejected": "a candidate occurrence in the concatenation of every leaf branch which is not present in the terminal multiset; this is a bag conservation measure, not SQL WHERE FALSE",
   "reviewer_scope": "closed_world_duckdb_original_SQL_and_13_parser_dialect_typed_semantics_only",
   "count": 22,

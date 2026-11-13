@@ -4,8 +4,8 @@
   "review_kind": "user_authorized_separate_original_SQL_closed_world_and_parser_contract_review",
   "reviewer": "GPT-6 (reviewed SQL-algebra-derived fixture separate from implementation, with native DuckDB and canonical public contract assertions)",
   "review_date": "2026-11-13",
-  "reviewed_code_commit": "pending_final_head_ci",
-  "review_status": "independent_original_SQL_review_complete_pending_final_head_ci",
+  "reviewed_code_commit": "1bf9bb31832f9e4dfe6610b60654342b309415e7",
+  "review_status": "completed_bounded_independent_review",
   "review_basis": "For every original SQL, enumerate every input physical row occurrence separately from its value, apply tuple-keyed UNION/INTERSECT/EXCEPT DISTINCT/ALL laws with SQL NULL equality and positional/BY NAME alignment, compare to prior native terminal bags, and independently execute the original query and candidate/rejected source bags in DuckDB. Treat a 13-dialect parser-equivalence observation as portable canonical public evidence only, not vendor runtime execution. Exclude CORRESPONDING parser rejection and incompatible arity from positive typing.",
   "cases_reviewed": 22,
   "parser_cells_reviewed": 286,
@@ -29,8 +29,8 @@
     "ci": "https://github.com/phdah/sql-tdg/actions/runs/43524450808",
     "ci_result": "5/5_success_on_candidate_head_requires_final_pin_refresh"
   },
-  "protocol_final_head_ci": null,
-  "review_result": "pending_verified_final_protocol_and_consumer_head",
+  "protocol_final_head_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/43525922993",
+  "review_result": "approved_for_TASK_194_bounded_scope_only",
   "parent_task_88_approved": false,
   "release_task_91_approved": false,
   "cases": [
@@ -4493,5 +4493,7 @@
       "pending_vendor_owner": "TASK-179",
       "pending_whole_matrix_owner": "TASK-180"
     }
-  ]
+  ],
+  "protocol_final_head_ci_result": "9/9 success on reviewed pre-signoff implementation commit",
+  "discrepancies": []
 }

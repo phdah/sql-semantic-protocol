@@ -182,6 +182,9 @@ fn new_tasks_and_existing_final_gates_form_one_acyclic_queue() {
     let task_193_done = coverage["task_193_join_and_source_instance_acceptance"]["task_done"]
         .as_bool()
         .expect("bounded TASK-193 status");
+    let task_194_done = coverage["task_194_set_operator_acceptance"]["task_done"]
+        .as_bool()
+        .expect("bounded TASK-194 status");
     let parent = plan["parents"]
         .as_array()
         .expect("parent queues")
@@ -216,7 +219,11 @@ fn new_tasks_and_existing_final_gates_form_one_acyclic_queue() {
                 content.contains("status: To Do") || content.contains("status: In Progress")
             }
         } else if *task == "TASK-194" {
-            content.contains("status: To Do") || content.contains("status: In Progress")
+            if task_194_done {
+                content.contains("status: Done")
+            } else {
+                content.contains("status: To Do") || content.contains("status: In Progress")
+            }
         } else {
             content.contains("status: To Do")
         };

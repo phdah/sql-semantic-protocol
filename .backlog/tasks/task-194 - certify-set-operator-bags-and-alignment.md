@@ -1,7 +1,7 @@
 ---
 id: TASK-194
 title: Certify set-operator bags, NULL equality, and column alignment
-status: In Progress
+status: Done
 assignee: []
 created_date: '2026-11-10'
 updated_date: '2026-11-13'
@@ -33,11 +33,11 @@ type: feature
 ## Acceptance Criteria
 
 <!-- AC:BEGIN -->
-- [ ] #1 Freeze exactly 22 original SQL case IDs x 13 dialect statuses in a task-owned v1 fixture; pin full source tuples/occurrence counts, expected terminal and rejected multiset bags, column order/types and named parser/analyzer boundaries.
-- [ ] #2 Verify tuple-level (not per-column) multiset minimum/subtraction/deduplication and NULL equality with independent DuckDB goldens, including shared-source branches, positional columns, nested sets and negative/impossible counterpart bags.
-- [ ] #3 Require strongest sound canonical output domains, stable source dependency identities, full-document semantic equivalence for meaning-preserving accepted spellings and explicit fail-closed unsupported alignment/arity outcomes; route true parser-only boundaries to TASK-191 without calling an unsupported case certified.
-- [ ] #4 Check representable direct SQL/dbt/ODCS equivalence for actual type/source facts, forward evidence to TASK-197/TASK-180, and pass final-head default/no-default Rust and dbt tests plus relevant pinned consumer verification.
-- [ ] #5 Complete exact-head rustfmt, strict Clippy, default/no-default Rust tests and docs, dbt E2E, active schema/goldens and relevant pinned sql-tdg consumer checks. Independently review every bounded acceptance cell and record the linked evidence in `docs/coverage-manifest.json`; TASK-88 parent and TASK-91 release remain unapproved until TASK-180 and separate parent signoff.
+- [x] #1 Freeze exactly 22 original SQL case IDs x 13 dialect statuses in a task-owned v1 fixture; pin full source tuples/occurrence counts, expected terminal and rejected multiset bags, column order/types and named parser/analyzer boundaries.
+- [x] #2 Verify tuple-level (not per-column) multiset minimum/subtraction/deduplication and NULL equality with independent DuckDB goldens, including shared-source branches, positional columns, nested sets and negative/impossible counterpart bags.
+- [x] #3 Require strongest sound canonical output domains, stable source dependency identities, full-document semantic equivalence for meaning-preserving accepted spellings and explicit fail-closed unsupported alignment/arity outcomes; route true parser-only boundaries to TASK-191 without calling an unsupported case certified.
+- [x] #4 Check representable direct SQL/dbt/ODCS equivalence for actual type/source facts, forward evidence to TASK-197/TASK-180, and pass final-head default/no-default Rust and dbt tests plus relevant pinned consumer verification.
+- [x] #5 Complete exact-head rustfmt, strict Clippy, default/no-default Rust tests and docs, dbt E2E, active schema/goldens and relevant pinned sql-tdg consumer checks. Independently review every bounded acceptance cell and record the linked evidence in `docs/coverage-manifest.json`; TASK-88 parent and TASK-91 release remain unapproved until TASK-180 and separate parent signoff.
 <!-- AC:END -->
 
 ## Next
@@ -54,4 +54,8 @@ Extracted on 2026-11-10 from the previously overbroad TASK-178. There is **no im
 - Native closed-source and terminal multiset regression: `tests/task_194_native_set_bags.rs` (20 native cases); `CORRESPONDING` parser rejection and incompatible arity remain explicit negative cases.
 - Public full-document and source-identity checks: `tests/task_194_dialect_semantics.rs`.
 - SQL/dbt/ODCS source-type parity and sound projected domain checks: `tests/task_194_adapter_parity.rs`.
-- Final-head CI, independent semantic cell review, and pinned consumer compatibility are **not yet signed off**. Do not mark Done on the presence of tests alone.
+- Bounded independent review: 22 original SQL cases / 286 parser cells, split 260 accepted typed cells, 13 fail-closed arity cases and 13 CORRESPONDING parser-rejected cells explicitly **unapproved under TASK-191**. See `docs/task-194-independent-semantic-review.json` and `docs/task-194-acceptance-audit.md`.
+- Original 20 complete DuckDB source/terminal bags and 106 non-emitted candidate occurrences plus nine adversarial two-column oracles: `tests/task_194_independent_bags.rs`.
+- Original UNION BY NAME bounded physical Exact and absent-tuple Impossible with independent physical row identities in all 13 parsers: `tests/task_194_physical_by_name.rs`.
+- [Reviewed implementation CI 9/9](https://github.com/phdah/sql-semantic-protocol/actions/runs/43525922993) on commit `1bf9bb31832f9e4dfe6610b60654342b309415e7`. [Migrated pinned consumer 5/5](https://github.com/phdah/sql-tdg/actions/runs/43524450808) on exact protocol implementation candidate `91508d800627793ea2b7550fa8de5bef4c162aa1` (CI-only PR #52, do not merge). Final task metadata head and consumer exact pin are verified separately in GitHub CI and PR discussion.
+- **TASK-194 bounded AC signed off.** TASK-88, TASK-91, vendor execution, and global adapter/final-matrix gates remain separate and unapproved.
