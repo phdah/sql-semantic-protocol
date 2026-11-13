@@ -258,5 +258,8 @@ fn minus_spelling_keeps_the_original_except_semantics_in_all_13_parsers() {
             "{name}: accepted spelling must retain complete canonical output semantics"
         );
     }
-    assert_eq!(spelling["release_disposition"], "unreviewed_no_native_vendor_certification");
+    assert_eq!(
+        spelling["release_disposition"],
+        "unreviewed_no_native_vendor_certification"
+    );
 }
