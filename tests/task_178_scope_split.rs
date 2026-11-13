@@ -179,6 +179,9 @@ fn new_tasks_and_existing_final_gates_form_one_acyclic_queue() {
     let task_192_done = coverage["task_192_predicate_type_acceptance"]["task_done"]
         .as_bool()
         .expect("bounded TASK-192 status");
+    let task_193_done = coverage["task_193_join_and_source_instance_acceptance"]["task_done"]
+        .as_bool()
+        .expect("bounded TASK-193 status");
     let parent = plan["parents"]
         .as_array()
         .expect("parent queues")
@@ -207,9 +210,11 @@ fn new_tasks_and_existing_final_gates_form_one_acyclic_queue() {
                 "status: In Progress"
             })
         } else if *task == "TASK-193" {
-            // The next child may be under implementation in its own PR.
-            // Neither To Do nor In Progress can unblock TASK-194.
-            content.contains("status: To Do") || content.contains("status: In Progress")
+            if task_193_done {
+                content.contains("status: Done")
+            } else {
+                content.contains("status: To Do") || content.contains("status: In Progress")
+            }
         } else {
             content.contains("status: To Do")
         };
