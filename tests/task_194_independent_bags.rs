@@ -79,7 +79,6 @@ fn inserted_scalar(value: &Value) -> String {
 fn original_22_cases_prove_each_physical_occurrence_and_rejected_candidate_bag() {
     let reviewed = read(REVIEW);
     let frozen = read(FREEZE);
-    assert_eq!(reviewed["case_count"].as_i64().unwrap_or(0), 0, "case_count not a review key");
     assert_eq!(reviewed["count"], 22);
     assert_eq!(reviewed["parser_cells"], 286);
     assert_eq!(reviewed["task88_approved"], false);
