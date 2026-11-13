@@ -175,6 +175,10 @@ fn exact_163_original_variants_are_owned_once_without_global_semantic_signoff() 
 #[test]
 fn new_tasks_and_existing_final_gates_form_one_acyclic_queue() {
     let plan = parse(QUEUE);
+    let coverage = parse(COVERAGE);
+    let task_192_done = coverage["task_192_predicate_type_acceptance"]["task_done"]
+        .as_bool()
+        .expect("bounded TASK-192 status");
     let parent = plan["parents"]
         .as_array()
         .expect("parent queues")
@@ -197,7 +201,11 @@ fn new_tasks_and_existing_final_gates_form_one_acyclic_queue() {
             "{task}: missing file identity"
         );
         let expected_status = if *task == "TASK-192" {
-            "status: In Progress"
+            if task_192_done {
+                "status: Done"
+            } else {
+                "status: In Progress"
+            }
         } else {
             "status: To Do"
         };
