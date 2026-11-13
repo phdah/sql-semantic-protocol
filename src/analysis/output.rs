@@ -399,10 +399,12 @@ fn coalesced_join_column_lineage(
         }
         _ => return None,
     }
-    let [left_source] = output_column_candidates(Some(&left), column, scope).as_slice() else {
+    let left_candidates = output_column_candidates(Some(&left), column, scope);
+    let right_candidates = output_column_candidates(Some(&right), column, scope);
+    let [left_source] = left_candidates.as_slice() else {
         return None;
     };
-    let [right_source] = output_column_candidates(Some(&right), column, scope).as_slice() else {
+    let [right_source] = right_candidates.as_slice() else {
         return None;
     };
     if left_source.is_empty() || right_source.is_empty() {
