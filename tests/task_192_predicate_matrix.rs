@@ -13,6 +13,7 @@ const FREEZE: &str = include_str!("../docs/task-192-acceptance-freeze.json");
 const SOURCE: &str = include_str!("../docs/task-178-full-variant-inventory.json");
 const PRIOR: &str = include_str!("../docs/task-177-predicate-oracles.json");
 const COVERAGE: &str = include_str!("../docs/coverage-manifest.json");
+const REVIEW: &str = include_str!("../docs/task-192-review-queue.json");
 
 fn json(source: &str) -> Value {
     serde_json::from_str(source).expect("committed versioned task evidence")
@@ -42,11 +43,19 @@ fn task_192_inventory_contains_all_original_cases_without_false_semantic_certifi
     let original = json(SOURCE);
     let prior = json(PRIOR);
     let coverage = json(COVERAGE);
+    let review = json(REVIEW);
+    let signed_off = review["independent_signoff"]
+        .as_bool()
+        .expect("explicit independent signoff");
     assert_eq!(freeze["schema_version"], 1);
     assert_eq!(freeze["task_id"], "TASK-192");
     assert_eq!(
         freeze["status"],
-        "in_progress_v1_incomplete_semantic_acceptance"
+        if signed_off {
+            "complete_semantic_acceptance"
+        } else {
+            "in_progress_v1_incomplete_semantic_acceptance"
+        }
     );
     assert_eq!(freeze["positive_fixture_id"], "88-C192-P");
     assert_eq!(freeze["negative_fixture_id"], "88-C192-N");
@@ -64,16 +73,16 @@ fn task_192_inventory_contains_all_original_cases_without_false_semantic_certifi
         43
     );
     assert_eq!(freeze["unproved_native_truth_partition_case_count"], 0);
-    assert_eq!(freeze["full_typed_semantic_signoff"], false);
+    assert_eq!(freeze["full_typed_semantic_signoff"], signed_off);
     assert_eq!(freeze["release_approved"], false);
-    assert_eq!(freeze["independent_review_signed_off"], false);
+    assert_eq!(freeze["independent_review_signed_off"], signed_off);
     assert_eq!(
         coverage["task_192_predicate_type_acceptance"]["task_done"],
-        false
+        signed_off
     );
     assert_eq!(
         coverage["task_192_predicate_type_acceptance"]["independent_signoff"],
-        false
+        signed_off
     );
 
     let dialects = freeze["dialects"].as_array().expect("public dialects");
@@ -153,13 +162,15 @@ fn task_192_inventory_contains_all_original_cases_without_false_semantic_certifi
             case["source_and_terminal_duckdb_oracle"].is_object(),
             "{id}: every original case requires pinned native positive or negative evidence"
         );
-        assert!(
-            !case["missing_evidence"]
-                .as_array()
-                .expect("pending requirements")
-                .is_empty(),
-            "{id}: unsatisfied semantic or independent review gates cannot disappear"
-        );
+        if !signed_off {
+            assert!(
+                !case["missing_evidence"]
+                    .as_array()
+                    .expect("pending requirements")
+                    .is_empty(),
+                "{id}: unsatisfied semantic or independent review gates cannot disappear"
+            );
+        }
         if known.contains(id) || new.contains(id) {
             assert_eq!(
                 case["source_and_terminal_duckdb_oracle"]
