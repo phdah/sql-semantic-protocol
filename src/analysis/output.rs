@@ -171,8 +171,7 @@ pub(super) fn analyze_set_expr_output_with_outer_scope(
                     .map(|column| column.name())
                     .collect::<Vec<_>>();
                 let unique = |names: &[&str]| {
-                    !names.is_empty()
-                        && names.iter().collect::<BTreeSet<_>>().len() == names.len()
+                    !names.is_empty() && names.iter().collect::<BTreeSet<_>>().len() == names.len()
                 };
                 let safe = unique(&left_names)
                     && unique(&right_names)
