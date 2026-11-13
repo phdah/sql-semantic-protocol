@@ -404,7 +404,7 @@
           "customers.id"
         ]
       ],
-      "projection_lineage_rule": "nonempty_subset_of_candidates"
+      "projection_lineage_rule": "exact"
     },
     {
       "case_id": "88-C177-S045",
@@ -594,7 +594,7 @@
           "customers.id"
         ]
       ],
-      "projection_lineage_rule": "nonempty_subset_of_candidates"
+      "projection_lineage_rule": "exact"
     },
     {
       "case_id": "88-C177-S046",
