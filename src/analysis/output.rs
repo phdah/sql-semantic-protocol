@@ -142,15 +142,6 @@ pub(super) fn analyze_set_expr_output_with_outer_scope(
             right,
         } => {
             let quantifier = analyze_set_quantifier(*set_quantifier);
-            if quantifier.uses_name_alignment() {
-                diagnostics.push(warning(
-                    "unsupported_set_operation_alignment",
-                    DiagnosticArea::Output,
-                    "BY NAME set-operation alignment is represented but output-column composition is not implemented",
-                ));
-                return Output::new(Vec::new());
-            }
-
             let left_output = analyze_set_expr_output_with_outer_scope(
                 left,
                 local_outputs,
@@ -165,6 +156,54 @@ pub(super) fn analyze_set_expr_output_with_outer_scope(
                 diagnostics,
                 metadata,
             );
+            if quantifier.uses_name_alignment() {
+                // A complete one-to-one name mapping can be resolved without
+                // assuming engine-specific NULL padding, case folding or
+                // duplicate-name behavior. Other BY NAME shapes fail closed.
+                let left_names = left_output
+                    .columns()
+                    .iter()
+                    .map(|column| column.name())
+                    .collect::<Vec<_>>();
+                let right_names = right_output
+                    .columns()
+                    .iter()
+                    .map(|column| column.name())
+                    .collect::<Vec<_>>();
+                let unique = |names: &[&str]| {
+                    !names.is_empty()
+                        && names.iter().collect::<BTreeSet<_>>().len() == names.len()
+                };
+                let safe = unique(&left_names)
+                    && unique(&right_names)
+                    && left_names.len() == right_names.len()
+                    && left_names.iter().all(|name| right_names.contains(name));
+                if !safe {
+                    diagnostics.push(warning(
+                        "unsupported_set_operation_alignment",
+                        DiagnosticArea::Output,
+                        "BY NAME output requires one-to-one, unique, exactly matching column names; unmatched, repeated or dialect-folded names remain unsupported",
+                    ));
+                    return Output::new(Vec::new());
+                }
+                let reordered = left_names
+                    .iter()
+                    .map(|name| {
+                        right_output
+                            .columns()
+                            .iter()
+                            .find(|column| column.name() == *name)
+                            .expect("the exact name bijection was just verified")
+                            .clone()
+                    })
+                    .collect();
+                return merge_set_operation_output(
+                    left_output,
+                    Output::new(reordered),
+                    analyze_set_operator(*op),
+                    diagnostics,
+                );
+            }
             merge_set_operation_output(
                 left_output,
                 right_output,
