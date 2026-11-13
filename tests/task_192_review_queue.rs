@@ -17,13 +17,15 @@ fn read(source: &str) -> Value {
 }
 
 fn pinned_commit(value: &Value) -> bool {
-    value.as_str().is_some_and(|sha| {
-        sha.len() == 40 && sha.bytes().all(|byte| byte.is_ascii_hexdigit())
-    })
+    value
+        .as_str()
+        .is_some_and(|sha| sha.len() == 40 && sha.bytes().all(|byte| byte.is_ascii_hexdigit()))
 }
 
 fn accountable_reviewer(value: &Value) -> bool {
-    value.as_str().is_some_and(|reviewer| !reviewer.trim().is_empty())
+    value
+        .as_str()
+        .is_some_and(|reviewer| !reviewer.trim().is_empty())
 }
 
 #[test]
@@ -126,18 +128,33 @@ fn reviewer_assignment_queue_names_every_original_cell_without_false_approval() 
             .expect("explicit review evidence references");
         match cell["decision"].as_str().expect("review decision") {
             "pending" => {
-                assert!(cell["reviewer"].is_null(), "{id}: pending review has no reviewer");
+                assert!(
+                    cell["reviewer"].is_null(),
+                    "{id}: pending review has no reviewer"
+                );
                 assert!(
                     cell["reviewed_commit"].is_null(),
                     "{id}: pending review has no reviewed commit"
                 );
-                assert!(evidence.is_empty(), "{id}: pending review has no approval evidence");
+                assert!(
+                    evidence.is_empty(),
+                    "{id}: pending review has no approval evidence"
+                );
                 assert_eq!(expected["independently_reviewed"], false);
             }
             "approved" | "changes_requested" => {
-                assert!(accountable_reviewer(&cell["reviewer"]), "{id}: missing reviewer");
-                assert!(pinned_commit(&cell["reviewed_commit"]), "{id}: missing pinned commit");
-                assert!(!evidence.is_empty(), "{id}: review needs supporting evidence");
+                assert!(
+                    accountable_reviewer(&cell["reviewer"]),
+                    "{id}: missing reviewer"
+                );
+                assert!(
+                    pinned_commit(&cell["reviewed_commit"]),
+                    "{id}: missing pinned commit"
+                );
+                assert!(
+                    !evidence.is_empty(),
+                    "{id}: review needs supporting evidence"
+                );
                 assert!(
                     evidence.iter().all(accountable_reviewer),
                     "{id}: review references must be nonempty"
