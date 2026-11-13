@@ -192,23 +192,21 @@ pub(super) fn derive_inner_join_predicate_domains(
             // non-NULL. Do not infer a numeric value or collapse aliases:
             // source-side IS NOT NULL is the strongest universally safe
             // scalar domain for two unconstrained equality columns.
-            intersect_column_domain_sets(
-                [comparison.left(), comparison.right()]
-                    .into_iter()
-                    .map(|expression| {
-                        derive_column_domains(
-                            &Predicates::new(
-                                Some(Predicate::IsNull(IsNullPredicate::new(
-                                    expression.clone(),
-                                    true,
-                                ))),
-                                None,
-                                None,
-                            ),
-                            sources,
-                        )
-                    }),
-            )
+            intersect_column_domain_sets([comparison.left(), comparison.right()].into_iter().map(
+                |expression| {
+                    derive_column_domains(
+                        &Predicates::new(
+                            Some(Predicate::IsNull(IsNullPredicate::new(
+                                expression.clone(),
+                                true,
+                            ))),
+                            None,
+                            None,
+                        ),
+                        sources,
+                    )
+                },
+            ))
         }
         Predicate::Comparison(comparison)
             if matches!(
