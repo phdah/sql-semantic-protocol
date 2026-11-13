@@ -2490,7 +2490,7 @@
       "source_instance_sql": "SELECT l.rowid FROM orders l WHERE EXISTS (SELECT 1 FROM customers r WHERE r.id=l.id)",
       "source_instances": [
         "orders:l",
-        "customers:r"
+        "customers:r (correlated subquery)"
       ],
       "expected_source_instance_bag": [
         [
@@ -2656,7 +2656,7 @@
       "source_instance_sql": "SELECT l.rowid FROM orders l WHERE NOT EXISTS (SELECT 1 FROM customers r WHERE r.id=l.id)",
       "source_instances": [
         "orders:l",
-        "customers:r"
+        "customers:r (correlated subquery)"
       ],
       "expected_source_instance_bag": [
         [
@@ -3997,7 +3997,7 @@
       "source_instance_sql": "SELECT a.rowid,b.rowid,c.rowid FROM orders a JOIN customers b ON a.id=b.id JOIN products c ON b.id=c.id",
       "source_instances": [
         "orders:a",
-        "orders:b",
+        "customers:b",
         "products:c"
       ],
       "expected_source_instance_bag": [
@@ -4275,8 +4275,8 @@
       "original_sql": "SELECT o.id FROM orders o JOIN LATERAL (SELECT o.id) l ON TRUE",
       "source_instance_sql": "SELECT o.rowid,l.id FROM orders o JOIN LATERAL (SELECT o.id) l ON TRUE",
       "source_instances": [
-        "orders:l",
-        "customers:r"
+        "orders:o",
+        "derived:l"
       ],
       "expected_source_instance_bag": [
         [
