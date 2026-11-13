@@ -5,7 +5,10 @@
 use std::collections::BTreeSet;
 
 use serde_json::Value;
-use sql_semantic_protocol::{analyze_sql, dialect_from_name, JoinKind, ProtocolStatement};
+use sql_semantic_protocol::{
+    analyze_configured_inputs_with_catalog, analyze_inputs, dialect_from_name, ConfiguredSqlInput,
+    JoinKind, ProtocolStatement, RelationCatalog, SqlInput,
+};
 
 const MATRIX: &str = include_str!("../docs/task-193-source-instance-matrix-v2.json");
 const FREEZE: &str = include_str!("../docs/task-193-acceptance-freeze.json");
@@ -25,12 +28,25 @@ fn join_kind(kind: JoinKind) -> &'static str {
     }
 }
 
+fn complete_source_catalog() -> RelationCatalog {
+    let dialect = dialect_from_name("duckdb").expect("project dialect");
+    let ddl = SqlInput::inline(
+        "CREATE TABLE orders(id INTEGER, amount INTEGER);
+         CREATE TABLE customers(id INTEGER, amount INTEGER);
+         CREATE TABLE products(id INTEGER)",
+    );
+    let schemas = analyze_inputs(&[ddl], "duckdb", dialect.as_ref())
+        .expect("authoritative complete physical schemas");
+    RelationCatalog::from_schemas(schemas.source_schemas()).expect("typed physical relations")
+}
+
 #[test]
 fn all_312_join_cells_preserve_expected_join_kinds_sources_and_lineage() {
     let expected: Value = serde_json::from_str(MATRIX).expect("manual original SQL obligations");
     let freeze: Value = serde_json::from_str(FREEZE).expect("immutable v1 acceptance");
     assert_eq!(expected["case_count"], 24);
     let mut checked = BTreeSet::new();
+    let catalog = complete_source_catalog();
     for case in expected["rows"].as_array().expect("24 SQL variants") {
         let id = case["case_id"].as_str().expect("fixture identity");
         let original = freeze["cases"]
@@ -61,9 +77,12 @@ fn all_312_join_cells_preserve_expected_join_kinds_sources_and_lineage() {
                 "{identity}: repeated cell"
             );
             let parser = dialect_from_name(dialect_name).expect("project dialect");
-            let protocol = analyze_sql(sql, dialect_name, parser.as_ref())
-                .unwrap_or_else(|e| panic!("{identity}: original SQL: {e}"));
-            let [ProtocolStatement::Query(query)] = protocol.statements() else {
+            let input = SqlInput::inline(sql);
+            let configured =
+                [ConfiguredSqlInput::new(&identity, &input, dialect_name, parser.as_ref())];
+            let bundle = analyze_configured_inputs_with_catalog(&configured, &catalog)
+                .unwrap_or_else(|e| panic!("{identity}: typed original SQL: {e}"));
+            let [ProtocolStatement::Query(query)] = bundle.inputs()[0].statements() else {
                 panic!("{identity}: query cannot disappear");
             };
             let actual_joins = query
