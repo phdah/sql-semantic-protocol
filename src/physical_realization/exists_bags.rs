@@ -78,8 +78,16 @@ fn residual(reason: &str) -> PhysicalFiniteExistsProof {
     }
 }
 
+// A complete source bag may have a numeric SQL column named "id" (including
+// duplicate or NULL keys). In that case require a separate, explicitly typed
+// physical occurrence identity. The legacy textual "id" remains supported.
+// Never use the value of a numeric SQL column as a surrogate row identity.
 pub(super) fn row_id(row: &PhysicalWriteRow) -> Option<&str> {
-    match row.values().get("id")? {
+    let identity = row
+        .values()
+        .get("__physical_row_id")
+        .or_else(|| row.values().get("id"))?;
+    match identity {
         LiteralValue::Text(value) if !value.is_empty() => Some(value),
         _ => None,
     }

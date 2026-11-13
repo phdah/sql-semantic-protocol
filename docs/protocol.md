@@ -1,4 +1,92 @@
+## TASK-192 complete physical signed arithmetic and EXISTS boundaries
+
+`physical_finite_signed_computed_bag_plan` evaluates a one-source
+canonical WHERE comparison over **addition** or **ABS** only after validating
+a complete caller-supplied source bag and an authoritative 16/32/64-bit
+signed source type. It computes the complete SQL TRUE, NOT TRUE, UNKNOWN
+row-occurrence partitions and duplicate-preserving projected terminal bag,
+with exact NULL-aware typed terminal set/bounds. It returns **Residual** if
+any signed operation would exceed the declared input width, regardless of
+whether DuckDB or another engine would widen the result, throw, or return
+some other representation. It returns **Impossible** for contradictory
+physical source schemas. Untyped original predicates retain whole-query
+Residual exactness: no arbitrary open-world source or vendor law is inferred.
+
+For original S013, `physical_finite_exists_bag_plan` already proves the
+entire correlated EXISTS source/terminal bag with independently attested
+orders/customers populations, duplicate and SQL NULL keys, and exact
+selected and rejected physical identities. Missing customers population
+is **Residual**, while an explicitly complete empty customers bag is
+**Exact** with all outer rows rejected. The distinction between an absent
+world and an attested empty world is mandatory.
+
+The bounded dispositions and exact negative tests are registered in
+[`docs/task-192-bounded-semantic-closures.json`](task-192-bounded-semantic-closures.json).
+This is executable **conditional physical-source evidence**, not a
+universal vendor-width law or independent 559-cell approval.
+
 # SQL Semantic Protocol contract
+
+## TASK-192 nullable numeric comparison truth tests
+
+For a plain, well-typed SQL comparison between a physical column and a
+non-NULL numeric literal, `(column > 0) IS UNKNOWN` is equivalent to
+`column IS NULL` under three-valued logic. This holds for the full
+TRUE/FALSE/UNKNOWN partition of the *outer* truth test, not just the
+WHERE-selected rows:
+
+| Column | Ordinary comparison | `IS UNKNOWN` | `column IS NULL` |
+| --- | --- | --- | --- |
+| NULL | UNKNOWN | TRUE | TRUE |
+| Non-NULL, comparison TRUE | TRUE | FALSE | FALSE |
+| Non-NULL, comparison FALSE | FALSE | FALSE | FALSE |
+
+The public analyzer normalizes only an ordinary comparison using one unwrapped
+identifier/qualified column and a numeric literal, in either operand order,
+to the canonical `is_null` predicate. No `IS UNKNOWN` shortcut is inferred
+for arithmetic or function operands, casts, NULL-safe operators, unknown
+vendor comparison functions or implicit conversion rules. A schema that makes
+the original numeric comparison invalid still requires source type validation;
+the normalization does not attest runtime vendor execution.
+
+The original TASK-192 S018 predicate retains an exact NULL-membership
+claim without deriving an artificial finite domain for projected `id`.
+
+Three further original 3VL cases have explicit Boolean-tree proofs:
+
+- **S012** retains `amount > 1 OR amount IS NULL` as a same-column
+  disjunction. Its TRUE rows are values above 1 plus SQL NULL, FALSE rows are
+  non-NULL values at most 1, and its UNKNOWN partition is empty. This does
+  not fit a single scalar `Range`/`Set` domain, so a *matching exact
+  Boolean witness* carries row-membership instead; the separately proven
+  projected `id > 0` interval is unchanged. Other unrepresentable scalar
+  unions remain residual.
+- **S016** models `(amount > 0) IS TRUE` with
+  `(amount > 0) AND amount IS NOT NULL`. The explicit guard preserves
+  FALSE on NULL rows rather than converting the outer truth test to UNKNOWN.
+  The TRUE/FALSE/UNKNOWN/NOT TRUE source partition is preserved without
+  assuming an inverted comparison or a vendor-specific NaN rule.
+- **S017** models `(amount > 0) IS FALSE` with
+  `NOT (amount > 0) AND amount IS NOT NULL`. Both expressions are FALSE
+  when `amount` is NULL, unlike naked `NOT (amount > 0)`. The original
+  FALSE/UNKNOWN/NOT TRUE source bags are therefore retained. It does not
+  replace `NOT (amount > 0)` with `amount <= 0`, which could assert
+  unproved NaN/comparison-complement behavior.
+
+These statements retain the portable Boolean expression for a matching
+column NULL test, but **constructive exactness under configured source types
+requires independently established signed integer semantics**. The typed
+analyzer retains a residual for a floating-point source without certified
+NaN/signed-zero comparison laws; a text-to-numeric coercion is not silently
+upgraded either. Public Boolean witnesses and independent native DuckDB
+source/terminal goldens check both complete directions for the verified
+integer source. Missing vendor/session laws remain uncertified.
+
+The separate
+[`TASK-192` semantic cell contract](task-192-semantic-cell-ledger.json)
+and [acceptance audit](task-192-acceptance-audit.md) retain the full
+559-cell obligations and distinguish parser equivalence from physical proof.
+
 
 ## TASK-174 dbt materialization declarations and execution evidence
 
@@ -592,6 +680,31 @@ accepts the same CLI option. Each requirement is retained with its condition ide
 `declared` boolean; declared assumptions are also listed at the root. `exact` means all
 requirements were attested, `conditional` means requirements remain open and no residuals
 exist, and `residual` means at least one predicate still cannot be represented.
+
+An untyped comparison with the text literal `'NaN'` additionally retains a
+`comparison_semantics` residual `where:nan_implicit_cast`: no combination of
+collation, padding, no-NaN or signed-zero assumptions proves the missing
+string-to-number coercion law. With no source type, S040 is therefore Residual,
+not merely Conditional. TASK-179 owns warehouse-specific adjudication.
+
+A cross-column `OR` such as the original S010 `amount > 1 OR id > 0`
+retains a single row-coupled Boolean condition. With authoritative signed
+integer source types for **both** columns of one physical source, the
+`condition_exactness` status can be `exact`: the public Boolean tree and
+TRUE/NOT TRUE source-row witness preserve SQL NULL and cross-column correlation.
+It does **not** derive separate scalar intervals from each disjunct and does
+not constrain the projected `id` domain. Without those source type facts, on
+floating-point sources or across multiple relations, it remains Residual.
+This scoped promotion is source-independent and does not attest native vendor
+execution or downstream producer semantics.
+
+For **untyped string comparisons**, neither the source's binary collation nor
+the absence of fixed-CHAR padding is inferred from a parsed SQL literal.
+Both `binary_collation` and `no_char_padding` must be attested until the
+source datatype is known. With a catalog-backed VARCHAR column only binary
+collation remains necessary for ordinary equality; fixed CHAR retains its
+explicit padding boundary. This prevents S039's `name = 'abc '` from being
+declared exact by attesting collation alone.
 
 A timestamp without time zone compared to an offset-free typed literal is unconditional exact
 when schema evidence explicitly identifies the column as timezone-free. A timezone-aware

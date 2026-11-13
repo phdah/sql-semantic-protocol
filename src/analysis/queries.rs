@@ -360,7 +360,7 @@ pub(super) fn analyze_query(
         &relation_analysis.dependencies,
         &relation_analysis.joins,
         &diagnostics,
-        false,
+        (false, Some(metadata)),
     );
     let predicate_exactness = match row_shaping.as_ref() {
         Some(shaping) => canonicalize_direct_row_selection_exactness(predicate_exactness, shaping),
@@ -374,6 +374,7 @@ pub(super) fn analyze_query(
             &relation_analysis.joins,
             &relation_analysis.sources,
             &predicate_exactness,
+            metadata,
         ))
         .merged_with(&comparison_domain_exactness(&column_domains, metadata))
         .merged_with(&ConditionExactness::from_residuals(

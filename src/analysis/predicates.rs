@@ -181,8 +181,80 @@ pub(super) fn analyze_predicate_with_windows(
                 LiteralValue::Boolean(true),
             )))
         }
+        // (column <op> numeric_literal) IS UNKNOWN is exactly column IS
+        // NULL under SQL three-valued logic. This is a truth-preserving law,
+        // including for the rejected/NOT TRUE rows, not merely an equivalence
+        // of WHERE-selected rows. Do not infer it for computed expressions,
+        // nullable literals, casts or vendor-defined comparison functions.
+        Expr::IsUnknown(inner) if null_propagating_numeric_comparison_column(inner).is_some() => {
+            let column = null_propagating_numeric_comparison_column(inner)
+                .expect("guarded plain column and numeric literal");
+            Predicate::IsNull(IsNullPredicate::new(
+                analyze_predicate_expression(
+                    column,
+                    named_windows,
+                    output_aliases,
+                    scope,
+                    diagnostics,
+                ),
+                false,
+            ))
+        }
+        // IS TRUE is a two-valued test, unlike the underlying nullable
+        // comparison. Keep FALSE (rather than UNKNOWN) on NULL source rows
+        // by adding the same-column NOT NULL guard. As with IS FALSE, avoid
+        // inferring a complement operator that would assume NaN laws.
+        Expr::IsTrue(inner) if null_propagating_numeric_comparison_column(inner).is_some() => {
+            let column = null_propagating_numeric_comparison_column(inner)
+                .expect("guarded numeric comparison column");
+            let positive = analyze_predicate_with_windows(
+                inner,
+                named_windows,
+                output_aliases,
+                scope,
+                diagnostics,
+            );
+            let non_null = Predicate::IsNull(IsNullPredicate::new(
+                analyze_predicate_expression(
+                    column,
+                    named_windows,
+                    output_aliases,
+                    scope,
+                    diagnostics,
+                ),
+                true,
+            ));
+            Predicate::And(LogicalPredicate::pair(positive, non_null))
+        }
         Expr::IsTrue(inner) if !is_plain_boolean_column(inner) => {
             analyze_predicate_with_windows(inner, named_windows, output_aliases, scope, diagnostics)
+        }
+        // For an ordinary nullable numeric comparison, IS FALSE is a
+        // two-valued test. NOT comparison alone is UNKNOWN on NULL, which
+        // changes the rejected/IS FALSE source bag. The explicit NOT NULL
+        // guard turns that UNKNOWN into FALSE without assuming that the
+        // opposite comparison operator covers every non-NULL value (NaN).
+        Expr::IsFalse(inner) if null_propagating_numeric_comparison_column(inner).is_some() => {
+            let column = null_propagating_numeric_comparison_column(inner)
+                .expect("guarded numeric comparison column");
+            let negative = Predicate::Not(NotPredicate::new(analyze_predicate_with_windows(
+                inner,
+                named_windows,
+                output_aliases,
+                scope,
+                diagnostics,
+            )));
+            let non_null = Predicate::IsNull(IsNullPredicate::new(
+                analyze_predicate_expression(
+                    column,
+                    named_windows,
+                    output_aliases,
+                    scope,
+                    diagnostics,
+                ),
+                true,
+            ));
+            Predicate::And(LogicalPredicate::pair(negative, non_null))
         }
         Expr::IsFalse(inner) if !is_plain_boolean_column(inner) => {
             Predicate::Not(NotPredicate::new(analyze_predicate_with_windows(
@@ -385,7 +457,41 @@ pub(super) fn analyze_predicate_with_windows(
 // Only an unescaped alphabetic/digit prefix and one final wildcard is
 // independent of dialect-specific LIKE escape, collation and tokenization rules.
 // Non-ASCII and embedded wildcards remain regular unsupported SQL expressions.
-pub(super) fn is_null_rejecting_literal_comparison(expression: &Expr) -> bool {
+pub(super) fn null_propagating_numeric_comparison_column(expression: &Expr) -> Option<&Expr> {
+    let expression = match expression {
+        Expr::Nested(inner) => inner.as_ref(),
+        other => other,
+    };
+    let Expr::BinaryOp { left, op, right } = expression else {
+        return None;
+    };
+    if !matches!(
+        op,
+        SqlBinaryOperator::Eq
+            | SqlBinaryOperator::NotEq
+            | SqlBinaryOperator::Lt
+            | SqlBinaryOperator::LtEq
+            | SqlBinaryOperator::Gt
+            | SqlBinaryOperator::GtEq
+    ) {
+        return None;
+    }
+    let plain_column =
+        |value: &Expr| matches!(value, Expr::Identifier(_) | Expr::CompoundIdentifier(_));
+    let numeric_literal = |value: &Expr| {
+        matches!(
+            value,
+            Expr::Value(inner) if matches!(&inner.value, sqlparser::ast::Value::Number(_, _))
+        )
+    };
+    match (left.as_ref(), right.as_ref()) {
+        (column, literal) if plain_column(column) && numeric_literal(literal) => Some(column),
+        (literal, column) if numeric_literal(literal) && plain_column(column) => Some(column),
+        _ => None,
+    }
+}
+
+fn is_null_rejecting_literal_comparison(expression: &Expr) -> bool {
     let expression = match expression {
         Expr::Nested(inner) => inner.as_ref(),
         other => other,

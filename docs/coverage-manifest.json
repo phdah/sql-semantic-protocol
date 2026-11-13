@@ -1,4 +1,220 @@
 {
+  "task_192_predicate_type_acceptance": {
+    "owner": "TASK-192",
+    "parent": "TASK-88",
+    "status": "verified_bounded_559_semantic_cells",
+    "freeze": "docs/task-192-acceptance-freeze.json",
+    "freeze_version": 1,
+    "feature_variants": 43,
+    "dialect_cells": 559,
+    "independent_prior_duckdb_partition_cases": 25,
+    "new_task_owned_duckdb_partition_cases": 4,
+    "additional_task_owned_duckdb_partition_cases": 11,
+    "native_non_predicate_negative_or_conditional_cases": 3,
+    "native_case_count_with_expected_outcome": 43,
+    "unverified_full_native_cases": 0,
+    "native_partition_oracles": "docs/task-192-native-partitions.json",
+    "acceptance_audit": "docs/task-192-acceptance-audit.md",
+    "adapter_parity_tests": "tests/task_192_adapter_parity.rs",
+    "native_physical_tests": "tests/task_192_native_partitions.rs",
+    "typed_domain_policy_cells_frozen": 559,
+    "typed_expected_policy_cases": {
+      "precise_constraint": 10,
+      "unconstrained_nullable_id": 31,
+      "native_evaluation_error": 1,
+      "unsupported_structural_cast": 1
+    },
+    "typed_soundness_test": "tests/task_192_typed_soundness.rs",
+    "consumer_ci_only_pr": "https://github.com/phdah/sql-tdg/pull/49",
+    "expected_exact_domains_frozen_for_all_cases": true,
+    "independent_signoff": true,
+    "release_approved": false,
+    "task_done": true,
+    "semantic_cell_ledger": "docs/task-192-semantic-cell-ledger.json",
+    "expected_public_analyzer_cell_count": 559,
+    "public_semantic_contract_test": "tests/task_192_semantic_contract.rs",
+    "independent_projected_numeric_literal_checks": {
+      "test": "tests/task_192_semantic_contract.rs",
+      "original_numeric_cases": 10,
+      "parser_cells": 130,
+      "expected_values_and_bounds": "docs/task-177-predicate-oracles.json",
+      "complete_independent_canonical_documents": true
+    },
+    "untyped_string_padding_assumption_test": "tests/task_192_string_witness.rs",
+    "unattested_nan_text_coercion_negative_test": "tests/task_192_nan_text_cast.rs",
+    "native_projected_id_counterexamples": "tests/task_192_projection_counterexamples.rs",
+    "native_alternate_source_cases": 3,
+    "dbt_original_compiled_sql_analyzer_parity": "tests/task_192_adapter_parity.rs",
+    "null_truth_exact_normalization": "src/analysis/predicates.rs",
+    "global_independent_review": "approved_TASK_192_bounded_only",
+    "nullable_numeric_semantic_evidence": {
+      "case_ids": [
+        "88-C177-S012",
+        "88-C177-S016",
+        "88-C177-S017"
+      ],
+      "expected_semantic_cells": 39,
+      "source_and_terminal_oracles": "docs/task-177-predicate-oracles.json",
+      "public_3vl_tests": "tests/task_192_nullable_truth.rs",
+      "normalization": "src/analysis/predicates.rs",
+      "exactness": "src/analysis/exactness.rs",
+      "full_external_vendor_certification": false,
+      "unattested_floating_negative_test": "tests/task_192_nullable_truth.rs",
+      "full_boolean_witness_adapter_parity_test": "tests/task_192_adapter_parity.rs"
+    },
+    "independent_review_handoff": "docs/task-192-independent-review-handoff.md",
+    "independent_review_assignment_queue": "docs/task-192-review-queue.json",
+    "independent_review_queue_completeness_test": "tests/task_192_review_queue.rs",
+    "proposed_complete_canonical_documents": "docs/task-192-proposed-full-documents.json",
+    "proposed_full_document_559_cell_test": "tests/task_192_full_document_goldens.rs",
+    "proposed_complete_document_count": 43,
+    "proposed_complete_document_independently_authored": false,
+    "typed_source_row_evidence": {
+      "original_cross_column_and_negation_case_ids": [
+        "88-C177-S010",
+        "88-C177-S011"
+      ],
+      "original_source_and_terminal_oracles": "docs/task-177-predicate-oracles.json",
+      "three_valued_logic_and_typed_witness_test": "tests/task_192_nullable_truth.rs",
+      "adapter_source_parity_test": "tests/task_192_adapter_parity.rs",
+      "status": "s010_and_s011_catalog_typed_proofs_reviewed_untyped_residual_retained",
+      "public_physical_row_plan": "physical_source_plan",
+      "public_physical_positive_negative_test": "tests/task_192_nullable_truth.rs",
+      "physical_scope": "constructible_individual_row_TRUE_NOT_TRUE_not_universal_scalar_projection"
+    },
+    "bounded_semantic_closures": {
+      "disposition": "docs/task-192-bounded-semantic-closures.json",
+      "case_ids": [
+        "88-C177-S013",
+        "88-C177-S027",
+        "88-C177-S032"
+      ],
+      "finite_signed_arithmetic_public_api": "physical_finite_signed_computed_bag_plan",
+      "finite_signed_arithmetic_test": "tests/task_192_signed_computed_bags.rs",
+      "finite_exists_public_api": "physical_finite_exists_bag_plan",
+      "finite_exists_negative_test": "tests/task_192_correlated_exists.rs",
+      "physical_true_not_true_unknown_oracle": "docs/task-177-predicate-oracles.json",
+      "unbounded_source_or_vendor_overflow_semantics": "unapproved_residual",
+      "independent_reviewer": "GPT-6 (ChatGPT independent semantic review; user-authorized)",
+      "release_approved": false
+    },
+    "computed_source_witness_evidence": {
+      "original_case_ids": [
+        "88-C177-S027",
+        "88-C177-S028",
+        "88-C177-S029",
+        "88-C177-S030",
+        "88-C177-S031",
+        "88-C177-S032"
+      ],
+      "oracle_and_witness_test": "tests/task_192_computed_witness.rs",
+      "bounded_typed_exact_case_ids": [
+        "88-C177-S028",
+        "88-C177-S029",
+        "88-C177-S030",
+        "88-C177-S031"
+      ],
+      "overflow_unproved_case_ids": [
+        "88-C177-S027",
+        "88-C177-S032"
+      ],
+      "status": "verified_native_bags_and_scoped_typed_witnesses_universal_proofs_not_claimed",
+      "overflow_extremes_with_null": [
+        "9223372036854775807",
+        "-9223372036854775808",
+        "NULL"
+      ],
+      "extremal_signed_native_arithmetic_oracle": "tests/task_192_computed_witness.rs",
+      "original_s027_duckdb_widens_bigint_addition": true,
+      "original_s032_duckdb_signed_abs_extreme": "error_on_bigint_min_confirmed_native",
+      "portable_vendor_widening_certified": false,
+      "extremal_native_oracle_protocol_run": "https://github.com/phdah/sql-semantic-protocol/actions/runs/43109586448"
+    },
+    "string_session_witness_evidence": {
+      "original_portable_prefix_case_ids": [
+        "88-C177-S020",
+        "88-C177-S022",
+        "88-C177-S025"
+      ],
+      "original_trailing_space_case_id": "88-C177-S039",
+      "native_oracles": "docs/task-177-predicate-oracles.json",
+      "public_typed_and_unattested_law_test": "tests/task_192_string_witness.rs",
+      "attestation_requirements": [
+        "binary_collation",
+        "no_char_padding"
+      ],
+      "external_vendor_execution": "unattested",
+      "status": "conditional_source_local_witness_only"
+    },
+    "production_consumer_migration_pr": "https://github.com/phdah/sql-tdg/pull/50",
+    "correlated_exists_finite_evidence": {
+      "original_case_id": "88-C177-S013",
+      "original_sql": "docs/task-192-acceptance-freeze.json",
+      "source_complete_signed_key_oracles": "tests/task_192_correlated_exists.rs",
+      "realization": "src/physical_realization/exists_bags.rs",
+      "physical_occurrence_identity": "schema_backed_unique_text___physical_row_id",
+      "source_identity_rule": "distinct_from_original_numeric_nullable_or_duplicate_sql_id",
+      "parser_cells": 13,
+      "exactness_scope": "closed_world_fully_supplied_original_semijoin_only",
+      "universal_whole_query_status": "residual_unapproved_independent_scalar_domain",
+      "independent_review": true,
+      "adapter_parity_test": "tests/task_192_adapter_parity.rs",
+      "adapter_contracts": [
+        "direct_sql",
+        "dbt_compiled",
+        "odcs"
+      ],
+      "expected_adapter_parser_pairs_with_odcs": 39,
+      "expected_adapter_parser_pairs_without_odcs": 26,
+      "external_vendor_execution": "unattested"
+    },
+    "independent_original_query_shapes": {
+      "case_count": 43,
+      "parser_cells": 559,
+      "expectations": "docs/task-192-original-query-shapes.json",
+      "public_test": "tests/task_192_independent_query_shapes.rs",
+      "scope": "outer_relation_output_alias_and_normalized_predicate_shape",
+      "full_document_candidates_reviewed_against_manual_sql_oracles": true,
+      "independent_review": true
+    },
+    "original_s011_typed_signed_not": {
+      "case_id": "88-C177-S011",
+      "original_sql": "docs/task-192-acceptance-freeze.json",
+      "comparison": "NOT (amount > 1)",
+      "precondition": "explicit_authoritative_signed_integer_source_datatype",
+      "source_domain": "amount_lte_1_inclusive_with_sql_null_excluded",
+      "projected_id_domain": "unbounded",
+      "public_untyped_baseline": "residual_logical_not",
+      "scoped_typed_condition": "exact",
+      "positive_and_rejected_source_evidence": "tests/task_192_not_equality.rs",
+      "existing_original_case_physical_truth": "tests/task_192_nullable_truth.rs",
+      "canonical_owner": "src/analysis/exactness.rs::typed_signed_ordered_not",
+      "scalar_derivation": "src/analysis/domains.rs",
+      "no_type_or_floating": "residual",
+      "external_vendor_execution": "unattested",
+      "independently_reviewed": true
+    },
+    "portable_not_integer_equality": {
+      "source": "src/domain.rs",
+      "exact_laws": [
+        "NOT (column = integer) -> column <> integer",
+        "NOT (column <> integer) -> column = integer"
+      ],
+      "null_truth": "UNKNOWN_remains_UNKNOWN",
+      "excluded_nonportable": [
+        "ordered_without_explicit_signed_type",
+        "nested_not",
+        "null_in_list",
+        "computed_arithmetic"
+      ],
+      "public_test": "tests/task_192_not_equality.rs",
+      "independently_reviewed": true
+    },
+    "task_192_independent_review_evidence": "docs/task-192-independent-semantic-review.json",
+    "task_192_reviewed_implementation_commit": "eca90dbbd6038eaab8c96d80ffab64133e9d9def",
+    "verified_protocol_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/43399257712",
+    "verified_consumer_ci": ["https://github.com/phdah/sql-tdg/actions/runs/43399286395", "https://github.com/phdah/sql-tdg/actions/runs/43399289335"]
+  },
   "task_177_dialect_parser_acceptance": {
     "owner": "TASK-177",
     "parent": "TASK-88",

@@ -1,0 +1,57 @@
+{
+  "schema_version": 1,
+  "owner": "TASK-192",
+  "scope": "Original S013, S027, S032 for all 13 SQL parser dialects; bounded physical-source evidence, not non-DuckDB vendor execution or independent signoff.",
+  "status": "reviewed_bounded_physical_semantics",
+  "case_count": 3,
+  "cases": [
+    {
+      "case_id": "88-C177-S013",
+      "original_sql": "SELECT o.id FROM orders o WHERE EXISTS (SELECT 1 FROM customers c WHERE c.id = o.id)",
+      "portable_semantics": "EXISTS is TRUE iff at least one inner row has a TRUE non-NULL equality with the current outer row. It is FALSE otherwise; never UNKNOWN. Inner duplicates do not duplicate outer rows.",
+      "untyped_open_world_classification": "residual",
+      "bounded_exactness": "exact with complete authoritative two-source populations, unique physical occurrence identities distinct from SQL values, exact signed integer key types and directly normalized equality; selected and NOT TRUE bags plus NULL/duplicate partition are complete",
+      "public_proof": "physical_finite_exists_bag_plan",
+      "positive_test": "tests/task_192_correlated_exists.rs::original_s013_has_closed_world_constructive_exists_proofs_on_all_13_dialects",
+      "negative_test": "tests/task_192_correlated_exists.rs::s013_requires_the_full_inner_bag_and_handles_proven_empty_inner_relation",
+      "oracle": "tests/task_192_correlated_exists.rs::original_correlated_exists_has_complete_duplicate_preserving_true_false_bags",
+      "open_world_disposition": "residual is necessary without a complete inner relation; an attested empty inner relation is Exact with zero selected rows. Never infer absence from a partial inner sample.",
+      "vendor_runtime": "unattested",
+      "implementation_scope_closed": true,
+      "independent_semantic_review": "approved_scoped_positive_negative_and_overflow_bounds"
+    },
+    {
+      "case_id": "88-C177-S027",
+      "original_sql": "SELECT id FROM orders WHERE amount + 2 > 10",
+      "portable_semantics": "Signed integer addition followed by ordered comparison; input SQL NULL yields UNKNOWN, and positive/negative row multiplicities are preserved.",
+      "untyped_open_world_classification": "residual",
+      "bounded_exactness": "exact for one complete schema-validated physical source with a declared signed 16/32/64-bit amount and every evaluated amount+2 representable within that declared width; no wider vendor result assumed",
+      "public_proof": "physical_finite_signed_computed_bag_plan",
+      "positive_test": "tests/task_192_signed_computed_bags.rs::original_s027_s032_13_dialects_have_exact_full_physical_partition_and_terminal",
+      "negative_test": "tests/task_192_signed_computed_bags.rs::signed_arithmetic_overflow_is_a_named_residual_not_an_invented_vendor_law",
+      "oracle": "tests/task_192_computed_witness.rs::original_computed_predicates_have_complete_native_three_valued_partitions",
+      "open_world_disposition": "unbounded signed source can overflow its own width; DuckDB BIGINT widening does not certify other vendor result-width rules. If any source value can overflow, retain named residual and route portable vendor laws to TASK-179.",
+      "vendor_runtime": "unattested",
+      "implementation_scope_closed": true,
+      "independent_semantic_review": "approved_scoped_positive_negative_and_overflow_bounds"
+    },
+    {
+      "case_id": "88-C177-S032",
+      "original_sql": "SELECT id FROM orders WHERE ABS(amount) > 2",
+      "portable_semantics": "Signed integer ABS followed by ordered comparison; input SQL NULL yields UNKNOWN, and negative values test magnitude without changing source row identity.",
+      "untyped_open_world_classification": "residual",
+      "bounded_exactness": "exact for one complete schema-validated physical source with signed 16/32/64-bit amount and no row whose magnitude is outside the signed source width (in particular, no signed minimum). Full TRUE/NOT TRUE/UNKNOWN and terminal bags are returned.",
+      "public_proof": "physical_finite_signed_computed_bag_plan",
+      "positive_test": "tests/task_192_signed_computed_bags.rs::original_s027_s032_13_dialects_have_exact_full_physical_partition_and_terminal",
+      "negative_test": "tests/task_192_signed_computed_bags.rs::signed_arithmetic_overflow_is_a_named_residual_not_an_invented_vendor_law",
+      "oracle": "tests/task_192_computed_witness.rs::original_s027_and_s032_have_separate_extremal_native_numeric_laws",
+      "open_world_disposition": "ABS(min_signed_value) may overflow or error. Even an exact finite safe bag cannot establish a portable native engine law for arbitrary new source rows. Preserve named residual unless source safety and result width are proved; TASK-179 owns native vendor law.",
+      "vendor_runtime": "unattested",
+      "implementation_scope_closed": true,
+      "independent_semantic_review": "approved_scoped_positive_negative_and_overflow_bounds"
+    }
+  ],
+  "full_acceptance_review": "approved_TASK_192_559_parser_cells",
+  "task_status": "Done",
+  "parent_and_release_approved": false
+}

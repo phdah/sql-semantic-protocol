@@ -55,7 +55,11 @@ pub(super) fn comparison_domain_exactness(
                 }
             }
             None if literal.literal_type() == LiteralType::String => {
+                // Without catalog evidence, the source may be CHAR with
+                // space-padding equality. Binary collation alone cannot
+                // certify the original S039 trailing-space distinction.
                 assumptions.insert(ComparisonAssumption::BinaryCollation);
+                assumptions.insert(ComparisonAssumption::NoCharPadding);
             }
             None if literal.literal_type() == LiteralType::Timestamp => {
                 assumptions.insert(ComparisonAssumption::SessionTimeZone);
@@ -86,6 +90,7 @@ pub(super) fn unknown_column_domain_exactness(
     joins: &[ProtocolJoin],
     sources: &[SourceRelation],
     predicate_exactness: &ConditionExactness,
+    metadata: &AnalysisMetadata<'_>,
 ) -> ConditionExactness {
     let mut residuals = Vec::new();
     for column_domain in column_domains {
@@ -132,6 +137,26 @@ pub(super) fn unknown_column_domain_exactness(
             }
         }
         for (clause, identity) in locations {
+            // A scalar ValueDomain cannot encode (numeric range OR SQL NULL),
+            // nor a guarded NOT/comparison without losing three-valued truth.
+            // In this narrow matching-column case the Boolean predicate tree
+            // independently retains both branches and their full three-valued
+            // source membership. Only suppress the *scalar encoding* residual,
+            // never an actual typing failure or another unsupported predicate.
+            if typed_failure.is_none()
+                && clause == ConditionClause::Where
+                && predicate_exactness.residual_conditions().is_empty()
+                && source_has_portable_signed_integer_law(metadata, column_domain.column())
+                && predicates.where_predicate().is_some_and(|predicate| {
+                    has_exact_nullable_numeric_disjunction_for_column(
+                        predicate,
+                        column_domain.column(),
+                        sources,
+                    )
+                })
+            {
+                continue;
+            }
             // A structural unknown explained by the predicate classifier is already
             // represented with the predicate's own identity. Do not report it again.
             if typed_failure.is_none()
@@ -158,6 +183,138 @@ pub(super) fn unknown_column_domain_exactness(
     ConditionExactness::from_residuals(residuals)
 }
 
+/// An ordinary signed comparison has the same SQL UNKNOWN outcome on NULL
+/// after NOT. Its ordering complement is therefore representable as a precise
+/// scalar interval only when the source's signed-integer law is explicit.
+/// This cannot be applied to floating NaN, implicit coercions, collation,
+/// computed expressions, untyped SQL, or arbitrary Boolean negation.
+pub(super) fn typed_signed_ordered_not(
+    predicate: &Predicate,
+    sources: &[SourceRelation],
+    metadata: &AnalysisMetadata<'_>,
+) -> Option<(ColumnRef, ComparisonOperator, LiteralExpression)> {
+    let Predicate::Not(negation) = predicate else {
+        return None;
+    };
+    let Predicate::Comparison(comparison) = negation.operand() else {
+        return None;
+    };
+    let (column, operator, literal) = match (comparison.left(), comparison.right()) {
+        (Expression::Column(column), Expression::Literal(literal)) => {
+            (column, comparison.operator(), literal)
+        }
+        (Expression::Literal(literal), Expression::Column(column)) => {
+            (column, comparison.operator().reversed(), literal)
+        }
+        _ => return None,
+    };
+    if literal.literal_type() != LiteralType::Integer
+        || !matches!(literal.value(), LiteralValue::Number(raw) if raw.parse::<i64>().is_ok())
+    {
+        return None;
+    }
+    let inverse = match operator {
+        ComparisonOperator::Gt => ComparisonOperator::Lte,
+        ComparisonOperator::Gte => ComparisonOperator::Lt,
+        ComparisonOperator::Lt => ComparisonOperator::Gte,
+        ComparisonOperator::Lte => ComparisonOperator::Gt,
+        _ => return None,
+    };
+    let resolved = resolve_column(column, sources);
+    let signed = match metadata.column_data_type(&resolved) {
+        Some(DataType::SignedInteger { .. }) => true,
+        Some(DataType::Nullable(inner)) => {
+            matches!(inner.as_ref(), DataType::SignedInteger { .. })
+        }
+        _ => false,
+    };
+    signed.then_some((resolved, inverse, literal.clone()))
+}
+
+/// A row-coupled OR need not be approximated as two independent scalar
+/// domains. When both arms compare signed integer columns of one physical
+/// source against signed integer literals, the canonical Boolean tree and its
+/// TRUE/NOT TRUE source-row witness preserve SQL NULL and row correlation.
+/// No per-column union domain is inferred from the OR.
+fn typed_signed_same_source_disjunction(
+    predicate: &Predicate,
+    sources: &[SourceRelation],
+    metadata: &AnalysisMetadata<'_>,
+) -> bool {
+    let Predicate::Or(logical) = predicate else {
+        return false;
+    };
+    let [left, right] = logical.operands() else {
+        return false;
+    };
+    if sources.len() != 1 {
+        return false;
+    }
+
+    let column = |operand: &Predicate| -> Option<ColumnRef> {
+        let Predicate::Comparison(comparison) = operand else {
+            return None;
+        };
+        let (column, literal) = match (comparison.left(), comparison.right()) {
+            (Expression::Column(column), Expression::Literal(literal))
+            | (Expression::Literal(literal), Expression::Column(column)) => (column, literal),
+            _ => return None,
+        };
+        if literal.literal_type() != LiteralType::Integer
+            || !matches!(literal.value(), LiteralValue::Number(raw) if raw.parse::<i64>().is_ok())
+        {
+            return None;
+        }
+        let resolved = resolve_column(column, sources);
+        let signed = match metadata.column_data_type(&resolved) {
+            Some(DataType::SignedInteger { .. }) => true,
+            Some(DataType::Nullable(inner)) => {
+                matches!(inner.as_ref(), DataType::SignedInteger { .. })
+            }
+            _ => false,
+        };
+        signed.then_some(resolved)
+    };
+
+    let (Some(first), Some(second)) = (column(left), column(right)) else {
+        return false;
+    };
+    // The relationship is evaluated on one source-row occurrence, never as
+    // an independent Cartesian product of values from different relations.
+    first != second && first.relation().is_some() && first.relation() == second.relation()
+}
+
+/// A parser-only comparison against the text spelling 'NaN' cannot
+/// establish whether a warehouse will compare strings or coerce to a
+/// floating NaN. The declared collation/padding/float laws do not certify
+/// the missing implicit-cast rule. A typed string source has no such cast.
+fn requires_unproved_nan_text_coercion(
+    predicate: &Predicate,
+    sources: &[SourceRelation],
+    metadata: Option<&AnalysisMetadata<'_>>,
+) -> bool {
+    let Predicate::Comparison(comparison) = predicate else {
+        return false;
+    };
+    let (column, literal) = match (comparison.left(), comparison.right()) {
+        (Expression::Column(column), Expression::Literal(literal))
+        | (Expression::Literal(literal), Expression::Column(column)) => (column, literal),
+        _ => return false,
+    };
+    let LiteralValue::Text(raw) = literal.value() else {
+        return false;
+    };
+    if !raw.eq_ignore_ascii_case("nan") {
+        return false;
+    }
+    let resolved = resolve_column(column, sources);
+    match metadata.and_then(|facts| facts.column_data_type(&resolved)) {
+        Some(DataType::String { .. }) => false,
+        Some(DataType::Nullable(inner)) => !matches!(inner.as_ref(), DataType::String { .. }),
+        _ => true,
+    }
+}
+
 pub(super) fn analyze_query_condition_exactness(
     query: &SqlQuery,
     predicates: &Predicates,
@@ -165,8 +322,12 @@ pub(super) fn analyze_query_condition_exactness(
     dependencies: &BTreeSet<String>,
     joins: &[ProtocolJoin],
     diagnostics: &[Diagnostic],
-    correlated: bool,
+    correlation_and_typing: (bool, Option<&AnalysisMetadata<'_>>),
 ) -> ConditionExactness {
+    // Nested subqueries can have correlation without a source catalog.
+    // Keep these distinct facts together to avoid a misleading extra public
+    // analysis argument and never infer types from the parser alone.
+    let (correlated, metadata) = correlation_and_typing;
     let mut residuals = Vec::new();
 
     // Local relations carry inherited physical joins, but the enclosing scope
@@ -183,14 +344,26 @@ pub(super) fn analyze_query_condition_exactness(
     }
 
     if let Some(predicate) = predicates.where_predicate() {
-        append_predicate_residuals(
-            predicate,
-            ConditionClause::Where,
-            "where",
-            &equality_sources,
-            true,
-            &mut residuals,
-        );
+        if !metadata.is_some_and(|metadata| {
+            typed_signed_ordered_not(predicate, &equality_sources, metadata).is_some()
+                || typed_signed_same_source_disjunction(predicate, &equality_sources, metadata)
+        }) {
+            append_predicate_residuals(
+                predicate,
+                ConditionClause::Where,
+                "where",
+                &equality_sources,
+                true,
+                &mut residuals,
+            );
+        }
+        if requires_unproved_nan_text_coercion(predicate, &equality_sources, metadata) {
+            residuals.push(ResidualCondition::new(
+                ResidualConditionReason::ComparisonSemantics,
+                ConditionClause::Where,
+                "where:nan_implicit_cast",
+            ));
+        }
     }
 
     if predicates.having_predicate().is_some() {
@@ -485,6 +658,12 @@ pub(super) fn append_predicate_residuals(
     // A path through the logical tree identifies a condition, rather than only its
     // reason. Two unsupported siblings must not collapse into one residual.
     match predicate {
+        // The paired NOT/comparison and IS NOT NULL guard is a canonical
+        // two-valued IS FALSE witness. Its conjunctive semantics are exact
+        // even on NULL rows; a standalone NOT remains a residual.
+        Predicate::And(logical)
+            if clause != ConditionClause::JoinOn
+                && is_guarded_nullable_numeric_false(logical, sources) => {}
         Predicate::And(logical) => {
             for (index, operand) in logical.operands().iter().enumerate() {
                 append_predicate_residuals(
@@ -565,7 +744,14 @@ pub(super) fn predicate_residual_reasons(
             collect_predicate_column_refs(predicate, sources, &mut columns);
             if columns.len() > 1 {
                 vec![ResidualConditionReason::CrossColumnDisjunction]
-            } else if predicate_domains_contain_unknown(predicate, sources) {
+            } else if predicate_domains_contain_unknown(predicate, sources)
+                && !is_numeric_comparison_or_null(logical, sources)
+            {
+                // A union of a numeric range with SQL NULL has no precise
+                // scalar ValueDomain representation. Its *Boolean tree* is
+                // nevertheless exact when the matching-column NULL arm
+                // closes its SQL UNKNOWN branch. Do not invent a range+NULL
+                // domain or extend this rule to unrelated OR operands.
                 vec![ResidualConditionReason::UnsupportedPredicate]
             } else {
                 Vec::new()
@@ -574,7 +760,30 @@ pub(super) fn predicate_residual_reasons(
         // Whole-query scalar exactness is independent of an operator-local
         // binary-prefix witness and requires comparison-setting attestations.
         Predicate::LikePrefix(_) => vec![ResidualConditionReason::ComputedExpression],
-        Predicate::Not(_) => vec![ResidualConditionReason::LogicalNot],
+        Predicate::Not(negation) => {
+            // Ordinary integer equality/inequality is two-valued for non-NULL
+            // operands and UNKNOWN for NULL. NOT swaps = and <>, preserving
+            // the NULL rejection in the scalar domain. Other NOT shapes,
+            // including ordered comparisons and IN(NULL), stay residual.
+            let exact = matches!(
+                negation.operand(),
+                Predicate::Comparison(comparison)
+                    if matches!(
+                        comparison.operator(),
+                        ComparisonOperator::Eq | ComparisonOperator::Neq
+                    ) && matches!(
+                        (comparison.left(), comparison.right()),
+                        (Expression::Column(_), Expression::Literal(literal))
+                            | (Expression::Literal(literal), Expression::Column(_))
+                            if literal.literal_type() == LiteralType::Integer
+                    )
+            );
+            if exact {
+                Vec::new()
+            } else {
+                vec![ResidualConditionReason::LogicalNot]
+            }
+        }
         Predicate::IsNull(predicate) => {
             if matches!(predicate.expression(), Expression::Column(_)) {
                 Vec::new()
@@ -621,6 +830,125 @@ pub(super) fn predicate_residual_reasons(
             vec![ResidualConditionReason::UnsupportedPredicate]
         }
     }
+}
+
+// Keep this narrow: only a direct ordinary numeric comparison and one
+// matching plain-column NULL test have a complete portable 3VL law. The
+// original Boolean predicate tree is retained for physical realization.
+fn ordinary_numeric_comparison_column(
+    predicate: &Predicate,
+    sources: &[SourceRelation],
+) -> Option<ColumnRef> {
+    let Predicate::Comparison(comparison) = predicate else {
+        return None;
+    };
+    if !matches!(
+        comparison.operator(),
+        ComparisonOperator::Eq
+            | ComparisonOperator::Neq
+            | ComparisonOperator::Lt
+            | ComparisonOperator::Lte
+            | ComparisonOperator::Gt
+            | ComparisonOperator::Gte
+    ) {
+        return None;
+    }
+    let column = match (comparison.left(), comparison.right()) {
+        (Expression::Column(column), Expression::Literal(literal))
+        | (Expression::Literal(literal), Expression::Column(column))
+            if matches!(literal.value(), LiteralValue::Number(_)) =>
+        {
+            column
+        }
+        _ => return None,
+    };
+    Some(resolve_column(column, sources))
+}
+
+fn matches_column_null_test(
+    test: &Predicate,
+    column: &ColumnRef,
+    negated: bool,
+    sources: &[SourceRelation],
+) -> bool {
+    matches!(test,
+        Predicate::IsNull(is_null)
+            if is_null.negated() == negated
+                && matches!(
+                    is_null.expression(),
+                    Expression::Column(actual)
+                        if resolve_column(actual, sources) == *column
+                )
+    )
+}
+
+fn is_numeric_comparison_or_null(logical: &LogicalPredicate, sources: &[SourceRelation]) -> bool {
+    let [left, right] = logical.operands() else {
+        return false;
+    };
+    for (comparison, test) in [(left, right), (right, left)] {
+        if let Some(column) = ordinary_numeric_comparison_column(comparison, sources) {
+            if matches_column_null_test(test, &column, false, sources) {
+                return true;
+            }
+        }
+    }
+    false
+}
+
+fn source_has_portable_signed_integer_law(
+    metadata: &AnalysisMetadata<'_>,
+    column: &ColumnRef,
+) -> bool {
+    // Untyped SQL preserves the symbolic predicate contract, but a typed
+    // floating source cannot borrow signed integer trichotomy or NULL laws.
+    // In particular, neither NaN comparisons nor text-to-number coercions
+    // may be upgraded to a physical exactness claim by this shortcut.
+    match metadata.column_data_type(column) {
+        None | Some(DataType::SignedInteger { .. }) => true,
+        Some(DataType::Nullable(inner)) => matches!(inner.as_ref(), DataType::SignedInteger { .. }),
+        _ => false,
+    }
+}
+
+fn has_exact_nullable_numeric_disjunction_for_column(
+    predicate: &Predicate,
+    column: &ColumnRef,
+    sources: &[SourceRelation],
+) -> bool {
+    match predicate {
+        Predicate::Or(logical) if is_numeric_comparison_or_null(logical, sources) => {
+            logical.operands().iter().any(|operand| {
+                ordinary_numeric_comparison_column(operand, sources).as_ref() == Some(column)
+            })
+        }
+        Predicate::And(logical) if is_guarded_nullable_numeric_false(logical, sources) => {
+            let [Predicate::Not(negative), _] = logical.operands() else {
+                return false;
+            };
+            ordinary_numeric_comparison_column(negative.operand(), sources).as_ref() == Some(column)
+        }
+        Predicate::And(logical) => logical.operands().iter().any(|operand| {
+            has_exact_nullable_numeric_disjunction_for_column(operand, column, sources)
+        }),
+        _ => false,
+    }
+}
+
+fn is_guarded_nullable_numeric_false(
+    logical: &LogicalPredicate,
+    sources: &[SourceRelation],
+) -> bool {
+    let [negative, non_null] = logical.operands() else {
+        return false;
+    };
+    let Predicate::Not(not) = negative else {
+        return false;
+    };
+    let Some(column) = ordinary_numeric_comparison_column(not.operand(), sources) else {
+        return false;
+    };
+    matches_column_null_test(non_null, &column, true, sources)
 }
 
 pub(super) fn columns_reference_distinct_sources(

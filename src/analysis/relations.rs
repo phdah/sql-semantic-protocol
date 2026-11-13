@@ -357,7 +357,7 @@ pub(super) fn analyze_local_query_condition_exactness(
         &relation_analysis.dependencies,
         &relation_analysis.joins,
         &diagnostics,
-        false,
+        (false, metadata),
     )
     .merged_with(&ConditionExactness::from_residuals(missing_columns))
 }

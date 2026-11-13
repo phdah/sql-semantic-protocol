@@ -47,3 +47,14 @@ After this child, including completed/merged TASK-191 boundary dispositions, aud
 ## TASK-178 original AC handoff (2026-11-10)
 
 Before signing off TASK-180, independently validate the complete 163 x 13 mandatory TASK-178 matrix against TASK-192 predicates/types, TASK-193 joins/scopes, TASK-194 sets, TASK-195 windows/grouping/ordering, TASK-196 schema/DML/DDL, TASK-197 cross-adapter parity, TASK-179 session/vendor evidence, and TASK-191 parser/native exceptions. The baseline TASK-178 Done status only certifies portable tests and explicit observations; it does not satisfy final output-domain/physical-bag certification, original parent #1..#8, or protocol 3.0.0 release readiness. All original TASK-180 AC remain unchanged. [Ownership registry](../../docs/task-178-scope-split.json).
+
+## TASK-192 provisional evidence handoff (pending PR #198)
+
+For original TASK-178 predicates/types, consult [TASK-192's 43-case/559-cell expected outcome freeze](../../docs/task-192-acceptance-freeze.json), [40 full DuckDB predicate truth partitions and three non-predicate evidence cases](../../docs/task-192-native-partitions.json), [adapter parity](../../tests/task_192_adapter_parity.rs), [typed domain soundness](../../tests/task_192_typed_soundness.rs), and the [explicit incomplete acceptance audit](../../docs/task-192-acceptance-audit.md). These are upstream reviewer inputs, not an independent final audit. TASK-180 must independently reconcile every mandatory domain/physical/adaptive law after upstream children Done **and merged**, and retain all vendor/TASK-191 conditional boundaries. Keep TASK-180 To Do and TASK-88/TASK-91 blocked.
+
+
+## TASK-192 later implementation input (PR #198, still unreviewed)
+
+- Review `docs/task-192-original-query-shapes.json` for 43 independent expected outer source, output and WHERE shapes, and `tests/task_192_correlated_exists.rs` for complete original S013 correlated semijoin source occurrences, including physical ID separate from SQL numeric key, NULL and duplicated matches.
+- `tests/task_192_adapter_parity.rs` compares the original S013 exact finite source bag across direct/dbt/ODCS. `tests/task_192_nullable_truth.rs` now also verifies public physical TRUE/NOT TRUE witnesses for S010/S011. `tests/task_192_computed_witness.rs` verifies native DuckDB S027 widening at signed BIGINT maximum and native S032 ABS failure at signed minimum. These native results are **not** portable vendor-law attestations.
+- The 559 original cell flags are not independently reviewed; TASK-180's **later** complete-matrix signoff remains entirely open.

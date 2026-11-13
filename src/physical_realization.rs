@@ -505,6 +505,7 @@ mod sequential_graph;
 mod set_bags;
 mod set_trees;
 mod sets;
+mod signed_computed_bags;
 mod transactions;
 mod view_bags;
 mod window_bags;
@@ -608,6 +609,10 @@ pub use set_trees::{
     physical_finite_set_tree_membership_plan, physical_finite_set_tree_plan,
     PhysicalFiniteSetTreeExact, PhysicalFiniteSetTreeProof, PhysicalSetTreeBranch,
     PhysicalSetTreeTuple,
+};
+pub use signed_computed_bags::{
+    physical_finite_signed_computed_bag_plan, PhysicalSignedComputedExact,
+    PhysicalSignedComputedProof,
 };
 pub(crate) use transactions::certify_duckdb_session_laws;
 pub use transactions::{

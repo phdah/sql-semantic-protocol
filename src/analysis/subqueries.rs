@@ -41,7 +41,7 @@ pub(super) fn analyze_subquery_semantics(
         &relations.dependencies,
         &relations.joins,
         &diagnostics,
-        !correlations.is_empty(),
+        (!correlations.is_empty(), None),
     );
     sort_diagnostics(&mut diagnostics);
 
