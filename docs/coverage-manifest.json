@@ -1,4 +1,25 @@
 {
+  "task_193_join_and_source_instance_acceptance": {
+    "owner": "TASK-193",
+    "parent": "TASK-88",
+    "status": "in_progress_frozen_not_semantically_signed_off",
+    "freeze": "docs/task-193-acceptance-freeze.json",
+    "freeze_version": 1,
+    "original_cases": 24,
+    "dialect_cells": 312,
+    "source_oracles": "docs/task-177-relational-bag-oracles.json",
+    "original_positive_fixture": "88-C193-P",
+    "original_negative_fixture": "88-C193-N",
+    "source_instance_oracles": "docs/task-193-source-instance-oracles.json",
+    "original_sql_test": "tests/task_193_native_join_bags.rs",
+    "canonical_public_test": "tests/task_193_dialect_semantics.rs",
+    "mssql_lateral_exception_owner": "TASK-179/TASK-191",
+    "adapter_equivalence_owner": "TASK-197",
+    "task_done": false,
+    "independent_review_verified": false,
+    "task88_parent_approved": false,
+    "release_approved": false
+  },
   "task_192_predicate_type_acceptance": {
     "owner": "TASK-192",
     "parent": "TASK-88",
