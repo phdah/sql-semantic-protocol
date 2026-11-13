@@ -13,6 +13,7 @@ const ORIGINAL: &str = include_str!("../docs/task-192-acceptance-freeze.json");
 // No generated document should be considered independently authored by this
 // test or by the companion (ignored) fixture generation helper.
 const CANDIDATES: &str = include_str!("../docs/task-192-proposed-full-documents.json");
+const REVIEW: &str = include_str!("../docs/task-192-review-queue.json");
 
 fn document(sql: &str, dialect: &str) -> Result<Value, sql_semantic_protocol::Error> {
     let parser = dialect_from_name(dialect).expect("public parser dialect");
@@ -33,7 +34,11 @@ fn all_43_full_documents_match_explicit_proposed_goldens_over_559_parser_cells()
     assert_eq!(expected["schema_version"], 1);
     assert_eq!(expected["owner"], "TASK-192");
     assert_eq!(expected["case_count"], 43);
-    assert_eq!(expected["independently_reviewed"], false);
+    let review: Value = serde_json::from_str(REVIEW).expect("independent review decisions");
+    assert_eq!(
+        expected["independently_reviewed"], review["independent_signoff"],
+        "full-document goldens must not claim review before all 559 cells are signed off"
+    );
     let goldens = expected["cases"]
         .as_array()
         .expect("43 pinned full documents");
