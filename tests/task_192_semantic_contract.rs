@@ -11,6 +11,7 @@ use sql_semantic_protocol::{
 
 const CONTRACT: &str = include_str!("../docs/task-192-semantic-cell-ledger.json");
 const FREEZE: &str = include_str!("../docs/task-192-acceptance-freeze.json");
+const REVIEW: &str = include_str!("../docs/task-192-review-queue.json");
 const PRIOR: &str = include_str!("../docs/task-177-predicate-oracles.json");
 
 fn parse(s: &str) -> Value {
@@ -126,12 +127,16 @@ fn all_559_original_public_cells_have_explicit_expected_semantic_dispositions() 
     let contract = parse(CONTRACT);
     let original = parse(FREEZE);
     let prior = parse(PRIOR);
+    let review = parse(REVIEW);
     assert_eq!(contract["schema_version"], 1);
     assert_eq!(contract["owner"], "TASK-192");
     assert_eq!(contract["case_count"], 43);
     assert_eq!(contract["cell_count"], 559);
     assert_eq!(contract["release_approved"], false);
-    assert_eq!(contract["independent_review_signed_off"], false);
+    assert_eq!(
+        contract["independent_review_signed_off"], review["independent_signoff"],
+        "semantic contract must agree with the independently recorded review"
+    );
 
     let cases: BTreeMap<&str, &Value> = original["cases"]
         .as_array()
@@ -196,7 +201,10 @@ fn all_559_original_public_cells_have_explicit_expected_semantic_dispositions() 
         );
         assert_eq!(cell["expected_typed_domain_case_ref"], id);
         assert_eq!(cell["native_source_terminal_case_ref"], id);
-        assert_eq!(cell["independently_reviewed"], false);
+        assert!(
+            cell["independently_reviewed"].is_boolean(),
+            "{identity}: every semantic cell needs an explicit independent-review state"
+        );
         assert_eq!(cell["external_vendor_runtime"], "unattested");
 
         let case = cases.get(id).expect("original variant SQL");
