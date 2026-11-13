@@ -121,16 +121,25 @@ fn verify_group(group: &str) {
             panic!("{id}: query must have explicit canonical query semantics");
         };
         if case["canonical_output_boundary"] == "name_alignment_output_unsupported" {
+            // TASK-177 records the historical unsupported boundary; TASK-194
+            // adds sound output typing for the original bijective name mapping
+            // without retroactively changing the earlier evidence ledger.
             assert_eq!(id, "88-C177-S083");
-            assert_eq!(query.output().columns().len(), 0);
-            let wire: Value = serde_json::from_str(&sql_semantic_protocol::to_json(&protocol))
-                .expect("public protocol");
-            let diagnostics = wire["inputs"][0]["statements"][0]["diagnostics"]
-                .as_array()
-                .expect("explicit unsupported BY NAME diagnostic");
+            assert_eq!(
+                query
+                    .output()
+                    .columns()
+                    .iter()
+                    .map(|column| column.name())
+                    .collect::<Vec<_>>(),
+                vec!["id", "amount"]
+            );
             assert!(
-                !diagnostics.is_empty(),
-                "{id}: unsupported name alignment must be explained"
+                query
+                    .diagnostics()
+                    .iter()
+                    .all(|diagnostic| diagnostic.code() != "unsupported_set_operation_alignment"),
+                "{id}: exactly matching names have resolved typed alignment"
             );
         } else {
             assert_eq!(
