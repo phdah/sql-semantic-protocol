@@ -1,10 +1,10 @@
 ---
 id: TASK-194
 title: Certify set-operator bags, NULL equality, and column alignment
-status: To Do
+status: In Progress
 assignee: []
 created_date: '2026-11-10'
-updated_date: '2026-11-10'
+updated_date: '2026-11-13'
 labels: []
 milestone: m-3
 dependencies:
@@ -47,3 +47,11 @@ After this task is independently verified, marked Done and merged, proceed to TA
 ## Initial state
 
 Extracted on 2026-11-10 from the previously overbroad TASK-178. There is **no implementation or semantic sign-off** for this ticket yet. Existing PR #197 supplies provisional structural observations and selected native oracles only; use those as regression inputs, not as proof of this ticket's acceptance.
+
+## Implementation evidence (PR #200)
+
+- Task-owned v1 matrix: `docs/task-194-acceptance-freeze.json` (22 original SQL cases × 13 parser dialects).
+- Native closed-source and terminal multiset regression: `tests/task_194_native_set_bags.rs` (20 native cases); `CORRESPONDING` parser rejection and incompatible arity remain explicit negative cases.
+- Public full-document and source-identity checks: `tests/task_194_dialect_semantics.rs`.
+- SQL/dbt/ODCS source-type parity and sound projected domain checks: `tests/task_194_adapter_parity.rs`.
+- Final-head CI, independent semantic cell review, and pinned consumer compatibility are **not yet signed off**. Do not mark Done on the presence of tests alone.
