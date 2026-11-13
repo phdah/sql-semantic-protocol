@@ -1,0 +1,3292 @@
+{
+  "schema_version": 1,
+  "task_id": "TASK-193",
+  "review_kind": "independent_original_SQL_and_closed_physical_source_semantic_review_user_authorized",
+  "reviewer": "GPT-6 (ChatGPT; independently cross-checked literal SQL and native fixture expectations against analyzer-contract assertions)",
+  "review_date": "2026-11-13",
+  "reviewed_code_commit": "e5300804afe64a0e881bb63a3cc2b7f5d7e588c0",
+  "scope": "24 original join/scopes variants and 312 parser cells; no non-DuckDB vendor execution",
+  "independent_review_basis": "Manually reconstructed join kinds, physical dependency sets, merged and qualified physical projection lineage, and complete source-instance/terminal occurrence counts for each original SQL. Compared independently against frozen original SQL, v2 manual DuckDB source/terminal goldens and public analyzer assertions. Native original SEMI/ANTI syntax rejections are kept, and MSSQL LATERAL AST drift is explicitly unapproved.",
+  "original_cases_reviewed": 24,
+  "parser_cells_reviewed": 312,
+  "bounded_canonical_cells_approved": 311,
+  "named_unapproved_parser_ast_boundaries": [
+    "88-C177-S152/mssql"
+  ],
+  "discrepancies": [],
+  "source_protocol_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/43465852654",
+  "source_protocol_ci_result": "9/9 passed",
+  "consumer_ci": "https://github.com/phdah/sql-tdg/actions/runs/43466013991",
+  "consumer_ci_result": "5/5 passed on migrated CI-only harness; original published dependency unchanged",
+  "review_result": "approved_for_TASK_193_bounded_scope_only",
+  "parent_task_88_approved": false,
+  "release_task_91_approved": false,
+  "cases": [
+    {
+      "case_id": "88-C177-S043",
+      "independent_expected_join_kinds": [
+        "inner"
+      ],
+      "independent_expected_physical_dependencies": [
+        "customers",
+        "orders"
+      ],
+      "independent_expected_projection_lineage": [
+        [
+          "orders.id"
+        ]
+      ],
+      "independent_expected_terminal_occurrences": 5,
+      "independent_expected_source_instance_occurrences": 5,
+      "native_original_syntax_boundary": null,
+      "evidence": "docs/task-193-source-instance-matrix-v2.json#rows; tests/task_193_source_instance_matrix.rs; tests/task_193_native_join_bags.rs"
+    },
+    {
+      "case_id": "88-C177-S044",
+      "independent_expected_join_kinds": [
+        "inner"
+      ],
+      "independent_expected_physical_dependencies": [
+        "customers",
+        "orders"
+      ],
+      "independent_expected_projection_lineage": [
+        [
+          "orders.id",
+          "customers.id"
+        ]
+      ],
+      "independent_expected_terminal_occurrences": 5,
+      "independent_expected_source_instance_occurrences": 5,
+      "native_original_syntax_boundary": null,
+      "evidence": "docs/task-193-source-instance-matrix-v2.json#rows; tests/task_193_source_instance_matrix.rs; tests/task_193_native_join_bags.rs"
+    },
+    {
+      "case_id": "88-C177-S045",
+      "independent_expected_join_kinds": [
+        "inner"
+      ],
+      "independent_expected_physical_dependencies": [
+        "customers",
+        "orders"
+      ],
+      "independent_expected_projection_lineage": [
+        [
+          "orders.id",
+          "customers.id"
+        ]
+      ],
+      "independent_expected_terminal_occurrences": 4,
+      "independent_expected_source_instance_occurrences": 4,
+      "native_original_syntax_boundary": null,
+      "evidence": "docs/task-193-source-instance-matrix-v2.json#rows; tests/task_193_source_instance_matrix.rs; tests/task_193_native_join_bags.rs"
+    },
+    {
+      "case_id": "88-C177-S046",
+      "independent_expected_join_kinds": [
+        "inner"
+      ],
+      "independent_expected_physical_dependencies": [
+        "customers",
+        "orders"
+      ],
+      "independent_expected_projection_lineage": [
+        [
+          "orders.id"
+        ]
+      ],
+      "independent_expected_terminal_occurrences": 4,
+      "independent_expected_source_instance_occurrences": 4,
+      "native_original_syntax_boundary": null,
+      "evidence": "docs/task-193-source-instance-matrix-v2.json#rows; tests/task_193_source_instance_matrix.rs; tests/task_193_native_join_bags.rs"
+    },
+    {
+      "case_id": "88-C177-S047",
+      "independent_expected_join_kinds": [
+        "inner"
+      ],
+      "independent_expected_physical_dependencies": [
+        "customers",
+        "orders"
+      ],
+      "independent_expected_projection_lineage": [
+        [
+          "orders.id"
+        ]
+      ],
+      "independent_expected_terminal_occurrences": 10,
+      "independent_expected_source_instance_occurrences": 10,
+      "native_original_syntax_boundary": null,
+      "evidence": "docs/task-193-source-instance-matrix-v2.json#rows; tests/task_193_source_instance_matrix.rs; tests/task_193_native_join_bags.rs"
+    },
+    {
+      "case_id": "88-C177-S048",
+      "independent_expected_join_kinds": [
+        "left"
+      ],
+      "independent_expected_physical_dependencies": [
+        "customers",
+        "orders"
+      ],
+      "independent_expected_projection_lineage": [
+        [
+          "orders.id"
+        ]
+      ],
+      "independent_expected_terminal_occurrences": 8,
+      "independent_expected_source_instance_occurrences": 8,
+      "native_original_syntax_boundary": null,
+      "evidence": "docs/task-193-source-instance-matrix-v2.json#rows; tests/task_193_source_instance_matrix.rs; tests/task_193_native_join_bags.rs"
+    },
+    {
+      "case_id": "88-C177-S049",
+      "independent_expected_join_kinds": [
+        "right"
+      ],
+      "independent_expected_physical_dependencies": [
+        "customers",
+        "orders"
+      ],
+      "independent_expected_projection_lineage": [
+        [
+          "orders.id"
+        ]
+      ],
+      "independent_expected_terminal_occurrences": 7,
+      "independent_expected_source_instance_occurrences": 7,
+      "native_original_syntax_boundary": null,
+      "evidence": "docs/task-193-source-instance-matrix-v2.json#rows; tests/task_193_source_instance_matrix.rs; tests/task_193_native_join_bags.rs"
+    },
+    {
+      "case_id": "88-C177-S050",
+      "independent_expected_join_kinds": [
+        "full"
+      ],
+      "independent_expected_physical_dependencies": [
+        "customers",
+        "orders"
+      ],
+      "independent_expected_projection_lineage": [
+        [
+          "orders.id"
+        ]
+      ],
+      "independent_expected_terminal_occurrences": 10,
+      "independent_expected_source_instance_occurrences": 10,
+      "native_original_syntax_boundary": null,
+      "evidence": "docs/task-193-source-instance-matrix-v2.json#rows; tests/task_193_source_instance_matrix.rs; tests/task_193_native_join_bags.rs"
+    },
+    {
+      "case_id": "88-C177-S051",
+      "independent_expected_join_kinds": [
+        "left"
+      ],
+      "independent_expected_physical_dependencies": [
+        "customers",
+        "orders"
+      ],
+      "independent_expected_projection_lineage": [
+        [
+          "orders.id"
+        ]
+      ],
+      "independent_expected_terminal_occurrences": 3,
+      "independent_expected_source_instance_occurrences": 3,
+      "native_original_syntax_boundary": null,
+      "evidence": "docs/task-193-source-instance-matrix-v2.json#rows; tests/task_193_source_instance_matrix.rs; tests/task_193_native_join_bags.rs"
+    },
+    {
+      "case_id": "88-C177-S052",
+      "independent_expected_join_kinds": [
+        "left"
+      ],
+      "independent_expected_physical_dependencies": [
+        "customers",
+        "orders"
+      ],
+      "independent_expected_projection_lineage": [
+        [
+          "orders.id"
+        ],
+        [
+          "customers.id"
+        ]
+      ],
+      "independent_expected_terminal_occurrences": 8,
+      "independent_expected_source_instance_occurrences": 8,
+      "native_original_syntax_boundary": null,
+      "evidence": "docs/task-193-source-instance-matrix-v2.json#rows; tests/task_193_source_instance_matrix.rs; tests/task_193_native_join_bags.rs"
+    },
+    {
+      "case_id": "88-C177-S053",
+      "independent_expected_join_kinds": [
+        "left"
+      ],
+      "independent_expected_physical_dependencies": [
+        "customers",
+        "orders"
+      ],
+      "independent_expected_projection_lineage": [
+        [
+          "orders.id"
+        ]
+      ],
+      "independent_expected_terminal_occurrences": 8,
+      "independent_expected_source_instance_occurrences": 8,
+      "native_original_syntax_boundary": null,
+      "evidence": "docs/task-193-source-instance-matrix-v2.json#rows; tests/task_193_source_instance_matrix.rs; tests/task_193_native_join_bags.rs"
+    },
+    {
+      "case_id": "88-C177-S054",
+      "independent_expected_join_kinds": [
+        "left_semi"
+      ],
+      "independent_expected_physical_dependencies": [
+        "customers",
+        "orders"
+      ],
+      "independent_expected_projection_lineage": [
+        [
+          "orders.id"
+        ]
+      ],
+      "independent_expected_terminal_occurrences": 3,
+      "independent_expected_source_instance_occurrences": 3,
+      "native_original_syntax_boundary": "DuckDB original LEFT SEMI spelling rejected; equivalent SEMI evaluated",
+      "evidence": "docs/task-193-source-instance-matrix-v2.json#rows; tests/task_193_source_instance_matrix.rs; tests/task_193_native_join_bags.rs"
+    },
+    {
+      "case_id": "88-C177-S055",
+      "independent_expected_join_kinds": [
+        "left_anti"
+      ],
+      "independent_expected_physical_dependencies": [
+        "customers",
+        "orders"
+      ],
+      "independent_expected_projection_lineage": [
+        [
+          "orders.id"
+        ]
+      ],
+      "independent_expected_terminal_occurrences": 3,
+      "independent_expected_source_instance_occurrences": 3,
+      "native_original_syntax_boundary": "DuckDB original LEFT ANTI spelling rejected; equivalent ANTI evaluated",
+      "evidence": "docs/task-193-source-instance-matrix-v2.json#rows; tests/task_193_source_instance_matrix.rs; tests/task_193_native_join_bags.rs"
+    },
+    {
+      "case_id": "88-C177-S056",
+      "independent_expected_join_kinds": [],
+      "independent_expected_physical_dependencies": [
+        "customers",
+        "orders"
+      ],
+      "independent_expected_projection_lineage": [
+        [
+          "orders.id"
+        ]
+      ],
+      "independent_expected_terminal_occurrences": 3,
+      "independent_expected_source_instance_occurrences": 3,
+      "native_original_syntax_boundary": null,
+      "evidence": "docs/task-193-source-instance-matrix-v2.json#rows; tests/task_193_source_instance_matrix.rs; tests/task_193_native_join_bags.rs"
+    },
+    {
+      "case_id": "88-C177-S057",
+      "independent_expected_join_kinds": [],
+      "independent_expected_physical_dependencies": [
+        "customers",
+        "orders"
+      ],
+      "independent_expected_projection_lineage": [
+        [
+          "orders.id"
+        ]
+      ],
+      "independent_expected_terminal_occurrences": 3,
+      "independent_expected_source_instance_occurrences": 3,
+      "native_original_syntax_boundary": null,
+      "evidence": "docs/task-193-source-instance-matrix-v2.json#rows; tests/task_193_source_instance_matrix.rs; tests/task_193_native_join_bags.rs"
+    },
+    {
+      "case_id": "88-C177-S058",
+      "independent_expected_join_kinds": [
+        "inner"
+      ],
+      "independent_expected_physical_dependencies": [
+        "customers",
+        "orders"
+      ],
+      "independent_expected_projection_lineage": [
+        [
+          "orders.id"
+        ]
+      ],
+      "independent_expected_terminal_occurrences": 7,
+      "independent_expected_source_instance_occurrences": 7,
+      "native_original_syntax_boundary": null,
+      "evidence": "docs/task-193-source-instance-matrix-v2.json#rows; tests/task_193_source_instance_matrix.rs; tests/task_193_native_join_bags.rs"
+    },
+    {
+      "case_id": "88-C177-S059",
+      "independent_expected_join_kinds": [
+        "inner"
+      ],
+      "independent_expected_physical_dependencies": [
+        "customers",
+        "orders"
+      ],
+      "independent_expected_projection_lineage": [
+        [
+          "orders.id"
+        ]
+      ],
+      "independent_expected_terminal_occurrences": 18,
+      "independent_expected_source_instance_occurrences": 18,
+      "native_original_syntax_boundary": null,
+      "evidence": "docs/task-193-source-instance-matrix-v2.json#rows; tests/task_193_source_instance_matrix.rs; tests/task_193_native_join_bags.rs"
+    },
+    {
+      "case_id": "88-C177-S060",
+      "independent_expected_join_kinds": [
+        "inner"
+      ],
+      "independent_expected_physical_dependencies": [
+        "customers",
+        "orders"
+      ],
+      "independent_expected_projection_lineage": [
+        [
+          "orders.id"
+        ]
+      ],
+      "independent_expected_terminal_occurrences": 0,
+      "independent_expected_source_instance_occurrences": 0,
+      "native_original_syntax_boundary": null,
+      "evidence": "docs/task-193-source-instance-matrix-v2.json#rows; tests/task_193_source_instance_matrix.rs; tests/task_193_native_join_bags.rs"
+    },
+    {
+      "case_id": "88-C177-S061",
+      "independent_expected_join_kinds": [
+        "inner"
+      ],
+      "independent_expected_physical_dependencies": [
+        "customers",
+        "orders"
+      ],
+      "independent_expected_projection_lineage": [
+        [
+          "orders.id"
+        ]
+      ],
+      "independent_expected_terminal_occurrences": 12,
+      "independent_expected_source_instance_occurrences": 12,
+      "native_original_syntax_boundary": null,
+      "evidence": "docs/task-193-source-instance-matrix-v2.json#rows; tests/task_193_source_instance_matrix.rs; tests/task_193_native_join_bags.rs"
+    },
+    {
+      "case_id": "88-C177-S062",
+      "independent_expected_join_kinds": [
+        "inner"
+      ],
+      "independent_expected_physical_dependencies": [
+        "orders"
+      ],
+      "independent_expected_projection_lineage": [
+        [
+          "orders.id"
+        ]
+      ],
+      "independent_expected_terminal_occurrences": 7,
+      "independent_expected_source_instance_occurrences": 7,
+      "native_original_syntax_boundary": null,
+      "evidence": "docs/task-193-source-instance-matrix-v2.json#rows; tests/task_193_source_instance_matrix.rs; tests/task_193_native_join_bags.rs"
+    },
+    {
+      "case_id": "88-C177-S063",
+      "independent_expected_join_kinds": [
+        "inner",
+        "inner"
+      ],
+      "independent_expected_physical_dependencies": [
+        "orders"
+      ],
+      "independent_expected_projection_lineage": [
+        [
+          "orders.id"
+        ]
+      ],
+      "independent_expected_terminal_occurrences": 11,
+      "independent_expected_source_instance_occurrences": 11,
+      "native_original_syntax_boundary": null,
+      "evidence": "docs/task-193-source-instance-matrix-v2.json#rows; tests/task_193_source_instance_matrix.rs; tests/task_193_native_join_bags.rs"
+    },
+    {
+      "case_id": "88-C177-S064",
+      "independent_expected_join_kinds": [
+        "inner",
+        "inner"
+      ],
+      "independent_expected_physical_dependencies": [
+        "customers",
+        "orders",
+        "products"
+      ],
+      "independent_expected_projection_lineage": [
+        [
+          "orders.id"
+        ]
+      ],
+      "independent_expected_terminal_occurrences": 5,
+      "independent_expected_source_instance_occurrences": 5,
+      "native_original_syntax_boundary": null,
+      "evidence": "docs/task-193-source-instance-matrix-v2.json#rows; tests/task_193_source_instance_matrix.rs; tests/task_193_native_join_bags.rs"
+    },
+    {
+      "case_id": "88-C177-S065",
+      "independent_expected_join_kinds": [
+        "inner"
+      ],
+      "independent_expected_physical_dependencies": [
+        "orders"
+      ],
+      "independent_expected_projection_lineage": [
+        [
+          "orders.id"
+        ]
+      ],
+      "independent_expected_terminal_occurrences": 7,
+      "independent_expected_source_instance_occurrences": 7,
+      "native_original_syntax_boundary": null,
+      "evidence": "docs/task-193-source-instance-matrix-v2.json#rows; tests/task_193_source_instance_matrix.rs; tests/task_193_native_join_bags.rs"
+    },
+    {
+      "case_id": "88-C177-S152",
+      "independent_expected_join_kinds": [
+        "inner"
+      ],
+      "independent_expected_physical_dependencies": [
+        "orders"
+      ],
+      "independent_expected_projection_lineage": [
+        [
+          "orders.id"
+        ]
+      ],
+      "independent_expected_terminal_occurrences": 6,
+      "independent_expected_source_instance_occurrences": 6,
+      "native_original_syntax_boundary": "MSSQL AST drift unapproved TASK-179/TASK-191",
+      "evidence": "docs/task-193-source-instance-matrix-v2.json#rows; tests/task_193_source_instance_matrix.rs; tests/task_193_native_join_bags.rs"
+    }
+  ],
+  "cells": [
+    {
+      "cell_id": "88-C177-S043/ansi",
+      "original_case": "88-C177-S043",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S043",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S043",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S043/bigquery",
+      "original_case": "88-C177-S043",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S043",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S043",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S043/clickhouse",
+      "original_case": "88-C177-S043",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S043",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S043",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S043/databricks",
+      "original_case": "88-C177-S043",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S043",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S043",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S043/duckdb",
+      "original_case": "88-C177-S043",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S043",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S043",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S043/generic",
+      "original_case": "88-C177-S043",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S043",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S043",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S043/hive",
+      "original_case": "88-C177-S043",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S043",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S043",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S043/mssql",
+      "original_case": "88-C177-S043",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S043",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S043",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S043/mysql",
+      "original_case": "88-C177-S043",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S043",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S043",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S043/postgresql",
+      "original_case": "88-C177-S043",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S043",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S043",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S043/redshift",
+      "original_case": "88-C177-S043",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S043",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S043",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S043/snowflake",
+      "original_case": "88-C177-S043",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S043",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S043",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S043/sqlite",
+      "original_case": "88-C177-S043",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S043",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S043",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S044/ansi",
+      "original_case": "88-C177-S044",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S044",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S044",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S044/bigquery",
+      "original_case": "88-C177-S044",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S044",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S044",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S044/clickhouse",
+      "original_case": "88-C177-S044",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S044",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S044",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S044/databricks",
+      "original_case": "88-C177-S044",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S044",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S044",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S044/duckdb",
+      "original_case": "88-C177-S044",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S044",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S044",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S044/generic",
+      "original_case": "88-C177-S044",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S044",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S044",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S044/hive",
+      "original_case": "88-C177-S044",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S044",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S044",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S044/mssql",
+      "original_case": "88-C177-S044",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S044",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S044",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S044/mysql",
+      "original_case": "88-C177-S044",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S044",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S044",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S044/postgresql",
+      "original_case": "88-C177-S044",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S044",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S044",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S044/redshift",
+      "original_case": "88-C177-S044",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S044",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S044",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S044/snowflake",
+      "original_case": "88-C177-S044",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S044",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S044",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S044/sqlite",
+      "original_case": "88-C177-S044",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S044",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S044",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S045/ansi",
+      "original_case": "88-C177-S045",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S045",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S045",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S045/bigquery",
+      "original_case": "88-C177-S045",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S045",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S045",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S045/clickhouse",
+      "original_case": "88-C177-S045",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S045",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S045",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S045/databricks",
+      "original_case": "88-C177-S045",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S045",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S045",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S045/duckdb",
+      "original_case": "88-C177-S045",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S045",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S045",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S045/generic",
+      "original_case": "88-C177-S045",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S045",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S045",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S045/hive",
+      "original_case": "88-C177-S045",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S045",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S045",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S045/mssql",
+      "original_case": "88-C177-S045",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S045",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S045",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S045/mysql",
+      "original_case": "88-C177-S045",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S045",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S045",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S045/postgresql",
+      "original_case": "88-C177-S045",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S045",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S045",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S045/redshift",
+      "original_case": "88-C177-S045",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S045",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S045",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S045/snowflake",
+      "original_case": "88-C177-S045",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S045",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S045",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S045/sqlite",
+      "original_case": "88-C177-S045",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S045",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S045",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S046/ansi",
+      "original_case": "88-C177-S046",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S046",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S046",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S046/bigquery",
+      "original_case": "88-C177-S046",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S046",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S046",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S046/clickhouse",
+      "original_case": "88-C177-S046",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S046",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S046",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S046/databricks",
+      "original_case": "88-C177-S046",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S046",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S046",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S046/duckdb",
+      "original_case": "88-C177-S046",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S046",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S046",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S046/generic",
+      "original_case": "88-C177-S046",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S046",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S046",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S046/hive",
+      "original_case": "88-C177-S046",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S046",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S046",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S046/mssql",
+      "original_case": "88-C177-S046",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S046",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S046",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S046/mysql",
+      "original_case": "88-C177-S046",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S046",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S046",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S046/postgresql",
+      "original_case": "88-C177-S046",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S046",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S046",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S046/redshift",
+      "original_case": "88-C177-S046",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S046",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S046",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S046/snowflake",
+      "original_case": "88-C177-S046",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S046",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S046",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S046/sqlite",
+      "original_case": "88-C177-S046",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S046",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S046",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S047/ansi",
+      "original_case": "88-C177-S047",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S047",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S047",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S047/bigquery",
+      "original_case": "88-C177-S047",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S047",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S047",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S047/clickhouse",
+      "original_case": "88-C177-S047",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S047",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S047",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S047/databricks",
+      "original_case": "88-C177-S047",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S047",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S047",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S047/duckdb",
+      "original_case": "88-C177-S047",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S047",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S047",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S047/generic",
+      "original_case": "88-C177-S047",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S047",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S047",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S047/hive",
+      "original_case": "88-C177-S047",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S047",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S047",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S047/mssql",
+      "original_case": "88-C177-S047",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S047",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S047",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S047/mysql",
+      "original_case": "88-C177-S047",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S047",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S047",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S047/postgresql",
+      "original_case": "88-C177-S047",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S047",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S047",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S047/redshift",
+      "original_case": "88-C177-S047",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S047",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S047",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S047/snowflake",
+      "original_case": "88-C177-S047",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S047",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S047",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S047/sqlite",
+      "original_case": "88-C177-S047",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S047",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S047",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S048/ansi",
+      "original_case": "88-C177-S048",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S048",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S048",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S048/bigquery",
+      "original_case": "88-C177-S048",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S048",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S048",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S048/clickhouse",
+      "original_case": "88-C177-S048",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S048",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S048",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S048/databricks",
+      "original_case": "88-C177-S048",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S048",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S048",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S048/duckdb",
+      "original_case": "88-C177-S048",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S048",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S048",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S048/generic",
+      "original_case": "88-C177-S048",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S048",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S048",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S048/hive",
+      "original_case": "88-C177-S048",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S048",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S048",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S048/mssql",
+      "original_case": "88-C177-S048",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S048",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S048",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S048/mysql",
+      "original_case": "88-C177-S048",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S048",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S048",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S048/postgresql",
+      "original_case": "88-C177-S048",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S048",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S048",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S048/redshift",
+      "original_case": "88-C177-S048",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S048",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S048",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S048/snowflake",
+      "original_case": "88-C177-S048",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S048",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S048",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S048/sqlite",
+      "original_case": "88-C177-S048",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S048",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S048",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S049/ansi",
+      "original_case": "88-C177-S049",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S049",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S049",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S049/bigquery",
+      "original_case": "88-C177-S049",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S049",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S049",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S049/clickhouse",
+      "original_case": "88-C177-S049",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S049",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S049",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S049/databricks",
+      "original_case": "88-C177-S049",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S049",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S049",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S049/duckdb",
+      "original_case": "88-C177-S049",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S049",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S049",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S049/generic",
+      "original_case": "88-C177-S049",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S049",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S049",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S049/hive",
+      "original_case": "88-C177-S049",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S049",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S049",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S049/mssql",
+      "original_case": "88-C177-S049",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S049",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S049",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S049/mysql",
+      "original_case": "88-C177-S049",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S049",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S049",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S049/postgresql",
+      "original_case": "88-C177-S049",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S049",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S049",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S049/redshift",
+      "original_case": "88-C177-S049",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S049",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S049",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S049/snowflake",
+      "original_case": "88-C177-S049",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S049",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S049",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S049/sqlite",
+      "original_case": "88-C177-S049",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S049",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S049",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S050/ansi",
+      "original_case": "88-C177-S050",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S050",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S050",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S050/bigquery",
+      "original_case": "88-C177-S050",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S050",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S050",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S050/clickhouse",
+      "original_case": "88-C177-S050",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S050",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S050",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S050/databricks",
+      "original_case": "88-C177-S050",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S050",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S050",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S050/duckdb",
+      "original_case": "88-C177-S050",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S050",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S050",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S050/generic",
+      "original_case": "88-C177-S050",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S050",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S050",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S050/hive",
+      "original_case": "88-C177-S050",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S050",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S050",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S050/mssql",
+      "original_case": "88-C177-S050",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S050",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S050",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S050/mysql",
+      "original_case": "88-C177-S050",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S050",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S050",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S050/postgresql",
+      "original_case": "88-C177-S050",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S050",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S050",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S050/redshift",
+      "original_case": "88-C177-S050",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S050",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S050",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S050/snowflake",
+      "original_case": "88-C177-S050",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S050",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S050",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S050/sqlite",
+      "original_case": "88-C177-S050",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S050",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S050",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S051/ansi",
+      "original_case": "88-C177-S051",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S051",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S051",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S051/bigquery",
+      "original_case": "88-C177-S051",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S051",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S051",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S051/clickhouse",
+      "original_case": "88-C177-S051",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S051",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S051",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S051/databricks",
+      "original_case": "88-C177-S051",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S051",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S051",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S051/duckdb",
+      "original_case": "88-C177-S051",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S051",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S051",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S051/generic",
+      "original_case": "88-C177-S051",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S051",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S051",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S051/hive",
+      "original_case": "88-C177-S051",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S051",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S051",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S051/mssql",
+      "original_case": "88-C177-S051",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S051",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S051",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S051/mysql",
+      "original_case": "88-C177-S051",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S051",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S051",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S051/postgresql",
+      "original_case": "88-C177-S051",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S051",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S051",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S051/redshift",
+      "original_case": "88-C177-S051",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S051",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S051",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S051/snowflake",
+      "original_case": "88-C177-S051",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S051",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S051",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S051/sqlite",
+      "original_case": "88-C177-S051",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S051",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S051",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S052/ansi",
+      "original_case": "88-C177-S052",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S052",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S052",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S052/bigquery",
+      "original_case": "88-C177-S052",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S052",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S052",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S052/clickhouse",
+      "original_case": "88-C177-S052",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S052",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S052",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S052/databricks",
+      "original_case": "88-C177-S052",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S052",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S052",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S052/duckdb",
+      "original_case": "88-C177-S052",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S052",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S052",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S052/generic",
+      "original_case": "88-C177-S052",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S052",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S052",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S052/hive",
+      "original_case": "88-C177-S052",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S052",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S052",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S052/mssql",
+      "original_case": "88-C177-S052",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S052",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S052",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S052/mysql",
+      "original_case": "88-C177-S052",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S052",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S052",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S052/postgresql",
+      "original_case": "88-C177-S052",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S052",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S052",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S052/redshift",
+      "original_case": "88-C177-S052",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S052",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S052",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S052/snowflake",
+      "original_case": "88-C177-S052",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S052",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S052",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S052/sqlite",
+      "original_case": "88-C177-S052",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S052",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S052",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S053/ansi",
+      "original_case": "88-C177-S053",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S053",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S053",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S053/bigquery",
+      "original_case": "88-C177-S053",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S053",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S053",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S053/clickhouse",
+      "original_case": "88-C177-S053",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S053",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S053",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S053/databricks",
+      "original_case": "88-C177-S053",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S053",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S053",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S053/duckdb",
+      "original_case": "88-C177-S053",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S053",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S053",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S053/generic",
+      "original_case": "88-C177-S053",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S053",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S053",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S053/hive",
+      "original_case": "88-C177-S053",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S053",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S053",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S053/mssql",
+      "original_case": "88-C177-S053",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S053",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S053",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S053/mysql",
+      "original_case": "88-C177-S053",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S053",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S053",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S053/postgresql",
+      "original_case": "88-C177-S053",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S053",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S053",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S053/redshift",
+      "original_case": "88-C177-S053",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S053",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S053",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S053/snowflake",
+      "original_case": "88-C177-S053",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S053",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S053",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S053/sqlite",
+      "original_case": "88-C177-S053",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S053",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S053",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S054/ansi",
+      "original_case": "88-C177-S054",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S054",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S054",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S054/bigquery",
+      "original_case": "88-C177-S054",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S054",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S054",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S054/clickhouse",
+      "original_case": "88-C177-S054",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S054",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S054",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S054/databricks",
+      "original_case": "88-C177-S054",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S054",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S054",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S054/duckdb",
+      "original_case": "88-C177-S054",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S054",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S054",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S054/generic",
+      "original_case": "88-C177-S054",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S054",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S054",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S054/hive",
+      "original_case": "88-C177-S054",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S054",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S054",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S054/mssql",
+      "original_case": "88-C177-S054",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S054",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S054",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S054/mysql",
+      "original_case": "88-C177-S054",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S054",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S054",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S054/postgresql",
+      "original_case": "88-C177-S054",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S054",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S054",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S054/redshift",
+      "original_case": "88-C177-S054",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S054",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S054",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S054/snowflake",
+      "original_case": "88-C177-S054",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S054",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S054",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S054/sqlite",
+      "original_case": "88-C177-S054",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S054",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S054",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S055/ansi",
+      "original_case": "88-C177-S055",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S055",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S055",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S055/bigquery",
+      "original_case": "88-C177-S055",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S055",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S055",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S055/clickhouse",
+      "original_case": "88-C177-S055",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S055",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S055",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S055/databricks",
+      "original_case": "88-C177-S055",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S055",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S055",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S055/duckdb",
+      "original_case": "88-C177-S055",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S055",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S055",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S055/generic",
+      "original_case": "88-C177-S055",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S055",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S055",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S055/hive",
+      "original_case": "88-C177-S055",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S055",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S055",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S055/mssql",
+      "original_case": "88-C177-S055",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S055",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S055",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S055/mysql",
+      "original_case": "88-C177-S055",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S055",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S055",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S055/postgresql",
+      "original_case": "88-C177-S055",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S055",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S055",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S055/redshift",
+      "original_case": "88-C177-S055",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S055",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S055",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S055/snowflake",
+      "original_case": "88-C177-S055",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S055",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S055",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S055/sqlite",
+      "original_case": "88-C177-S055",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S055",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S055",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S056/ansi",
+      "original_case": "88-C177-S056",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S056",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S056",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S056/bigquery",
+      "original_case": "88-C177-S056",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S056",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S056",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S056/clickhouse",
+      "original_case": "88-C177-S056",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S056",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S056",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S056/databricks",
+      "original_case": "88-C177-S056",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S056",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S056",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S056/duckdb",
+      "original_case": "88-C177-S056",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S056",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S056",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S056/generic",
+      "original_case": "88-C177-S056",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S056",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S056",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S056/hive",
+      "original_case": "88-C177-S056",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S056",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S056",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S056/mssql",
+      "original_case": "88-C177-S056",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S056",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S056",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S056/mysql",
+      "original_case": "88-C177-S056",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S056",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S056",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S056/postgresql",
+      "original_case": "88-C177-S056",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S056",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S056",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S056/redshift",
+      "original_case": "88-C177-S056",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S056",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S056",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S056/snowflake",
+      "original_case": "88-C177-S056",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S056",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S056",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S056/sqlite",
+      "original_case": "88-C177-S056",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S056",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S056",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S057/ansi",
+      "original_case": "88-C177-S057",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S057",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S057",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S057/bigquery",
+      "original_case": "88-C177-S057",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S057",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S057",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S057/clickhouse",
+      "original_case": "88-C177-S057",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S057",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S057",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S057/databricks",
+      "original_case": "88-C177-S057",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S057",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S057",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S057/duckdb",
+      "original_case": "88-C177-S057",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S057",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S057",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S057/generic",
+      "original_case": "88-C177-S057",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S057",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S057",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S057/hive",
+      "original_case": "88-C177-S057",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S057",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S057",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S057/mssql",
+      "original_case": "88-C177-S057",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S057",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S057",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S057/mysql",
+      "original_case": "88-C177-S057",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S057",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S057",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S057/postgresql",
+      "original_case": "88-C177-S057",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S057",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S057",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S057/redshift",
+      "original_case": "88-C177-S057",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S057",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S057",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S057/snowflake",
+      "original_case": "88-C177-S057",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S057",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S057",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S057/sqlite",
+      "original_case": "88-C177-S057",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S057",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S057",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S058/ansi",
+      "original_case": "88-C177-S058",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S058",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S058",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S058/bigquery",
+      "original_case": "88-C177-S058",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S058",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S058",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S058/clickhouse",
+      "original_case": "88-C177-S058",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S058",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S058",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S058/databricks",
+      "original_case": "88-C177-S058",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S058",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S058",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S058/duckdb",
+      "original_case": "88-C177-S058",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S058",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S058",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S058/generic",
+      "original_case": "88-C177-S058",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S058",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S058",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S058/hive",
+      "original_case": "88-C177-S058",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S058",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S058",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S058/mssql",
+      "original_case": "88-C177-S058",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S058",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S058",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S058/mysql",
+      "original_case": "88-C177-S058",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S058",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S058",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S058/postgresql",
+      "original_case": "88-C177-S058",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S058",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S058",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S058/redshift",
+      "original_case": "88-C177-S058",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S058",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S058",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S058/snowflake",
+      "original_case": "88-C177-S058",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S058",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S058",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S058/sqlite",
+      "original_case": "88-C177-S058",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S058",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S058",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S059/ansi",
+      "original_case": "88-C177-S059",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S059",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S059",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S059/bigquery",
+      "original_case": "88-C177-S059",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S059",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S059",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S059/clickhouse",
+      "original_case": "88-C177-S059",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S059",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S059",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S059/databricks",
+      "original_case": "88-C177-S059",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S059",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S059",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S059/duckdb",
+      "original_case": "88-C177-S059",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S059",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S059",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S059/generic",
+      "original_case": "88-C177-S059",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S059",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S059",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S059/hive",
+      "original_case": "88-C177-S059",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S059",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S059",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S059/mssql",
+      "original_case": "88-C177-S059",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S059",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S059",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S059/mysql",
+      "original_case": "88-C177-S059",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S059",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S059",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S059/postgresql",
+      "original_case": "88-C177-S059",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S059",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S059",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S059/redshift",
+      "original_case": "88-C177-S059",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S059",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S059",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S059/snowflake",
+      "original_case": "88-C177-S059",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S059",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S059",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S059/sqlite",
+      "original_case": "88-C177-S059",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S059",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S059",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S060/ansi",
+      "original_case": "88-C177-S060",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S060",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S060",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S060/bigquery",
+      "original_case": "88-C177-S060",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S060",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S060",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S060/clickhouse",
+      "original_case": "88-C177-S060",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S060",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S060",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S060/databricks",
+      "original_case": "88-C177-S060",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S060",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S060",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S060/duckdb",
+      "original_case": "88-C177-S060",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S060",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S060",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S060/generic",
+      "original_case": "88-C177-S060",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S060",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S060",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S060/hive",
+      "original_case": "88-C177-S060",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S060",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S060",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S060/mssql",
+      "original_case": "88-C177-S060",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S060",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S060",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S060/mysql",
+      "original_case": "88-C177-S060",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S060",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S060",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S060/postgresql",
+      "original_case": "88-C177-S060",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S060",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S060",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S060/redshift",
+      "original_case": "88-C177-S060",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S060",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S060",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S060/snowflake",
+      "original_case": "88-C177-S060",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S060",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S060",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S060/sqlite",
+      "original_case": "88-C177-S060",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S060",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S060",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S061/ansi",
+      "original_case": "88-C177-S061",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S061",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S061",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S061/bigquery",
+      "original_case": "88-C177-S061",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S061",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S061",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S061/clickhouse",
+      "original_case": "88-C177-S061",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S061",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S061",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S061/databricks",
+      "original_case": "88-C177-S061",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S061",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S061",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S061/duckdb",
+      "original_case": "88-C177-S061",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S061",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S061",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S061/generic",
+      "original_case": "88-C177-S061",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S061",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S061",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S061/hive",
+      "original_case": "88-C177-S061",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S061",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S061",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S061/mssql",
+      "original_case": "88-C177-S061",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S061",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S061",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S061/mysql",
+      "original_case": "88-C177-S061",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S061",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S061",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S061/postgresql",
+      "original_case": "88-C177-S061",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S061",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S061",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S061/redshift",
+      "original_case": "88-C177-S061",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S061",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S061",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S061/snowflake",
+      "original_case": "88-C177-S061",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S061",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S061",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S061/sqlite",
+      "original_case": "88-C177-S061",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S061",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S061",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S062/ansi",
+      "original_case": "88-C177-S062",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S062",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S062",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S062/bigquery",
+      "original_case": "88-C177-S062",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S062",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S062",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S062/clickhouse",
+      "original_case": "88-C177-S062",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S062",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S062",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S062/databricks",
+      "original_case": "88-C177-S062",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S062",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S062",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S062/duckdb",
+      "original_case": "88-C177-S062",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S062",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S062",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S062/generic",
+      "original_case": "88-C177-S062",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S062",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S062",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S062/hive",
+      "original_case": "88-C177-S062",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S062",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S062",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S062/mssql",
+      "original_case": "88-C177-S062",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S062",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S062",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S062/mysql",
+      "original_case": "88-C177-S062",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S062",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S062",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S062/postgresql",
+      "original_case": "88-C177-S062",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S062",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S062",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S062/redshift",
+      "original_case": "88-C177-S062",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S062",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S062",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S062/snowflake",
+      "original_case": "88-C177-S062",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S062",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S062",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S062/sqlite",
+      "original_case": "88-C177-S062",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S062",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S062",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S063/ansi",
+      "original_case": "88-C177-S063",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S063",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S063",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S063/bigquery",
+      "original_case": "88-C177-S063",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S063",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S063",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S063/clickhouse",
+      "original_case": "88-C177-S063",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S063",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S063",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S063/databricks",
+      "original_case": "88-C177-S063",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S063",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S063",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S063/duckdb",
+      "original_case": "88-C177-S063",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S063",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S063",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S063/generic",
+      "original_case": "88-C177-S063",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S063",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S063",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S063/hive",
+      "original_case": "88-C177-S063",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S063",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S063",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S063/mssql",
+      "original_case": "88-C177-S063",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S063",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S063",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S063/mysql",
+      "original_case": "88-C177-S063",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S063",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S063",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S063/postgresql",
+      "original_case": "88-C177-S063",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S063",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S063",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S063/redshift",
+      "original_case": "88-C177-S063",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S063",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S063",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S063/snowflake",
+      "original_case": "88-C177-S063",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S063",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S063",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S063/sqlite",
+      "original_case": "88-C177-S063",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S063",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S063",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S064/ansi",
+      "original_case": "88-C177-S064",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S064",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S064",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S064/bigquery",
+      "original_case": "88-C177-S064",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S064",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S064",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S064/clickhouse",
+      "original_case": "88-C177-S064",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S064",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S064",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S064/databricks",
+      "original_case": "88-C177-S064",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S064",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S064",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S064/duckdb",
+      "original_case": "88-C177-S064",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S064",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S064",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S064/generic",
+      "original_case": "88-C177-S064",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S064",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S064",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S064/hive",
+      "original_case": "88-C177-S064",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S064",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S064",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S064/mssql",
+      "original_case": "88-C177-S064",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S064",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S064",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S064/mysql",
+      "original_case": "88-C177-S064",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S064",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S064",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S064/postgresql",
+      "original_case": "88-C177-S064",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S064",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S064",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S064/redshift",
+      "original_case": "88-C177-S064",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S064",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S064",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S064/snowflake",
+      "original_case": "88-C177-S064",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S064",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S064",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S064/sqlite",
+      "original_case": "88-C177-S064",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S064",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S064",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S065/ansi",
+      "original_case": "88-C177-S065",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S065",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S065",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S065/bigquery",
+      "original_case": "88-C177-S065",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S065",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S065",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S065/clickhouse",
+      "original_case": "88-C177-S065",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S065",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S065",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S065/databricks",
+      "original_case": "88-C177-S065",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S065",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S065",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S065/duckdb",
+      "original_case": "88-C177-S065",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S065",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S065",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S065/generic",
+      "original_case": "88-C177-S065",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S065",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S065",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S065/hive",
+      "original_case": "88-C177-S065",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S065",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S065",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S065/mssql",
+      "original_case": "88-C177-S065",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S065",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S065",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S065/mysql",
+      "original_case": "88-C177-S065",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S065",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S065",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S065/postgresql",
+      "original_case": "88-C177-S065",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S065",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S065",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S065/redshift",
+      "original_case": "88-C177-S065",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S065",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S065",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S065/snowflake",
+      "original_case": "88-C177-S065",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S065",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S065",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S065/sqlite",
+      "original_case": "88-C177-S065",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S065",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S065",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S152/ansi",
+      "original_case": "88-C177-S152",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S152",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S152",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S152/bigquery",
+      "original_case": "88-C177-S152",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S152",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S152",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S152/clickhouse",
+      "original_case": "88-C177-S152",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S152",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S152",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S152/databricks",
+      "original_case": "88-C177-S152",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S152",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S152",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S152/duckdb",
+      "original_case": "88-C177-S152",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S152",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S152",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S152/generic",
+      "original_case": "88-C177-S152",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S152",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S152",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S152/hive",
+      "original_case": "88-C177-S152",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S152",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S152",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S152/mssql",
+      "original_case": "88-C177-S152",
+      "parser_observation": "D",
+      "review_disposition": "explicit_unapproved_ast_drift_task_179_task_191",
+      "source_instance_oracle": "88-C177-S152",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S152",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S152/mysql",
+      "original_case": "88-C177-S152",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S152",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S152",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S152/postgresql",
+      "original_case": "88-C177-S152",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S152",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S152",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S152/redshift",
+      "original_case": "88-C177-S152",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S152",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S152",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S152/snowflake",
+      "original_case": "88-C177-S152",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S152",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S152",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    },
+    {
+      "cell_id": "88-C177-S152/sqlite",
+      "original_case": "88-C177-S152",
+      "parser_observation": "C",
+      "review_disposition": "approved_bounded_canonical_parser_and_typed_semantics",
+      "source_instance_oracle": "88-C177-S152",
+      "source_complete_duckdb_terminal_oracle": "88-C177-S152",
+      "public_semantic_evidence": "tests/task_193_lineage_contract.rs; tests/task_193_typed_soundness.rs; tests/task_193_dialect_semantics.rs"
+    }
+  ]
+}
