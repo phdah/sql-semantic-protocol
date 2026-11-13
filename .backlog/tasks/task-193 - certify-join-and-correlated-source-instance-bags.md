@@ -1,10 +1,10 @@
 ---
 id: TASK-193
 title: Certify join and correlated source-instance bags across dialects
-status: To Do
+status: In Progress
 assignee: []
 created_date: '2026-11-10'
-updated_date: '2026-11-10'
+updated_date: '2026-11-13'
 labels: []
 milestone: m-3
 dependencies:
@@ -47,3 +47,12 @@ After this task is independently verified, marked Done and merged, proceed to TA
 ## Initial state
 
 Extracted on 2026-11-10 from the previously overbroad TASK-178. There is **no implementation or semantic sign-off** for this ticket yet. Existing PR #197 supplies provisional structural observations and selected native oracles only; use those as regression inputs, not as proof of this ticket's acceptance.
+
+
+## TASK-193 implementation evidence (2026-11-13, pending verification)
+
+- Immutable task-owned 24-case/312-dialect preimplementation acceptance inventory: `docs/task-193-acceptance-freeze.json`; linked from `docs/coverage-manifest.json`. Original TASK-178 SQL spellings and parser masks are unchanged.
+- Literal independently stated source-instance/NULL/multiplicity and TRUE versus NOT TRUE native oracles: `docs/task-193-source-instance-oracles.json`. Both physical sources use the original TASK-177 complete fixture.
+- Test coverage: `tests/task_193_native_join_bags.rs` (24 original native outputs plus 11 occurrence-level proofs), `tests/task_193_dialect_semantics.rs` (312 full public-document comparisons), and `tests/task_193_adapter_parity.rs` (21 representable joins across SQL, dbt and ODCS typed source facts).
+- S054 and S055 retain an explicit original DuckDB syntax rejection and separately identified native SEMI/ANTI equivalent; S152/MSSQL remains an unapproved canonical AST/session boundary for TASK-179/TASK-191. No native non-DuckDB execution or sql-tdg release is asserted.
+- **Not signed off:** final-head fmt, Clippy, default/no-default feature suites, full Rust tests/docs, dbt E2E, pinned downstream consumer and independent two-axis review must be verified before AC #1..#5 can be marked complete. The parent TASK-88 and release TASK-91 remain open.
