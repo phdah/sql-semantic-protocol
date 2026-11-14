@@ -120,11 +120,19 @@ fn name_aligned_set_columns(
     left: &[OutputColumn],
     right: &[OutputColumn],
 ) -> Option<Vec<OutputColumn>> {
-    if left.is_empty()
-        || left.len() != right.len()
-        || left.iter().map(|column| column.name()).collect::<BTreeSet<_>>().len() != left.len()
-        || right.iter().map(|column| column.name()).collect::<BTreeSet<_>>().len() != right.len()
-    {
+    let left_unique = left
+        .iter()
+        .map(|column| column.name())
+        .collect::<BTreeSet<_>>()
+        .len()
+        == left.len();
+    let right_unique = right
+        .iter()
+        .map(|column| column.name())
+        .collect::<BTreeSet<_>>()
+        .len()
+        == right.len();
+    if left.is_empty() || left.len() != right.len() || !left_unique || !right_unique {
         return None;
     }
     left.iter()
