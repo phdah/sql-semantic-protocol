@@ -190,7 +190,10 @@ fn by_name_refines_filtered_domains_in_correct_named_column_order() {
                    UNION BY NAME SELECT amount, id FROM customers WHERE id > 0";
     let positional = "SELECT id, amount FROM orders WHERE id > 0 \
                       UNION SELECT id, amount FROM customers WHERE id > 0";
-    for dialect in fixture()["dialects"].as_array().expect("all parser dialects") {
+    for dialect in fixture()["dialects"]
+        .as_array()
+        .expect("all parser dialects")
+    {
         let name = dialect.as_str().expect("named parser dialect");
         let by_name = domains(&catalog, aligned, name);
         assert_eq!(
@@ -204,7 +207,10 @@ fn by_name_refines_filtered_domains_in_correct_named_column_order() {
         assert!(!ranges.ranges().is_empty());
         for range in ranges.ranges() {
             let lower = range.lower().expect("positive integer lower bound");
-            assert_eq!(lower.value().value(), &LiteralValue::Number("0".to_string()));
+            assert_eq!(
+                lower.value().value(),
+                &LiteralValue::Number("0".to_string())
+            );
             assert!(!lower.inclusive(), "{name}: id > 0 is strict");
         }
         assert!(
