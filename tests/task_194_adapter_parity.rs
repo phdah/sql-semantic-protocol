@@ -184,6 +184,37 @@ fn admits(domain: &ValueDomain, value: &Value) -> bool {
 }
 
 #[test]
+fn by_name_refines_filtered_domains_in_correct_named_column_order() {
+    let catalog = direct_catalog();
+    let aligned = "SELECT id, amount FROM orders WHERE id > 0 \
+                   UNION BY NAME SELECT amount, id FROM customers WHERE id > 0";
+    let positional = "SELECT id, amount FROM orders WHERE id > 0 \
+                      UNION SELECT id, amount FROM customers WHERE id > 0";
+    for dialect in fixture()["dialects"].as_array().expect("all parser dialects") {
+        let name = dialect.as_str().expect("named parser dialect");
+        let by_name = domains(&catalog, aligned, name);
+        assert_eq!(
+            by_name,
+            domains(&catalog, positional, name),
+            "{name}: name-aligned and equivalent positional sets must have identical domains"
+        );
+        let ValueDomain::Ranges(ranges) = &by_name[0] else {
+            panic!("{name}: filtered id > 0 domain was lost: {:?}", by_name[0]);
+        };
+        assert!(!ranges.ranges().is_empty());
+        for range in ranges.ranges() {
+            let lower = range.lower().expect("positive integer lower bound");
+            assert_eq!(lower.value().value(), &LiteralValue::Number("0".to_string()));
+            assert!(!lower.inclusive(), "{name}: id > 0 is strict");
+        }
+        assert!(
+            matches!(by_name[1], ValueDomain::Unbounded),
+            "{name}: the unrelated amount column must not inherit the id predicate"
+        );
+    }
+}
+
+#[test]
 fn twenty_original_set_queries_preserve_direct_and_compiled_dbt_domain_parity() {
     let fixture = fixture();
     let direct = direct_catalog();
