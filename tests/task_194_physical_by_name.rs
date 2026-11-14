@@ -255,7 +255,9 @@ fn by_name_page_orders_in_leaf_coordinates_before_aligning_the_terminal_tuple() 
     )
     .expect("complete independent DuckDB source population");
     let mut query = db
-        .prepare(&format!("SELECT id, amount FROM ({sql}) AS result ORDER BY id"))
+        .prepare(&format!(
+            "SELECT id, amount FROM ({sql}) AS result ORDER BY id"
+        ))
         .expect("native BY NAME query");
     let native = query
         .query_map([], |row| {
@@ -272,5 +274,8 @@ fn by_name_page_orders_in_leaf_coordinates_before_aligning_the_terminal_tuple() 
         native,
         "physical proof must reproduce DuckDB's actual terminal tuples"
     );
-    assert_eq!(native, vec![vec![Some(1), Some(10)], vec![Some(9), Some(2)]]);
+    assert_eq!(
+        native,
+        vec![vec![Some(1), Some(10)], vec![Some(9), Some(2)]]
+    );
 }
