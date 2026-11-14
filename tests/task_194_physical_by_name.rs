@@ -4,6 +4,7 @@
 
 use std::collections::BTreeMap;
 
+use duckdb::Connection;
 use serde_json::Value;
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, dialect_from_name,
@@ -198,4 +199,78 @@ fn unsafe_by_name_alignment_cannot_be_promoted_to_a_physical_proof() {
             "{sql}: unmatched or duplicated names have no sound bijection"
         );
     }
+}
+
+#[test]
+fn by_name_page_orders_in_leaf_coordinates_before_aligning_the_terminal_tuple() {
+    // Right-side SELECT order (amount, id) differs from terminal (id, amount).
+    // Ordering the already-aligned tuple instead would pick (3, 50), not (9, 2).
+    let (catalog, _) = sources();
+    let state = |relation: &str, tuples: &[(i64, i64)]| {
+        let rows = tuples
+            .iter()
+            .enumerate()
+            .map(|(ordinal, (id, amount))| {
+                PhysicalWriteRow::new(BTreeMap::from([
+                    (
+                        "__physical_row_id".to_string(),
+                        LiteralValue::Text(format!("{relation}#{ordinal}")),
+                    ),
+                    ("id".to_string(), LiteralValue::Number(id.to_string())),
+                    (
+                        "amount".to_string(),
+                        LiteralValue::Number(amount.to_string()),
+                    ),
+                ]))
+                .expect("independent physical source identity")
+            })
+            .collect();
+        PhysicalWriteState::new(relation, rows).expect("complete source population")
+    };
+    let states = vec![
+        state("orders", &[(1, 10)]),
+        state("customers", &[(3, 50), (9, 2)]),
+    ];
+    let sql = "SELECT id, amount FROM orders UNION BY NAME \
+               (SELECT amount, id FROM customers \
+                ORDER BY amount ASC NULLS LAST, id ASC NULLS LAST LIMIT 1)";
+    let bundle = analyze(sql, "duckdb", &catalog);
+    let target = bundle.layers().last().expect("terminal set").id();
+    let plan = physical_finite_set_tree_plan(&bundle, target, &states);
+    let PhysicalFiniteSetTreeProof::Exact(exact) = plan else {
+        panic!("name-aligned branch page must be exact: {plan:?}");
+    };
+    assert_eq!(
+        exact.branches[1].selected_row_ids,
+        vec!["customers#1"],
+        "page membership uses amount first, not final output id"
+    );
+
+    let db = Connection::open_in_memory().expect("independent DuckDB oracle");
+    db.execute_batch(
+        "CREATE TABLE orders(id INTEGER, amount INTEGER);
+         CREATE TABLE customers(id INTEGER, amount INTEGER);
+         INSERT INTO orders VALUES (1, 10);
+         INSERT INTO customers VALUES (3, 50), (9, 2);",
+    )
+    .expect("complete independent DuckDB source population");
+    let mut query = db
+        .prepare(&format!("SELECT id, amount FROM ({sql}) AS result ORDER BY id"))
+        .expect("native BY NAME query");
+    let native = query
+        .query_map([], |row| {
+            Ok(vec![
+                row.get::<_, Option<i64>>(0)?,
+                row.get::<_, Option<i64>>(1)?,
+            ])
+        })
+        .expect("execute native SQL")
+        .collect::<Result<Vec<_>, _>>()
+        .expect("complete terminal bag");
+    assert_eq!(
+        decoded_terminal(&exact.terminal),
+        native,
+        "physical proof must reproduce DuckDB's actual terminal tuples"
+    );
+    assert_eq!(native, vec![vec![Some(1), Some(10)], vec![Some(9), Some(2)]]);
 }
