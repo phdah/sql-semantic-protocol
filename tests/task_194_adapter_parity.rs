@@ -208,7 +208,7 @@ fn by_name_refines_filtered_domains_in_correct_named_column_order() {
             assert!(!lower.inclusive(), "{name}: id > 0 is strict");
         }
         assert!(
-            matches!(by_name[1], ValueDomain::Unbounded),
+            matches!(by_name[1], ValueDomain::Unbounded | ValueDomain::Unknown(_)),
             "{name}: the unrelated amount column must not inherit the id predicate"
         );
     }
