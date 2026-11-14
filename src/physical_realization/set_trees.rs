@@ -567,13 +567,15 @@ pub fn physical_finite_set_tree_plan(
             projected: positional,
             predicate_columns: columns,
         } = resolved;
+        // Page keys address the leaf's original SELECT columns. BY NAME
+        // alignment is applied only after that leaf's ORDER BY/LIMIT.
         let mapped = if let Some(orders) = &name_alignment {
             orders[index]
                 .iter()
                 .map(|position| positional[*position].clone())
                 .collect()
         } else {
-            positional
+            positional.clone()
         };
         if mapped.len() != names.len() {
             return residual("set leaves disagree on positional output arity");
@@ -582,7 +584,7 @@ pub fn physical_finite_set_tree_plan(
             return residual("missing source snapshot for a set branch");
         };
         let page_members = if let Some(shape) = branch.row_shaping() {
-            match branch_page_survivors(shape, &mapped, state.rows()) {
+            match branch_page_survivors(shape, &positional, state.rows()) {
                 Ok(members) => Some(members),
                 Err(reason) => return residual(reason),
             }
