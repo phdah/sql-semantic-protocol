@@ -949,7 +949,7 @@ The pre-existing query-level `condition_exactness` still describes the expressib
 
 A query that contains UNION, INTERSECT, or EXCEPT carries an optional `set_operation` tree alongside the existing query semantics. The tree is parser-independent and records `operator`, normalized `quantifier`, and recursive left/right operands. A leaf operand is `{"kind":"query"}`; nested operations use `{"kind":"set_operation", ...}`.
 
-UNION ALL keeps `all`; an omitted quantifier normalizes to `distinct`. Dialect-specific MINUS syntax normalizes to `except`. BY NAME quantifiers are retained so the parsed meaning is not lost, but output-column composition for name-based alignment remains explicitly unsupported.
+UNION ALL keeps `all`; an omitted quantifier normalizes to `distinct`. Dialect-specific MINUS syntax normalizes to `except`. BY NAME quantifiers retain their name-alignment semantics. Canonical output columns are composed by name only when both branches expose exactly the same unique column names (in any order), with the left branch fixing order. Non-bijective or ambiguous names emit an explicit unsupported-alignment diagnostic rather than invented NULL padding.
 
 Set-operation outputs align positionally. Column names follow the left branch. Lineage combines the corresponding branch columns deterministically. Output value domains use the union for UNION, the intersection for INTERSECT, and the left domain for EXCEPT, retaining the strongest supported outcome constraint instead of applying UNION rules to every operator. An arity mismatch or an unresolved branch prevents the producer from inventing output columns and is reported with a diagnostic.
 
@@ -966,8 +966,10 @@ tree evaluator certifies exact row counts and terminal domains only when
 the source snapshots are complete, all sort values are integral, NULL ordering
 is resolved, and ties between distinct projected tuples cannot affect the
 truncation. Otherwise it returns a typed residual. Branch-local ORDER/LIMIT,
-coercion/collation and BY NAME/CORRESPONDING remain explicitly unsupported
-for complete population proofs. The public JSON schema documents the optional
+coercion/collation and CORRESPONDING remain explicitly unsupported
+for complete population proofs. TASK-194's complete-source, two-column,
+uniquely bijective UNION BY NAME case is separately certified by the
+physical set-tree evaluator; its source-free witness stays Residual. The public JSON schema documents the optional
 field; this is a protocol contract extension and consumers should version-gate it.
 
 ## Aggregation and grouping
