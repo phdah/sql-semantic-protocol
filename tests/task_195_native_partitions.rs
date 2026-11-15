@@ -131,8 +131,7 @@ fn original_sampling_queries_never_produce_impossible_source_occurrences() {
         let original = case(&fixture, &id);
         let sql = original["sql"].as_str().expect("stochastic original SQL");
         assert_eq!(
-            original["native_oracle"]["kind"],
-            "stochastic_conditional",
+            original["native_oracle"]["kind"], "stochastic_conditional",
             "{id}: random sample must not be marked Exact"
         );
         assert!(
@@ -151,8 +150,13 @@ fn original_sampling_queries_never_produce_impossible_source_occurrences() {
             let mut available = source_multiplicity.clone();
             for tuple in sample {
                 let value = tuple[0];
-                let count = available.get_mut(&value).expect("sampled physical input value");
-                assert!(*count > 0, "{id}: sampled a source occurrence more than once");
+                let count = available
+                    .get_mut(&value)
+                    .expect("sampled physical input value");
+                assert!(
+                    *count > 0,
+                    "{id}: sampled a source occurrence more than once"
+                );
                 *count -= 1;
             }
         }
