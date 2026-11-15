@@ -113,6 +113,38 @@ pub(super) fn analyze_query_output_with_outer_scope(
     )
 }
 
+// Match name-aligned set outputs only when both branches have a complete,
+// case-sensitive, one-to-one column bijection. No NULL padding or implicit
+// identifier folding is assumed.
+fn name_aligned_set_columns(
+    left: &[OutputColumn],
+    right: &[OutputColumn],
+) -> Option<Vec<OutputColumn>> {
+    let left_unique = left
+        .iter()
+        .map(|column| column.name())
+        .collect::<BTreeSet<_>>()
+        .len()
+        == left.len();
+    let right_unique = right
+        .iter()
+        .map(|column| column.name())
+        .collect::<BTreeSet<_>>()
+        .len()
+        == right.len();
+    if left.is_empty() || left.len() != right.len() || !left_unique || !right_unique {
+        return None;
+    }
+    left.iter()
+        .map(|column| {
+            right
+                .iter()
+                .find(|candidate| candidate.name() == column.name())
+                .cloned()
+        })
+        .collect()
+}
+
 pub(super) fn analyze_set_expr_output_with_outer_scope(
     expression: &SetExpr,
     local_outputs: &LocalOutputMap,
@@ -142,15 +174,6 @@ pub(super) fn analyze_set_expr_output_with_outer_scope(
             right,
         } => {
             let quantifier = analyze_set_quantifier(*set_quantifier);
-            if quantifier.uses_name_alignment() {
-                diagnostics.push(warning(
-                    "unsupported_set_operation_alignment",
-                    DiagnosticArea::Output,
-                    "BY NAME set-operation alignment is represented but output-column composition is not implemented",
-                ));
-                return Output::new(Vec::new());
-            }
-
             let left_output = analyze_set_expr_output_with_outer_scope(
                 left,
                 local_outputs,
@@ -165,6 +188,24 @@ pub(super) fn analyze_set_expr_output_with_outer_scope(
                 diagnostics,
                 metadata,
             );
+            if quantifier.uses_name_alignment() {
+                let Some(reordered) =
+                    name_aligned_set_columns(left_output.columns(), right_output.columns())
+                else {
+                    diagnostics.push(warning(
+                        "unsupported_set_operation_alignment",
+                        DiagnosticArea::Output,
+                        "BY NAME output requires one-to-one, unique, exactly matching column names; unmatched, repeated or dialect-folded names remain unsupported",
+                    ));
+                    return Output::new(Vec::new());
+                };
+                return merge_set_operation_output(
+                    left_output,
+                    Output::new(reordered),
+                    analyze_set_operator(*op),
+                    diagnostics,
+                );
+            }
             merge_set_operation_output(
                 left_output,
                 right_output,
@@ -192,7 +233,9 @@ pub(super) fn refine_set_operation_output_domains(
     else {
         return output;
     };
-    if next_branch != operation.branches().len() || domains.len() != output.columns().len() {
+    if next_branch != operation.branches().len()
+        || domains.columns().len() != output.columns().len()
+    {
         return output;
     }
     Output::new(
@@ -200,47 +243,54 @@ pub(super) fn refine_set_operation_output_domains(
             .columns()
             .iter()
             .cloned()
-            .zip(domains)
-            .map(|(column, domain)| column.with_domain(domain))
+            .zip(domains.columns())
+            .map(|(column, refined)| column.with_domain(refined.domain().clone()))
             .collect(),
     )
 }
 
+// Keep branch names alongside their predicate-refined domains while walking
+// nested set trees. Physical tuple multiplicity may still be unproved for
+// BY NAME, but a complete name bijection is enough to combine value domains.
 pub(super) fn operation_output_domains(
     operation: &SetOperation,
     branches: &[SetBranch],
     next_branch: &mut usize,
-) -> Option<Vec<ValueDomain>> {
-    let mut operand_domains = |operand: &SetOperand| match operand {
+) -> Option<Output> {
+    let mut operand_outputs = |operand: &SetOperand| match operand {
         SetOperand::Query => {
             let branch = branches.get(*next_branch)?;
             *next_branch += 1;
-            Some(
-                branch
-                    .output()
-                    .columns()
-                    .iter()
-                    .map(|column| column.domain().clone())
-                    .collect::<Vec<_>>(),
-            )
+            Some(branch.output().clone())
         }
         SetOperand::Operation(nested) => operation_output_domains(nested, branches, next_branch),
     };
-    let left = operand_domains(operation.left())?;
-    let right = operand_domains(operation.right())?;
-    if left.is_empty() || left.len() != right.len() || operation.multiplicity_rule().is_none() {
+    let left = operand_outputs(operation.left())?;
+    let right = operand_outputs(operation.right())?;
+    if left.columns().is_empty() || left.columns().len() != right.columns().len() {
         return None;
     }
-    Some(
-        left.iter()
-            .zip(&right)
-            .map(|(l, r)| match operation.operator() {
-                SetOperator::Union => union_domains(l, r),
-                SetOperator::Intersect => crate::domain::intersect_set_operation_domains(l, r),
-                SetOperator::Except => l.clone(),
+    let aligned_right = if operation.quantifier().uses_name_alignment() {
+        Output::new(name_aligned_set_columns(left.columns(), right.columns())?)
+    } else {
+        operation.multiplicity_rule()?;
+        right
+    };
+    Some(Output::new(
+        left.columns()
+            .iter()
+            .zip(aligned_right.columns())
+            .map(|(l, r)| {
+                l.clone().with_domain(match operation.operator() {
+                    SetOperator::Union => union_domains(l.domain(), r.domain()),
+                    SetOperator::Intersect => {
+                        crate::domain::intersect_set_operation_domains(l.domain(), r.domain())
+                    }
+                    SetOperator::Except => l.domain().clone(),
+                })
             })
             .collect(),
-    )
+    ))
 }
 
 pub(super) fn merge_set_operation_output(

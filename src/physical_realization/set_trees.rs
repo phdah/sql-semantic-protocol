@@ -5,7 +5,9 @@
 //! no branch can fabricate an independently writable intermediate bag.
 
 use super::*;
-use crate::protocol::{ComparisonOperator, LiteralValue, SetBranch, SetMultiplicityRule};
+use crate::protocol::{
+    ComparisonOperator, LiteralValue, SetBranch, SetMultiplicityRule, SetOperator, SetQuantifier,
+};
 
 /// Per-leaf proof of SQL TRUE and NOT TRUE source-row membership.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -81,7 +83,13 @@ fn integer(value: &LiteralValue) -> Result<Option<i128>, &'static str> {
 }
 
 fn physical_id(row: &PhysicalWriteRow) -> Option<&str> {
-    match row.values().get("id")? {
+    // A source may project an INTEGER id with SQL duplicate/NULL semantics.
+    // Its physical occurrence identity must remain separate from that value.
+    let identity = row
+        .values()
+        .get("__physical_row_id")
+        .or_else(|| row.values().get("id"))?;
+    match identity {
         LiteralValue::Text(value) if !value.is_empty() => Some(value),
         _ => None,
     }
@@ -370,17 +378,68 @@ fn branch_page_survivors(
         .collect())
 }
 
+// Unlike a scalar set witness, a complete physical plan can independently
+// establish exact case-sensitive name alignment from every typed leaf.
+fn bijective_name_alignment(
+    operation: &SetOperation,
+    output: &[String],
+) -> Option<Vec<Vec<usize>>> {
+    if operation.operator() != SetOperator::Union
+        || operation.branches().len() != 2
+        || !matches!(operation.left(), SetOperand::Query)
+        || !matches!(operation.right(), SetOperand::Query)
+    {
+        return None;
+    }
+    let output_names = output.iter().collect::<BTreeSet<_>>();
+    if output.is_empty() || output_names.len() != output.len() {
+        return None;
+    }
+    operation
+        .branches()
+        .iter()
+        .map(|branch| {
+            let names = branch
+                .output()
+                .columns()
+                .iter()
+                .map(|column| column.name())
+                .collect::<Vec<_>>();
+            if names.len() != output.len()
+                || names.iter().collect::<BTreeSet<_>>().len() != names.len()
+                || !output.iter().all(|name| names.contains(&name.as_str()))
+            {
+                return None;
+            }
+            output
+                .iter()
+                .map(|name| names.iter().position(|current| *current == name))
+                .collect::<Option<Vec<_>>>()
+        })
+        .collect::<Option<Vec<_>>>()
+}
+
 fn tree_count(
     operation: &SetOperation,
     counts: &[u64],
     cursor: &mut usize,
+    attested_name_alignment: bool,
 ) -> Result<u64, &'static str> {
     if !operation.set_level_safe() && operation.row_shaping().is_none() {
         return Err("set or nested branch has unproved ORDER LIMIT FETCH semantics");
     }
-    let rule = operation
-        .multiplicity_rule()
-        .ok_or("set tree uses an unsupported alignment or coercion law")?;
+    let rule = if attested_name_alignment {
+        match (operation.operator(), operation.quantifier()) {
+            (SetOperator::Union, SetQuantifier::ByName | SetQuantifier::DistinctByName) => {
+                Some(SetMultiplicityRule::UnionDistinct)
+            }
+            (SetOperator::Union, SetQuantifier::AllByName) => Some(SetMultiplicityRule::Sum),
+            _ => None,
+        }
+    } else {
+        operation.multiplicity_rule()
+    }
+    .ok_or("set tree uses an unsupported alignment or coercion law")?;
     fn operand_count(
         operand: &SetOperand,
         counts: &[u64],
@@ -395,7 +454,7 @@ fn tree_count(
                 *cursor += 1;
                 Ok(value)
             }
-            SetOperand::Operation(inner) => tree_count(inner, counts, cursor),
+            SetOperand::Operation(inner) => tree_count(inner, counts, cursor, false),
         }
     }
     let left = operand_count(operation.left(), counts, cursor)?;
@@ -455,6 +514,14 @@ pub fn physical_finite_set_tree_plan(
     {
         return residual("set tree needs one or two distinct positional output columns");
     }
+    let name_alignment = if operation.quantifier().uses_name_alignment() {
+        let Some(mapped) = bijective_name_alignment(operation, &names) else {
+            return residual("BY NAME has no certified exact, unique column-name bijection");
+        };
+        Some(mapped)
+    } else {
+        None
+    };
     let sources = walker.sources.iter().cloned().collect::<Vec<_>>();
     if snapshots.len() != sources.len()
         || snapshots
@@ -497,9 +564,19 @@ pub fn physical_finite_set_tree_plan(
         let ResolvedSetBranch {
             source,
             relation,
-            projected: mapped,
+            projected: positional,
             predicate_columns: columns,
         } = resolved;
+        // Page keys address the leaf's original SELECT columns. BY NAME
+        // alignment is applied only after that leaf's ORDER BY/LIMIT.
+        let mapped = if let Some(orders) = &name_alignment {
+            orders[index]
+                .iter()
+                .map(|position| positional[*position].clone())
+                .collect()
+        } else {
+            positional.clone()
+        };
         if mapped.len() != names.len() {
             return residual("set leaves disagree on positional output arity");
         }
@@ -507,7 +584,7 @@ pub fn physical_finite_set_tree_plan(
             return residual("missing source snapshot for a set branch");
         };
         let page_members = if let Some(shape) = branch.row_shaping() {
-            match branch_page_survivors(shape, &mapped, state.rows()) {
+            match branch_page_survivors(shape, &positional, state.rows()) {
                 Ok(members) => Some(members),
                 Err(reason) => return residual(reason),
             }
@@ -582,7 +659,9 @@ pub fn physical_finite_set_tree_plan(
             return residual("set source multiplicity overflow");
         };
         let mut cursor = 0;
-        let Ok(output_count) = tree_count(operation, &counts, &mut cursor) else {
+        let Ok(output_count) =
+            tree_count(operation, &counts, &mut cursor, name_alignment.is_some())
+        else {
             return residual("nested set operator has no exact multiplicity law");
         };
         if cursor != branches.len() {
