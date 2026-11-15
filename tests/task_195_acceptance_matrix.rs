@@ -38,17 +38,17 @@ fn original_36_cases_and_468_parser_cells_are_frozen_without_silent_exclusions()
     assert_eq!(freeze["task_complete"], false);
     assert_eq!(freeze["release_approved"], false);
 
-    let originals = inventory["cases"].as_array().expect("original TASK-178 cases");
+    let originals = inventory["cases"]
+        .as_array()
+        .expect("original TASK-178 cases");
     let expected = originals
         .iter()
         .filter(|row| {
-            row["feature_id"]
-                .as_str()
-                .is_some_and(|feature| {
-                    feature.starts_with("grouping.")
-                        || feature.starts_with("windows.")
-                        || feature.starts_with("ordering.")
-                })
+            row["feature_id"].as_str().is_some_and(|feature| {
+                feature.starts_with("grouping.")
+                    || feature.starts_with("windows.")
+                    || feature.starts_with("ordering.")
+            })
         })
         .map(|row| row["id"].as_str().expect("stable source ID"))
         .collect::<BTreeSet<_>>();
@@ -66,14 +66,18 @@ fn original_36_cases_and_468_parser_cells_are_frozen_without_silent_exclusions()
             .expect("original source cannot be replaced");
         assert_eq!(case["sql"], original["sql"], "{id}: SQL source drift");
         assert_eq!(case["variant"], original["variant"], "{id}: variant drift");
-        assert_eq!(case["feature_id"], original["feature_id"], "{id}: owner drift");
         assert_eq!(
-            case["original_observed_mask"],
-            original["full_document_classification"],
+            case["feature_id"], original["feature_id"],
+            "{id}: owner drift"
+        );
+        assert_eq!(
+            case["original_observed_mask"], original["full_document_classification"],
             "{id}: observed parser/canonical status drift"
         );
         let native = &case["native_oracle"];
-        let kind = native["kind"].as_str().expect("explicit physical evidence law");
+        let kind = native["kind"]
+            .as_str()
+            .expect("explicit physical evidence law");
         if matches!(
             kind,
             "native_parser_rejection" | "stochastic_conditional" | "unstable_tie_membership"
@@ -105,7 +109,10 @@ fn original_36_cases_and_468_parser_cells_are_frozen_without_silent_exclusions()
             );
             assert_eq!(cell["external_vendor_execution"], "unattested");
             assert_eq!(cell["independent_semantic_review"], "pending");
-            match cell["original_observed_status"].as_str().expect("classification") {
+            match cell["original_observed_status"]
+                .as_str()
+                .expect("classification")
+            {
                 "C" => observed[0] += 1,
                 "D" => observed[1] += 1,
                 "R" => observed[2] += 1,
