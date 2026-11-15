@@ -69,7 +69,9 @@ fn empty_source_global_and_rollup_group_results_have_different_cardinalities() {
         .prepare("SELECT id, COUNT(*) FROM empty GROUP BY id")
         .expect("ordinary group");
     let grouped_rows = grouped
-        .query_map([], |row| Ok((row.get::<_, Option<i64>>(0)?, row.get::<_, i64>(1)?)))
+        .query_map([], |row| {
+            Ok((row.get::<_, Option<i64>>(0)?, row.get::<_, i64>(1)?))
+        })
         .expect("grouped empty output")
         .collect::<Result<Vec<_>, _>>()
         .expect("valid grouped rows");
@@ -79,7 +81,9 @@ fn empty_source_global_and_rollup_group_results_have_different_cardinalities() {
         .prepare("SELECT id, COUNT(*) FROM empty GROUP BY ROLLUP(id)")
         .expect("grand total");
     let rollup_rows = rollup
-        .query_map([], |row| Ok((row.get::<_, Option<i64>>(0)?, row.get::<_, i64>(1)?)))
+        .query_map([], |row| {
+            Ok((row.get::<_, Option<i64>>(0)?, row.get::<_, i64>(1)?))
+        })
         .expect("ROLLUP empty output")
         .collect::<Result<Vec<_>, _>>()
         .expect("valid ROLLUP rows");
@@ -90,7 +94,10 @@ fn empty_source_global_and_rollup_group_results_have_different_cardinalities() {
         .expect("grouping provenance")
         .query_row([], |row| row.get::<_, i64>(0))
         .expect("grand total subtotal marker");
-    assert_eq!(marker, 1, "subtotal must not be confused with physical NULL");
+    assert_eq!(
+        marker, 1,
+        "subtotal must not be confused with physical NULL"
+    );
 }
 
 #[test]
