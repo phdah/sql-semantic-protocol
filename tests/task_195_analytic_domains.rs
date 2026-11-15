@@ -75,12 +75,18 @@ fn original_rank_bucket_and_distribution_cases_have_portable_exact_interval_boun
             let name = dialect.as_str().expect("named parser");
             let bounds = range(sql, name);
             assert_eq!(
-                bounds.lower.as_ref().map(|bound| (bound.value.as_str(), bound.inclusive)),
+                bounds
+                    .lower
+                    .as_ref()
+                    .map(|bound| (bound.value.as_str(), bound.inclusive)),
                 expected_lower,
                 "{id}/{name}: wrong lower bound or inclusivity"
             );
             assert_eq!(
-                bounds.upper.as_ref().map(|bound| (bound.value.as_str(), bound.inclusive)),
+                bounds
+                    .upper
+                    .as_ref()
+                    .map(|bound| (bound.value.as_str(), bound.inclusive)),
                 expected_upper,
                 "{id}/{name}: wrong upper bound or inclusivity"
             );
