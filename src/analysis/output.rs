@@ -957,7 +957,6 @@ fn derive_domain(expression: &Expression, ctx: DomainContext<'_>) -> ValueDomain
     }
 }
 
-
 /// Strongest statement-local numeric value law for supported analytic functions.
 ///
 /// These intervals depend on SQL operator semantics, not a test source's row
