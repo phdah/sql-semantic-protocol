@@ -54,3 +54,11 @@ Extracted on 2026-11-10 from the previously overbroad TASK-178. There is **no im
 - Native original source/terminal regression and new independently worked numeric window/frame examples: `tests/task_195_native_window_bags.rs`.
 - Public full-document classification and exact SQL/case/cell identity regression: `tests/task_195_acceptance_matrix.rs`.
 - Remaining before Done: independent strongest-typed-domain certification, exact source-instance positive/NOT TRUE/negative proof where applicable, SQL/dbt/ODCS parity, full CI and pinned sql-tdg verification, plus independent review of all applicable cells. Keep TASK-179, TASK-191, TASK-197 and TASK-180 gates separate; do not treat C parser classification as semantic proof.
+
+## TASK-195 extended evidence on PR #201 (signoff pending)
+
+- Native original terminal/domain soundness: `tests/task_195_typed_soundness.rs`; direct/dbt/ODCS original SQL evidence: `tests/task_195_adapter_parity.rs`.
+- Source occurrence, explicit empty source group/ROLLUP, NULL sort boundaries: `tests/task_195_physical_source_instances.rs`.
+- Original QUALIFY positive vs NOT TRUE populations, stochastic source-subset checks: `tests/task_195_native_partitions.rs`.
+- Complete individual outstanding review obligations: `docs/task-195-review-queue.json`; AC-by-AC assessment: `docs/task-195-acceptance-audit.md`.
+- No independent 468-cell review, full strongest-domain/physical-proof signoff or exact-head downstream consumer evidence has yet been verified. Do not mark task Done on CI alone.

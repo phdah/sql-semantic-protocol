@@ -1,5 +1,15 @@
 {
   "task_195_window_grouping_ordering_acceptance": {
+    "native_not_true_partition_test": "tests/task_195_native_partitions.rs",
+    "native_source_occurrence_test": "tests/task_195_physical_source_instances.rs",
+    "native_output_domain_soundness_test": "tests/task_195_typed_soundness.rs",
+    "full_original_sql_adapter_metadata_parity_test": "tests/task_195_adapter_parity.rs",
+    "acceptance_audit": "docs/task-195-acceptance-audit.md",
+    "explicit_468_cell_review_queue": "docs/task-195-review-queue.json",
+    "independent_cells_signed_off": 0,
+    "parser_C_cells_not_proof": 446,
+    "canonical_drift_cells_unapproved": 21,
+    "parser_rejection_cells_unapproved": 1,
     "owner": "TASK-195",
     "parent": "TASK-88",
     "status": "implementation_in_progress_unapproved",
