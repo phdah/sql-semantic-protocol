@@ -136,8 +136,8 @@ fn all_28_original_deterministic_bags_respect_accepted_typed_output_domains() {
     assert_eq!(cases, 28);
     assert_eq!(
         checked.len(),
-        364,
-        "28 originals × 13 accepted parser dialects"
+        363,
+        "28 originals × 13 dialects minus one named parser rejection"
     );
     assert!(
         checked_occurrences >= 1000,
