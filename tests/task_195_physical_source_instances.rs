@@ -3,17 +3,20 @@
 //! or proof that tied original ROW_NUMBER assigns stable physical identities.
 
 use duckdb::Connection;
+use serde_json::Value;
+
+const FREEZE: &str = include_str!("../docs/task-195-acceptance-freeze.json");
+
+fn source(db: &Connection) {
+    let fixture: Value = serde_json::from_str(FREEZE).expect("fixed original data");
+    db.execute_batch(fixture["source_setup"].as_str().expect("immutable source bag"))
+        .expect("full duplicate and nullable physical input");
+}
 
 #[test]
 fn joined_qualify_preserves_each_duplicate_physical_source_pair() {
     let db = Connection::open_in_memory().expect("DuckDB");
-    db.execute_batch(
-        "CREATE TABLE orders(id INTEGER, amount INTEGER);
-         INSERT INTO orders VALUES (1,10),(1,10),(2,20),(3,NULL),(NULL,10),(4,-5);
-         CREATE TABLE customers(id INTEGER, amount INTEGER);
-         INSERT INTO customers VALUES (1,10),(1,10),(2,100),(5,-5),(NULL,10)",
-    )
-    .expect("six source and five partner occurrences");
+    source(&db);
 
     let mut query = db
         .prepare(
@@ -103,11 +106,7 @@ fn empty_source_global_and_rollup_group_results_have_different_cardinalities() {
 #[test]
 fn null_sort_precedence_is_known_but_peer_identity_is_not_total_order() {
     let db = Connection::open_in_memory().expect("DuckDB");
-    db.execute_batch(
-        "CREATE TABLE orders(id INTEGER, amount INTEGER);
-         INSERT INTO orders VALUES (1,10),(1,10),(2,20),(3,NULL),(NULL,10),(4,-5)",
-    )
-    .expect("fixed source");
+    source(&db);
     let mut statement = db
         .prepare("SELECT id, amount FROM orders ORDER BY amount NULLS FIRST")
         .expect("native explicit NULL order");
