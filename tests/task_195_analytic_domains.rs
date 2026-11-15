@@ -144,7 +144,9 @@ fn grouping_marker_is_a_bit_not_a_nullable_physical_group_key() {
             panic!("{name}: GROUPING(id) must preserve a proven 0/1 marker");
         };
         assert_eq!(markers.mode(), sql_semantic_protocol::SetMode::Include);
-        let actual = markers.values().iter()
+        let actual = markers
+            .values()
+            .iter()
             .map(|item| item.value().clone())
             .collect::<Vec<_>>();
         assert_eq!(
