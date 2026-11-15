@@ -31,7 +31,11 @@ fn assert_numeric_bag(mut actual: Vec<Vec<Value>>, expected: &Value, label: &str
         .collect::<Vec<_>>();
     tuple_sort(&mut actual);
     tuple_sort(&mut golden);
-    assert_eq!(actual.len(), golden.len(), "{label}: complete row multiplicity");
+    assert_eq!(
+        actual.len(),
+        golden.len(),
+        "{label}: complete row multiplicity"
+    );
     for (number, (actual, expected)) in actual.iter().zip(golden.iter()).enumerate() {
         assert_eq!(actual.len(), expected.len(), "{label}: arity at {number}");
         for (column, (actual, expected)) in actual.iter().zip(expected).enumerate() {
@@ -117,14 +121,18 @@ fn contains(domain: &ValueDomain, v: Option<f64>) -> bool {
 }
 
 fn check_law(domain: &ValueDomain, law: &str, cell: &str) {
-    let must_admit = |value| assert!(
-        contains(domain, value),
-        "{cell}: {law} must admit {value:?}, got {domain:?}"
-    );
-    let must_reject = |value| assert!(
-        !contains(domain, value),
-        "{cell}: {law} must reject {value:?}, got {domain:?}"
-    );
+    let must_admit = |value| {
+        assert!(
+            contains(domain, value),
+            "{cell}: {law} must admit {value:?}, got {domain:?}"
+        )
+    };
+    let must_reject = |value| {
+        assert!(
+            !contains(domain, value),
+            "{cell}: {law} must reject {value:?}, got {domain:?}"
+        )
+    };
     match law {
         "grouping_single_bit_0_or_1" => {
             must_admit(Some(0.0));
@@ -200,20 +208,26 @@ fn independent_reconstruction_verifies_every_original_native_terminal_bag() {
     assert_eq!(review["schema_version"], 1);
     assert_eq!(review["task_id"], "TASK-195");
     assert_eq!(review["reviewed_original_cases"], 36);
-    assert_eq!(review["independently_computed_original_DuckDB_complete_bags"], 28);
+    assert_eq!(
+        review["independently_computed_original_DuckDB_complete_bags"],
+        28
+    );
     assert_eq!(review["conditionally_unprovable_original_native_bags"], 8);
     assert_eq!(review["source_setup"], original["source_setup"]);
 
     let db = Connection::open_in_memory().expect("DuckDB native original oracle");
-    db.execute_batch(review["source_setup"].as_str().expect("reviewed original source setup"))
-        .expect("all physical NULL and duplicate source tuples");
+    db.execute_batch(
+        review["source_setup"]
+            .as_str()
+            .expect("reviewed original source setup"),
+    )
+    .expect("all physical NULL and duplicate source tuples");
     let ordered = db
         .prepare("SELECT id, amount FROM orders ORDER BY rowid")
         .expect("physical source row identity")
-        .query_map([], |row| Ok((
-            row.get::<_, Option<i64>>(0)?,
-            row.get::<_, Option<i64>>(1)?,
-        )))
+        .query_map([], |row| {
+            Ok((row.get::<_, Option<i64>>(0)?, row.get::<_, Option<i64>>(1)?))
+        })
         .expect("complete physical rows")
         .collect::<Result<Vec<_>, _>>()
         .expect("all six physical rows");
@@ -223,7 +237,10 @@ fn independent_reconstruction_verifies_every_original_native_terminal_bag() {
         .iter()
         .map(|row| (row["id"].as_i64(), row["amount"].as_i64()))
         .collect::<Vec<_>>();
-    assert_eq!(ordered, reviewed, "original physical source identities are not deduplicated");
+    assert_eq!(
+        ordered, reviewed,
+        "original physical source identities are not deduplicated"
+    );
 
     let mut cases = BTreeSet::new();
     let mut complete = 0;
@@ -238,7 +255,10 @@ fn independent_reconstruction_verifies_every_original_native_terminal_bag() {
             .find(|item| item["id"] == id)
             .expect("no original SQL dropped");
         assert_eq!(case["original_sql"], baseline["sql"], "{id}: immutable SQL");
-        assert_eq!(case["feature_id"], baseline["feature_id"], "{id}: ownership");
+        assert_eq!(
+            case["feature_id"], baseline["feature_id"],
+            "{id}: ownership"
+        );
         let expected = &case["expected_native_terminal_bag"];
         if expected.is_null() {
             assert_eq!(case["expected_native_terminal_count"], Value::Null);
@@ -247,7 +267,9 @@ fn independent_reconstruction_verifies_every_original_native_terminal_bag() {
             continue;
         }
         complete += 1;
-        let width = case["expected_output_columns"].as_u64().expect("typed original width") as usize;
+        let width = case["expected_output_columns"]
+            .as_u64()
+            .expect("typed original width") as usize;
         let floating = matches!(id, "88-C177-S114" | "88-C177-S115" | "88-C177-S119");
         let native = literal_bag(
             &db,
@@ -257,12 +279,19 @@ fn independent_reconstruction_verifies_every_original_native_terminal_bag() {
         );
         native_rows += native.len();
         assert_numeric_bag(native.clone(), expected, id);
-        assert_numeric_bag(native, &baseline["native_oracle"]["expected_terminal_bag"], id);
-        assert_eq!(case["expected_native_terminal_count"], serde_json::json!(
-            expected.as_array().expect("full reviewed bag").len()
-        ));
+        assert_numeric_bag(
+            native,
+            &baseline["native_oracle"]["expected_terminal_bag"],
+            id,
+        );
+        assert_eq!(
+            case["expected_native_terminal_count"],
+            serde_json::json!(expected.as_array().expect("full reviewed bag").len())
+        );
         if let Some(rejected) = case["expected_native_rejected_candidate_count"].as_u64() {
-            let population = case["physical_source_candidates"].as_u64().expect("source bag") as usize;
+            let population = case["physical_source_candidates"]
+                .as_u64()
+                .expect("source bag") as usize;
             assert_eq!(
                 rejected as usize + expected.as_array().expect("selected rows").len(),
                 population,
@@ -271,14 +300,19 @@ fn independent_reconstruction_verifies_every_original_native_terminal_bag() {
             assert_eq!(
                 rejected as usize,
                 case["expected_native_rejected_candidate_bag"]
-                    .as_array().expect("independently reconstructed rejection bag").len(),
+                    .as_array()
+                    .expect("independently reconstructed rejection bag")
+                    .len(),
                 "{id}: rejected candidates must be explicitly enumerated"
             );
         }
     }
     assert_eq!(cases.len(), 36);
     assert_eq!(complete, 28);
-    assert!(native_rows >= 150, "all complete native multiplicities checked");
+    assert!(
+        native_rows >= 150,
+        "all complete native multiplicities checked"
+    );
 }
 
 #[test]
@@ -296,11 +330,17 @@ fn all_468_reviewed_parser_cells_preserve_exact_bounded_typed_laws() {
     let mut seen = BTreeSet::new();
     let mut histogram = [0; 3];
     let mut typed_claims = 0;
-    for cell in review["cells"].as_array().expect("468 individually reviewed dialect cells") {
+    for cell in review["cells"]
+        .as_array()
+        .expect("468 individually reviewed dialect cells")
+    {
         let id = cell["cell_id"].as_str().expect("stable original/dialect");
         assert!(seen.insert(id), "{id}: duplicated reviewer result");
         assert_eq!(cell["reviewed"], true, "{id}: unreviewed");
-        assert_eq!(cell["vendor_runtime_approved"], false, "{id}: vendor approval invented");
+        assert_eq!(
+            cell["vendor_runtime_approved"], false,
+            "{id}: vendor approval invented"
+        );
 
         let case = review["cases"]
             .as_array()
@@ -321,7 +361,9 @@ fn all_468_reviewed_parser_cells_preserve_exact_bounded_typed_laws() {
             .iter()
             .find(|entry| entry["dialect"] == dialect_name)
             .expect("historical parser cell");
-        let status = historical["original_observed_status"].as_str().expect("historical status");
+        let status = historical["original_observed_status"]
+            .as_str()
+            .expect("historical status");
         assert_eq!(cell["original_parser_canonical_status"], status, "{id}");
         let dialect = dialect_from_name(dialect_name).expect("registered parser");
         let protocol = analyze_sql(
@@ -331,16 +373,22 @@ fn all_468_reviewed_parser_cells_preserve_exact_bounded_typed_laws() {
         );
         match status {
             "R" => {
-                assert!(protocol.is_err(), "{id}: parser rejection was silently accepted");
-                assert_eq!(cell["independent_review_disposition"],
-                    "reviewed_parser_rejection_handoff_TASK_191");
+                assert!(
+                    protocol.is_err(),
+                    "{id}: parser rejection was silently accepted"
+                );
+                assert_eq!(
+                    cell["independent_review_disposition"],
+                    "reviewed_parser_rejection_handoff_TASK_191"
+                );
                 histogram[2] += 1;
             }
             "C" | "D" => {
                 if status == "C" {
                     histogram[0] += 1;
                     let disposition = cell["independent_review_disposition"]
-                        .as_str().expect("bounded certification");
+                        .as_str()
+                        .expect("bounded certification");
                     assert!(
                         disposition == "reviewed_portable_sql_outcome_and_DuckDB_native_bag"
                             || disposition == "reviewed_conditional_or_engine_rejected_not_exact",
@@ -348,8 +396,10 @@ fn all_468_reviewed_parser_cells_preserve_exact_bounded_typed_laws() {
                     );
                 } else {
                     histogram[1] += 1;
-                    assert_eq!(cell["independent_review_disposition"],
-                        "reviewed_canonical_drift_not_claimed_equivalent_handoff_TASK_191");
+                    assert_eq!(
+                        cell["independent_review_disposition"],
+                        "reviewed_canonical_drift_not_claimed_equivalent_handoff_TASK_191"
+                    );
                 }
                 let protocol = protocol.unwrap_or_else(|error| panic!("{id}: {error}"));
                 let [ProtocolStatement::Query(query)] = protocol.statements() else {
@@ -358,14 +408,28 @@ fn all_468_reviewed_parser_cells_preserve_exact_bounded_typed_laws() {
                 let actual = query.output().columns();
                 assert_eq!(
                     actual.len(),
-                    case["expected_output_columns"].as_u64().expect("source arity") as usize,
+                    case["expected_output_columns"]
+                        .as_u64()
+                        .expect("source arity") as usize,
                     "{id}: all native output columns must exist in canonical semantics"
                 );
-                let laws = cell["public_output_laws"].as_array().expect("independently reviewed laws");
-                assert_eq!(laws, &case["public_output_laws"], "{id}: original SQL law drift");
+                let laws = cell["public_output_laws"]
+                    .as_array()
+                    .expect("independently reviewed laws");
+                assert_eq!(
+                    laws,
+                    case["public_output_laws"]
+                        .as_array()
+                        .expect("case owned laws"),
+                    "{id}: original SQL law drift"
+                );
                 assert_eq!(laws.len(), actual.len(), "{id}: law arity");
                 for (column, law) in actual.iter().zip(laws) {
-                    check_law(column.domain(), law.as_str().expect("independent typed law"), id);
+                    check_law(
+                        column.domain(),
+                        law.as_str().expect("independent typed law"),
+                        id,
+                    );
                     typed_claims += 1;
                 }
             }
@@ -374,7 +438,10 @@ fn all_468_reviewed_parser_cells_preserve_exact_bounded_typed_laws() {
     }
     assert_eq!(seen.len(), 468);
     assert_eq!(histogram, [446, 21, 1]);
-    assert!(typed_claims >= 490, "two-column grouping and joined QUALIFY tested");
+    assert!(
+        typed_claims >= 490,
+        "two-column grouping and joined QUALIFY tested"
+    );
 }
 
 
