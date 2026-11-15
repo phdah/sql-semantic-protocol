@@ -167,3 +167,58 @@ fn original_sampling_queries_never_produce_impossible_source_occurrences() {
         "all five original stochastic SQL shapes have explicit native dispositions"
     );
 }
+
+
+#[test]
+fn limit_offset_has_exact_value_bag_rejection_but_tied_limit_preserves_ambiguity() {
+    let fixture = fixture();
+    let db = Connection::open_in_memory().expect("DuckDB");
+    db.execute_batch(fixture["source_setup"].as_str().expect("fixed source"))
+        .expect("original duplicate and nullable source");
+    let source = tuples(&db, "SELECT id FROM orders", 1);
+    assert_eq!(source.len(), 6);
+
+    let page = case(&fixture, "88-C177-S159");
+    let selected = tuples(&db, page["sql"].as_str().expect("original LIMIT OFFSET"), 1);
+    assert_eq!(selected, vec![vec![Some(1)], vec![Some(2)]]);
+    let mut remaining = source.clone();
+    for row in &selected {
+        let index = remaining
+            .iter()
+            .position(|candidate| candidate == row)
+            .expect("selected page value came from physical source");
+        remaining.remove(index);
+    }
+    assert_eq!(
+        remaining,
+        vec![vec![None], vec![Some(1)], vec![Some(3)], vec![Some(4)]],
+        "OFFSET discarded a duplicate id=1 and left all other source occurrences"
+    );
+
+    let unstable = case(&fixture, "88-C177-S162");
+    let selected = tuples(
+        &db,
+        unstable["sql"].as_str().expect("original partial-order LIMIT"),
+        1,
+    );
+    assert_eq!(selected.len(), 2);
+    assert!(selected.contains(&vec![Some(4)]));
+    let mut remaining = source;
+    for row in &selected {
+        let index = remaining
+            .iter()
+            .position(|candidate| candidate == row)
+            .expect("partial-order result must be a source occurrence");
+        remaining.remove(index);
+    }
+    let possible_rejected = [
+        vec![vec![None], vec![Some(1)], vec![Some(2)], vec![Some(3)]],
+        vec![vec![Some(1)], vec![Some(1)], vec![Some(2)], vec![Some(3)]],
+    ];
+    assert!(
+        possible_rejected.contains(&remaining),
+        "ties permit either physical peer but no invented row"
+    );
+    assert_eq!(unstable["native_oracle"]["kind"], "unstable_tie_membership");
+    assert!(unstable["native_oracle"]["expected_terminal_bag"].is_null());
+}
