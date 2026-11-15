@@ -19,7 +19,10 @@ fn range(sql: &str, dialect_name: &str) -> (Option<(String, bool)>, Option<(Stri
         panic!("{dialect_name}: one analytic scalar expected");
     };
     let ValueDomain::Ranges(ranges) = output.domain() else {
-        panic!("{dialect_name}: strongest analytic numeric bounds missing: {:?}", output.domain());
+        panic!(
+            "{dialect_name}: strongest analytic numeric bounds missing: {:?}",
+            output.domain()
+        );
     };
     let [interval] = ranges.ranges() else {
         panic!("{dialect_name}: one contiguous numeric interval expected");
@@ -85,7 +88,10 @@ fn invalid_ntile_buckets_must_not_claim_a_positive_finite_bucket_domain() {
                 continue;
             };
             assert!(
-                matches!(output.domain(), ValueDomain::Unknown(_) | ValueDomain::Unbounded),
+                matches!(
+                    output.domain(),
+                    ValueDomain::Unknown(_) | ValueDomain::Unbounded
+                ),
                 "{sql}: invalid or data-dependent buckets cannot have a finite proved range"
             );
         }
