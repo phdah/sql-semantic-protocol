@@ -444,7 +444,6 @@ fn all_468_reviewed_parser_cells_preserve_exact_bounded_typed_laws() {
     );
 }
 
-
 #[test]
 fn all_468_review_queue_cells_match_independent_algebra_and_manifest_decisions() {
     let independent = fixture(REVIEW);
@@ -461,15 +460,21 @@ fn all_468_review_queue_cells_match_independent_algebra_and_manifest_decisions()
     assert_eq!(gate["independent_cells_signed_off"], 446);
     assert_eq!(gate["canonical_drift_cells_unapproved"], 21);
     assert_eq!(gate["parser_rejection_cells_unapproved"], 1);
-    assert_eq!(gate["independent_semantic_review"],
-        "docs/task-195-independent-semantic-review.json");
+    assert_eq!(
+        gate["independent_semantic_review"],
+        "docs/task-195-independent-semantic-review.json"
+    );
     assert_eq!(queue["parent_approved"], false);
     assert_eq!(queue["release_approved"], false);
     assert_eq!(gate["parent_task88_approved"], false);
     assert_eq!(gate["release_approved"], false);
 
-    let expected = independent["cells"].as_array().expect("468 individual semantic reviews");
-    let observed = queue["cells"].as_array().expect("468 individually tracked signoffs");
+    let expected = independent["cells"]
+        .as_array()
+        .expect("468 individual semantic reviews");
+    let observed = queue["cells"]
+        .as_array()
+        .expect("468 individually tracked signoffs");
     assert_eq!(observed.len(), expected.len());
     let mut names = BTreeSet::new();
     let mut completed_portable = 0;
@@ -478,15 +483,25 @@ fn all_468_review_queue_cells_match_independent_algebra_and_manifest_decisions()
         let id = row["cell_id"].as_str().expect("stable case/dialect name");
         assert!(names.insert(id), "{id}: duplicate review queue record");
         assert_eq!(row["reviewed_by_independent_reviewer"], true, "{id}");
-        let reviewer = expected.iter()
+        let reviewer = expected
+            .iter()
             .find(|candidate| candidate["cell_id"] == id)
             .expect("independent original SQL algebra result");
-        assert_eq!(row["reviewed_disposition"], reviewer["independent_review_disposition"], "{id}");
-        assert_eq!(row["parser_status"], reviewer["original_parser_canonical_status"], "{id}");
+        assert_eq!(
+            row["reviewed_disposition"], reviewer["independent_review_disposition"],
+            "{id}"
+        );
+        assert_eq!(
+            row["parser_status"], reviewer["original_parser_canonical_status"],
+            "{id}"
+        );
         assert_eq!(row["case_id"], reviewer["case_id"], "{id}");
         assert_eq!(row["dialect"], reviewer["dialect"], "{id}");
-        assert_eq!(row["portable_equivalence_approved"],
-            serde_json::json!(row["parser_status"] == "C"), "{id}");
+        assert_eq!(
+            row["portable_equivalence_approved"],
+            serde_json::json!(row["parser_status"] == "C"),
+            "{id}"
+        );
         if row["portable_equivalence_approved"] == true {
             completed_portable += 1;
         } else {
