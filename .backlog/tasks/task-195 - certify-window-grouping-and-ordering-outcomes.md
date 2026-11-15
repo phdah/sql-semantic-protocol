@@ -1,7 +1,7 @@
 ---
 id: TASK-195
 title: Certify window, grouping, ordering and pagination outcomes
-status: To Do
+status: In Progress
 assignee: []
 created_date: '2026-11-10'
 updated_date: '2026-11-10'
@@ -47,3 +47,10 @@ After this task is independently verified, marked Done and merged, proceed to TA
 ## Initial state
 
 Extracted on 2026-11-10 from the previously overbroad TASK-178. There is **no implementation or semantic sign-off** for this ticket yet. Existing PR #197 supplies provisional structural observations and selected native oracles only; use those as regression inputs, not as proof of this ticket's acceptance.
+
+## TASK-195 implementation work (open PR, not signed off)
+
+- Preimplementation task-owned 36 original SQL / 468 parser-cell inventory: `docs/task-195-acceptance-freeze.json` and `docs/coverage-manifest.json`.
+- Native original source/terminal regression and new independently worked numeric window/frame examples: `tests/task_195_native_window_bags.rs`.
+- Public full-document classification and exact SQL/case/cell identity regression: `tests/task_195_acceptance_matrix.rs`.
+- Remaining before Done: independent strongest-typed-domain certification, exact source-instance positive/NOT TRUE/negative proof where applicable, SQL/dbt/ODCS parity, full CI and pinned sql-tdg verification, plus independent review of all applicable cells. Keep TASK-179, TASK-191, TASK-197 and TASK-180 gates separate; do not treat C parser classification as semantic proof.

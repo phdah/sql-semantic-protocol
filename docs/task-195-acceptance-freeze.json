@@ -1,0 +1,4418 @@
+{
+  "schema_version": 1,
+  "task_id": "TASK-195",
+  "parent": "TASK-88",
+  "status": "preimplementation_task_owned_v1_freeze",
+  "original_inventory": "docs/task-178-full-variant-inventory.json",
+  "inherited_native_evidence": "docs/task-177-relational-bag-oracles.json",
+  "source_setup": "CREATE TABLE orders(id INTEGER, amount INTEGER); INSERT INTO orders VALUES (1,10),(1,10),(2,20),(3,NULL),(NULL,10),(4,-5); CREATE TABLE customers(id INTEGER, amount INTEGER); INSERT INTO customers VALUES (1,10),(1,10),(2,100),(5,-5),(NULL,10); CREATE TABLE products(id INTEGER); INSERT INTO products VALUES (1),(2),(3);",
+  "complete_source_bags": {
+    "orders": [
+      [
+        null,
+        10
+      ],
+      [
+        1,
+        10
+      ],
+      [
+        1,
+        10
+      ],
+      [
+        2,
+        20
+      ],
+      [
+        3,
+        null
+      ],
+      [
+        4,
+        -5
+      ]
+    ],
+    "customers": [
+      [
+        null,
+        10
+      ],
+      [
+        1,
+        10
+      ],
+      [
+        1,
+        10
+      ],
+      [
+        2,
+        100
+      ],
+      [
+        5,
+        -5
+      ]
+    ],
+    "products": [
+      [
+        1
+      ],
+      [
+        2
+      ],
+      [
+        3
+      ]
+    ]
+  },
+  "source_columns": {
+    "orders": {
+      "id": "INTEGER",
+      "amount": "INTEGER"
+    },
+    "customers": {
+      "id": "INTEGER",
+      "amount": "INTEGER"
+    },
+    "products": {
+      "id": "INTEGER"
+    }
+  },
+  "positive_fixture_id": "88-C195-P",
+  "negative_fixture_id": "88-C195-N",
+  "case_count": 36,
+  "parser_cells": 468,
+  "dialects": [
+    "ansi",
+    "bigquery",
+    "clickhouse",
+    "databricks",
+    "duckdb",
+    "generic",
+    "hive",
+    "mssql",
+    "mysql",
+    "postgresql",
+    "redshift",
+    "snowflake",
+    "sqlite"
+  ],
+  "native_oracle_partition": {
+    "prior_original_integer_bag": 16,
+    "original_float_bag": 3,
+    "original_integer_bag": 4,
+    "unordered_original_source_bag": 5,
+    "native_parser_rejection": 2,
+    "unstable_tie_membership": 1,
+    "stochastic_conditional": 5
+  },
+  "acceptance_mapping": {
+    "1": "original immutable 36 SQL variants × 13 named public parser dialects; typed/source/terminal matrix not yet signed off",
+    "2": "existing exact native integer bags plus new numeric frame/rank and unordered source bags; stochastic and unstable tie cases do not claim deterministic terminal execution",
+    "3": "FETCH WITH TIES/TOP original parser rejections, ordering tie and engine/session distinctions owned by TASK-191/TASK-179",
+    "4": "SQL/dbt/ODCS source-fact parity and TASK-197/TASK-180 handoff pending",
+    "5": "final-head Rust/CI, dbt E2E, pinned sql-tdg checks and independent review pending"
+  },
+  "semantic_accuracy_guard": "Fixed native source-output fixture domains are not automatically the strongest sound general SQL domains. C means shared public-document equality, not runtime, typed or physical certification. D and R retain their historical boundaries.",
+  "independently_reviewed_cells": 0,
+  "external_vendor_runtime_attested": false,
+  "adapter_parity_complete": false,
+  "task_complete": false,
+  "parent_task88_approved": false,
+  "release_approved": false,
+  "cases": [
+    {
+      "id": "88-C177-S100",
+      "feature_id": "grouping.supergroups",
+      "variant": "ROLLUP",
+      "sql": "SELECT id, COUNT(*) FROM orders GROUP BY ROLLUP(id)",
+      "original_observed_mask": "CDDDDDCCCDCDC",
+      "native_oracle": {
+        "kind": "prior_original_integer_bag",
+        "columns": 2,
+        "expected_terminal_bag": [
+          [
+            null,
+            1
+          ],
+          [
+            null,
+            6
+          ],
+          [
+            1,
+            2
+          ],
+          [
+            2,
+            1
+          ],
+          [
+            3,
+            1
+          ],
+          [
+            4,
+            1
+          ]
+        ]
+      },
+      "cells": [
+        {
+          "id": "88-C177-S100/ansi",
+          "dialect": "ansi",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S100/bigquery",
+          "dialect": "bigquery",
+          "original_observed_status": "D",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S100/clickhouse",
+          "dialect": "clickhouse",
+          "original_observed_status": "D",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S100/databricks",
+          "dialect": "databricks",
+          "original_observed_status": "D",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S100/duckdb",
+          "dialect": "duckdb",
+          "original_observed_status": "D",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S100/generic",
+          "dialect": "generic",
+          "original_observed_status": "D",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S100/hive",
+          "dialect": "hive",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S100/mssql",
+          "dialect": "mssql",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S100/mysql",
+          "dialect": "mysql",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S100/postgresql",
+          "dialect": "postgresql",
+          "original_observed_status": "D",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S100/redshift",
+          "dialect": "redshift",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S100/snowflake",
+          "dialect": "snowflake",
+          "original_observed_status": "D",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S100/sqlite",
+          "dialect": "sqlite",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        }
+      ]
+    },
+    {
+      "id": "88-C177-S101",
+      "feature_id": "grouping.supergroups",
+      "variant": "CUBE",
+      "sql": "SELECT id, COUNT(*) FROM orders GROUP BY CUBE(id)",
+      "original_observed_mask": "CDDDDDCCCDCDC",
+      "native_oracle": {
+        "kind": "prior_original_integer_bag",
+        "columns": 2,
+        "expected_terminal_bag": [
+          [
+            null,
+            1
+          ],
+          [
+            null,
+            6
+          ],
+          [
+            1,
+            2
+          ],
+          [
+            2,
+            1
+          ],
+          [
+            3,
+            1
+          ],
+          [
+            4,
+            1
+          ]
+        ]
+      },
+      "cells": [
+        {
+          "id": "88-C177-S101/ansi",
+          "dialect": "ansi",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S101/bigquery",
+          "dialect": "bigquery",
+          "original_observed_status": "D",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S101/clickhouse",
+          "dialect": "clickhouse",
+          "original_observed_status": "D",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S101/databricks",
+          "dialect": "databricks",
+          "original_observed_status": "D",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S101/duckdb",
+          "dialect": "duckdb",
+          "original_observed_status": "D",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S101/generic",
+          "dialect": "generic",
+          "original_observed_status": "D",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S101/hive",
+          "dialect": "hive",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S101/mssql",
+          "dialect": "mssql",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S101/mysql",
+          "dialect": "mysql",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S101/postgresql",
+          "dialect": "postgresql",
+          "original_observed_status": "D",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S101/redshift",
+          "dialect": "redshift",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S101/snowflake",
+          "dialect": "snowflake",
+          "original_observed_status": "D",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S101/sqlite",
+          "dialect": "sqlite",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        }
+      ]
+    },
+    {
+      "id": "88-C177-S104",
+      "feature_id": "grouping.supergroups",
+      "variant": "GROUPING()",
+      "sql": "SELECT GROUPING(id), COUNT(*) FROM orders GROUP BY ROLLUP(id)",
+      "original_observed_mask": "CDDDDDCCCDCDC",
+      "native_oracle": {
+        "kind": "prior_original_integer_bag",
+        "columns": 2,
+        "expected_terminal_bag": [
+          [
+            0,
+            1
+          ],
+          [
+            0,
+            1
+          ],
+          [
+            0,
+            1
+          ],
+          [
+            0,
+            1
+          ],
+          [
+            0,
+            2
+          ],
+          [
+            1,
+            6
+          ]
+        ]
+      },
+      "cells": [
+        {
+          "id": "88-C177-S104/ansi",
+          "dialect": "ansi",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S104/bigquery",
+          "dialect": "bigquery",
+          "original_observed_status": "D",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S104/clickhouse",
+          "dialect": "clickhouse",
+          "original_observed_status": "D",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S104/databricks",
+          "dialect": "databricks",
+          "original_observed_status": "D",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S104/duckdb",
+          "dialect": "duckdb",
+          "original_observed_status": "D",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S104/generic",
+          "dialect": "generic",
+          "original_observed_status": "D",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S104/hive",
+          "dialect": "hive",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S104/mssql",
+          "dialect": "mssql",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S104/mysql",
+          "dialect": "mysql",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S104/postgresql",
+          "dialect": "postgresql",
+          "original_observed_status": "D",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S104/redshift",
+          "dialect": "redshift",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S104/snowflake",
+          "dialect": "snowflake",
+          "original_observed_status": "D",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S104/sqlite",
+          "dialect": "sqlite",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        }
+      ]
+    },
+    {
+      "id": "88-C177-S106",
+      "feature_id": "windows.row_number",
+      "variant": "ROW_NUMBER",
+      "sql": "SELECT ROW_NUMBER() OVER (ORDER BY id) FROM orders",
+      "original_observed_mask": "CCCCCCCCCCCCC",
+      "native_oracle": {
+        "kind": "prior_original_integer_bag",
+        "columns": 1,
+        "expected_terminal_bag": [
+          [
+            1
+          ],
+          [
+            2
+          ],
+          [
+            3
+          ],
+          [
+            4
+          ],
+          [
+            5
+          ],
+          [
+            6
+          ]
+        ]
+      },
+      "cells": [
+        {
+          "id": "88-C177-S106/ansi",
+          "dialect": "ansi",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S106/bigquery",
+          "dialect": "bigquery",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S106/clickhouse",
+          "dialect": "clickhouse",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S106/databricks",
+          "dialect": "databricks",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S106/duckdb",
+          "dialect": "duckdb",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S106/generic",
+          "dialect": "generic",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S106/hive",
+          "dialect": "hive",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S106/mssql",
+          "dialect": "mssql",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S106/mysql",
+          "dialect": "mysql",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S106/postgresql",
+          "dialect": "postgresql",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S106/redshift",
+          "dialect": "redshift",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S106/snowflake",
+          "dialect": "snowflake",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S106/sqlite",
+          "dialect": "sqlite",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        }
+      ]
+    },
+    {
+      "id": "88-C177-S107",
+      "feature_id": "windows.row_number",
+      "variant": "partitioned ordering",
+      "sql": "SELECT ROW_NUMBER() OVER (PARTITION BY id ORDER BY amount) FROM orders",
+      "original_observed_mask": "CCCCCCCCCCCCC",
+      "native_oracle": {
+        "kind": "prior_original_integer_bag",
+        "columns": 1,
+        "expected_terminal_bag": [
+          [
+            1
+          ],
+          [
+            1
+          ],
+          [
+            1
+          ],
+          [
+            1
+          ],
+          [
+            1
+          ],
+          [
+            2
+          ]
+        ]
+      },
+      "cells": [
+        {
+          "id": "88-C177-S107/ansi",
+          "dialect": "ansi",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S107/bigquery",
+          "dialect": "bigquery",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S107/clickhouse",
+          "dialect": "clickhouse",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S107/databricks",
+          "dialect": "databricks",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S107/duckdb",
+          "dialect": "duckdb",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S107/generic",
+          "dialect": "generic",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S107/hive",
+          "dialect": "hive",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S107/mssql",
+          "dialect": "mssql",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S107/mysql",
+          "dialect": "mysql",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S107/postgresql",
+          "dialect": "postgresql",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S107/redshift",
+          "dialect": "redshift",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S107/snowflake",
+          "dialect": "snowflake",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S107/sqlite",
+          "dialect": "sqlite",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        }
+      ]
+    },
+    {
+      "id": "88-C177-S108",
+      "feature_id": "windows.row_number",
+      "variant": "peers",
+      "sql": "SELECT ROW_NUMBER() OVER (ORDER BY amount) FROM orders",
+      "original_observed_mask": "CCCCCCCCCCCCC",
+      "native_oracle": {
+        "kind": "prior_original_integer_bag",
+        "columns": 1,
+        "expected_terminal_bag": [
+          [
+            1
+          ],
+          [
+            2
+          ],
+          [
+            3
+          ],
+          [
+            4
+          ],
+          [
+            5
+          ],
+          [
+            6
+          ]
+        ]
+      },
+      "cells": [
+        {
+          "id": "88-C177-S108/ansi",
+          "dialect": "ansi",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S108/bigquery",
+          "dialect": "bigquery",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S108/clickhouse",
+          "dialect": "clickhouse",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S108/databricks",
+          "dialect": "databricks",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S108/duckdb",
+          "dialect": "duckdb",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S108/generic",
+          "dialect": "generic",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S108/hive",
+          "dialect": "hive",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S108/mssql",
+          "dialect": "mssql",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S108/mysql",
+          "dialect": "mysql",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S108/postgresql",
+          "dialect": "postgresql",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S108/redshift",
+          "dialect": "redshift",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S108/snowflake",
+          "dialect": "snowflake",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S108/sqlite",
+          "dialect": "sqlite",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        }
+      ]
+    },
+    {
+      "id": "88-C177-S109",
+      "feature_id": "windows.row_number",
+      "variant": "stable ties",
+      "sql": "SELECT ROW_NUMBER() OVER (ORDER BY amount, id) FROM orders",
+      "original_observed_mask": "CCCCCCCCCCCCC",
+      "native_oracle": {
+        "kind": "prior_original_integer_bag",
+        "columns": 1,
+        "expected_terminal_bag": [
+          [
+            1
+          ],
+          [
+            2
+          ],
+          [
+            3
+          ],
+          [
+            4
+          ],
+          [
+            5
+          ],
+          [
+            6
+          ]
+        ]
+      },
+      "cells": [
+        {
+          "id": "88-C177-S109/ansi",
+          "dialect": "ansi",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S109/bigquery",
+          "dialect": "bigquery",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S109/clickhouse",
+          "dialect": "clickhouse",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S109/databricks",
+          "dialect": "databricks",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S109/duckdb",
+          "dialect": "duckdb",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S109/generic",
+          "dialect": "generic",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S109/hive",
+          "dialect": "hive",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S109/mssql",
+          "dialect": "mssql",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S109/mysql",
+          "dialect": "mysql",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S109/postgresql",
+          "dialect": "postgresql",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S109/redshift",
+          "dialect": "redshift",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S109/snowflake",
+          "dialect": "snowflake",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S109/sqlite",
+          "dialect": "sqlite",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        }
+      ]
+    },
+    {
+      "id": "88-C177-S110",
+      "feature_id": "windows.row_number",
+      "variant": "NULL ordering",
+      "sql": "SELECT ROW_NUMBER() OVER (ORDER BY amount NULLS LAST) FROM orders",
+      "original_observed_mask": "CCCCCCCCCCCCC",
+      "native_oracle": {
+        "kind": "prior_original_integer_bag",
+        "columns": 1,
+        "expected_terminal_bag": [
+          [
+            1
+          ],
+          [
+            2
+          ],
+          [
+            3
+          ],
+          [
+            4
+          ],
+          [
+            5
+          ],
+          [
+            6
+          ]
+        ]
+      },
+      "cells": [
+        {
+          "id": "88-C177-S110/ansi",
+          "dialect": "ansi",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S110/bigquery",
+          "dialect": "bigquery",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S110/clickhouse",
+          "dialect": "clickhouse",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S110/databricks",
+          "dialect": "databricks",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S110/duckdb",
+          "dialect": "duckdb",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S110/generic",
+          "dialect": "generic",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S110/hive",
+          "dialect": "hive",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S110/mssql",
+          "dialect": "mssql",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S110/mysql",
+          "dialect": "mysql",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S110/postgresql",
+          "dialect": "postgresql",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S110/redshift",
+          "dialect": "redshift",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S110/snowflake",
+          "dialect": "snowflake",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S110/sqlite",
+          "dialect": "sqlite",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        }
+      ]
+    },
+    {
+      "id": "88-C177-S111",
+      "feature_id": "windows.ranking",
+      "variant": "RANK",
+      "sql": "SELECT RANK() OVER (ORDER BY amount) FROM orders",
+      "original_observed_mask": "CCCCCCCCCCCCC",
+      "native_oracle": {
+        "kind": "prior_original_integer_bag",
+        "columns": 1,
+        "expected_terminal_bag": [
+          [
+            1
+          ],
+          [
+            2
+          ],
+          [
+            2
+          ],
+          [
+            2
+          ],
+          [
+            5
+          ],
+          [
+            6
+          ]
+        ]
+      },
+      "cells": [
+        {
+          "id": "88-C177-S111/ansi",
+          "dialect": "ansi",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S111/bigquery",
+          "dialect": "bigquery",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S111/clickhouse",
+          "dialect": "clickhouse",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S111/databricks",
+          "dialect": "databricks",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S111/duckdb",
+          "dialect": "duckdb",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S111/generic",
+          "dialect": "generic",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S111/hive",
+          "dialect": "hive",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S111/mssql",
+          "dialect": "mssql",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S111/mysql",
+          "dialect": "mysql",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S111/postgresql",
+          "dialect": "postgresql",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S111/redshift",
+          "dialect": "redshift",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S111/snowflake",
+          "dialect": "snowflake",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S111/sqlite",
+          "dialect": "sqlite",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        }
+      ]
+    },
+    {
+      "id": "88-C177-S112",
+      "feature_id": "windows.ranking",
+      "variant": "DENSE_RANK",
+      "sql": "SELECT DENSE_RANK() OVER (ORDER BY amount) FROM orders",
+      "original_observed_mask": "CCCCCCCCCCCCC",
+      "native_oracle": {
+        "kind": "prior_original_integer_bag",
+        "columns": 1,
+        "expected_terminal_bag": [
+          [
+            1
+          ],
+          [
+            2
+          ],
+          [
+            2
+          ],
+          [
+            2
+          ],
+          [
+            3
+          ],
+          [
+            4
+          ]
+        ]
+      },
+      "cells": [
+        {
+          "id": "88-C177-S112/ansi",
+          "dialect": "ansi",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S112/bigquery",
+          "dialect": "bigquery",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S112/clickhouse",
+          "dialect": "clickhouse",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S112/databricks",
+          "dialect": "databricks",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S112/duckdb",
+          "dialect": "duckdb",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S112/generic",
+          "dialect": "generic",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S112/hive",
+          "dialect": "hive",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S112/mssql",
+          "dialect": "mssql",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S112/mysql",
+          "dialect": "mysql",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S112/postgresql",
+          "dialect": "postgresql",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S112/redshift",
+          "dialect": "redshift",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S112/snowflake",
+          "dialect": "snowflake",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S112/sqlite",
+          "dialect": "sqlite",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        }
+      ]
+    },
+    {
+      "id": "88-C177-S113",
+      "feature_id": "windows.ranking",
+      "variant": "NTILE",
+      "sql": "SELECT NTILE(3) OVER (ORDER BY amount) FROM orders",
+      "original_observed_mask": "CCCCCCCCCCCCC",
+      "native_oracle": {
+        "kind": "prior_original_integer_bag",
+        "columns": 1,
+        "expected_terminal_bag": [
+          [
+            1
+          ],
+          [
+            1
+          ],
+          [
+            2
+          ],
+          [
+            2
+          ],
+          [
+            3
+          ],
+          [
+            3
+          ]
+        ]
+      },
+      "cells": [
+        {
+          "id": "88-C177-S113/ansi",
+          "dialect": "ansi",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S113/bigquery",
+          "dialect": "bigquery",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S113/clickhouse",
+          "dialect": "clickhouse",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S113/databricks",
+          "dialect": "databricks",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S113/duckdb",
+          "dialect": "duckdb",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S113/generic",
+          "dialect": "generic",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S113/hive",
+          "dialect": "hive",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S113/mssql",
+          "dialect": "mssql",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S113/mysql",
+          "dialect": "mysql",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S113/postgresql",
+          "dialect": "postgresql",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S113/redshift",
+          "dialect": "redshift",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S113/snowflake",
+          "dialect": "snowflake",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S113/sqlite",
+          "dialect": "sqlite",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        }
+      ]
+    },
+    {
+      "id": "88-C177-S114",
+      "feature_id": "windows.ranking",
+      "variant": "PERCENT_RANK",
+      "sql": "SELECT PERCENT_RANK() OVER (ORDER BY amount) FROM orders",
+      "original_observed_mask": "CCCCCCCCCCCCC",
+      "native_oracle": {
+        "kind": "original_float_bag",
+        "columns": 1,
+        "expected_terminal_bag": [
+          [
+            0
+          ],
+          [
+            0.2
+          ],
+          [
+            0.2
+          ],
+          [
+            0.2
+          ],
+          [
+            0.8
+          ],
+          [
+            1
+          ]
+        ]
+      },
+      "cells": [
+        {
+          "id": "88-C177-S114/ansi",
+          "dialect": "ansi",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S114/bigquery",
+          "dialect": "bigquery",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S114/clickhouse",
+          "dialect": "clickhouse",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S114/databricks",
+          "dialect": "databricks",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S114/duckdb",
+          "dialect": "duckdb",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S114/generic",
+          "dialect": "generic",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S114/hive",
+          "dialect": "hive",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S114/mssql",
+          "dialect": "mssql",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S114/mysql",
+          "dialect": "mysql",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S114/postgresql",
+          "dialect": "postgresql",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S114/redshift",
+          "dialect": "redshift",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S114/snowflake",
+          "dialect": "snowflake",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S114/sqlite",
+          "dialect": "sqlite",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        }
+      ]
+    },
+    {
+      "id": "88-C177-S115",
+      "feature_id": "windows.ranking",
+      "variant": "CUME_DIST",
+      "sql": "SELECT CUME_DIST() OVER (ORDER BY amount) FROM orders",
+      "original_observed_mask": "CCCCCCCCCCCCC",
+      "native_oracle": {
+        "kind": "original_float_bag",
+        "columns": 1,
+        "expected_terminal_bag": [
+          [
+            0.16666666666666666
+          ],
+          [
+            0.6666666666666666
+          ],
+          [
+            0.6666666666666666
+          ],
+          [
+            0.6666666666666666
+          ],
+          [
+            0.8333333333333334
+          ],
+          [
+            1
+          ]
+        ]
+      },
+      "cells": [
+        {
+          "id": "88-C177-S115/ansi",
+          "dialect": "ansi",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S115/bigquery",
+          "dialect": "bigquery",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S115/clickhouse",
+          "dialect": "clickhouse",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S115/databricks",
+          "dialect": "databricks",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S115/duckdb",
+          "dialect": "duckdb",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S115/generic",
+          "dialect": "generic",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S115/hive",
+          "dialect": "hive",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S115/mssql",
+          "dialect": "mssql",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S115/mysql",
+          "dialect": "mysql",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S115/postgresql",
+          "dialect": "postgresql",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S115/redshift",
+          "dialect": "redshift",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S115/snowflake",
+          "dialect": "snowflake",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S115/sqlite",
+          "dialect": "sqlite",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        }
+      ]
+    },
+    {
+      "id": "88-C177-S116",
+      "feature_id": "windows.frames",
+      "variant": "ROWS",
+      "sql": "SELECT SUM(amount) OVER (ORDER BY id ROWS BETWEEN 1 PRECEDING AND CURRENT ROW) FROM orders",
+      "original_observed_mask": "CCCCCCCCCCCCC",
+      "native_oracle": {
+        "kind": "original_integer_bag",
+        "columns": 1,
+        "expected_terminal_bag": [
+          [
+            10
+          ],
+          [
+            20
+          ],
+          [
+            30
+          ],
+          [
+            20
+          ],
+          [
+            -5
+          ],
+          [
+            5
+          ]
+        ]
+      },
+      "cells": [
+        {
+          "id": "88-C177-S116/ansi",
+          "dialect": "ansi",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S116/bigquery",
+          "dialect": "bigquery",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S116/clickhouse",
+          "dialect": "clickhouse",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S116/databricks",
+          "dialect": "databricks",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S116/duckdb",
+          "dialect": "duckdb",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S116/generic",
+          "dialect": "generic",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S116/hive",
+          "dialect": "hive",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S116/mssql",
+          "dialect": "mssql",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S116/mysql",
+          "dialect": "mysql",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S116/postgresql",
+          "dialect": "postgresql",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S116/redshift",
+          "dialect": "redshift",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S116/snowflake",
+          "dialect": "snowflake",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S116/sqlite",
+          "dialect": "sqlite",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        }
+      ]
+    },
+    {
+      "id": "88-C177-S117",
+      "feature_id": "windows.frames",
+      "variant": "RANGE",
+      "sql": "SELECT SUM(amount) OVER (ORDER BY id RANGE BETWEEN 1 PRECEDING AND CURRENT ROW) FROM orders",
+      "original_observed_mask": "CCCCCCCCCCCCC",
+      "native_oracle": {
+        "kind": "original_integer_bag",
+        "columns": 1,
+        "expected_terminal_bag": [
+          [
+            20
+          ],
+          [
+            20
+          ],
+          [
+            40
+          ],
+          [
+            20
+          ],
+          [
+            -5
+          ],
+          [
+            10
+          ]
+        ]
+      },
+      "cells": [
+        {
+          "id": "88-C177-S117/ansi",
+          "dialect": "ansi",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S117/bigquery",
+          "dialect": "bigquery",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S117/clickhouse",
+          "dialect": "clickhouse",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S117/databricks",
+          "dialect": "databricks",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S117/duckdb",
+          "dialect": "duckdb",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S117/generic",
+          "dialect": "generic",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S117/hive",
+          "dialect": "hive",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S117/mssql",
+          "dialect": "mssql",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S117/mysql",
+          "dialect": "mysql",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S117/postgresql",
+          "dialect": "postgresql",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S117/redshift",
+          "dialect": "redshift",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S117/snowflake",
+          "dialect": "snowflake",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S117/sqlite",
+          "dialect": "sqlite",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        }
+      ]
+    },
+    {
+      "id": "88-C177-S118",
+      "feature_id": "windows.frames",
+      "variant": "GROUPS",
+      "sql": "SELECT COUNT(*) OVER (ORDER BY id GROUPS BETWEEN 1 PRECEDING AND CURRENT ROW) FROM orders",
+      "original_observed_mask": "CCCCCCCCCCCCC",
+      "native_oracle": {
+        "kind": "original_integer_bag",
+        "columns": 1,
+        "expected_terminal_bag": [
+          [
+            2
+          ],
+          [
+            2
+          ],
+          [
+            3
+          ],
+          [
+            2
+          ],
+          [
+            2
+          ],
+          [
+            2
+          ]
+        ]
+      },
+      "cells": [
+        {
+          "id": "88-C177-S118/ansi",
+          "dialect": "ansi",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S118/bigquery",
+          "dialect": "bigquery",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S118/clickhouse",
+          "dialect": "clickhouse",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S118/databricks",
+          "dialect": "databricks",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S118/duckdb",
+          "dialect": "duckdb",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S118/generic",
+          "dialect": "generic",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S118/hive",
+          "dialect": "hive",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S118/mssql",
+          "dialect": "mssql",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S118/mysql",
+          "dialect": "mysql",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S118/postgresql",
+          "dialect": "postgresql",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S118/redshift",
+          "dialect": "redshift",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S118/snowflake",
+          "dialect": "snowflake",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S118/sqlite",
+          "dialect": "sqlite",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        }
+      ]
+    },
+    {
+      "id": "88-C177-S119",
+      "feature_id": "windows.frames",
+      "variant": "sliding/window aggregates",
+      "sql": "SELECT AVG(amount) OVER (PARTITION BY id ORDER BY amount ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) FROM orders",
+      "original_observed_mask": "CCCCCCCCCCCCC",
+      "native_oracle": {
+        "kind": "original_float_bag",
+        "columns": 1,
+        "expected_terminal_bag": [
+          [
+            10
+          ],
+          [
+            10
+          ],
+          [
+            20
+          ],
+          [
+            null
+          ],
+          [
+            -5
+          ],
+          [
+            10
+          ]
+        ]
+      },
+      "cells": [
+        {
+          "id": "88-C177-S119/ansi",
+          "dialect": "ansi",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S119/bigquery",
+          "dialect": "bigquery",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S119/clickhouse",
+          "dialect": "clickhouse",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S119/databricks",
+          "dialect": "databricks",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S119/duckdb",
+          "dialect": "duckdb",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S119/generic",
+          "dialect": "generic",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S119/hive",
+          "dialect": "hive",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S119/mssql",
+          "dialect": "mssql",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S119/mysql",
+          "dialect": "mysql",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S119/postgresql",
+          "dialect": "postgresql",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S119/redshift",
+          "dialect": "redshift",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S119/snowflake",
+          "dialect": "snowflake",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S119/sqlite",
+          "dialect": "sqlite",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        }
+      ]
+    },
+    {
+      "id": "88-C177-S120",
+      "feature_id": "windows.frames",
+      "variant": "named windows",
+      "sql": "SELECT SUM(amount) OVER w FROM orders WINDOW w AS (ORDER BY id ROWS UNBOUNDED PRECEDING)",
+      "original_observed_mask": "CCCCCCCCCCCRC",
+      "native_oracle": {
+        "kind": "original_integer_bag",
+        "columns": 1,
+        "expected_terminal_bag": [
+          [
+            10
+          ],
+          [
+            20
+          ],
+          [
+            40
+          ],
+          [
+            40
+          ],
+          [
+            35
+          ],
+          [
+            45
+          ]
+        ]
+      },
+      "cells": [
+        {
+          "id": "88-C177-S120/ansi",
+          "dialect": "ansi",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S120/bigquery",
+          "dialect": "bigquery",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S120/clickhouse",
+          "dialect": "clickhouse",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S120/databricks",
+          "dialect": "databricks",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S120/duckdb",
+          "dialect": "duckdb",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S120/generic",
+          "dialect": "generic",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S120/hive",
+          "dialect": "hive",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S120/mssql",
+          "dialect": "mssql",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S120/mysql",
+          "dialect": "mysql",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S120/postgresql",
+          "dialect": "postgresql",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S120/redshift",
+          "dialect": "redshift",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S120/snowflake",
+          "dialect": "snowflake",
+          "original_observed_status": "R",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S120/sqlite",
+          "dialect": "sqlite",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        }
+      ]
+    },
+    {
+      "id": "88-C177-S121",
+      "feature_id": "windows.qualify",
+      "variant": "QUALIFY aliases",
+      "sql": "SELECT ROW_NUMBER() OVER (ORDER BY id) AS rn FROM orders QUALIFY rn = 1",
+      "original_observed_mask": "CCCCCCCCCCCCC",
+      "native_oracle": {
+        "kind": "prior_original_integer_bag",
+        "columns": 1,
+        "expected_terminal_bag": [
+          [
+            1
+          ]
+        ]
+      },
+      "cells": [
+        {
+          "id": "88-C177-S121/ansi",
+          "dialect": "ansi",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S121/bigquery",
+          "dialect": "bigquery",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S121/clickhouse",
+          "dialect": "clickhouse",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S121/databricks",
+          "dialect": "databricks",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S121/duckdb",
+          "dialect": "duckdb",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S121/generic",
+          "dialect": "generic",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S121/hive",
+          "dialect": "hive",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S121/mssql",
+          "dialect": "mssql",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S121/mysql",
+          "dialect": "mysql",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S121/postgresql",
+          "dialect": "postgresql",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S121/redshift",
+          "dialect": "redshift",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S121/snowflake",
+          "dialect": "snowflake",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S121/sqlite",
+          "dialect": "sqlite",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        }
+      ]
+    },
+    {
+      "id": "88-C177-S122",
+      "feature_id": "windows.qualify",
+      "variant": "multiple predicates",
+      "sql": "SELECT ROW_NUMBER() OVER (ORDER BY id) AS rn FROM orders QUALIFY rn = 1 AND id > 0",
+      "original_observed_mask": "CCCCCCCCCCCCC",
+      "native_oracle": {
+        "kind": "prior_original_integer_bag",
+        "columns": 1,
+        "expected_terminal_bag": [
+          [
+            1
+          ]
+        ]
+      },
+      "cells": [
+        {
+          "id": "88-C177-S122/ansi",
+          "dialect": "ansi",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S122/bigquery",
+          "dialect": "bigquery",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S122/clickhouse",
+          "dialect": "clickhouse",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S122/databricks",
+          "dialect": "databricks",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S122/duckdb",
+          "dialect": "duckdb",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S122/generic",
+          "dialect": "generic",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S122/hive",
+          "dialect": "hive",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S122/mssql",
+          "dialect": "mssql",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S122/mysql",
+          "dialect": "mysql",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S122/postgresql",
+          "dialect": "postgresql",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S122/redshift",
+          "dialect": "redshift",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S122/snowflake",
+          "dialect": "snowflake",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S122/sqlite",
+          "dialect": "sqlite",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        }
+      ]
+    },
+    {
+      "id": "88-C177-S123",
+      "feature_id": "windows.qualify",
+      "variant": "grouped/window joins",
+      "sql": "SELECT o.id, COUNT(*) OVER (PARTITION BY c.id) AS n FROM orders o JOIN customers c ON o.id = c.id QUALIFY n > 1",
+      "original_observed_mask": "CCCCCCCCCCCCC",
+      "native_oracle": {
+        "kind": "prior_original_integer_bag",
+        "columns": 2,
+        "expected_terminal_bag": [
+          [
+            1,
+            4
+          ],
+          [
+            1,
+            4
+          ],
+          [
+            1,
+            4
+          ],
+          [
+            1,
+            4
+          ]
+        ]
+      },
+      "cells": [
+        {
+          "id": "88-C177-S123/ansi",
+          "dialect": "ansi",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S123/bigquery",
+          "dialect": "bigquery",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S123/clickhouse",
+          "dialect": "clickhouse",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S123/databricks",
+          "dialect": "databricks",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S123/duckdb",
+          "dialect": "duckdb",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S123/generic",
+          "dialect": "generic",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S123/hive",
+          "dialect": "hive",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S123/mssql",
+          "dialect": "mssql",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S123/mysql",
+          "dialect": "mysql",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S123/postgresql",
+          "dialect": "postgresql",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S123/redshift",
+          "dialect": "redshift",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S123/snowflake",
+          "dialect": "snowflake",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S123/sqlite",
+          "dialect": "sqlite",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        }
+      ]
+    },
+    {
+      "id": "88-C177-S124",
+      "feature_id": "windows.qualify",
+      "variant": "negative membership",
+      "sql": "SELECT ROW_NUMBER() OVER (ORDER BY id) AS rn FROM orders QUALIFY rn > 1",
+      "original_observed_mask": "CCCCCCCCCCCCC",
+      "native_oracle": {
+        "kind": "prior_original_integer_bag",
+        "columns": 1,
+        "expected_terminal_bag": [
+          [
+            2
+          ],
+          [
+            3
+          ],
+          [
+            4
+          ],
+          [
+            5
+          ],
+          [
+            6
+          ]
+        ]
+      },
+      "cells": [
+        {
+          "id": "88-C177-S124/ansi",
+          "dialect": "ansi",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S124/bigquery",
+          "dialect": "bigquery",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S124/clickhouse",
+          "dialect": "clickhouse",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S124/databricks",
+          "dialect": "databricks",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S124/duckdb",
+          "dialect": "duckdb",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S124/generic",
+          "dialect": "generic",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S124/hive",
+          "dialect": "hive",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S124/mssql",
+          "dialect": "mssql",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S124/mysql",
+          "dialect": "mysql",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S124/postgresql",
+          "dialect": "postgresql",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S124/redshift",
+          "dialect": "redshift",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S124/snowflake",
+          "dialect": "snowflake",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S124/sqlite",
+          "dialect": "sqlite",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        }
+      ]
+    },
+    {
+      "id": "88-C177-S154",
+      "feature_id": "ordering.sort",
+      "variant": "ORDER BY",
+      "sql": "SELECT id FROM orders ORDER BY amount",
+      "original_observed_mask": "CCCCCCCCCCCCC",
+      "native_oracle": {
+        "kind": "unordered_original_source_bag",
+        "columns": 1,
+        "expected_terminal_bag": [
+          [
+            null
+          ],
+          [
+            1
+          ],
+          [
+            1
+          ],
+          [
+            2
+          ],
+          [
+            3
+          ],
+          [
+            4
+          ]
+        ]
+      },
+      "cells": [
+        {
+          "id": "88-C177-S154/ansi",
+          "dialect": "ansi",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S154/bigquery",
+          "dialect": "bigquery",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S154/clickhouse",
+          "dialect": "clickhouse",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S154/databricks",
+          "dialect": "databricks",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S154/duckdb",
+          "dialect": "duckdb",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S154/generic",
+          "dialect": "generic",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S154/hive",
+          "dialect": "hive",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S154/mssql",
+          "dialect": "mssql",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S154/mysql",
+          "dialect": "mysql",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S154/postgresql",
+          "dialect": "postgresql",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S154/redshift",
+          "dialect": "redshift",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S154/snowflake",
+          "dialect": "snowflake",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S154/sqlite",
+          "dialect": "sqlite",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        }
+      ]
+    },
+    {
+      "id": "88-C177-S155",
+      "feature_id": "ordering.sort",
+      "variant": "ASC/DESC",
+      "sql": "SELECT id FROM orders ORDER BY amount DESC, id ASC",
+      "original_observed_mask": "CCCCCCCCCCCCC",
+      "native_oracle": {
+        "kind": "unordered_original_source_bag",
+        "columns": 1,
+        "expected_terminal_bag": [
+          [
+            null
+          ],
+          [
+            1
+          ],
+          [
+            1
+          ],
+          [
+            2
+          ],
+          [
+            3
+          ],
+          [
+            4
+          ]
+        ]
+      },
+      "cells": [
+        {
+          "id": "88-C177-S155/ansi",
+          "dialect": "ansi",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S155/bigquery",
+          "dialect": "bigquery",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S155/clickhouse",
+          "dialect": "clickhouse",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S155/databricks",
+          "dialect": "databricks",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S155/duckdb",
+          "dialect": "duckdb",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S155/generic",
+          "dialect": "generic",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S155/hive",
+          "dialect": "hive",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S155/mssql",
+          "dialect": "mssql",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S155/mysql",
+          "dialect": "mysql",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S155/postgresql",
+          "dialect": "postgresql",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S155/redshift",
+          "dialect": "redshift",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S155/snowflake",
+          "dialect": "snowflake",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S155/sqlite",
+          "dialect": "sqlite",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        }
+      ]
+    },
+    {
+      "id": "88-C177-S156",
+      "feature_id": "ordering.sort",
+      "variant": "NULLS FIRST/LAST",
+      "sql": "SELECT id FROM orders ORDER BY amount NULLS FIRST",
+      "original_observed_mask": "CCCCCCCCCCCCC",
+      "native_oracle": {
+        "kind": "unordered_original_source_bag",
+        "columns": 1,
+        "expected_terminal_bag": [
+          [
+            null
+          ],
+          [
+            1
+          ],
+          [
+            1
+          ],
+          [
+            2
+          ],
+          [
+            3
+          ],
+          [
+            4
+          ]
+        ]
+      },
+      "cells": [
+        {
+          "id": "88-C177-S156/ansi",
+          "dialect": "ansi",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S156/bigquery",
+          "dialect": "bigquery",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S156/clickhouse",
+          "dialect": "clickhouse",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S156/databricks",
+          "dialect": "databricks",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S156/duckdb",
+          "dialect": "duckdb",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S156/generic",
+          "dialect": "generic",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S156/hive",
+          "dialect": "hive",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S156/mssql",
+          "dialect": "mssql",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S156/mysql",
+          "dialect": "mysql",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S156/postgresql",
+          "dialect": "postgresql",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S156/redshift",
+          "dialect": "redshift",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S156/snowflake",
+          "dialect": "snowflake",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S156/sqlite",
+          "dialect": "sqlite",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        }
+      ]
+    },
+    {
+      "id": "88-C177-S157",
+      "feature_id": "ordering.sort",
+      "variant": "computed ordering",
+      "sql": "SELECT id FROM orders ORDER BY amount + 1",
+      "original_observed_mask": "CCCCCCCCCCCCC",
+      "native_oracle": {
+        "kind": "unordered_original_source_bag",
+        "columns": 1,
+        "expected_terminal_bag": [
+          [
+            null
+          ],
+          [
+            1
+          ],
+          [
+            1
+          ],
+          [
+            2
+          ],
+          [
+            3
+          ],
+          [
+            4
+          ]
+        ]
+      },
+      "cells": [
+        {
+          "id": "88-C177-S157/ansi",
+          "dialect": "ansi",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S157/bigquery",
+          "dialect": "bigquery",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S157/clickhouse",
+          "dialect": "clickhouse",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S157/databricks",
+          "dialect": "databricks",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S157/duckdb",
+          "dialect": "duckdb",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S157/generic",
+          "dialect": "generic",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S157/hive",
+          "dialect": "hive",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S157/mssql",
+          "dialect": "mssql",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S157/mysql",
+          "dialect": "mysql",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S157/postgresql",
+          "dialect": "postgresql",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S157/redshift",
+          "dialect": "redshift",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S157/snowflake",
+          "dialect": "snowflake",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S157/sqlite",
+          "dialect": "sqlite",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        }
+      ]
+    },
+    {
+      "id": "88-C177-S158",
+      "feature_id": "ordering.sort",
+      "variant": "ties",
+      "sql": "SELECT id FROM orders ORDER BY amount",
+      "original_observed_mask": "CCCCCCCCCCCCC",
+      "native_oracle": {
+        "kind": "unordered_original_source_bag",
+        "columns": 1,
+        "expected_terminal_bag": [
+          [
+            null
+          ],
+          [
+            1
+          ],
+          [
+            1
+          ],
+          [
+            2
+          ],
+          [
+            3
+          ],
+          [
+            4
+          ]
+        ]
+      },
+      "cells": [
+        {
+          "id": "88-C177-S158/ansi",
+          "dialect": "ansi",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S158/bigquery",
+          "dialect": "bigquery",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S158/clickhouse",
+          "dialect": "clickhouse",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S158/databricks",
+          "dialect": "databricks",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S158/duckdb",
+          "dialect": "duckdb",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S158/generic",
+          "dialect": "generic",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S158/hive",
+          "dialect": "hive",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S158/mssql",
+          "dialect": "mssql",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S158/mysql",
+          "dialect": "mysql",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S158/postgresql",
+          "dialect": "postgresql",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S158/redshift",
+          "dialect": "redshift",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S158/snowflake",
+          "dialect": "snowflake",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S158/sqlite",
+          "dialect": "sqlite",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        }
+      ]
+    },
+    {
+      "id": "88-C177-S159",
+      "feature_id": "ordering.pagination",
+      "variant": "LIMIT/OFFSET",
+      "sql": "SELECT id FROM orders ORDER BY id LIMIT 2 OFFSET 1",
+      "original_observed_mask": "CCCCCCCCCCCCC",
+      "native_oracle": {
+        "kind": "prior_original_integer_bag",
+        "columns": 1,
+        "expected_terminal_bag": [
+          [
+            1
+          ],
+          [
+            2
+          ]
+        ]
+      },
+      "cells": [
+        {
+          "id": "88-C177-S159/ansi",
+          "dialect": "ansi",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S159/bigquery",
+          "dialect": "bigquery",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S159/clickhouse",
+          "dialect": "clickhouse",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S159/databricks",
+          "dialect": "databricks",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S159/duckdb",
+          "dialect": "duckdb",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S159/generic",
+          "dialect": "generic",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S159/hive",
+          "dialect": "hive",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S159/mssql",
+          "dialect": "mssql",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S159/mysql",
+          "dialect": "mysql",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S159/postgresql",
+          "dialect": "postgresql",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S159/redshift",
+          "dialect": "redshift",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S159/snowflake",
+          "dialect": "snowflake",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S159/sqlite",
+          "dialect": "sqlite",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        }
+      ]
+    },
+    {
+      "id": "88-C177-S160",
+      "feature_id": "ordering.pagination",
+      "variant": "FETCH FIRST/WITH TIES",
+      "sql": "SELECT id FROM orders ORDER BY id FETCH FIRST 2 ROWS WITH TIES",
+      "original_observed_mask": "CCCCCCCCCCCCC",
+      "native_oracle": {
+        "kind": "native_parser_rejection",
+        "columns": 1,
+        "expected_terminal_bag": null,
+        "boundary_owner": "TASK-191"
+      },
+      "cells": [
+        {
+          "id": "88-C177-S160/ansi",
+          "dialect": "ansi",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S160/bigquery",
+          "dialect": "bigquery",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S160/clickhouse",
+          "dialect": "clickhouse",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S160/databricks",
+          "dialect": "databricks",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S160/duckdb",
+          "dialect": "duckdb",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S160/generic",
+          "dialect": "generic",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S160/hive",
+          "dialect": "hive",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S160/mssql",
+          "dialect": "mssql",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S160/mysql",
+          "dialect": "mysql",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S160/postgresql",
+          "dialect": "postgresql",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S160/redshift",
+          "dialect": "redshift",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S160/snowflake",
+          "dialect": "snowflake",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S160/sqlite",
+          "dialect": "sqlite",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        }
+      ]
+    },
+    {
+      "id": "88-C177-S161",
+      "feature_id": "ordering.pagination",
+      "variant": "TOP",
+      "sql": "SELECT TOP 2 id FROM orders ORDER BY id",
+      "original_observed_mask": "CCCCCCCCCCCCC",
+      "native_oracle": {
+        "kind": "native_parser_rejection",
+        "columns": 1,
+        "expected_terminal_bag": null,
+        "boundary_owner": "TASK-191"
+      },
+      "cells": [
+        {
+          "id": "88-C177-S161/ansi",
+          "dialect": "ansi",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S161/bigquery",
+          "dialect": "bigquery",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S161/clickhouse",
+          "dialect": "clickhouse",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S161/databricks",
+          "dialect": "databricks",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S161/duckdb",
+          "dialect": "duckdb",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S161/generic",
+          "dialect": "generic",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S161/hive",
+          "dialect": "hive",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S161/mssql",
+          "dialect": "mssql",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S161/mysql",
+          "dialect": "mysql",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S161/postgresql",
+          "dialect": "postgresql",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S161/redshift",
+          "dialect": "redshift",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S161/snowflake",
+          "dialect": "snowflake",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S161/sqlite",
+          "dialect": "sqlite",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        }
+      ]
+    },
+    {
+      "id": "88-C177-S162",
+      "feature_id": "ordering.pagination",
+      "variant": "row ordering stability",
+      "sql": "SELECT id FROM orders ORDER BY amount LIMIT 2",
+      "original_observed_mask": "CCCCCCCCCCCCC",
+      "native_oracle": {
+        "kind": "unstable_tie_membership",
+        "columns": 1,
+        "expected_terminal_bag": null,
+        "boundary_owner": "TASK-179"
+      },
+      "cells": [
+        {
+          "id": "88-C177-S162/ansi",
+          "dialect": "ansi",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S162/bigquery",
+          "dialect": "bigquery",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S162/clickhouse",
+          "dialect": "clickhouse",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S162/databricks",
+          "dialect": "databricks",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S162/duckdb",
+          "dialect": "duckdb",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S162/generic",
+          "dialect": "generic",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S162/hive",
+          "dialect": "hive",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S162/mssql",
+          "dialect": "mssql",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S162/mysql",
+          "dialect": "mysql",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S162/postgresql",
+          "dialect": "postgresql",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S162/redshift",
+          "dialect": "redshift",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S162/snowflake",
+          "dialect": "snowflake",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S162/sqlite",
+          "dialect": "sqlite",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        }
+      ]
+    },
+    {
+      "id": "88-C177-S163",
+      "feature_id": "ordering.sampling",
+      "variant": "TABLESAMPLE",
+      "sql": "SELECT id FROM orders TABLESAMPLE BERNOULLI (10)",
+      "original_observed_mask": "CCCCCCCCCCCCC",
+      "native_oracle": {
+        "kind": "stochastic_conditional",
+        "columns": 1,
+        "expected_terminal_bag": null,
+        "boundary_owner": "TASK-179/TASK-191"
+      },
+      "cells": [
+        {
+          "id": "88-C177-S163/ansi",
+          "dialect": "ansi",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S163/bigquery",
+          "dialect": "bigquery",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S163/clickhouse",
+          "dialect": "clickhouse",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S163/databricks",
+          "dialect": "databricks",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S163/duckdb",
+          "dialect": "duckdb",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S163/generic",
+          "dialect": "generic",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S163/hive",
+          "dialect": "hive",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S163/mssql",
+          "dialect": "mssql",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S163/mysql",
+          "dialect": "mysql",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S163/postgresql",
+          "dialect": "postgresql",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S163/redshift",
+          "dialect": "redshift",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S163/snowflake",
+          "dialect": "snowflake",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S163/sqlite",
+          "dialect": "sqlite",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        }
+      ]
+    },
+    {
+      "id": "88-C177-S164",
+      "feature_id": "ordering.sampling",
+      "variant": "BERNOULLI",
+      "sql": "SELECT id FROM orders TABLESAMPLE BERNOULLI (10)",
+      "original_observed_mask": "CCCCCCCCCCCCC",
+      "native_oracle": {
+        "kind": "stochastic_conditional",
+        "columns": 1,
+        "expected_terminal_bag": null,
+        "boundary_owner": "TASK-179/TASK-191"
+      },
+      "cells": [
+        {
+          "id": "88-C177-S164/ansi",
+          "dialect": "ansi",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S164/bigquery",
+          "dialect": "bigquery",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S164/clickhouse",
+          "dialect": "clickhouse",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S164/databricks",
+          "dialect": "databricks",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S164/duckdb",
+          "dialect": "duckdb",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S164/generic",
+          "dialect": "generic",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S164/hive",
+          "dialect": "hive",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S164/mssql",
+          "dialect": "mssql",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S164/mysql",
+          "dialect": "mysql",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S164/postgresql",
+          "dialect": "postgresql",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S164/redshift",
+          "dialect": "redshift",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S164/snowflake",
+          "dialect": "snowflake",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S164/sqlite",
+          "dialect": "sqlite",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        }
+      ]
+    },
+    {
+      "id": "88-C177-S165",
+      "feature_id": "ordering.sampling",
+      "variant": "SYSTEM",
+      "sql": "SELECT id FROM orders TABLESAMPLE SYSTEM (10)",
+      "original_observed_mask": "CCCCCCCCCCCCC",
+      "native_oracle": {
+        "kind": "stochastic_conditional",
+        "columns": 1,
+        "expected_terminal_bag": null,
+        "boundary_owner": "TASK-179/TASK-191"
+      },
+      "cells": [
+        {
+          "id": "88-C177-S165/ansi",
+          "dialect": "ansi",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S165/bigquery",
+          "dialect": "bigquery",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S165/clickhouse",
+          "dialect": "clickhouse",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S165/databricks",
+          "dialect": "databricks",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S165/duckdb",
+          "dialect": "duckdb",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S165/generic",
+          "dialect": "generic",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S165/hive",
+          "dialect": "hive",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S165/mssql",
+          "dialect": "mssql",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S165/mysql",
+          "dialect": "mysql",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S165/postgresql",
+          "dialect": "postgresql",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S165/redshift",
+          "dialect": "redshift",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S165/snowflake",
+          "dialect": "snowflake",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S165/sqlite",
+          "dialect": "sqlite",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        }
+      ]
+    },
+    {
+      "id": "88-C177-S166",
+      "feature_id": "ordering.sampling",
+      "variant": "seeds",
+      "sql": "SELECT id FROM orders TABLESAMPLE BERNOULLI (10) REPEATABLE (7)",
+      "original_observed_mask": "CCCCCCCCCCCCC",
+      "native_oracle": {
+        "kind": "stochastic_conditional",
+        "columns": 1,
+        "expected_terminal_bag": null,
+        "boundary_owner": "TASK-179/TASK-191"
+      },
+      "cells": [
+        {
+          "id": "88-C177-S166/ansi",
+          "dialect": "ansi",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S166/bigquery",
+          "dialect": "bigquery",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S166/clickhouse",
+          "dialect": "clickhouse",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S166/databricks",
+          "dialect": "databricks",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S166/duckdb",
+          "dialect": "duckdb",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S166/generic",
+          "dialect": "generic",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S166/hive",
+          "dialect": "hive",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S166/mssql",
+          "dialect": "mssql",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S166/mysql",
+          "dialect": "mysql",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S166/postgresql",
+          "dialect": "postgresql",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S166/redshift",
+          "dialect": "redshift",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S166/snowflake",
+          "dialect": "snowflake",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S166/sqlite",
+          "dialect": "sqlite",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        }
+      ]
+    },
+    {
+      "id": "88-C177-S167",
+      "feature_id": "ordering.sampling",
+      "variant": "engine randomness",
+      "sql": "SELECT id FROM orders TABLESAMPLE SYSTEM (10)",
+      "original_observed_mask": "CCCCCCCCCCCCC",
+      "native_oracle": {
+        "kind": "stochastic_conditional",
+        "columns": 1,
+        "expected_terminal_bag": null,
+        "boundary_owner": "TASK-179/TASK-191"
+      },
+      "cells": [
+        {
+          "id": "88-C177-S167/ansi",
+          "dialect": "ansi",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S167/bigquery",
+          "dialect": "bigquery",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S167/clickhouse",
+          "dialect": "clickhouse",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S167/databricks",
+          "dialect": "databricks",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S167/duckdb",
+          "dialect": "duckdb",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S167/generic",
+          "dialect": "generic",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S167/hive",
+          "dialect": "hive",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S167/mssql",
+          "dialect": "mssql",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S167/mysql",
+          "dialect": "mysql",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S167/postgresql",
+          "dialect": "postgresql",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S167/redshift",
+          "dialect": "redshift",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S167/snowflake",
+          "dialect": "snowflake",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        },
+        {
+          "id": "88-C177-S167/sqlite",
+          "dialect": "sqlite",
+          "original_observed_status": "C",
+          "external_vendor_execution": "unattested",
+          "independent_semantic_review": "pending"
+        }
+      ]
+    }
+  ]
+}
