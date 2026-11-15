@@ -1092,7 +1092,7 @@
       ],
       "physical_identity_proof_rule": "four_of_five_independent_join_pairs_selected; exact (orders#0/1 x customers#0/1) pairs",
       "public_output_laws": [
-        "nullable_source_id_unbounded",
+        "joined_id_nonnull_unbounded",
         "qualify_count_gt_1"
       ],
       "original_native_execution_disposition": "complete_original_DuckDB_bag_verified",
@@ -5342,7 +5342,7 @@
       "original_parser_canonical_status": "C",
       "independent_review_disposition": "reviewed_portable_sql_outcome_and_DuckDB_native_bag",
       "public_output_laws": [
-        "nullable_source_id_unbounded",
+        "joined_id_nonnull_unbounded",
         "qualify_count_gt_1"
       ],
       "original_native_evidence": "complete_DuckDB_fixture_source_terminal_bag",
@@ -5357,7 +5357,7 @@
       "original_parser_canonical_status": "C",
       "independent_review_disposition": "reviewed_portable_sql_outcome_and_DuckDB_native_bag",
       "public_output_laws": [
-        "nullable_source_id_unbounded",
+        "joined_id_nonnull_unbounded",
         "qualify_count_gt_1"
       ],
       "original_native_evidence": "complete_DuckDB_fixture_source_terminal_bag",
@@ -5372,7 +5372,7 @@
       "original_parser_canonical_status": "C",
       "independent_review_disposition": "reviewed_portable_sql_outcome_and_DuckDB_native_bag",
       "public_output_laws": [
-        "nullable_source_id_unbounded",
+        "joined_id_nonnull_unbounded",
         "qualify_count_gt_1"
       ],
       "original_native_evidence": "complete_DuckDB_fixture_source_terminal_bag",
@@ -5387,7 +5387,7 @@
       "original_parser_canonical_status": "C",
       "independent_review_disposition": "reviewed_portable_sql_outcome_and_DuckDB_native_bag",
       "public_output_laws": [
-        "nullable_source_id_unbounded",
+        "joined_id_nonnull_unbounded",
         "qualify_count_gt_1"
       ],
       "original_native_evidence": "complete_DuckDB_fixture_source_terminal_bag",
@@ -5402,7 +5402,7 @@
       "original_parser_canonical_status": "C",
       "independent_review_disposition": "reviewed_portable_sql_outcome_and_DuckDB_native_bag",
       "public_output_laws": [
-        "nullable_source_id_unbounded",
+        "joined_id_nonnull_unbounded",
         "qualify_count_gt_1"
       ],
       "original_native_evidence": "complete_DuckDB_fixture_source_terminal_bag",
@@ -5417,7 +5417,7 @@
       "original_parser_canonical_status": "C",
       "independent_review_disposition": "reviewed_portable_sql_outcome_and_DuckDB_native_bag",
       "public_output_laws": [
-        "nullable_source_id_unbounded",
+        "joined_id_nonnull_unbounded",
         "qualify_count_gt_1"
       ],
       "original_native_evidence": "complete_DuckDB_fixture_source_terminal_bag",
@@ -5432,7 +5432,7 @@
       "original_parser_canonical_status": "C",
       "independent_review_disposition": "reviewed_portable_sql_outcome_and_DuckDB_native_bag",
       "public_output_laws": [
-        "nullable_source_id_unbounded",
+        "joined_id_nonnull_unbounded",
         "qualify_count_gt_1"
       ],
       "original_native_evidence": "complete_DuckDB_fixture_source_terminal_bag",
@@ -5447,7 +5447,7 @@
       "original_parser_canonical_status": "C",
       "independent_review_disposition": "reviewed_portable_sql_outcome_and_DuckDB_native_bag",
       "public_output_laws": [
-        "nullable_source_id_unbounded",
+        "joined_id_nonnull_unbounded",
         "qualify_count_gt_1"
       ],
       "original_native_evidence": "complete_DuckDB_fixture_source_terminal_bag",
@@ -5462,7 +5462,7 @@
       "original_parser_canonical_status": "C",
       "independent_review_disposition": "reviewed_portable_sql_outcome_and_DuckDB_native_bag",
       "public_output_laws": [
-        "nullable_source_id_unbounded",
+        "joined_id_nonnull_unbounded",
         "qualify_count_gt_1"
       ],
       "original_native_evidence": "complete_DuckDB_fixture_source_terminal_bag",
@@ -5477,7 +5477,7 @@
       "original_parser_canonical_status": "C",
       "independent_review_disposition": "reviewed_portable_sql_outcome_and_DuckDB_native_bag",
       "public_output_laws": [
-        "nullable_source_id_unbounded",
+        "joined_id_nonnull_unbounded",
         "qualify_count_gt_1"
       ],
       "original_native_evidence": "complete_DuckDB_fixture_source_terminal_bag",
@@ -5492,7 +5492,7 @@
       "original_parser_canonical_status": "C",
       "independent_review_disposition": "reviewed_portable_sql_outcome_and_DuckDB_native_bag",
       "public_output_laws": [
-        "nullable_source_id_unbounded",
+        "joined_id_nonnull_unbounded",
         "qualify_count_gt_1"
       ],
       "original_native_evidence": "complete_DuckDB_fixture_source_terminal_bag",
@@ -5507,7 +5507,7 @@
       "original_parser_canonical_status": "C",
       "independent_review_disposition": "reviewed_portable_sql_outcome_and_DuckDB_native_bag",
       "public_output_laws": [
-        "nullable_source_id_unbounded",
+        "joined_id_nonnull_unbounded",
         "qualify_count_gt_1"
       ],
       "original_native_evidence": "complete_DuckDB_fixture_source_terminal_bag",
@@ -5522,7 +5522,7 @@
       "original_parser_canonical_status": "C",
       "independent_review_disposition": "reviewed_portable_sql_outcome_and_DuckDB_native_bag",
       "public_output_laws": [
-        "nullable_source_id_unbounded",
+        "joined_id_nonnull_unbounded",
         "qualify_count_gt_1"
       ],
       "original_native_evidence": "complete_DuckDB_fixture_source_terminal_bag",

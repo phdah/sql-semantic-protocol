@@ -192,6 +192,14 @@ fn check_law(domain: &ValueDomain, law: &str, cell: &str) {
                 "{cell}: an unattested source SUM/AVG cannot have finite numeric limits"
             );
         }
+        "joined_id_nonnull_unbounded" => {
+            // Equality INNER JOIN excludes SQL NULL keys even when both source
+            // relations contain physical NULL rows. Non-NULL values have no
+            // proven finite source-independent range.
+            must_reject(None);
+            must_admit(Some(-1_000_000.0));
+            must_admit(Some(1_000_000.0));
+        }
         "nullable_source_id_unbounded" => {
             must_admit(None);
             must_admit(Some(-1_000_000.0));
