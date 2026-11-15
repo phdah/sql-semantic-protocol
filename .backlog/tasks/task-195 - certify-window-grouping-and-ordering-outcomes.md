@@ -66,3 +66,11 @@ Extracted on 2026-11-10 from the previously overbroad TASK-178. There is **no im
 - Portable analytic output interval inference: `src/analysis/output.rs` and `tests/task_195_analytic_domains.rs` (13-dialect original SQL bounds, invalid NTILE fail-closed).
 - Exact source-identity negative proof: `tests/task_195_ambiguous_identity.rs` (original underordered ROW_NUMBER and QUALIFY cases remain Residual).
 - Downstream temporary pinned consumer test PR: https://github.com/phdah/sql-tdg/pull/53 . The CI-only pin must match final reviewed protocol head, and it is not a published dependency migration.
+
+## Bounded independent review (2026-11-15)
+
+- **All 36 original SQL cases and 468 parser cells independently reconstructed/reviewed**: `docs/task-195-independent-semantic-review.json` and `tests/task_195_independent_review.rs`. Native deterministic SQL bags: 28; conditional/not-executable original bags: 8.
+- **446 portable parser/canonical cells** verified with independent typed SQL output laws. **21 grouping canonical drifts and one named-window parser rejection** reviewed but explicitly **not approved as equivalent**; TASK-191/TASK-179 retain their respective obligations, TASK-197 and TASK-180 continue to own cross-family and full-matrix signoff.
+- Stronger output-domain proofs added for `GROUPING(id)`, inclusive current-row `COUNT(*)` frames, RANK/DENSE_RANK/ROW_NUMBER, NTILE and distribution windows. Explicit underordered peers never gain physical row identity.
+- Reviewer: GPT-6 with separate original SQL algebra and two-axis standards/spec assessment, not external maintainer. Only DuckDB is executed as a native warehouse oracle.
+- **Before bounded TASK-195 Done:** exact final-head 9/9 protocol CI, updated matching protocol SHA and 5/5 sql-tdg CI-only consumer, then link pass evidence into manifest. Do not mark the parent TASK-88 or release TASK-91 complete.

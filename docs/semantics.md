@@ -234,6 +234,16 @@ not such a proof.
 
 Window calls are emitted as `window_function` expressions, distinct from ordinary function calls. The function arguments remain normalized expressions, while the resolved window specification records an optional local window name, `PARTITION BY` expressions, ordered `ORDER BY` expressions, and an explicit `ROWS`, `RANGE`, or `GROUPS` frame when present.
 
+For single-key ROLLUP/CUBE/GROUPING grouping provenance, `GROUPING(column)`
+is a non-NULL bit domain {0,1}, where 0 includes physical NULL
+group keys and 1 identifies the synthetic grand-total row. For COUNT(*)
+on any explicit frame guaranteed to contain its current output row, the
+normalized COUNT(1) has an inclusive lower bound of 1; this includes
+GROUPS BETWEEN 1 PRECEDING AND CURRENT ROW. COUNT of an arbitrary
+nullable expression retains its conservative lower bound 0. These
+statement-local bounds require neither fixed source rows nor warehouse
+session runtime claims.
+
 Function arguments, partition keys, ordering expressions, and frame-bound expressions all contribute to dependency and output-lineage analysis. Named windows are resolved within the local SELECT scope, including safe inheritance from another named window. Conflicting overrides, missing or cyclic names, and window options the protocol does not model remain explicit diagnostics.
 
 Snowflake-style `QUALIFY` can reference a projected window alias. That alias is resolved back to the window expression for predicate semantics, while scalar value-domain derivation deliberately does not infer source-column constraints from a window result.
