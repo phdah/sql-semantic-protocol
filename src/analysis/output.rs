@@ -1032,14 +1032,19 @@ fn derive_window_output_domain(window: &WindowFunctionExpression) -> ValueDomain
                         | WindowFrameBound::UnboundedFollowing
                 )
             });
-            if arguments.is_empty() && includes_current_row {
-                // COUNT(*) cannot be zero in a frame containing the output row,
-                // including GROUPS with peers and an explicit CURRENT ROW end.
+            let always_non_null_argument = matches!(
+                arguments,
+                [Expression::Literal(literal)]
+                    if !matches!(literal.value(), LiteralValue::Null)
+            );
+            if always_non_null_argument && includes_current_row {
+                // The analyzer normalizes COUNT(*) to COUNT(1). Each output row
+                // belongs to this frame, so its non-NULL literal contributes.
                 integer_lower_bound_domain(1)
             } else {
                 integer_lower_bound_domain(0)
             }
-        },
+        }
         _ => ValueDomain::unknown("window-function output domain is not known safely"),
     }
 }
