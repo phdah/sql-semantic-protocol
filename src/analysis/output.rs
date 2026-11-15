@@ -922,6 +922,18 @@ fn derive_domain(expression: &Expression, ctx: DomainContext<'_>) -> ValueDomain
         Expression::Literal(literal) => ValueDomain::set(SetMode::Include, vec![literal.clone()]),
         Expression::BooleanPredicate(_) => boolean_domain(),
         Expression::WindowFunction(window) => derive_window_output_domain(window),
+        Expression::Function(function)
+            if function.name().eq_ignore_ascii_case("GROUPING")
+                && !function.distinct()
+                && matches!(function.arguments(), [Expression::Column(_)]) =>
+        {
+            // One GROUPING key is a provenance bit: 0 for a present key,
+            // 1 for a generated subtotal. Physical NULL is never a subtotal.
+            ValueDomain::set(
+                SetMode::Include,
+                vec![integer_literal(0), integer_literal(1)],
+            )
+        }
         Expression::AggregateFunction(function)
             if function.name().eq_ignore_ascii_case("count") =>
         {
@@ -1006,7 +1018,28 @@ fn derive_window_output_domain(window: &WindowFunctionExpression) -> ValueDomain
                 Some(Bound::new(bound("1"), true)),
             )])
         }
-        "count" => integer_lower_bound_domain(0),
+        "count" => {
+            let includes_current_row = window.window().frame().is_some_and(|frame| {
+                matches!(
+                    frame.start_bound(),
+                    WindowFrameBound::UnboundedPreceding
+                        | WindowFrameBound::Preceding(_)
+                        | WindowFrameBound::CurrentRow
+                ) && matches!(
+                    frame.end_bound(),
+                    WindowFrameBound::CurrentRow
+                        | WindowFrameBound::Following(_)
+                        | WindowFrameBound::UnboundedFollowing
+                )
+            });
+            if arguments.is_empty() && includes_current_row {
+                // COUNT(*) cannot be zero in a frame containing the output row,
+                // including GROUPS with peers and an explicit CURRENT ROW end.
+                integer_lower_bound_domain(1)
+            } else {
+                integer_lower_bound_domain(0)
+            }
+        },
         _ => ValueDomain::unknown("window-function output domain is not known safely"),
     }
 }

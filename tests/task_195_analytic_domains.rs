@@ -61,7 +61,7 @@ fn original_rank_bucket_and_distribution_cases_have_portable_exact_interval_boun
         ("88-C177-S113", Some(("1", true)), Some(("3", true))),
         ("88-C177-S114", Some(("0", true)), Some(("1", true))),
         ("88-C177-S115", Some(("0", false)), Some(("1", true))),
-        ("88-C177-S118", Some(("0", true)), None),
+        ("88-C177-S118", Some(("1", true)), None),
     ];
     for (id, expected_lower, expected_upper) in specs {
         let original = frozen["cases"]
@@ -117,5 +117,43 @@ fn invalid_ntile_buckets_must_not_claim_a_positive_finite_bucket_domain() {
                 "{sql}: invalid or data-dependent buckets cannot have a finite proved range"
             );
         }
+    }
+}
+
+#[test]
+fn grouping_marker_is_a_bit_not_a_nullable_physical_group_key() {
+    let frozen: Value = serde_json::from_str(FREEZE).expect("original source inventory");
+    let original = frozen["cases"]
+        .as_array()
+        .expect("36 original SQL cases")
+        .iter()
+        .find(|case| case["id"] == "88-C177-S104")
+        .expect("original GROUPING(id) SQL");
+    let sql = original["sql"].as_str().expect("immutable original SQL");
+    for dialect in frozen["dialects"].as_array().expect("13 public dialects") {
+        let name = dialect.as_str().expect("dialect");
+        let parser = dialect_from_name(name).expect("project parser");
+        let protocol = analyze_sql(sql, name, parser.as_ref())
+            .unwrap_or_else(|error| panic!("{name}: {error}"));
+        let [ProtocolStatement::Query(query)] = protocol.statements() else {
+            panic!("{name}: missing original query");
+        };
+        let output = query.output().columns();
+        assert_eq!(output.len(), 2);
+        let ValueDomain::Set(markers) = output[0].domain() else {
+            panic!("{name}: GROUPING(id) must preserve a proven 0/1 marker");
+        };
+        assert_eq!(markers.mode(), sql_semantic_protocol::SetMode::Include);
+        let actual = markers.values().iter()
+            .map(|item| item.value().clone())
+            .collect::<Vec<_>>();
+        assert_eq!(
+            actual,
+            vec![
+                LiteralValue::Number("0".to_string()),
+                LiteralValue::Number("1".to_string()),
+            ],
+            "{name}: grouping subtotal marker cannot become NULL"
+        );
     }
 }
