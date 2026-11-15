@@ -62,3 +62,7 @@ Extracted on 2026-11-10 from the previously overbroad TASK-178. There is **no im
 - Original QUALIFY positive vs NOT TRUE populations, stochastic source-subset checks: `tests/task_195_native_partitions.rs`.
 - Complete individual outstanding review obligations: `docs/task-195-review-queue.json`; AC-by-AC assessment: `docs/task-195-acceptance-audit.md`.
 - No independent 468-cell review, full strongest-domain/physical-proof signoff or exact-head downstream consumer evidence has yet been verified. Do not mark task Done on CI alone.
+
+- Portable analytic output interval inference: `src/analysis/output.rs` and `tests/task_195_analytic_domains.rs` (13-dialect original SQL bounds, invalid NTILE fail-closed).
+- Exact source-identity negative proof: `tests/task_195_ambiguous_identity.rs` (original underordered ROW_NUMBER and QUALIFY cases remain Residual).
+- Downstream temporary pinned consumer test PR: https://github.com/phdah/sql-tdg/pull/53 . The CI-only pin must match final reviewed protocol head, and it is not a published dependency migration.

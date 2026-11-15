@@ -1,6 +1,9 @@
 {
   "task_195_window_grouping_ordering_acceptance": {
     "native_not_true_partition_test": "tests/task_195_native_partitions.rs",
+    "statement_local_analytic_domain_owner": "src/analysis/output.rs::derive_window_output_domain",
+    "statement_local_analytic_domain_test": "tests/task_195_analytic_domains.rs",
+    "ambiguous_physical_identity_test": "tests/task_195_ambiguous_identity.rs",
     "native_source_occurrence_test": "tests/task_195_physical_source_instances.rs",
     "native_output_domain_soundness_test": "tests/task_195_typed_soundness.rs",
     "full_original_sql_adapter_metadata_parity_test": "tests/task_195_adapter_parity.rs",
