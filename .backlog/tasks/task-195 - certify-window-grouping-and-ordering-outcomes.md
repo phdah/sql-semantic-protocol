@@ -1,10 +1,10 @@
 ---
 id: TASK-195
 title: Certify window, grouping, ordering and pagination outcomes
-status: In Progress
+status: Done
 assignee: []
 created_date: '2026-11-10'
-updated_date: '2026-11-10'
+updated_date: '2026-11-15'
 labels: []
 milestone: m-3
 dependencies:
@@ -33,11 +33,11 @@ type: feature
 ## Acceptance Criteria
 
 <!-- AC:BEGIN -->
-- [ ] #1 Freeze the 36 original variants x 13 parser dialects with independent closed input/output bags, precise rank/group/frame boundary expectations, typed domains, stable identities, ties and NULL/duplicate evidence, and named unsupported/parser/engine cases.
-- [ ] #2 Verify through public APIs and DuckDB complete source/terminal oracles the sound grouped/global empty-input result, physical NULL versus generated subtotal, ranks and frames, QUALIFY positive/rejected rows, total/partial order, peer boundaries and pagination count/multiplicity. Assert strongest sound output facts; unstable tie order must not become Exact.
-- [ ] #3 Keep `FETCH WITH TIES` distinct from LIMIT, recognize only independently equivalent TOP/FETCH/LIMIT variants, and preserve sampling/NULL ordering/session-dependent outcomes as explicit conditional non-certifications owned by TASK-179/TASK-191.
-- [ ] #4 Verify all 13 parser statuses and source adapters where comparable facts exist, hand cells to TASK-197/TASK-180 and pass the full final-head repository and pinned downstream gates.
-- [ ] #5 Complete exact-head rustfmt, strict Clippy, default/no-default Rust tests and docs, dbt E2E, active schema/goldens and relevant pinned sql-tdg consumer checks. Independently review every bounded acceptance cell and record the linked evidence in `docs/coverage-manifest.json`; TASK-88 parent and TASK-91 release remain unapproved until TASK-180 and separate parent signoff.
+- [x] #1 Freeze the 36 original variants x 13 parser dialects with independent closed input/output bags, precise rank/group/frame boundary expectations, typed domains, stable identities, ties and NULL/duplicate evidence, and named unsupported/parser/engine cases.
+- [x] #2 Verify through public APIs and DuckDB complete source/terminal oracles the sound grouped/global empty-input result, physical NULL versus generated subtotal, ranks and frames, QUALIFY positive/rejected rows, total/partial order, peer boundaries and pagination count/multiplicity. Assert strongest sound output facts; unstable tie order must not become Exact.
+- [x] #3 Keep `FETCH WITH TIES` distinct from LIMIT, recognize only independently equivalent TOP/FETCH/LIMIT variants, and preserve sampling/NULL ordering/session-dependent outcomes as explicit conditional non-certifications owned by TASK-179/TASK-191.
+- [x] #4 Verify all 13 parser statuses and source adapters where comparable facts exist, hand cells to TASK-197/TASK-180 and pass the full final-head repository and pinned downstream gates.
+- [x] #5 Complete exact-head rustfmt, strict Clippy, default/no-default Rust tests and docs, dbt E2E, active schema/goldens and relevant pinned sql-tdg consumer checks. Independently review every bounded acceptance cell and record the linked evidence in `docs/coverage-manifest.json`; TASK-88 parent and TASK-91 release remain unapproved until TASK-180 and separate parent signoff.
 <!-- AC:END -->
 
 ## Next
@@ -74,3 +74,12 @@ Extracted on 2026-11-10 from the previously overbroad TASK-178. There is **no im
 - Stronger output-domain proofs added for `GROUPING(id)`, inclusive current-row `COUNT(*)` frames, RANK/DENSE_RANK/ROW_NUMBER, NTILE and distribution windows. Explicit underordered peers never gain physical row identity.
 - Reviewer: GPT-6 with separate original SQL algebra and two-axis standards/spec assessment, not external maintainer. Only DuckDB is executed as a native warehouse oracle.
 - **Before bounded TASK-195 Done:** exact final-head 9/9 protocol CI, updated matching protocol SHA and 5/5 sql-tdg CI-only consumer, then link pass evidence into manifest. Do not mark the parent TASK-88 or release TASK-91 complete.
+
+## TASK-195 bounded acceptance signed off (2026-11-15)
+
+All **five** original bounded acceptance criteria are verified with an independently reconstructed 36-original-SQL, 468-cell algebra ledger and explicit NULL/duplicate, physical source identity, native positive/rejected bag, rank/frame/group and parser boundaries. Original SQL remains frozen as preimplementation evidence, including 21 D and one R canonical status. **446** portable parser/canonical cells are approved for scoped source-independent analysis; **22** parser/canonical portability boundaries remain explicitly unapproved and handed to TASK-191. No non-DuckDB warehouse runtime is attested.
+
+- Reviewed implementation SHA `af9a7e4ecedbb097fa8c10900b15f5f4a9850e69`: [protocol CI 9/9 success](https://github.com/phdah/sql-semantic-protocol/actions/runs/43764456633).
+- Exact pinned migrated consumer `sql-tdg` PR #53 SHA `9429a7ba138435ec9f8df3a51bce3071881b165e`: [CI 5/5 success](https://github.com/phdah/sql-tdg/actions/runs/43764466918). This temporary Git-SHA harness is not merged or released.
+- Independent source/bag and parser/output review: `docs/task-195-independent-semantic-review.json`; repository conformance `tests/task_195_independent_review.rs`.
+- **TASK-195 Done applies only to bounded scope.** TASK-179, TASK-191, TASK-197, TASK-180, parent TASK-88 and release TASK-91 are independent unapproved gates. Final task-metadata CI runs after this commit.
