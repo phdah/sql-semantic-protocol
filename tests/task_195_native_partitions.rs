@@ -168,7 +168,6 @@ fn original_sampling_queries_never_produce_impossible_source_occurrences() {
     );
 }
 
-
 #[test]
 fn limit_offset_has_exact_value_bag_rejection_but_tied_limit_preserves_ambiguity() {
     let fixture = fixture();
@@ -198,7 +197,9 @@ fn limit_offset_has_exact_value_bag_rejection_but_tied_limit_preserves_ambiguity
     let unstable = case(&fixture, "88-C177-S162");
     let selected = tuples(
         &db,
-        unstable["sql"].as_str().expect("original partial-order LIMIT"),
+        unstable["sql"]
+            .as_str()
+            .expect("original partial-order LIMIT"),
         1,
     );
     assert_eq!(selected.len(), 2);
