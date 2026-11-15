@@ -8,7 +8,17 @@ use sql_semantic_protocol::{
 
 const FREEZE: &str = include_str!("../docs/task-195-acceptance-freeze.json");
 
-fn range(sql: &str, dialect_name: &str) -> (Option<(String, bool)>, Option<(String, bool)>) {
+struct AnalyticBound {
+    value: String,
+    inclusive: bool,
+}
+
+struct AnalyticBounds {
+    lower: Option<AnalyticBound>,
+    upper: Option<AnalyticBound>,
+}
+
+fn range(sql: &str, dialect_name: &str) -> AnalyticBounds {
     let dialect = dialect_from_name(dialect_name).expect("one of 13 public dialects");
     let protocol = analyze_sql(sql, dialect_name, dialect.as_ref())
         .unwrap_or_else(|error| panic!("{dialect_name}: {sql}: {error}"));
@@ -31,9 +41,15 @@ fn range(sql: &str, dialect_name: &str) -> (Option<(String, bool)>, Option<(Stri
         let LiteralValue::Number(value) = bound.value().value() else {
             panic!("{dialect_name}: bound must be numeric");
         };
-        (value.clone(), bound.inclusive())
+        AnalyticBound {
+            value: value.clone(),
+            inclusive: bound.inclusive(),
+        }
     };
-    (interval.lower().map(bound), interval.upper().map(bound))
+    AnalyticBounds {
+        lower: interval.lower().map(bound),
+        upper: interval.upper().map(bound),
+    }
 }
 
 #[test]
@@ -57,14 +73,14 @@ fn original_rank_bucket_and_distribution_cases_have_portable_exact_interval_boun
         let sql = original["sql"].as_str().expect("immutable sample");
         for dialect in frozen["dialects"].as_array().expect("13 public parsers") {
             let name = dialect.as_str().expect("named parser");
-            let (lower, upper) = range(sql, name);
+            let bounds = range(sql, name);
             assert_eq!(
-                lower.as_ref().map(|(value, inc)| (value.as_str(), *inc)),
+                bounds.lower.as_ref().map(|bound| (bound.value.as_str(), bound.inclusive)),
                 expected_lower,
                 "{id}/{name}: wrong lower bound or inclusivity"
             );
             assert_eq!(
-                upper.as_ref().map(|(value, inc)| (value.as_str(), *inc)),
+                bounds.upper.as_ref().map(|bound| (bound.value.as_str(), bound.inclusive)),
                 expected_upper,
                 "{id}/{name}: wrong upper bound or inclusivity"
             );
