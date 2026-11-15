@@ -219,6 +219,19 @@ HAVING is analyzed with projected aliases available in grouped scope. Aggregate 
 
 ### Window functions
 
+Statement-local analytic output domains derive sound bounds directly from
+the normalized window function. `ROW_NUMBER`, `RANK` and `DENSE_RANK` have
+an inclusive lower bound of 1; `NTILE(n)` with a constant positive integer
+has inclusive bounds [1, n]; `PERCENT_RANK` has [0, 1];
+`CUME_DIST` has (0, 1]; and windowed `COUNT` has an inclusive lower
+bound of 0. These bounds do not assume source-row cardinality, native
+vendor execution or stable physical identity for underordered peers.
+Dynamic, nonpositive or invalid NTILE arguments and opaque analytic
+functions remain explicitly unknown. Exact finite terminal domains
+require a separate closed-world proof; a conservative analytic bound is
+not such a proof.
+
+
 Window calls are emitted as `window_function` expressions, distinct from ordinary function calls. The function arguments remain normalized expressions, while the resolved window specification records an optional local window name, `PARTITION BY` expressions, ordered `ORDER BY` expressions, and an explicit `ROWS`, `RANGE`, or `GROUPS` frame when present.
 
 Function arguments, partition keys, ordering expressions, and frame-bound expressions all contribute to dependency and output-lineage analysis. Named windows are resolved within the local SELECT scope, including safe inheritance from another named window. Conflicting overrides, missing or cyclic names, and window options the protocol does not model remain explicit diagnostics.
