@@ -136,9 +136,14 @@ fn typed_domains(
         dialect_name,
         dialect.as_ref(),
     )];
-    let bundle = analyze_configured_inputs_with_catalog(&configured, catalog)
-        .unwrap_or_else(|error| panic!("{dialect_name}: expected source-backed original SQL: {error}"));
-    let terminal = bundle.layers().last().expect("terminal source-aware output layer");
+    let bundle =
+        analyze_configured_inputs_with_catalog(&configured, catalog).unwrap_or_else(|error| {
+            panic!("{dialect_name}: expected source-backed original SQL: {error}")
+        });
+    let terminal = bundle
+        .layers()
+        .last()
+        .expect("terminal source-aware output layer");
     match terminal.composed_semantics() {
         ComposedSemantics::Resolved(semantics) => Some(
             semantics
@@ -184,7 +189,10 @@ fn every_supported_original_dialect_preserves_direct_and_compiled_dbt_typed_doma
             cells += 1;
         }
     }
-    assert_eq!(cells, 467, "468 cells with one pinned MSSQL parser rejection");
+    assert_eq!(
+        cells, 467,
+        "468 cells with one pinned MSSQL parser rejection"
+    );
     assert_eq!(
         unresolved, 0,
         "supported semantics must not disappear from source-typed composition"
