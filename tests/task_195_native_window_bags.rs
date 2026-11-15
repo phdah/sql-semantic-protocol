@@ -31,11 +31,7 @@ fn source_rows(value: &Value) -> Vec<Vec<Option<i64>>> {
     tuples
 }
 
-fn original_integer_rows(
-    db: &Connection,
-    sql: &str,
-    columns: usize,
-) -> Vec<Vec<Option<i64>>> {
+fn original_integer_rows(db: &Connection, sql: &str, columns: usize) -> Vec<Vec<Option<i64>>> {
     let mut stmt = db.prepare(sql).expect("original native SQL");
     stmt.query_map([], |row| {
         let mut tuple = Vec::with_capacity(columns);
@@ -72,11 +68,7 @@ fn verify_float_bag(db: &Connection, sql: &str, expected: &Value, id: &str) {
         .as_array()
         .expect("expected numeric terminal bag")
         .iter()
-        .map(|row| {
-            row.as_array()
-                .expect("single column tuple")[0]
-                .as_f64()
-        })
+        .map(|row| row.as_array().expect("single column tuple")[0].as_f64())
         .collect::<Vec<_>>();
     observed.sort_by(float_cmp);
     golden.sort_by(float_cmp);
@@ -130,7 +122,9 @@ fn original_duckdb_sql_preserves_complete_native_source_and_terminal_bags() {
         let sql = case["sql"].as_str().expect("immutable original spelling");
         let native = &case["native_oracle"];
         match native["kind"].as_str().expect("explicit proof class") {
-            "prior_original_integer_bag" | "original_integer_bag" | "unordered_original_source_bag" => {
+            "prior_original_integer_bag"
+            | "original_integer_bag"
+            | "unordered_original_source_bag" => {
                 let arity = native["columns"].as_u64().expect("fixed output arity") as usize;
                 let mut actual = original_integer_rows(&db, sql, arity);
                 actual.sort();
@@ -195,8 +189,14 @@ fn physical_null_group_and_generated_subtotal_are_not_equivalent() {
     let grouping = find_case(&fixture, "88-C177-S104");
     let mut rolls = original_integer_rows(&db, rollup["sql"].as_str().expect("ROLLUP"), 2);
     rolls.sort();
-    assert!(rolls.contains(&vec![None, Some(1)]), "physical NULL id group");
-    assert!(rolls.contains(&vec![None, Some(6)]), "generated subtotal for all rows");
+    assert!(
+        rolls.contains(&vec![None, Some(1)]),
+        "physical NULL id group"
+    );
+    assert!(
+        rolls.contains(&vec![None, Some(6)]),
+        "generated subtotal for all rows"
+    );
 
     let mut actual = original_integer_rows(&db, grouping["sql"].as_str().expect("GROUPING"), 2);
     actual.sort();
@@ -205,8 +205,14 @@ fn physical_null_group_and_generated_subtotal_are_not_equivalent() {
         1,
         "only generated subtotal has GROUPING(id)=1"
     );
-    assert!(actual.contains(&vec![Some(0), Some(1)]), "physical NULL remains a real group");
-    assert!(actual.contains(&vec![Some(1), Some(6)]), "all six source occurrences retained");
+    assert!(
+        actual.contains(&vec![Some(0), Some(1)]),
+        "physical NULL remains a real group"
+    );
+    assert!(
+        actual.contains(&vec![Some(1), Some(6)]),
+        "all six source occurrences retained"
+    );
 }
 
 #[test]
@@ -225,7 +231,10 @@ fn ranking_with_peers_and_fetch_with_ties_differ_from_row_limits() {
         observed.sort();
         assert_eq!(
             observed,
-            golden.into_iter().map(|n| vec![Some(n)]).collect::<Vec<_>>(),
+            golden
+                .into_iter()
+                .map(|n| vec![Some(n)])
+                .collect::<Vec<_>>(),
             "{id}: RANK gaps and DENSE_RANK peers are different"
         );
     }
