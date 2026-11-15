@@ -2,13 +2,12 @@
 //! parser dialects and authoritative direct source column types.
 //! Source fixture observations are never promoted to universal SQL bounds.
 
-use std::collections::BTreeSet;
 use serde_json::Value;
 use sql_semantic_protocol::{
-    analyze_configured_inputs_with_catalog, analyze_inputs, dialect_from_name,
-    ComposedSemantics, ConfiguredSqlInput, LiteralValue, RelationCatalog, SetMode,
-    SqlInput, ValueDomain,
+    analyze_configured_inputs_with_catalog, analyze_inputs, dialect_from_name, ComposedSemantics,
+    ConfiguredSqlInput, LiteralValue, RelationCatalog, SetMode, SqlInput, ValueDomain,
 };
+use std::collections::BTreeSet;
 
 const FREEZE: &str = include_str!("../docs/task-195-acceptance-freeze.json");
 
@@ -22,7 +21,8 @@ fn catalog() -> RelationCatalog {
         )],
         "duckdb",
         parser.as_ref(),
-    ).expect("authoritative direct DDL");
+    )
+    .expect("authoritative direct DDL");
     RelationCatalog::from_schemas(ddl.source_schemas()).expect("typed source catalog")
 }
 
@@ -33,10 +33,10 @@ fn admits(domain: &ValueDomain, value: &Value) -> bool {
         ValueDomain::Set(set) => {
             let found = set.values().iter().any(|entry| match entry.value() {
                 LiteralValue::Null => value.is_null(),
-                LiteralValue::Number(number) => {
-                    value.as_f64().zip(number.parse::<f64>().ok())
-                        .is_some_and(|(actual, expected)| (actual - expected).abs() < 1e-9)
-                }
+                LiteralValue::Number(number) => value
+                    .as_f64()
+                    .zip(number.parse::<f64>().ok())
+                    .is_some_and(|(actual, expected)| (actual - expected).abs() < 1e-9),
                 _ => false,
             });
             match set.mode() {
@@ -89,7 +89,9 @@ fn all_28_original_deterministic_bags_respect_accepted_typed_output_domains() {
         cases += 1;
         let id = case["id"].as_str().expect("original ID");
         let sql = case["sql"].as_str().expect("immutable original SQL");
-        let arity = case["native_oracle"]["columns"].as_u64().expect("native width") as usize;
+        let arity = case["native_oracle"]["columns"]
+            .as_u64()
+            .expect("native width") as usize;
         for cell in case["cells"].as_array().expect("13 named dialects") {
             if cell["original_observed_status"] == "R" {
                 continue;
@@ -100,12 +102,18 @@ fn all_28_original_deterministic_bags_respect_accepted_typed_output_domains() {
             let parser = dialect_from_name(name).expect("public parser");
             let source = SqlInput::inline(sql);
             let configured = [ConfiguredSqlInput::new(
-                &key, &source, name, parser.as_ref(),
+                &key,
+                &source,
+                name,
+                parser.as_ref(),
             )];
             let analyzed = analyze_configured_inputs_with_catalog(&configured, &catalog)
                 .unwrap_or_else(|error| panic!("{key}: source schema analysis: {error}"));
             let ComposedSemantics::Resolved(semantics) = analyzed
-                .layers().last().expect("typed terminal").composed_semantics()
+                .layers()
+                .last()
+                .expect("typed terminal")
+                .composed_semantics()
             else {
                 panic!("{key}: no supported canonical output");
             };
@@ -126,6 +134,13 @@ fn all_28_original_deterministic_bags_respect_accepted_typed_output_domains() {
         }
     }
     assert_eq!(cases, 28);
-    assert_eq!(checked.len(), 364, "28 originals × 13 accepted parser dialects");
-    assert!(checked_occurrences >= 1000, "all NULL and peer duplicates verified");
+    assert_eq!(
+        checked.len(),
+        364,
+        "28 originals × 13 accepted parser dialects"
+    );
+    assert!(
+        checked_occurrences >= 1000,
+        "all NULL and peer duplicates verified"
+    );
 }
