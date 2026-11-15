@@ -9,8 +9,12 @@ const FREEZE: &str = include_str!("../docs/task-195-acceptance-freeze.json");
 
 fn source(db: &Connection) {
     let fixture: Value = serde_json::from_str(FREEZE).expect("fixed original data");
-    db.execute_batch(fixture["source_setup"].as_str().expect("immutable source bag"))
-        .expect("full duplicate and nullable physical input");
+    db.execute_batch(
+        fixture["source_setup"]
+            .as_str()
+            .expect("immutable source bag"),
+    )
+    .expect("full duplicate and nullable physical input");
 }
 
 #[test]
