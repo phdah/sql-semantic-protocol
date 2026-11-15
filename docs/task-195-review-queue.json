@@ -6903,7 +6903,7 @@
       "independent_review_type": "agent_reconstructed_from_SQL_algebra_not_vendor_execution"
     }
   ],
-  "blocking_reason": "No remaining TASK-195 bounded acceptance blocker. TASK-191 owns 21 D and 1 R cells; TASK-179 owns external runtimes; TASK-197/TASK-180 and parent TASK-88/release TASK-91 are independent unapproved gates. Final metadata CI reruns after signoff.",
+  "blocking_reason": "No remaining bounded TASK-195 blocker. Original 21 D and 1 R remain explicitly unapproved vendor/parser portability handoffs to TASK-191; TASK-179, TASK-197, TASK-180, parent TASK-88 and release TASK-91 stay independently unapproved.",
   "task_done": true,
   "parent_approved": false,
   "release_approved": false,
@@ -6917,5 +6917,8 @@
   "bounded_signoff_approved": true,
   "reviewed_protocol_implementation_commit": "af9a7e4ecedbb097fa8c10900b15f5f4a9850e69",
   "reviewed_protocol_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/43764456633",
-  "reviewed_consumer_ci": "https://github.com/phdah/sql-tdg/actions/runs/43764466918"
+  "reviewed_consumer_ci": "https://github.com/phdah/sql-tdg/actions/runs/43764466918",
+  "reviewed_signoff_metadata_head": "67ff77644254a56751258410d5c0c5463a9381a5",
+  "reviewed_signoff_metadata_protocol_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/43764795231",
+  "reviewed_signoff_metadata_pinned_consumer_ci": "https://github.com/phdah/sql-tdg/actions/runs/43764806492"
 }

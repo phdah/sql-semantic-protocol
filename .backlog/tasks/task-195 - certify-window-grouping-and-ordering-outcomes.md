@@ -83,3 +83,5 @@ All **five** original bounded acceptance criteria are verified with an independe
 - Exact pinned migrated consumer `sql-tdg` PR #53 SHA `9429a7ba138435ec9f8df3a51bce3071881b165e`: [CI 5/5 success](https://github.com/phdah/sql-tdg/actions/runs/43764466918). This temporary Git-SHA harness is not merged or released.
 - Independent source/bag and parser/output review: `docs/task-195-independent-semantic-review.json`; repository conformance `tests/task_195_independent_review.rs`.
 - **TASK-195 Done applies only to bounded scope.** TASK-179, TASK-191, TASK-197, TASK-180, parent TASK-88 and release TASK-91 are independent unapproved gates. Final task-metadata CI runs after this commit.
+
+- Signoff-status metadata rerun verified: protocol `67ff77644254a56751258410d5c0c5463a9381a5` [9/9](https://github.com/phdah/sql-semantic-protocol/actions/runs/43764795231); exactly pinned temporary sql-tdg [5/5](https://github.com/phdah/sql-tdg/actions/runs/43764806492). The following metadata-only record update does not modify Rust or original SQL semantics.

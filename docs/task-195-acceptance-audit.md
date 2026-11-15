@@ -43,3 +43,7 @@ All five TASK-195 acceptance criteria are checked for the bounded 36 original SQ
 - **Reviewed protocol implementation:** `af9a7e4ecedbb097fa8c10900b15f5f4a9850e69`, [9/9 CI success](https://github.com/phdah/sql-semantic-protocol/actions/runs/43764456633) including fmt, strict Clippy, both Rust feature configurations, docs and dbt E2E.
 - **Pinned migrated consumer:** [sql-tdg PR #53](https://github.com/phdah/sql-tdg/pull/53) at exact protocol pin `af9a7e4ecedbb097fa8c10900b15f5f4a9850e69`, [5/5 CI success](https://github.com/phdah/sql-tdg/actions/runs/43764466918). Consumer harness is CI-only and must not merge as a release dependency.
 - The task metadata signoff commit follows these green implementation runs and is separately exercised by CI. Parent TASK-88, release TASK-91, whole matrix TASK-180, cross-family adapter TASK-197, parser TASK-191 and vendor/session TASK-179 retain independent approval requirements.
+
+### Exact signoff-metadata rerun
+
+The first `Done` task-status commit `67ff77644254a56751258410d5c0c5463a9381a5` also passed [9/9 protocol CI](https://github.com/phdah/sql-semantic-protocol/actions/runs/43764795231), including the acceptance state transition. Its exactly repinned temporary migrated consumer passed [5/5](https://github.com/phdah/sql-tdg/actions/runs/43764806492). These are recorded as reviewed metadata-run evidence in the manifest. This final documentary update records the verified result without changing a single canonical SQL or Rust behavior.
