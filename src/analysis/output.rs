@@ -921,14 +921,7 @@ fn derive_domain(expression: &Expression, ctx: DomainContext<'_>) -> ValueDomain
         }
         Expression::Literal(literal) => ValueDomain::set(SetMode::Include, vec![literal.clone()]),
         Expression::BooleanPredicate(_) => boolean_domain(),
-        Expression::WindowFunction(window)
-            if window.function().name().eq_ignore_ascii_case("row_number") =>
-        {
-            integer_lower_bound_domain(1)
-        }
-        Expression::WindowFunction(_) => {
-            ValueDomain::unknown("window-function output domain is not known safely")
-        }
+        Expression::WindowFunction(window) => derive_window_output_domain(window),
         Expression::AggregateFunction(function)
             if function.name().eq_ignore_ascii_case("count") =>
         {
@@ -961,6 +954,61 @@ fn derive_domain(expression: &Expression, ctx: DomainContext<'_>) -> ValueDomain
                 "unsupported expression has no safely known output domain",
             ))
         }
+    }
+}
+
+
+/// Strongest statement-local numeric value law for supported analytic functions.
+///
+/// These intervals depend on SQL operator semantics, not a test source's row
+/// counts. Invalid bucket arguments and opaque functions must remain unknown.
+fn derive_window_output_domain(window: &WindowFunctionExpression) -> ValueDomain {
+    let function = window.function();
+    let name = function.name().to_ascii_lowercase();
+    let arguments = function.arguments();
+    if function.distinct() && name != "count" {
+        return ValueDomain::unknown("analytic DISTINCT semantics require explicit evidence");
+    }
+    match name.as_str() {
+        "row_number" | "rank" | "dense_rank" if arguments.is_empty() => {
+            integer_lower_bound_domain(1)
+        }
+        "ntile" => {
+            let [Expression::Literal(buckets)] = arguments else {
+                return ValueDomain::unknown("NTILE requires a constant positive bucket count");
+            };
+            if buckets.literal_type() != LiteralType::Integer {
+                return ValueDomain::unknown("NTILE bucket count must be a positive integer");
+            }
+            let LiteralValue::Number(raw) = buckets.value() else {
+                return ValueDomain::unknown("NTILE bucket count must be a numeric literal");
+            };
+            let Ok(count) = raw.parse::<i128>() else {
+                return ValueDomain::unknown("NTILE bucket count is outside supported integers");
+            };
+            if count <= 0 {
+                return ValueDomain::unknown("NTILE requires a positive bucket count");
+            }
+            ValueDomain::ranges(vec![ValueRange::new(
+                Some(Bound::new(integer_literal(1), true)),
+                Some(Bound::new(integer_literal(count), true)),
+            )])
+        }
+        "percent_rank" | "cume_dist" if arguments.is_empty() => {
+            let lower_inclusive = name == "percent_rank";
+            let bound = |value: &str| {
+                LiteralExpression::new(
+                    LiteralType::Decimal,
+                    LiteralValue::Number(value.to_string()),
+                )
+            };
+            ValueDomain::ranges(vec![ValueRange::new(
+                Some(Bound::new(bound("0"), lower_inclusive)),
+                Some(Bound::new(bound("1"), true)),
+            )])
+        }
+        "count" => integer_lower_bound_domain(0),
+        _ => ValueDomain::unknown("window-function output domain is not known safely"),
     }
 }
 
