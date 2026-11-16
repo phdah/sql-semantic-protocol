@@ -15862,7 +15862,7 @@
     "mandatory_typed_state_and_rejection_proofs_verified": true,
     "independent_reviewed_cells": 494,
     "adapter_parity_complete": false,
-    "checked_at_final_head": false,
+    "checked_at_final_head": true,
     "pinned_consumer_checked": true,
     "parser_and_session_boundary_owner": "TASK-179/TASK-191",
     "source_adapter_parity_owner": "TASK-197",
@@ -15914,6 +15914,12 @@
     "reviewed_consumer_pin": "697ba496c974d8749f670160d8d0f9a3f05e4e09",
     "reviewed_consumer_ci": "https://github.com/phdah/sql-tdg/actions/runs/43978131493",
     "reviewed_consumer_ci_result": "5/5 success on exact reviewed implementation",
-    "final_signoff_metadata_ci_pending": true
+    "final_signoff_metadata_ci_pending": false,
+    "reviewed_signoff_metadata_head": "f74b2fb308862e3dec1d7fe05a3c25793f83befe",
+    "reviewed_signoff_metadata_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/43978446089",
+    "reviewed_signoff_metadata_protocol_ci_result": "9/9 success on task Done metadata",
+    "reviewed_signoff_metadata_consumer_ci": "https://github.com/phdah/sql-tdg/actions/runs/43978488007",
+    "reviewed_signoff_metadata_consumer_ci_result": "5/5 on exact task Done metadata pin",
+    "final_signoff_approval_scope": "TASK-196 bounded original 38 SQL/494 cells only; parent TASK-88 and release TASK-91 remain unapproved"
   }
 }

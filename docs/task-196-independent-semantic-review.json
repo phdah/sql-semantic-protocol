@@ -6537,5 +6537,8 @@
   "reviewed_consumer_ci": "https://github.com/phdah/sql-tdg/actions/runs/43978131493",
   "reviewed_consumer_ci_result": "5/5 CI success on exact reviewed implementation pin",
   "bounded_original_task_done": true,
-  "exact_signoff_metadata_ci_pending": true
+  "exact_signoff_metadata_ci_pending": false,
+  "reviewed_signoff_metadata_head": "f74b2fb308862e3dec1d7fe05a3c25793f83befe",
+  "reviewed_signoff_metadata_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/43978446089",
+  "reviewed_signoff_metadata_consumer_ci": "https://github.com/phdah/sql-tdg/actions/runs/43978488007"
 }
