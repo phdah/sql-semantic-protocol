@@ -182,6 +182,33 @@ fn zero_offset_window_frame_bounds_are_equivalent_to_current_row() {
 }
 
 #[test]
+fn window_count_of_a_constant_null_is_exactly_zero() {
+    let frozen: Value = serde_json::from_str(FREEZE).expect("13 dialects");
+    let sql = "SELECT COUNT(NULL) OVER (PARTITION BY id ORDER BY amount) FROM orders";
+    for dialect in frozen["dialects"].as_array().expect("public parsers") {
+        let name = dialect.as_str().expect("dialect name");
+        let parser = dialect_from_name(name).expect("supported parser");
+        let protocol = analyze_sql(sql, name, parser.as_ref())
+            .unwrap_or_else(|error| panic!("{name}: {error}"));
+        let [ProtocolStatement::Query(query)] = protocol.statements() else {
+            panic!("{name}: expected query");
+        };
+        let [column] = query.output().columns() else {
+            panic!("{name}: expected one count scalar");
+        };
+        let ValueDomain::Set(values) = column.domain() else {
+            panic!("{name}: COUNT(NULL) must have exact zero domain");
+        };
+        assert_eq!(values.mode(), sql_semantic_protocol::SetMode::Include);
+        assert_eq!(
+            values.values().iter().map(|value| value.value()).collect::<Vec<_>>(),
+            vec![&LiteralValue::Number("0".to_string())],
+            "{name}: NULL never contributes to COUNT"
+        );
+    }
+}
+
+#[test]
 fn grouping_marker_is_a_bit_not_a_nullable_physical_group_key() {
     let frozen: Value = serde_json::from_str(FREEZE).expect("original source inventory");
     let original = frozen["cases"]
