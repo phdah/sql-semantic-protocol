@@ -243,7 +243,8 @@ implicit default frames (with or without ORDER BY) and explicit frames such
 as GROUPS BETWEEN 1 PRECEDING AND CURRENT ROW or ROWS frames whose
 0 PRECEDING/FOLLOWING endpoints mean CURRENT ROW. An explicit frame that can
 exclude the current row, or COUNT of an arbitrary nullable expression,
-retains its conservative lower bound of 0. These
+retains its conservative lower bound of 0. COUNT(NULL) is exactly {0}
+regardless of the frame, because no frame row can contribute a non-NULL value. These
 statement-local bounds require neither fixed source rows nor warehouse
 session runtime claims.
 
