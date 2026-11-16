@@ -490,13 +490,11 @@ fn bounded_mutation_source(
                 ..
             },
             Predicate::InSubquery(membership),
-        ) if !membership.negated() => Predicate::InSubquery(
-            InSubqueryPredicate::with_operand(
-                membership.operand().clone(),
-                analyze_subquery_semantics_with_metadata(subquery, &scope, Some(metadata)),
-                false,
-            ),
-        ),
+        ) if !membership.negated() => Predicate::InSubquery(InSubqueryPredicate::with_operand(
+            membership.operand().clone(),
+            analyze_subquery_semantics_with_metadata(subquery, &scope, Some(metadata)),
+            false,
+        )),
         _ => predicate,
     };
     let nested = match &predicate {
