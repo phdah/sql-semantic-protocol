@@ -15869,6 +15869,17 @@
     "final_matrix_owner": "TASK-180",
     "task_done": false,
     "parent_task88_approved": false,
-    "release_approved": false
+    "release_approved": false,
+    "metadata_source_authority_test": "tests/task_196_metadata_authority.rs",
+    "metadata_original_ids": [
+      "88-C177-S191",
+      "88-C177-S193"
+    ],
+    "metadata_covered_fact_types": [
+      "dbt_catalog_authoritative",
+      "dbt_manifest_declared_complete_fallback",
+      "missing_facts_fail_closed",
+      "representable_odcs_source_types"
+    ]
   }
 }
