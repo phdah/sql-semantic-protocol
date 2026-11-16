@@ -502,6 +502,9 @@ fn bounded_mutation_source(
         Predicate::InSubquery(membership) if !membership.negated() => membership.subquery(),
         _ => return None,
     };
+    if matches!(selection, Expr::InSubquery { .. }) {
+        eprintln!("TASK196_NESTED_DIAGNOSTIC: predicate={predicate:?}; catalog={}", metadata.catalog.is_some());
+    }
     let [source] = nested.sources() else {
         return None;
     };
