@@ -15824,5 +15824,51 @@
     "historical_initial_freeze_deviation": "seven_case_initial_pre_implementation_freeze_later_expanded_to_163_observed_not_retroactive",
     "existing_verified_full_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/42882374317",
     "existing_verified_consumer_ci": "https://github.com/phdah/sql-tdg/actions/runs/42882183376"
+  },
+  "task_196_schema_write_ddl_acceptance": {
+    "owner": "TASK-196",
+    "parent": "TASK-88",
+    "status": "in_progress_task_owned_original_sql_freeze",
+    "freeze": "docs/task-196-acceptance-freeze.json",
+    "freeze_version": 1,
+    "original_cases": 38,
+    "dialect_cells": 494,
+    "observed_parser_cells": {
+      "canonical_equal": 428,
+      "parser_rejected": 11,
+      "unsupported": 55
+    },
+    "case_families": {
+      "schema": 11,
+      "dml": 18,
+      "ddl": 9
+    },
+    "positive_fixture": "88-C196-P",
+    "negative_fixture": "88-C196-N",
+    "inherited_complete_original_duckdb_bag_cases": 34,
+    "inherited_dml_bag_oracles": "docs/task-177-write-oracles.json",
+    "inherited_schema_ddl_oracles": "docs/task-177-schema-lifecycle-oracles.json",
+    "metadata_only_cases": [
+      "88-C177-S191",
+      "88-C177-S193"
+    ],
+    "unapproved_vendor_or_unsupported_cases": [
+      "88-C177-S199",
+      "88-C177-S200"
+    ],
+    "freeze_test": "tests/task_196_acceptance_matrix.rs",
+    "native_oracle_test": "tests/task_196_original_native_states.rs",
+    "audit": "docs/task-196-acceptance-audit.md",
+    "mandatory_typed_state_and_rejection_proofs_verified": false,
+    "independent_reviewed_cells": 0,
+    "adapter_parity_complete": false,
+    "checked_at_final_head": false,
+    "pinned_consumer_checked": false,
+    "parser_and_session_boundary_owner": "TASK-179/TASK-191",
+    "source_adapter_parity_owner": "TASK-197",
+    "final_matrix_owner": "TASK-180",
+    "task_done": false,
+    "parent_task88_approved": false,
+    "release_approved": false
   }
 }
