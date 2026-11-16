@@ -40,27 +40,43 @@ fn all_494_original_cells_have_a_case_specific_sql_law_and_explicit_nonvendor_de
     let mut c = 0;
     let mut r = 0;
     let mut u = 0;
-    for reviewed in review["original_SQL_cases"].as_array().expect("38 reviewed laws") {
+    for reviewed in review["original_SQL_cases"]
+        .as_array()
+        .expect("38 reviewed laws")
+    {
         let id = reviewed["id"].as_str().expect("stable SQL fixture");
         assert!(cases.insert(id), "{id}: no duplicate reviewed variant");
-        let original = freeze["cases"].as_array().expect("frozen variants")
-            .iter().find(|candidate| candidate["id"] == id)
+        let original = freeze["cases"]
+            .as_array()
+            .expect("frozen variants")
+            .iter()
+            .find(|candidate| candidate["id"] == id)
             .expect("review cannot invent original SQL");
-        assert_eq!(reviewed["original_sql"], original["sql"], "{id}: original SQL drift");
+        assert_eq!(
+            reviewed["original_sql"], original["sql"],
+            "{id}: original SQL drift"
+        );
         assert_eq!(reviewed["feature_id"], original["feature_id"]);
         assert!(
-            reviewed["independent_sql_law"].as_str()
+            reviewed["independent_sql_law"]
+                .as_str()
                 .is_some_and(|law| law.len() >= 55),
             "{id}: a category label is not an independently reasoned SQL law"
         );
         assert_eq!(reviewed["portable_review_pending_final_head_ci"], true);
         assert!(reviewed["evidence_owner"].as_str().is_some());
-        if reviewed["feature_id"].as_str().expect("family").starts_with("dml.")
+        if reviewed["feature_id"]
+            .as_str()
+            .expect("family")
+            .starts_with("dml.")
             && reviewed["physical_native_class"] == "original_native_dml_complete_target_bag"
         {
             assert!(
-                write["cases"].as_array().expect("independent physical ordinals")
-                    .iter().any(|entry| entry["id"] == id),
+                write["cases"]
+                    .as_array()
+                    .expect("independent physical ordinals")
+                    .iter()
+                    .any(|entry| entry["id"] == id),
                 "{id}: original DML review cannot omit independently selected occurrences"
             );
         }
@@ -74,7 +90,10 @@ fn all_494_original_cells_have_a_case_specific_sql_law_and_explicit_nonvendor_de
                 cell["original_observed_status"],
                 original["cells"][index]["original_observed_status"]
             );
-            assert!(cells.insert(format!("{id}/{name}")), "duplicate review cell");
+            assert!(
+                cells.insert(format!("{id}/{name}")),
+                "duplicate review cell"
+            );
             assert_eq!(cell["native_vendor_attested"], false);
             assert!(cell["evidence"].as_str().is_some());
             match cell["original_observed_status"].as_str().expect("status") {
