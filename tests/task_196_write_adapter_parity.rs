@@ -6,8 +6,8 @@
 use serde_json::{json, Value};
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, analyze_dbt_manifest_with_schemas, analyze_inputs,
-    dialect_from_name, parse_dbt_manifest, to_bundle_json, ConfiguredSqlInput,
-    ProducerExecution, RelationCatalog, SqlInput,
+    dialect_from_name, parse_dbt_manifest, to_bundle_json, ConfiguredSqlInput, ProducerExecution,
+    RelationCatalog, SqlInput,
 };
 
 const FREEZE: &str = include_str!("../docs/task-196-acceptance-freeze.json");
@@ -23,8 +23,10 @@ fn source_catalog_from_direct() -> RelationCatalog {
             "CREATE TABLE orders(id INTEGER, amount INTEGER);
              CREATE TABLE customers(id INTEGER, amount INTEGER)",
         )],
-        "duckdb", dialect.as_ref()
-    ).expect("direct source schema");
+        "duckdb",
+        dialect.as_ref(),
+    )
+    .expect("direct source schema");
     RelationCatalog::from_schemas(ddl.source_schemas()).expect("typed direct physical source")
 }
 
@@ -33,16 +35,19 @@ fn source_catalog_from_dbt() -> RelationCatalog {
         .into_iter()
         .map(|relation| {
             let id = format!("source.task196.{relation}");
-            (id.clone(), json!({
-                "unique_id":id, "resource_type":"source", "name":relation,
-                "relation_name":relation,
-                "columns":{
-                    "id":{"name":"id","data_type":"INTEGER"},
-                    "amount":{"name":"amount","data_type":"INTEGER"}
-                }
-            }))
+            (
+                id.clone(),
+                json!({
+                    "unique_id":id, "resource_type":"source", "name":relation,
+                    "relation_name":relation,
+                    "columns":{
+                        "id":{"name":"id","data_type":"INTEGER"},
+                        "amount":{"name":"amount","data_type":"INTEGER"}
+                    }
+                }),
+            )
         })
-        .collect::<serde_json::Map<_,_>>();
+        .collect::<serde_json::Map<_, _>>();
     let manifest = json!({
         "metadata":{
             "dbt_schema_version":"https://schemas.getdbt.com/dbt/manifest/v12.json",
@@ -64,7 +69,9 @@ fn source_catalog_from_dbt() -> RelationCatalog {
     let bundle = analyze_dbt_manifest_with_schemas(&parsed, "duckdb", dialect.as_ref())
         .expect("authoritative complete manifest source types");
     assert!(
-        bundle.producer_evidence().iter()
+        bundle
+            .producer_evidence()
+            .iter()
             .all(|producer| producer.execution() == ProducerExecution::Unattested),
         "dbt compiled model is not evidence of physical execution"
     );
@@ -96,26 +103,27 @@ schema:
         physicalType: INTEGER
 ";
     let parsed = sql_semantic_protocol::parse_odcs_yaml(
-        contract, "duckdb",
-        &RelationCatalog::new(&["orders", "customers"]).expect("contract physical names")
-    ).expect("ODCS source columns");
+        contract,
+        "duckdb",
+        &RelationCatalog::new(&["orders", "customers"]).expect("contract physical names"),
+    )
+    .expect("ODCS source columns");
     RelationCatalog::from_schemas(parsed.source_schemas()).expect("ODCS typed source")
 }
 
-fn observed_statement(
-    catalog: &RelationCatalog,
-    sql: &str,
-    dialect_name: &str,
-) -> Value {
+fn observed_statement(catalog: &RelationCatalog, sql: &str, dialect_name: &str) -> Value {
     let dialect = dialect_from_name(dialect_name).expect("named project dialect");
     let source = SqlInput::inline(sql);
     let configured = [ConfiguredSqlInput::new(
-        "task196-source-parity", &source, dialect_name, dialect.as_ref(),
+        "task196-source-parity",
+        &source,
+        dialect_name,
+        dialect.as_ref(),
     )];
     let bundle = analyze_configured_inputs_with_catalog(&configured, catalog)
         .unwrap_or_else(|error| panic!("{dialect_name}: original DML: {error}"));
-    let document: Value = serde_json::from_str(&to_bundle_json(&bundle))
-        .expect("canonical document JSON");
+    let document: Value =
+        serde_json::from_str(&to_bundle_json(&bundle)).expect("canonical document JSON");
     document["inputs"][0]["statements"][0].clone()
 }
 
@@ -127,7 +135,11 @@ fn all_original_18_dml_programs_preserve_canonical_wire_across_direct_and_dbt_so
     let mut compared = 0;
     let mut rejected = 0;
     for case in freeze["cases"].as_array().expect("38 stable originals") {
-        if !case["feature_id"].as_str().expect("case family").starts_with("dml.") {
+        if !case["feature_id"]
+            .as_str()
+            .expect("case family")
+            .starts_with("dml.")
+        {
             continue;
         }
         let id = case["id"].as_str().expect("original ID");
@@ -144,12 +156,18 @@ fn all_original_18_dml_programs_preserve_canonical_wire_across_direct_and_dbt_so
                 actual, expected,
                 "{id}/{name}: compiled dbt source facts cannot change the SQL write contract"
             );
-            assert!(expected.is_object(), "{id}/{name}: no silent missing statement");
+            assert!(
+                expected.is_object(),
+                "{id}/{name}: no silent missing statement"
+            );
             compared += 1;
         }
     }
-    assert_eq!(compared + rejected, 18*13);
-    assert_eq!(rejected, 10, "REPLACE INTO has ten parser-specific rejections");
+    assert_eq!(compared + rejected, 18 * 13);
+    assert_eq!(
+        rejected, 10,
+        "REPLACE INTO has ten parser-specific rejections"
+    );
 }
 
 #[cfg(feature = "odcs")]
@@ -160,7 +178,11 @@ fn all_original_224_parsed_dml_cells_preserve_odcs_source_fact_parity() {
     let odcs = source_catalog_from_odcs();
     let mut checked = 0;
     for case in freeze["cases"].as_array().expect("original variants") {
-        if !case["feature_id"].as_str().expect("family").starts_with("dml.") {
+        if !case["feature_id"]
+            .as_str()
+            .expect("family")
+            .starts_with("dml.")
+        {
             continue;
         }
         let id = case["id"].as_str().expect("original SQL");
