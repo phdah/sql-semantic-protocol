@@ -7,10 +7,13 @@
 use serde_json::{json, Value};
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, analyze_dbt_artifacts,
-    analyze_dbt_manifest_with_schemas, analyze_inputs, dialect_from_name, parse_dbt_catalog,
+    analyze_inputs, dialect_from_name, parse_dbt_catalog,
     parse_dbt_manifest, ComposedSemantics, ConfiguredSqlInput, DataType, DbtArtifactsError,
     RelationCatalog, SchemaSourceKind, SqlInput, ValueDomain,
 };
+
+#[cfg(feature = "odcs")]
+use sql_semantic_protocol::analyze_dbt_manifest_with_schemas;
 
 const FREEZE: &str = include_str!("../docs/task-196-acceptance-freeze.json");
 
@@ -93,17 +96,13 @@ fn dbt_bundle(
 ) -> Result<sql_semantic_protocol::AnalysisBundle, DbtArtifactsError> {
     let manifest = parse_dbt_manifest(&manifest(declared_type, sql).to_string())
         .expect("valid compiled dbt manifest");
-    let catalog = parse_dbt_catalog(&catalog(catalog_type).to_string())
-        .expect("valid warehouse catalog");
+    let catalog =
+        parse_dbt_catalog(&catalog(catalog_type).to_string()).expect("valid warehouse catalog");
     let dialect = dialect_from_name("duckdb").expect("source analyzer dialect");
     analyze_dbt_artifacts(&manifest, &catalog, "duckdb", dialect.as_ref())
 }
 
-fn typed_output(
-    catalog: &RelationCatalog,
-    sql: &str,
-    dialect_name: &str,
-) -> Vec<ValueDomain> {
+fn typed_output(catalog: &RelationCatalog, sql: &str, dialect_name: &str) -> Vec<ValueDomain> {
     let dialect = dialect_from_name(dialect_name).expect("named project dialect");
     let input = SqlInput::inline(sql);
     let configured = [ConfiguredSqlInput::new(
@@ -135,8 +134,7 @@ fn both_original_metadata_reads_prefer_warehouse_types_and_fail_closed_on_absenc
     for id in ["88-C177-S191", "88-C177-S193"] {
         let sql = original(id);
         assert_eq!(sql, "SELECT id FROM orders");
-        let catalog_bundle =
-            dbt_bundle(Some("TEXT"), Some("INTEGER"), &sql).expect("catalog wins");
+        let catalog_bundle = dbt_bundle(Some("TEXT"), Some("INTEGER"), &sql).expect("catalog wins");
         let [schema] = catalog_bundle.source_schemas() else {
             panic!("{id}: one warehouse source must be retained");
         };
@@ -222,17 +220,18 @@ schema:
         &RelationCatalog::new(&["orders"]).expect("physical source name"),
     )
     .expect("ODCS authoritative source schema");
-    let odcs = RelationCatalog::from_schemas(parsed.source_schemas())
-        .expect("typed contract catalog");
+    let odcs =
+        RelationCatalog::from_schemas(parsed.source_schemas()).expect("typed contract catalog");
     let duckdb = dialect_from_name("duckdb").expect("source parser");
     let ddl = analyze_inputs(
-        &[SqlInput::inline("CREATE TABLE orders(id INTEGER,amount DECIMAL(10,2))")],
+        &[SqlInput::inline(
+            "CREATE TABLE orders(id INTEGER,amount DECIMAL(10,2))",
+        )],
         "duckdb",
         duckdb.as_ref(),
     )
     .expect("typed direct DDL");
-    let direct =
-        RelationCatalog::from_schemas(ddl.source_schemas()).expect("source DDL catalog");
+    let direct = RelationCatalog::from_schemas(ddl.source_schemas()).expect("source DDL catalog");
     let frozen: Value = serde_json::from_str(FREEZE).expect("original dialects");
     for name in frozen["dialects"].as_array().expect("13 dialects") {
         let name = name.as_str().expect("public parser name");
@@ -244,9 +243,8 @@ schema:
     }
     let parsed_manifest = parse_dbt_manifest(&manifest(Some("INTEGER"), &sql).to_string())
         .expect("compiled dbt source");
-    let compiled =
-        analyze_dbt_manifest_with_schemas(&parsed_manifest, "duckdb", duckdb.as_ref())
-            .expect("compiled source SQL with complete manifest declarations");
+    let compiled = analyze_dbt_manifest_with_schemas(&parsed_manifest, "duckdb", duckdb.as_ref())
+        .expect("compiled source SQL with complete manifest declarations");
     assert_eq!(
         typed_output(
             &RelationCatalog::from_schemas(compiled.source_schemas())
