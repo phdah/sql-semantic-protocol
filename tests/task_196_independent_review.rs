@@ -30,8 +30,11 @@ fn all_494_original_cells_have_a_case_specific_sql_law_and_explicit_nonvendor_de
         review["observed_status_counts"],
         serde_json::json!({"C":428,"R":11,"U":55})
     );
-    assert_eq!(review["approved_semantic_cells"], 0);
-    assert_eq!(review["independently_adjudicated_semantic_cells"], 0);
+    assert_eq!(review["approved_semantic_cells"], 402);
+    assert_eq!(review["independently_adjudicated_semantic_cells"], 494);
+    assert_eq!(review["reviewed_unapproved_cells"], 92);
+    assert_eq!(review["reviewed_conditional_canonical_C_cells"], 26);
+    assert_eq!(review["approval_requires_exact_head_ci"], true);
     assert_eq!(review["vendor_execution_attested"], false);
     assert_eq!(review["parent_task88_approved"], false);
     assert_eq!(review["release_approved"], false);
@@ -40,6 +43,8 @@ fn all_494_original_cells_have_a_case_specific_sql_law_and_explicit_nonvendor_de
     let mut c = 0;
     let mut r = 0;
     let mut u = 0;
+    let mut portable = 0;
+    let mut conditional = 0;
     for reviewed in review["original_SQL_cases"]
         .as_array()
         .expect("38 reviewed laws")
@@ -65,6 +70,8 @@ fn all_494_original_cells_have_a_case_specific_sql_law_and_explicit_nonvendor_de
         );
         assert_eq!(reviewed["portable_review_pending_final_head_ci"], true);
         assert!(reviewed["evidence_owner"].as_str().is_some());
+        assert_eq!(reviewed["adapter_handoff_owner"], "TASK-197");
+        assert_eq!(reviewed["final_matrix_signoff_owner"], "TASK-180");
         if reviewed["feature_id"]
             .as_str()
             .expect("family")
@@ -96,33 +103,54 @@ fn all_494_original_cells_have_a_case_specific_sql_law_and_explicit_nonvendor_de
             );
             assert_eq!(cell["native_vendor_attested"], false);
             assert!(cell["evidence"].as_str().is_some());
-            match cell["original_observed_status"].as_str().expect("status") {
+            assert_eq!(cell["source_type_authority"], "SQL_schema_or_authoritative_dbt_catalog_manifest_ODCS_only");
+            let status = cell["original_observed_status"].as_str().expect("status");
+            let classification = cell["reviewer_classification"].as_str().expect("review class");
+            let expected = match status {
+                "C" if id.ends_with("S198") => {
+                    conditional += 1;
+                    assert_eq!(cell["semantic_owner"], "TASK-179");
+                    "reviewed_unapproved_conflict_order"
+                }
+                "C" if id.ends_with("S208") => {
+                    conditional += 1;
+                    assert_eq!(cell["semantic_owner"], "TASK-179");
+                    "reviewed_unapproved_cascade_action"
+                }
                 "C" => {
-                    assert_eq!(
-                        cell["reviewer_classification"],
-                        "portable_equivalence_candidate_pending_full_typed_effect_proof"
-                    );
-                    c += 1;
+                    portable += 1;
+                    assert_eq!(cell["semantic_owner"], "TASK-196");
+                    "reviewed_bounded_portable_canonical_under_frozen_source"
                 }
                 "R" => {
-                    assert_eq!(
-                        cell["reviewer_classification"],
-                        "reviewed_unapproved_parser_rejection"
-                    );
                     r += 1;
+                    assert_eq!(cell["semantic_owner"], "TASK-191");
+                    "reviewed_unapproved_parser_rejection"
                 }
                 "U" => {
-                    assert_eq!(
-                        cell["reviewer_classification"],
-                        "reviewed_unapproved_unsupported_analysis"
-                    );
                     u += 1;
+                    assert!(cell["semantic_owner"].as_str().expect("owned gap").starts_with("TASK-"));
+                    "reviewed_unapproved_unsupported_analysis"
                 }
-                status => panic!("{id}/{name}: unexpected historical classifier {status}"),
+                other => panic!("{id}/{name}: unexpected historical status {other}"),
+            };
+            assert_eq!(classification, expected, "{id}/{name}: never approve an unproved semantic cell");
+            assert_eq!(
+                cell["final_acceptance"],
+                if classification == "reviewed_bounded_portable_canonical_under_frozen_source" {
+                    "bounded_portable_under_attested_source_bag_and_oracle"
+                } else {
+                    "unapproved_boundary_with_named_follow_up"
+                }
+            );
+            if status == "C" {
+                c += 1;
             }
         }
     }
     assert_eq!(cases.len(), 38);
     assert_eq!(cells.len(), 494);
     assert_eq!((c, r, u), (428, 11, 55));
+    assert_eq!((portable, conditional), (402, 26));
+    assert_eq!(portable + conditional + r + u, 494);
 }
