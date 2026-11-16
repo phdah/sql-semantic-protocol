@@ -163,6 +163,25 @@ fn implicit_window_frames_count_the_current_row_without_explicit_frame_syntax() 
 }
 
 #[test]
+fn zero_offset_window_frame_bounds_are_equivalent_to_current_row() {
+    for sql in [
+        "SELECT COUNT(*) OVER (ORDER BY id ROWS BETWEEN 0 PRECEDING AND 0 PRECEDING) FROM orders",
+        "SELECT COUNT(*) OVER (ORDER BY id ROWS BETWEEN 0 FOLLOWING AND 0 FOLLOWING) FROM orders",
+    ] {
+        let bounds = range(sql, "duckdb");
+        assert_eq!(
+            bounds
+                .lower
+                .as_ref()
+                .map(|bound| (bound.value.as_str(), bound.inclusive)),
+            Some(("1", true)),
+            "{sql}: a zero-offset frame must contain its current row"
+        );
+        assert!(bounds.upper.is_none(), "{sql}: no finite row count proof");
+    }
+}
+
+#[test]
 fn grouping_marker_is_a_bit_not_a_nullable_physical_group_key() {
     let frozen: Value = serde_json::from_str(FREEZE).expect("original source inventory");
     let original = frozen["cases"]
