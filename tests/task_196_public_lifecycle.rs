@@ -84,10 +84,10 @@ fn bundle(sql: &str, enforce_primary_key: bool) -> sql_semantic_protocol::Analys
     )];
     let mut bundle = analyze_configured_inputs_with_catalog(&configured, &catalog())
         .expect("original SQL public adapter");
-    if enforce_primary_key {
+    if enforce_primary_key || sql.contains("THEN INSERT (id)") {
         // The frozen DuckDB DDL has an ordinary nullable amount column.
-        // Omission inserts SQL NULL, but that fact must be attested rather
-        // than inferred from a partial RelationCatalog type alone.
+        // An omitted amount is the implicitly attested SQL NULL default,
+        // not an arbitrary application-side missing value.
         let evidence = vec![ConstraintEvidence::new(
             ConstraintProvenance::new(
                 ConstraintSourceKind::ExternalMetadata,
@@ -96,21 +96,30 @@ fn bundle(sql: &str, enforce_primary_key: bool) -> sql_semantic_protocol::Analys
             .expect("native column DDL provenance"),
             ConstraintEnforcement::Enforced,
         )];
-        bundle.enrich_relation_constraints(&[RelationConstraintSet::new(
-            "orders",
+        let constraints = if enforce_primary_key {
             vec![
-                RelationConstraint::primary_key(vec!["id".to_owned()], evidence.clone())
-                    .expect("PK law"),
-            ],
-        )
-        .expect("source constraint set")
-        .with_column_value_sources(vec![ColumnValueSource::new(
-            "amount",
-            ColumnValueKind::Default,
-            Some(ConstraintValue::Null),
-            evidence,
-        )
-        .expect("DDL-attested implicit nullable default")])]);
+                RelationConstraint::primary_key(
+                    vec!["id".to_owned()],
+                    evidence.clone(),
+                )
+                .expect("PK law"),
+            ]
+        } else {
+            Vec::new()
+        };
+        bundle.enrich_relation_constraints(&[
+            RelationConstraintSet::new("orders", constraints)
+                .expect("source constraint set")
+                .with_column_value_sources(vec![
+                    ColumnValueSource::new(
+                        "amount",
+                        ColumnValueKind::Default,
+                        Some(ConstraintValue::Null),
+                        evidence,
+                    )
+                    .expect("DDL-attested implicit nullable default"),
+                ]),
+        ]);
     }
     bundle
 }
