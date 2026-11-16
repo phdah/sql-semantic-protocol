@@ -8,8 +8,8 @@ use std::collections::BTreeMap;
 use serde_json::Value;
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, dialect_from_name, physical_ordered_write_state_plan,
-    ConfiguredSqlInput, LiteralValue, PhysicalWriteRow, PhysicalWriteState,
-    PhysicalWriteStatePlan, RelationCatalog, RelationSchema, SchemaColumn, SqlInput, WriteKind,
+    ConfiguredSqlInput, LiteralValue, PhysicalWriteRow, PhysicalWriteState, PhysicalWriteStatePlan,
+    RelationCatalog, RelationSchema, SchemaColumn, SqlInput, WriteKind,
 };
 
 const FREEZE: &str = include_str!("../docs/task-196-acceptance-freeze.json");
@@ -49,15 +49,20 @@ fn state(relation: &str, columns: &[&str], rows: &[Vec<Option<i64>>]) -> Physica
             .map(|row| {
                 assert_eq!(row.len(), columns.len());
                 PhysicalWriteRow::new(
-                    columns.iter().zip(row).map(|(name, value)| {
-                        (
-                            (*name).to_string(),
-                            value.map_or(LiteralValue::Null, |number| {
-                                LiteralValue::Number(number.to_string())
-                            }),
-                        )
-                    }).collect::<BTreeMap<_,_>>()
-                ).expect("closed physical occurrence")
+                    columns
+                        .iter()
+                        .zip(row)
+                        .map(|(name, value)| {
+                            (
+                                (*name).to_string(),
+                                value.map_or(LiteralValue::Null, |number| {
+                                    LiteralValue::Number(number.to_string())
+                                }),
+                            )
+                        })
+                        .collect::<BTreeMap<_, _>>(),
+                )
+                .expect("closed physical occurrence")
             })
             .collect(),
     )
@@ -65,9 +70,17 @@ fn state(relation: &str, columns: &[&str], rows: &[Vec<Option<i64>>]) -> Physica
 }
 
 fn literal_state(relation: &str, columns: &[&str], rows: &Value) -> PhysicalWriteState {
-    let parsed = rows.as_array().expect("pinned terminal or source bag")
+    let parsed = rows
+        .as_array()
+        .expect("pinned terminal or source bag")
         .iter()
-        .map(|row| row.as_array().expect("tuple").iter().map(Value::as_i64).collect::<Vec<_>>())
+        .map(|row| {
+            row.as_array()
+                .expect("tuple")
+                .iter()
+                .map(Value::as_i64)
+                .collect::<Vec<_>>()
+        })
         .collect::<Vec<_>>();
     state(relation, columns, &parsed)
 }
@@ -77,7 +90,12 @@ fn analyze(sql: &str, schemas: &[RelationSchema]) -> sql_semantic_protocol::Anal
     let dialect = dialect_from_name("duckdb").expect("public dialect");
     let source = SqlInput::inline(sql);
     analyze_configured_inputs_with_catalog(
-        &[ConfiguredSqlInput::new("task196-original-ddl", &source, "duckdb", dialect.as_ref())],
+        &[ConfiguredSqlInput::new(
+            "task196-original-ddl",
+            &source,
+            "duckdb",
+            dialect.as_ref(),
+        )],
         &catalog,
     )
     .expect("original SQL public analysis")
@@ -94,7 +112,11 @@ fn original_ctas_keeps_its_four_physical_source_occurrences_and_typed_null_domai
         &[schema("customers", &["id"]), schema("orders", &["id"])],
     );
     let result = physical_ordered_write_state_plan(&bundle, std::slice::from_ref(&source));
-    let PhysicalWriteStatePlan::Feasible { transitions, final_states } = result else {
+    let PhysicalWriteStatePlan::Feasible {
+        transitions,
+        final_states,
+    } = result
+    else {
         panic!("S212: full original CTAS should be exact: {result:?}");
     };
     assert_eq!(transitions.len(), 1);
@@ -111,13 +133,20 @@ fn original_ctas_keeps_its_four_physical_source_occurrences_and_typed_null_domai
             vec!["customers#3".to_owned()],
         ],
     );
-    let orders = final_states.iter().find(|item| item.relation() == "orders")
+    let orders = final_states
+        .iter()
+        .find(|item| item.relation() == "orders")
         .expect("created physical target");
     assert_eq!(
         orders.rows(),
         literal_state("orders", &["id"], &native["terminal_bag"]).rows()
     );
-    assert_eq!(final_states.iter().find(|item| item.relation() == "customers"), Some(&source));
+    assert_eq!(
+        final_states
+            .iter()
+            .find(|item| item.relation() == "customers"),
+        Some(&source)
+    );
     let schema = created.after_schema().expect("typed produced relation");
     let domains = orders.exact_domains(schema).expect("schema complete");
     assert_eq!(
@@ -146,27 +175,42 @@ fn original_alter_drop_and_truncate_keep_complete_schema_and_row_laws() {
             &[schema("orders", &["id"])],
         );
         let result = physical_ordered_write_state_plan(&bundle, std::slice::from_ref(&source));
-        let PhysicalWriteStatePlan::Feasible { transitions, final_states } = result else {
+        let PhysicalWriteStatePlan::Feasible {
+            transitions,
+            final_states,
+        } = result
+        else {
             panic!("{suffix}: closed source lifecycle must be exact: {result:?}");
         };
         assert_eq!(transitions.len(), 1, "{suffix}: one DDL transition");
         let step = &transitions[0];
         assert_eq!(step.kind(), kind, "{suffix}");
-        assert_eq!(step.before().rows(), source.rows(), "{suffix}: complete prestate");
+        assert_eq!(
+            step.before().rows(),
+            source.rows(),
+            "{suffix}: complete prestate"
+        );
         assert_eq!(step.affected().inserted(), 0, "{suffix}");
         assert_eq!(step.affected().updated(), 0, "{suffix}");
         match suffix {
             "S216" => {
                 assert!(step.before_exists() && step.after_exists());
                 assert_eq!(step.affected().deleted(), 0);
-                assert_eq!(step.after_schema().expect("after ALTER typed schema").columns().len(), 2);
+                assert_eq!(
+                    step.after_schema()
+                        .expect("after ALTER typed schema")
+                        .columns()
+                        .len(),
+                    2
+                );
                 assert_eq!(
                     step.after().rows(),
                     literal_state(
                         "orders",
                         &["id", "amount"],
-                        &serde_json::json!([[1,null],[1,null],[2,null],[null,null]])
-                    ).rows()
+                        &serde_json::json!([[1, null], [1, null], [2, null], [null, null]])
+                    )
+                    .rows()
                 );
                 assert_eq!(final_states.len(), 1);
             }
