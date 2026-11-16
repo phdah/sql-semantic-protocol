@@ -240,7 +240,8 @@ group keys and 1 identifies the synthetic grand-total row. For COUNT(*)
 on any window frame guaranteed to contain its current output row, the
 normalized COUNT(1) has an inclusive lower bound of 1. This includes
 implicit default frames (with or without ORDER BY) and explicit frames such
-as GROUPS BETWEEN 1 PRECEDING AND CURRENT ROW. An explicit frame that can
+as GROUPS BETWEEN 1 PRECEDING AND CURRENT ROW or ROWS frames whose
+0 PRECEDING/FOLLOWING endpoints mean CURRENT ROW. An explicit frame that can
 exclude the current row, or COUNT of an arbitrary nullable expression,
 retains its conservative lower bound of 0. These
 statement-local bounds require neither fixed source rows nor warehouse
