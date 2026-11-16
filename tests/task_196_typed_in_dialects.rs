@@ -311,9 +311,8 @@ fn correlated_exists_mutations_use_one_shared_complete_source_and_distinct_targe
                 name,
                 parser.as_ref(),
             )];
-            let analyzed =
-                analyze_configured_inputs_with_catalog(&configured, &catalog("INTEGER"))
-                    .unwrap_or_else(|error| panic!("{name}: correlated write {error}"));
+            let analyzed = analyze_configured_inputs_with_catalog(&configured, &catalog("INTEGER"))
+                .unwrap_or_else(|error| panic!("{name}: correlated write {error}"));
             let result = physical_ordered_write_state_plan(&analyzed, &initial);
             let PhysicalWriteStatePlan::Feasible {
                 transitions,
