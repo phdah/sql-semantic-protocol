@@ -13,8 +13,12 @@ const FREEZE: &str = include_str!("../docs/task-196-acceptance-freeze.json");
 
 fn original<'a>(freeze: &'a Value, suffix: &str) -> &'a Value {
     let id = format!("88-C177-{suffix}");
-    freeze["cases"].as_array().expect("38 original cases").iter()
-        .find(|case| case["id"] == id).expect("frozen original CREATE variant")
+    freeze["cases"]
+        .as_array()
+        .expect("38 original cases")
+        .iter()
+        .find(|case| case["id"] == id)
+        .expect("frozen original CREATE variant")
 }
 
 #[test]
@@ -48,11 +52,15 @@ fn original_schema_create_variants_preserve_constraints_defaults_generated_and_d
             }
             let bundle = analyze_inputs(&[SqlInput::inline(sql)], name, dialect.as_ref())
                 .unwrap_or_else(|err| panic!("{suffix}/{name}: {err}"));
-            let facts = bundle.relation_constraints().iter()
+            let facts = bundle
+                .relation_constraints()
+                .iter()
                 .find(|set| set.relation() == "orders");
             let keys = facts.map(|set| set.constraints()).unwrap_or(&[]);
             let generators = facts.map(|set| set.column_value_sources()).unwrap_or(&[]);
-            let schema = bundle.source_schemas().iter()
+            let schema = bundle
+                .source_schemas()
+                .iter()
                 .find(|schema| schema.relation() == "orders")
                 .expect("original CREATE must expose a typed table");
             let matching = match label {
@@ -91,14 +99,22 @@ fn original_schema_create_variants_preserve_constraints_defaults_generated_and_d
                 }),
                 _ => false,
             };
-            assert!(matching, "{suffix}/{name}: missing {label} source semantic fact");
+            assert!(
+                matching,
+                "{suffix}/{name}: missing {label} source semantic fact"
+            );
             if matches!(label, "decimal_primary_key" | "odcs_original_sql") {
-                let amount = schema.columns().iter()
+                let amount = schema
+                    .columns()
+                    .iter()
                     .find(|column| column.name() == "amount")
                     .expect("original DECIMAL column");
                 assert_eq!(
                     amount.data_type(),
-                    &DataType::Decimal {precision:Some(10),scale:Some(2)},
+                    &DataType::Decimal {
+                        precision: Some(10),
+                        scale: Some(2)
+                    },
                     "{suffix}/{name}: decimal storage contract"
                 );
             }
