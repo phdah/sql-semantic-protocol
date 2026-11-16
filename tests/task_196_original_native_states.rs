@@ -43,7 +43,11 @@ fn check_bag(db: &Connection, sql: &str, expected: &Value, context: &str) {
     let bag = literal_bag(expected);
     let width = bag.first().map_or(1, Vec::len);
     assert!(bag.iter().all(|row| row.len() == width));
-    assert_eq!(rows(db, sql, width), bag, "{context}: complete physical bag");
+    assert_eq!(
+        rows(db, sql, width),
+        bag,
+        "{context}: complete physical bag"
+    );
 }
 
 #[test]
@@ -60,8 +64,12 @@ fn all_16_original_dml_writes_preserve_complete_physical_before_after_and_return
         let id = case["id"].as_str().expect("original ID");
         assert!(checked.insert(id));
         let db = Connection::open_in_memory().expect("isolated native catalog");
-        db.execute_batch(oracle["source_setup"].as_str().expect("original source SQL"))
-            .unwrap_or_else(|error| panic!("{id}: initial source fixture: {error}"));
+        db.execute_batch(
+            oracle["source_setup"]
+                .as_str()
+                .expect("original source SQL"),
+        )
+        .unwrap_or_else(|error| panic!("{id}: initial source fixture: {error}"));
 
         check_bag(
             &db,
@@ -110,7 +118,10 @@ fn all_16_original_dml_writes_preserve_complete_physical_before_after_and_return
         }
     }
     assert_eq!(checked.len(), 16);
-    assert_eq!(returning, 3, "INSERT/UPDATE/DELETE original RETURNING cases");
+    assert_eq!(
+        returning, 3,
+        "INSERT/UPDATE/DELETE original RETURNING cases"
+    );
     assert_eq!(pk, 1, "original ON CONFLICT has its own PK source catalog");
 }
 
@@ -127,21 +138,27 @@ fn all_18_original_schema_and_ddl_programs_preserve_catalog_prestate_poststate_a
         let id = case["id"].as_str().expect("original fixture ID");
         assert!(checked.insert(id));
         let db = Connection::open_in_memory().expect("independent schema catalog");
-        let setup = oracle["source_setup"].as_str().expect("original source setup");
+        let setup = oracle["source_setup"]
+            .as_str()
+            .expect("original source setup");
         if !setup.is_empty() {
             db.execute_batch(setup)
                 .unwrap_or_else(|error| panic!("{id}: source setup failed: {error}"));
         }
         check_bag(
             &db,
-            oracle["before_query"].as_str().expect("catalog/source prestate query"),
+            oracle["before_query"]
+                .as_str()
+                .expect("catalog/source prestate query"),
             &oracle["before_bag"],
             &format!("{id}: native catalog prestate"),
         );
 
         db.execute_batch(case["sql"].as_str().expect("original DDL"))
             .unwrap_or_else(|error| panic!("{id}: original DDL must run: {error}"));
-        let followup = oracle["followup_sql"].as_str().expect("explicit follow-up SQL");
+        let followup = oracle["followup_sql"]
+            .as_str()
+            .expect("explicit follow-up SQL");
         if !followup.is_empty() {
             db.execute_batch(followup)
                 .unwrap_or_else(|error| panic!("{id}: follow-up state mutation: {error}"));
@@ -171,7 +188,10 @@ fn all_18_original_schema_and_ddl_programs_preserve_catalog_prestate_poststate_a
         }
     }
     assert_eq!(checked.len(), 18);
-    assert!(rejected >= 5, "constraint, relation-drop and rename negatives");
+    assert!(
+        rejected >= 5,
+        "constraint, relation-drop and rename negatives"
+    );
 }
 
 #[test]
@@ -189,10 +209,14 @@ fn vendor_specific_original_dml_rejections_cannot_forge_a_successful_duckdb_post
         }
         assert!(checked.insert(id));
         let oracle = &case["native_oracle"];
-        assert_eq!(oracle["kind"], "unapproved_vendor_or_unsupported_dml_boundary");
+        assert_eq!(
+            oracle["kind"],
+            "unapproved_vendor_or_unsupported_dml_boundary"
+        );
         assert!(oracle["expected_poststate_bag"].is_null());
         let db = Connection::open_in_memory().expect("native negative catalog");
-        db.execute_batch(original_setup).expect("independent source setup");
+        db.execute_batch(original_setup)
+            .expect("independent source setup");
         check_bag(&db, "SELECT id, amount FROM orders", &expected_orders, id);
         check_bag(
             &db,
@@ -201,7 +225,8 @@ fn vendor_specific_original_dml_rejections_cannot_forge_a_successful_duckdb_post
             id,
         );
         assert!(
-            db.execute_batch(case["sql"].as_str().expect("original vendor DML")).is_err(),
+            db.execute_batch(case["sql"].as_str().expect("original vendor DML"))
+                .is_err(),
             "{id}: a DuckDB syntax rejection cannot become a successful output"
         );
         check_bag(
