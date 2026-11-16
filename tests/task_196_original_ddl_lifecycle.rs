@@ -147,8 +147,10 @@ fn original_ctas_keeps_its_four_physical_source_occurrences_and_typed_null_domai
             .find(|item| item.relation() == "customers"),
         Some(&source)
     );
-    let schema = created.after_schema().expect("typed produced relation");
-    let domains = orders.exact_domains(schema).expect("schema complete");
+    // A CTAS is a definition, not an ALTER with an after_schema transition.
+    // The source-backed projected id is independently declared INTEGER.
+    let target_schema = schema("orders", &["id"]);
+    let domains = orders.exact_domains(&target_schema).expect("schema complete");
     assert_eq!(
         domains[0].values(),
         &[
@@ -170,20 +172,22 @@ fn original_alter_drop_and_truncate_keep_complete_schema_and_row_laws() {
         let case = original(&frozen, suffix);
         let native = &case["native_oracle"];
         let source = literal_state("orders", &["id"], &native["before_bag"]);
-        let bundle = analyze(
-            case["sql"].as_str().expect("original DDL"),
-            &[schema("orders", &["id"])],
-        );
-        let result = physical_ordered_write_state_plan(&bundle, std::slice::from_ref(&source));
+        // Exact ALTER/DROP/TRUNCATE needs an attested constraint-free DDL
+        // predecessor, not merely a caller-supplied row bag and open catalog.
+        let prelude = "CREATE TABLE orders(id INTEGER); \
+                       INSERT INTO orders(id) VALUES (1),(1),(2),(NULL);";
+        let sql = format!("{prelude} {}", case["sql"].as_str().expect("original DDL"));
+        let bundle = analyze(&sql, &[schema("orders", &["id"])]);
+        let result = physical_ordered_write_state_plan(&bundle, &[]);
         let PhysicalWriteStatePlan::Feasible {
             transitions,
             final_states,
         } = result
         else {
-            panic!("{suffix}: closed source lifecycle must be exact: {result:?}");
+            panic!("{suffix}: attested original CREATE/INSERT/DDL must be exact: {result:?}");
         };
-        assert_eq!(transitions.len(), 1, "{suffix}: one DDL transition");
-        let step = &transitions[0];
+        assert_eq!(transitions.len(), 3, "{suffix}: CREATE, INSERT, original DDL");
+        let step = &transitions[2];
         assert_eq!(step.kind(), kind, "{suffix}");
         assert_eq!(
             step.before().rows(),
