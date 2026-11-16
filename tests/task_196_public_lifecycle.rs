@@ -110,7 +110,7 @@ fn bag(state: &PhysicalWriteState) -> Vec<Vec<LiteralValue>> {
             ]
         })
         .collect::<Vec<_>>();
-    values.sort();
+    values.sort_by_key(|row| format!("{row:?}"));
     values
 }
 
@@ -121,7 +121,7 @@ fn expected_bag(value: &Value) -> Vec<Vec<LiteralValue>> {
             entry.as_array().expect("pair").iter().map(integer).collect::<Vec<_>>()
         })
         .collect::<Vec<_>>();
-    result.sort();
+    result.sort_by_key(|row| format!("{row:?}"));
     result
 }
 
@@ -192,11 +192,11 @@ fn all_portable_original_dml_proofs_reconcile_complete_target_source_and_affecte
             let mut actual = physical.rows().iter().map(|row| {
                 row.values().get("id").expect("RETURNING id").clone()
             }).collect::<Vec<_>>();
-            actual.sort();
+            actual.sort_by_key(|value| format!("{value:?}"));
             let mut wanted = expected.iter().map(|entry| {
                 integer(&entry.as_array().expect("RETURNING one-column tuple")[0])
             }).collect::<Vec<_>>();
-            wanted.sort();
+            wanted.sort_by_key(|value| format!("{value:?}"));
             assert_eq!(actual, wanted, "{id}: complete RETURNING physical occurrences");
         }
         let schema = bundle.source_schemas().iter()
