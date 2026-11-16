@@ -121,6 +121,6 @@ fn original_schema_create_variants_preserve_constraints_defaults_generated_and_d
             verified += 1;
         }
     }
-    assert_eq!(verified + rejected, 9*13);
+    assert_eq!(verified + rejected, 9 * 13);
     assert_eq!(rejected, 1, "original generated column parser rejection");
 }
