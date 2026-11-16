@@ -219,3 +219,36 @@ fn absent_metadata_and_float_in_subquery_mutations_never_become_exact() {
         );
     }
 }
+
+#[test]
+fn unproved_nested_membership_shapes_fail_closed_without_mutating_source_rows() {
+    let original_state = [
+        state("orders", &[(Some(1), Some(10)), (None, Some(7))]),
+        state("customers", &[(Some(1), Some(100)), (None, Some(40))]),
+    ];
+    let parser = dialect_from_name("duckdb").expect("named parser");
+    for sql in [
+        "UPDATE orders SET amount = 1 WHERE id IN (SELECT id + 1 FROM customers)",
+        "UPDATE orders SET amount = 1 WHERE id IN (SELECT id FROM customers WHERE amount > 0)",
+        "DELETE FROM orders WHERE id NOT IN (SELECT id FROM customers)",
+        "DELETE FROM orders WHERE id IN (SELECT orders.id FROM customers)",
+        "DELETE FROM orders WHERE id IN (SELECT id FROM customers WHERE customers.id = orders.id)",
+    ] {
+        let input = SqlInput::inline(sql);
+        let configured = [ConfiguredSqlInput::new(
+            "task196-negative-in",
+            &input,
+            "duckdb",
+            parser.as_ref(),
+        )];
+        let analyzed = analyze_configured_inputs_with_catalog(&configured, &catalog("INTEGER"))
+            .unwrap_or_else(|error| panic!("negative SQL must remain analyzable: {error}"));
+        assert!(
+            matches!(
+                physical_ordered_write_state_plan(&analyzed, &original_state),
+                PhysicalWriteStatePlan::Residual { .. }
+            ),
+            "{sql}: computed, filtered, correlated or negated IN is not a proved exact write"
+        );
+    }
+}
