@@ -1023,17 +1023,21 @@ fn derive_window_output_domain(window: &WindowFunctionExpression) -> ValueDomain
             // UNBOUNDED PRECEDING through CURRENT ROW with ORDER BY) always
             // includes the current output row as well.
             let includes_current_row = window.window().frame().is_none_or(|frame| {
-                matches!(
-                    frame.start_bound(),
+                let starts_at_or_before_current = match frame.start_bound() {
                     WindowFrameBound::UnboundedPreceding
-                        | WindowFrameBound::Preceding(_)
-                        | WindowFrameBound::CurrentRow
-                ) && matches!(
-                    frame.end_bound(),
+                    | WindowFrameBound::Preceding(_)
+                    | WindowFrameBound::CurrentRow => true,
+                    WindowFrameBound::Following(offset) => is_zero_frame_offset(offset),
+                    WindowFrameBound::UnboundedFollowing => false,
+                };
+                let ends_at_or_after_current = match frame.end_bound() {
                     WindowFrameBound::CurrentRow
-                        | WindowFrameBound::Following(_)
-                        | WindowFrameBound::UnboundedFollowing
-                )
+                    | WindowFrameBound::Following(_)
+                    | WindowFrameBound::UnboundedFollowing => true,
+                    WindowFrameBound::Preceding(offset) => is_zero_frame_offset(offset),
+                    WindowFrameBound::UnboundedPreceding => false,
+                };
+                starts_at_or_before_current && ends_at_or_after_current
             });
             let always_non_null_argument = matches!(
                 arguments,
@@ -1050,6 +1054,18 @@ fn derive_window_output_domain(window: &WindowFunctionExpression) -> ValueDomain
         }
         _ => ValueDomain::unknown("window-function output domain is not known safely"),
     }
+}
+
+/// A literal zero ROWS/RANGE/GROUPS offset denotes CURRENT ROW on either side.
+fn is_zero_frame_offset(expression: &Expression) -> bool {
+    let Expression::Literal(literal) = expression else {
+        return false;
+    };
+    literal.literal_type() == LiteralType::Integer
+        && matches!(
+            literal.value(),
+            LiteralValue::Number(raw) if raw.parse::<i128>().ok() == Some(0)
+        )
 }
 
 /// Union of every CASE arm result domain, with each reachable arm refined by
