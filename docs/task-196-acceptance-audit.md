@@ -22,3 +22,22 @@ Original task: `.backlog/tasks/task-196 - certify-schema-write-and-ddl-state-out
 | #5 | Task-owned tests + freeze; coverage manifest explicitly in progress | CI exact-head fmt, strict Clippy, Rust default/no-default, docs, dbt E2E, pinned sql-tdg, independent 494-cell review and evidence links |
 
 **No signoff asserted** until all remaining required gates are independently verified. TASK-197 is blocked until this task is Done **and merged**; TASK-180, TASK-88 and TASK-91 retain their independent gates. The agent/reviewer and DuckDB fixture cannot attest other vendor execution laws.
+
+## Implementation expansion and original semantic review (2026-11-16)
+
+The following implementation and evidence are committed on PR #202 and require final-head CI verification before claims can be signed off:
+
+- Original 16 DML before/after DuckDB bags, physical row identities, true/false/unknown row ordinals, partner multiplicity, affected row counts, RETURNING and typed value frequencies: `docs/task-196-original-write-occurrences.json`, `tests/task_196_write_occurrences.rs`, `tests/task_196_original_native_states.rs`, `tests/task_196_public_lifecycle.rs`.
+- Newly supported bounded, source-typed `UPDATE` and `DELETE` scalar `IN (SELECT column FROM independent_source)` over complete signed-integer source bags, with sound SQL NULL handling and independently preserved source state: `src/analysis/writes.rs`, `src/physical_realization/write_states/operators.rs`, `tests/task_196_typed_in_dialects.rs`. Original untyped canonical snapshots remain explicit U, not retroactively certified. Floating, computed and unscoped membership remain residual.
+- Original CTAS, ALTER, DROP and TRUNCATE complete source and row-state public API assertions in `tests/task_196_original_ddl_lifecycle.rs`, all original DDL DuckDB runtime fixtures in `tests/task_196_original_native_states.rs`. Independently declared PK/FK/UNIQUE/NOT NULL/CHECK, generated/default and DECIMAL source facts in `tests/task_196_schema_contract.rs`.
+- Direct typed SQL, dbt manifest/catalog fallback, and representable ODCS facts on original 18 DML statements and the two original metadata-only reads: `tests/task_196_write_adapter_parity.rs` and `tests/task_196_metadata_authority.rs`. Adapter-provided facts do not attest runtime execution.
+- `docs/task-196-independent-semantic-review.json` independently explains all 38 unchanged original SQL laws and assigns a separate explicit status to each of 494 parser cells; `tests/task_196_independent_review.rs` checks every identity and handoff. This is an agent-authored review queue, not external vendor attestation or 494 signed-off semantic cells.
+
+### Still required before TASK-196 Done
+
+1. Resolve all final-head CI compiler, rustfmt, strict Clippy, default/no-default test, doc and dbt E2E findings, and verify the exact final code head.
+2. Perform final independent adjudication for each mandatory portable cell: strongest sound typed schema, mutation effects, complete positive/rejected/UNKNOWN row oracles, adapter support and provenance. Review rather than rubber-stamp historical C or native-only DuckDB evidence. Keep 11 original R and 55 U parser/analyzer boundaries explicitly unapproved where not proven.
+3. Re-pin a compatible temporary `phdah/sql-tdg` test harness to the actual reviewed protocol commit and verify its five CI jobs; do not merge a temporary consumer harness or use stale pin evidence.
+4. Record exact SHA, CI run URLs, 494 cell dispositions, explicit remaining TASK-179/TASK-191/TASK-197/TASK-180 handoffs and independent reviewer, update this audit and coverage manifest, then and only then set TASK-196 Done on the PR branch and recheck CI on signoff metadata.
+
+Do not confuse scoped DuckDB/native portable proof with external vendor dialect execution. TASK-88 and TASK-91 remain unapproved independent parent/release gates.
