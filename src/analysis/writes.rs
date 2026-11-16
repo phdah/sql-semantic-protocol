@@ -552,14 +552,10 @@ fn bounded_mutation_source(
             // Reuse the canonical metadata owner for column type evidence.
             // The nested projection and the mutation target must both be
             // explicitly attested signed-integer sources.
-            let outer_ref = ColumnRef::new(
-                Some(target.name().to_string()),
-                outer.name().to_string(),
-            );
-            let inner_ref = ColumnRef::new(
-                Some(source.name().to_string()),
-                inner.name().to_string(),
-            );
+            let outer_ref =
+                ColumnRef::new(Some(target.name().to_string()), outer.name().to_string());
+            let inner_ref =
+                ColumnRef::new(Some(source.name().to_string()), inner.name().to_string());
             if !matches!(
                 metadata.column_data_type(&outer_ref),
                 Some(DataType::SignedInteger { .. })
