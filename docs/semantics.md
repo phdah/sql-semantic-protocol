@@ -237,10 +237,12 @@ Window calls are emitted as `window_function` expressions, distinct from ordinar
 For single-key ROLLUP/CUBE/GROUPING grouping provenance, `GROUPING(column)`
 is a non-NULL bit domain {0,1}, where 0 includes physical NULL
 group keys and 1 identifies the synthetic grand-total row. For COUNT(*)
-on any explicit frame guaranteed to contain its current output row, the
-normalized COUNT(1) has an inclusive lower bound of 1; this includes
-GROUPS BETWEEN 1 PRECEDING AND CURRENT ROW. COUNT of an arbitrary
-nullable expression retains its conservative lower bound 0. These
+on any window frame guaranteed to contain its current output row, the
+normalized COUNT(1) has an inclusive lower bound of 1. This includes
+implicit default frames (with or without ORDER BY) and explicit frames such
+as GROUPS BETWEEN 1 PRECEDING AND CURRENT ROW. An explicit frame that can
+exclude the current row, or COUNT of an arbitrary nullable expression,
+retains its conservative lower bound of 0. These
 statement-local bounds require neither fixed source rows nor warehouse
 session runtime claims.
 
