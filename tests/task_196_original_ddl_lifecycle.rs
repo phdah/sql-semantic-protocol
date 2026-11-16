@@ -150,7 +150,9 @@ fn original_ctas_keeps_its_four_physical_source_occurrences_and_typed_null_domai
     // A CTAS is a definition, not an ALTER with an after_schema transition.
     // The source-backed projected id is independently declared INTEGER.
     let target_schema = schema("orders", &["id"]);
-    let domains = orders.exact_domains(&target_schema).expect("schema complete");
+    let domains = orders
+        .exact_domains(&target_schema)
+        .expect("schema complete");
     assert_eq!(
         domains[0].values(),
         &[
@@ -186,7 +188,11 @@ fn original_alter_drop_and_truncate_keep_complete_schema_and_row_laws() {
         else {
             panic!("{suffix}: attested original CREATE/INSERT/DDL must be exact: {result:?}");
         };
-        assert_eq!(transitions.len(), 3, "{suffix}: CREATE, INSERT, original DDL");
+        assert_eq!(
+            transitions.len(),
+            3,
+            "{suffix}: CREATE, INSERT, original DDL"
+        );
         let step = &transitions[2];
         assert_eq!(step.kind(), kind, "{suffix}");
         assert_eq!(
