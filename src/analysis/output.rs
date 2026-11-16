@@ -1019,7 +1019,10 @@ fn derive_window_output_domain(window: &WindowFunctionExpression) -> ValueDomain
             )])
         }
         "count" => {
-            let includes_current_row = window.window().frame().is_some_and(|frame| {
+            // The implicit SQL frame (whole partition without ORDER BY, or
+            // UNBOUNDED PRECEDING through CURRENT ROW with ORDER BY) always
+            // includes the current output row as well.
+            let includes_current_row = window.window().frame().is_none_or(|frame| {
                 matches!(
                     frame.start_bound(),
                     WindowFrameBound::UnboundedPreceding
