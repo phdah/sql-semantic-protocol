@@ -457,13 +457,16 @@ fn disjoint_mutation_sources(target: &SourceRelation, source: &SourceRelation) -
 /// A bounded correlated EXISTS/NOT EXISTS reads one complete, independent
 /// physical relation. This does not translate the subquery into UPDATE FROM:
 /// each target row evaluates the nested WHERE against the same source bag.
-fn bounded_mutation_exists(
+/// Safely identify an independent physical producer of a mutation's
+/// correlated EXISTS or bounded scalar IN source. Membership is never proved
+/// using a parser-only untyped, vendor-coerced, or computed subquery value.
+fn bounded_mutation_source(
     selection: &Expr,
     target: &SourceRelation,
     metadata: &AnalysisMetadata<'_>,
     diagnostics: &mut Vec<Diagnostic>,
 ) -> Option<(Predicate, SourceRelation)> {
-    if !matches!(selection, Expr::Exists { .. }) {
+    if !matches!(selection, Expr::Exists { .. } | Expr::InSubquery { .. }) {
         return None;
     }
     let active_qualifier = target.alias().unwrap_or(target.name());
@@ -476,28 +479,86 @@ fn bounded_mutation_exists(
     }];
     let predicate =
         analyze_predicate_with_windows(selection, &[], &BTreeMap::new(), &scope, diagnostics);
-    let Predicate::Exists(exists) = &predicate else {
-        return None;
+    let nested = match &predicate {
+        Predicate::Exists(exists) => exists.subquery(),
+        Predicate::InSubquery(membership) if !membership.negated() => membership.subquery(),
+        _ => return None,
     };
-    let nested = exists.subquery();
     let [source] = nested.sources() else {
         return None;
     };
     if !nested.row_shape_preserves_candidates()
         || !nested.joins().is_empty()
         || !nested.diagnostics().is_empty()
-        || nested.predicates().where_predicate().is_none()
-        || nested.correlations().is_empty()
-        || nested
-            .correlations()
-            .iter()
-            .any(|column| column.relation() != target.name())
         || !disjoint_mutation_sources(target, source)
     {
         return None;
     }
-    let independent_source = source.clone();
-    Some((predicate, independent_source))
+    match &predicate {
+        Predicate::Exists(_) => {
+            if nested.predicates().where_predicate().is_none()
+                || nested.correlations().is_empty()
+                || nested
+                    .correlations()
+                    .iter()
+                    .any(|column| column.relation() != target.name())
+            {
+                return None;
+            }
+        }
+        Predicate::InSubquery(membership) => {
+            // Only a source-local SELECT <column> with one schema-backed signed
+            // integer key is portable. NULL never qualifies a positive IN.
+            // A correlated nested WHERE, tuple operand, computed projection,
+            // floating coercion or NOT IN requires separate membership laws.
+            if nested.predicates().where_predicate().is_some()
+                || !nested.correlations().is_empty()
+            {
+                return None;
+            }
+            let [Expression::Column(outer)] = membership.operand().expressions() else {
+                return None;
+            };
+            let [projected] = nested.output().columns() else {
+                return None;
+            };
+            let Expression::Column(inner) = projected.expression() else {
+                return None;
+            };
+            if outer.relation().is_some_and(|relation| {
+                relation != target.name() && target.alias() != Some(relation)
+            }) || inner.relation().is_some_and(|relation| {
+                relation != source.name() && source.alias() != Some(relation)
+            }) {
+                return None;
+            }
+            let catalog = metadata.catalog?;
+            let lookup = |relation: &str, column: &str| {
+                let canonical = catalog
+                    .resolve(relation, metadata.dialect_name, metadata.relation_context)
+                    .ok()?;
+                catalog
+                    .schemas()
+                    .iter()
+                    .find(|schema| schema.relation() == canonical)?
+                    .columns()
+                    .iter()
+                    .find(|entry| entry.name() == column)
+                    .map(SchemaColumn::data_type)
+            };
+            if !matches!(
+                lookup(target.name(), outer.name()),
+                Some(DataType::SignedInteger { .. })
+            ) || !matches!(
+                lookup(source.name(), inner.name()),
+                Some(DataType::SignedInteger { .. })
+            ) {
+                return None;
+            }
+        }
+        _ => return None,
+    }
+    Some((predicate, source.clone()))
 }
 
 pub(super) fn analyze_update(
@@ -552,7 +613,7 @@ pub(super) fn analyze_update(
     let mut diagnostics = Vec::new();
     let correlated = if from.is_none() {
         selection.and_then(|selection| {
-            bounded_mutation_exists(selection, &target_source, metadata, &mut diagnostics)
+            bounded_mutation_source(selection, &target_source, metadata, &mut diagnostics)
         })
     } else {
         None
@@ -732,7 +793,7 @@ pub(super) fn analyze_delete(
     let mut diagnostics = Vec::new();
     let correlated = if delete.using.is_none() {
         delete.selection.as_ref().and_then(|selection| {
-            bounded_mutation_exists(selection, &target_source, metadata, &mut diagnostics)
+            bounded_mutation_source(selection, &target_source, metadata, &mut diagnostics)
         })
     } else {
         None
