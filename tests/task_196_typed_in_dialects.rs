@@ -252,3 +252,93 @@ fn unproved_nested_membership_shapes_fail_closed_without_mutating_source_rows() 
         );
     }
 }
+
+#[test]
+fn correlated_exists_mutations_use_one_shared_complete_source_and_distinct_target_occurrences() {
+    let frozen: Value = serde_json::from_str(FREEZE).expect("13 named public parser dialects");
+    let initial = [
+        state(
+            "orders",
+            &[
+                (Some(1), Some(10)),
+                (Some(2), Some(20)),
+                (Some(2), Some(20)),
+                (Some(3), None),
+                (None, Some(7)),
+            ],
+        ),
+        state(
+            "customers",
+            &[(Some(1), Some(100)), (Some(1), Some(100)), (None, Some(40))],
+        ),
+    ];
+    let cases = [
+        (
+            "UPDATE orders SET amount = 1 WHERE EXISTS              (SELECT 1 FROM customers c WHERE c.id = orders.id)",
+            state(
+                "orders",
+                &[
+                    (Some(1), Some(1)),
+                    (Some(2), Some(20)),
+                    (Some(2), Some(20)),
+                    (Some(3), None),
+                    (None, Some(7)),
+                ],
+            ),
+        ),
+        (
+            "DELETE FROM orders WHERE EXISTS              (SELECT 1 FROM customers c WHERE c.id = orders.id)",
+            state(
+                "orders",
+                &[
+                    (Some(2), Some(20)),
+                    (Some(2), Some(20)),
+                    (Some(3), None),
+                    (None, Some(7)),
+                ],
+            ),
+        ),
+    ];
+    let mut verified = 0;
+    for (sql, expected) in cases {
+        for dialect in frozen["dialects"].as_array().expect("13 exposed parsers") {
+            let name = dialect.as_str().expect("dialect identity");
+            let parser = dialect_from_name(name).expect("named parser");
+            let input = SqlInput::inline(sql);
+            let configured = [ConfiguredSqlInput::new(
+                "task196-correlated-exists",
+                &input,
+                name,
+                parser.as_ref(),
+            )];
+            let analyzed =
+                analyze_configured_inputs_with_catalog(&configured, &catalog("INTEGER"))
+                    .unwrap_or_else(|error| panic!("{name}: correlated write {error}"));
+            let result = physical_ordered_write_state_plan(&analyzed, &initial);
+            let PhysicalWriteStatePlan::Feasible {
+                transitions,
+                final_states,
+            } = result
+            else {
+                panic!("{name}: complete correlated EXISTS must be exact: {result:?}");
+            };
+            assert_eq!(transitions.len(), 1);
+            assert_eq!(transitions[0].affected_target_ordinals(), &[0]);
+            assert_eq!(
+                transitions[0].affected().updated() + transitions[0].affected().deleted(),
+                1
+            );
+            assert_eq!(
+                final_states.iter().find(|s| s.relation() == "orders"),
+                Some(&expected)
+            );
+            assert_eq!(
+                final_states.iter().find(|s| s.relation() == "customers"),
+                Some(&initial[1]),
+                "two matching source rows must not duplicate the target write"
+            );
+            verified += 1;
+        }
+    }
+    assert_eq!(verified, 26);
+}
