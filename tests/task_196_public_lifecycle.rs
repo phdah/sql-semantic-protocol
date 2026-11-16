@@ -98,28 +98,21 @@ fn bundle(sql: &str, enforce_primary_key: bool) -> sql_semantic_protocol::Analys
         )];
         let constraints = if enforce_primary_key {
             vec![
-                RelationConstraint::primary_key(
-                    vec!["id".to_owned()],
-                    evidence.clone(),
-                )
-                .expect("PK law"),
+                RelationConstraint::primary_key(vec!["id".to_owned()], evidence.clone())
+                    .expect("PK law"),
             ]
         } else {
             Vec::new()
         };
-        bundle.enrich_relation_constraints(&[
-            RelationConstraintSet::new("orders", constraints)
-                .expect("source constraint set")
-                .with_column_value_sources(vec![
-                    ColumnValueSource::new(
-                        "amount",
-                        ColumnValueKind::Default,
-                        Some(ConstraintValue::Null),
-                        evidence,
-                    )
-                    .expect("DDL-attested implicit nullable default"),
-                ]),
-        ]);
+        bundle.enrich_relation_constraints(&[RelationConstraintSet::new("orders", constraints)
+            .expect("source constraint set")
+            .with_column_value_sources(vec![ColumnValueSource::new(
+                "amount",
+                ColumnValueKind::Default,
+                Some(ConstraintValue::Null),
+                evidence,
+            )
+            .expect("DDL-attested implicit nullable default")])]);
     }
     bundle
 }
