@@ -1,10 +1,10 @@
 ---
 id: TASK-196
 title: Certify schema, DML and DDL state-transition outcomes
-status: To Do
+status: In Progress
 assignee: []
 created_date: '2026-11-10'
-updated_date: '2026-11-10'
+updated_date: '2026-11-16'
 labels: []
 milestone: m-3
 dependencies:
@@ -47,3 +47,10 @@ After this task is independently verified, marked Done and merged, proceed to TA
 ## Initial state
 
 Extracted on 2026-11-10 from the previously overbroad TASK-178. There is **no implementation or semantic sign-off** for this ticket yet. Existing PR #197 supplies provisional structural observations and selected native oracles only; use those as regression inputs, not as proof of this ticket's acceptance.
+
+## Implementation progress (2026-11-16)
+
+- v1 frozen original 38-SQL / 494-cell matrix: `docs/task-196-acceptance-freeze.json`.
+- Executable source-anchored native replay: `tests/task_196_original_native_states.rs`, using original 16 DML + 18 schema/DDL complete state-oracle cases and two negative DuckDB vendor syntax cases.
+- Public parser/unsupported equivalence guards: `tests/task_196_acceptance_matrix.rs`.
+- Outstanding ACs and independent review are explicit in `docs/task-196-acceptance-audit.md`; do not mark Done or unblock TASK-197 before every AC and CI gate is verified.
