@@ -121,6 +121,48 @@ fn invalid_ntile_buckets_must_not_claim_a_positive_finite_bucket_domain() {
 }
 
 #[test]
+fn implicit_window_frames_count_the_current_row_without_explicit_frame_syntax() {
+    let frozen: Value = serde_json::from_str(FREEZE).expect("13 public dialect names");
+    let sql_variants = [
+        "SELECT COUNT(*) OVER () FROM orders",
+        "SELECT COUNT(1) OVER (PARTITION BY amount) FROM orders",
+        "SELECT COUNT(*) OVER (ORDER BY id) FROM orders",
+        "SELECT COUNT(1) OVER (PARTITION BY amount ORDER BY id) FROM orders",
+    ];
+    for dialect in frozen["dialects"].as_array().expect("13 dialects") {
+        let name = dialect.as_str().expect("public dialect");
+        for sql in sql_variants {
+            let bounds = range(sql, name);
+            assert_eq!(
+                bounds
+                    .lower
+                    .as_ref()
+                    .map(|bound| (bound.value.as_str(), bound.inclusive)),
+                Some(("1", true)),
+                "{name}: {sql} includes the current row even with an implicit frame"
+            );
+            assert!(
+                bounds.upper.is_none(),
+                "{name}: {sql} cannot infer a maximum partition cardinality"
+            );
+        }
+    }
+
+    // Explicit frames may omit the current row and can therefore be empty.
+    let bounds = range(
+        "SELECT COUNT(*) OVER (ORDER BY id ROWS BETWEEN 1 FOLLOWING AND 1 FOLLOWING) FROM orders",
+        "duckdb",
+    );
+    assert_eq!(
+        bounds
+            .lower
+            .as_ref()
+            .map(|bound| (bound.value.as_str(), bound.inclusive)),
+        Some(("0", true))
+    );
+}
+
+#[test]
 fn grouping_marker_is_a_bit_not_a_nullable_physical_group_key() {
     let frozen: Value = serde_json::from_str(FREEZE).expect("original source inventory");
     let original = frozen["cases"]
