@@ -481,7 +481,9 @@ fn bounded_mutation_source(
         analyze_predicate_with_windows(selection, &[], &BTreeMap::new(), &scope, diagnostics);
     // The generic nested-expression path intentionally has no catalog.
     // Reanalyze only a positive scalar IN under the explicit mutation schema
-    // authority; unknown nested output resolution must never become Exact.
+    // authority. The allowed nested SELECT is uncorrelated; its unqualified
+    // projection must bind to its local FROM, not the mutation target's scope.
+    // Unknown nested output resolution must never become Exact.
     let predicate = match (selection, &predicate) {
         (
             Expr::InSubquery {
@@ -492,7 +494,7 @@ fn bounded_mutation_source(
             Predicate::InSubquery(membership),
         ) if !membership.negated() => Predicate::InSubquery(InSubqueryPredicate::with_operand(
             membership.operand().clone(),
-            analyze_subquery_semantics_with_metadata(subquery, &scope, Some(metadata)),
+            analyze_subquery_semantics_with_metadata(subquery, &[], Some(metadata)),
             false,
         )),
         _ => predicate,
@@ -502,12 +504,6 @@ fn bounded_mutation_source(
         Predicate::InSubquery(membership) if !membership.negated() => membership.subquery(),
         _ => return None,
     };
-    if matches!(selection, Expr::InSubquery { .. }) {
-        eprintln!(
-            "TASK196_NESTED_DIAGNOSTIC: predicate={predicate:?}; catalog={}",
-            metadata.catalog.is_some()
-        );
-    }
     let [source] = nested.sources() else {
         return None;
     };
