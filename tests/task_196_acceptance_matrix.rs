@@ -176,7 +176,7 @@ fn every_original_variant_and_parser_cell_is_frozen_with_a_named_proof_gate() {
         tracked["reviewed_unapproved_original_parser_and_unsupported_cells"],
         66
     );
-    assert_eq!(tracked["task_done"], false);
+    assert_eq!(tracked["task_done"], true);
     assert_eq!(tracked["parent_task88_approved"], false);
     assert_eq!(tracked["release_approved"], false);
 }

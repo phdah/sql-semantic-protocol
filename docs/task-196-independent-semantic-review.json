@@ -9,7 +9,7 @@
   "physical_verification": "tests/task_196_original_native_states.rs; tests/task_196_write_occurrences.rs",
   "public_protocol_verification": "tests/task_196_acceptance_matrix.rs; tests/task_196_public_lifecycle.rs",
   "adapter_parity_verification": "tests/task_196_metadata_authority.rs; tests/task_196_write_adapter_parity.rs",
-  "status": "all_original_cells_independently_reviewed_bounded_portable_and_unapproved_boundaries_pending_final_head_CI",
+  "status": "bounded_494_original_cells_independently_reviewed_with_explicit_unapproved_followups",
   "original_sql_variants": 38,
   "reviewed_sql_laws": 38,
   "parser_cells": 494,
@@ -33,7 +33,7 @@
       "positive_negative_source_occurrences": "docs/task-196-acceptance-freeze.json",
       "physical_native_class": "original_native_schema_lifecycle_source_and_terminal",
       "portable_review_basis": "source_SQL_literal_algebra_and_full_public_protocol; does_not_attest_external_vendor_execution",
-      "portable_review_pending_final_head_ci": true,
+      "portable_review_pending_final_head_ci": false,
       "cells": [
         {
           "id": "88-C177-S183/ansi",
@@ -204,7 +204,7 @@
       "positive_negative_source_occurrences": "docs/task-196-acceptance-freeze.json",
       "physical_native_class": "original_native_schema_lifecycle_source_and_terminal",
       "portable_review_basis": "source_SQL_literal_algebra_and_full_public_protocol; does_not_attest_external_vendor_execution",
-      "portable_review_pending_final_head_ci": true,
+      "portable_review_pending_final_head_ci": false,
       "cells": [
         {
           "id": "88-C177-S184/ansi",
@@ -375,7 +375,7 @@
       "positive_negative_source_occurrences": "docs/task-196-acceptance-freeze.json",
       "physical_native_class": "original_native_schema_lifecycle_source_and_terminal",
       "portable_review_basis": "source_SQL_literal_algebra_and_full_public_protocol; does_not_attest_external_vendor_execution",
-      "portable_review_pending_final_head_ci": true,
+      "portable_review_pending_final_head_ci": false,
       "cells": [
         {
           "id": "88-C177-S185/ansi",
@@ -546,7 +546,7 @@
       "positive_negative_source_occurrences": "docs/task-196-acceptance-freeze.json",
       "physical_native_class": "original_native_schema_lifecycle_source_and_terminal",
       "portable_review_basis": "source_SQL_literal_algebra_and_full_public_protocol; does_not_attest_external_vendor_execution",
-      "portable_review_pending_final_head_ci": true,
+      "portable_review_pending_final_head_ci": false,
       "cells": [
         {
           "id": "88-C177-S186/ansi",
@@ -717,7 +717,7 @@
       "positive_negative_source_occurrences": "docs/task-196-acceptance-freeze.json",
       "physical_native_class": "original_native_schema_lifecycle_source_and_terminal",
       "portable_review_basis": "source_SQL_literal_algebra_and_full_public_protocol; does_not_attest_external_vendor_execution",
-      "portable_review_pending_final_head_ci": true,
+      "portable_review_pending_final_head_ci": false,
       "cells": [
         {
           "id": "88-C177-S187/ansi",
@@ -888,7 +888,7 @@
       "positive_negative_source_occurrences": "docs/task-196-acceptance-freeze.json",
       "physical_native_class": "original_native_schema_lifecycle_source_and_terminal",
       "portable_review_basis": "source_SQL_literal_algebra_and_full_public_protocol; does_not_attest_external_vendor_execution",
-      "portable_review_pending_final_head_ci": true,
+      "portable_review_pending_final_head_ci": false,
       "cells": [
         {
           "id": "88-C177-S188/ansi",
@@ -1059,7 +1059,7 @@
       "positive_negative_source_occurrences": "docs/task-196-acceptance-freeze.json",
       "physical_native_class": "original_native_schema_lifecycle_source_and_terminal",
       "portable_review_basis": "source_SQL_literal_algebra_and_full_public_protocol; does_not_attest_external_vendor_execution",
-      "portable_review_pending_final_head_ci": true,
+      "portable_review_pending_final_head_ci": false,
       "cells": [
         {
           "id": "88-C177-S189/ansi",
@@ -1230,7 +1230,7 @@
       "positive_negative_source_occurrences": "docs/task-196-acceptance-freeze.json",
       "physical_native_class": "original_native_schema_lifecycle_source_and_terminal",
       "portable_review_basis": "source_SQL_literal_algebra_and_full_public_protocol; does_not_attest_external_vendor_execution",
-      "portable_review_pending_final_head_ci": true,
+      "portable_review_pending_final_head_ci": false,
       "cells": [
         {
           "id": "88-C177-S190/ansi",
@@ -1401,7 +1401,7 @@
       "positive_negative_source_occurrences": "docs/task-196-acceptance-freeze.json",
       "physical_native_class": "metadata_adapter_only_requires_authoritative_fixture",
       "portable_review_basis": "source_SQL_literal_algebra_and_full_public_protocol; does_not_attest_external_vendor_execution",
-      "portable_review_pending_final_head_ci": true,
+      "portable_review_pending_final_head_ci": false,
       "cells": [
         {
           "id": "88-C177-S191/ansi",
@@ -1572,7 +1572,7 @@
       "positive_negative_source_occurrences": "docs/task-196-acceptance-freeze.json",
       "physical_native_class": "original_native_schema_lifecycle_source_and_terminal",
       "portable_review_basis": "source_SQL_literal_algebra_and_full_public_protocol; does_not_attest_external_vendor_execution",
-      "portable_review_pending_final_head_ci": true,
+      "portable_review_pending_final_head_ci": false,
       "cells": [
         {
           "id": "88-C177-S192/ansi",
@@ -1743,7 +1743,7 @@
       "positive_negative_source_occurrences": "docs/task-196-acceptance-freeze.json",
       "physical_native_class": "metadata_adapter_only_requires_authoritative_fixture",
       "portable_review_basis": "source_SQL_literal_algebra_and_full_public_protocol; does_not_attest_external_vendor_execution",
-      "portable_review_pending_final_head_ci": true,
+      "portable_review_pending_final_head_ci": false,
       "cells": [
         {
           "id": "88-C177-S193/ansi",
@@ -1914,7 +1914,7 @@
       "positive_negative_source_occurrences": "docs/task-196-original-write-occurrences.json",
       "physical_native_class": "original_native_dml_complete_target_bag",
       "portable_review_basis": "source_SQL_literal_algebra_and_full_public_protocol; does_not_attest_external_vendor_execution",
-      "portable_review_pending_final_head_ci": true,
+      "portable_review_pending_final_head_ci": false,
       "cells": [
         {
           "id": "88-C177-S194/ansi",
@@ -2085,7 +2085,7 @@
       "positive_negative_source_occurrences": "docs/task-196-original-write-occurrences.json",
       "physical_native_class": "original_native_dml_complete_target_bag",
       "portable_review_basis": "source_SQL_literal_algebra_and_full_public_protocol; does_not_attest_external_vendor_execution",
-      "portable_review_pending_final_head_ci": true,
+      "portable_review_pending_final_head_ci": false,
       "cells": [
         {
           "id": "88-C177-S195/ansi",
@@ -2256,7 +2256,7 @@
       "positive_negative_source_occurrences": "docs/task-196-original-write-occurrences.json",
       "physical_native_class": "original_native_dml_complete_target_bag",
       "portable_review_basis": "source_SQL_literal_algebra_and_full_public_protocol; does_not_attest_external_vendor_execution",
-      "portable_review_pending_final_head_ci": true,
+      "portable_review_pending_final_head_ci": false,
       "cells": [
         {
           "id": "88-C177-S196/ansi",
@@ -2427,7 +2427,7 @@
       "positive_negative_source_occurrences": "docs/task-196-original-write-occurrences.json",
       "physical_native_class": "original_native_dml_complete_target_bag",
       "portable_review_basis": "source_SQL_literal_algebra_and_full_public_protocol; does_not_attest_external_vendor_execution",
-      "portable_review_pending_final_head_ci": true,
+      "portable_review_pending_final_head_ci": false,
       "cells": [
         {
           "id": "88-C177-S197/ansi",
@@ -2598,7 +2598,7 @@
       "positive_negative_source_occurrences": "docs/task-196-original-write-occurrences.json",
       "physical_native_class": "original_native_dml_complete_target_bag",
       "portable_review_basis": "source_SQL_literal_algebra_and_full_public_protocol; does_not_attest_external_vendor_execution",
-      "portable_review_pending_final_head_ci": true,
+      "portable_review_pending_final_head_ci": false,
       "cells": [
         {
           "id": "88-C177-S198/ansi",
@@ -2769,7 +2769,7 @@
       "positive_negative_source_occurrences": "docs/task-196-original-write-occurrences.json",
       "physical_native_class": "unapproved_vendor_or_unsupported_dml_boundary",
       "portable_review_basis": "source_SQL_literal_algebra_and_full_public_protocol; does_not_attest_external_vendor_execution",
-      "portable_review_pending_final_head_ci": true,
+      "portable_review_pending_final_head_ci": false,
       "cells": [
         {
           "id": "88-C177-S199/ansi",
@@ -2940,7 +2940,7 @@
       "positive_negative_source_occurrences": "docs/task-196-original-write-occurrences.json",
       "physical_native_class": "unapproved_vendor_or_unsupported_dml_boundary",
       "portable_review_basis": "source_SQL_literal_algebra_and_full_public_protocol; does_not_attest_external_vendor_execution",
-      "portable_review_pending_final_head_ci": true,
+      "portable_review_pending_final_head_ci": false,
       "cells": [
         {
           "id": "88-C177-S200/ansi",
@@ -3111,7 +3111,7 @@
       "positive_negative_source_occurrences": "docs/task-196-original-write-occurrences.json",
       "physical_native_class": "original_native_dml_complete_target_bag",
       "portable_review_basis": "source_SQL_literal_algebra_and_full_public_protocol; does_not_attest_external_vendor_execution",
-      "portable_review_pending_final_head_ci": true,
+      "portable_review_pending_final_head_ci": false,
       "cells": [
         {
           "id": "88-C177-S201/ansi",
@@ -3282,7 +3282,7 @@
       "positive_negative_source_occurrences": "docs/task-196-original-write-occurrences.json",
       "physical_native_class": "original_native_dml_complete_target_bag",
       "portable_review_basis": "source_SQL_literal_algebra_and_full_public_protocol; does_not_attest_external_vendor_execution",
-      "portable_review_pending_final_head_ci": true,
+      "portable_review_pending_final_head_ci": false,
       "cells": [
         {
           "id": "88-C177-S202/ansi",
@@ -3453,7 +3453,7 @@
       "positive_negative_source_occurrences": "docs/task-196-original-write-occurrences.json",
       "physical_native_class": "original_native_dml_complete_target_bag",
       "portable_review_basis": "source_SQL_literal_algebra_and_full_public_protocol; does_not_attest_external_vendor_execution",
-      "portable_review_pending_final_head_ci": true,
+      "portable_review_pending_final_head_ci": false,
       "cells": [
         {
           "id": "88-C177-S203/ansi",
@@ -3624,7 +3624,7 @@
       "positive_negative_source_occurrences": "docs/task-196-original-write-occurrences.json",
       "physical_native_class": "original_native_dml_complete_target_bag",
       "portable_review_basis": "source_SQL_literal_algebra_and_full_public_protocol; does_not_attest_external_vendor_execution",
-      "portable_review_pending_final_head_ci": true,
+      "portable_review_pending_final_head_ci": false,
       "cells": [
         {
           "id": "88-C177-S204/ansi",
@@ -3795,7 +3795,7 @@
       "positive_negative_source_occurrences": "docs/task-196-original-write-occurrences.json",
       "physical_native_class": "original_native_dml_complete_target_bag",
       "portable_review_basis": "source_SQL_literal_algebra_and_full_public_protocol; does_not_attest_external_vendor_execution",
-      "portable_review_pending_final_head_ci": true,
+      "portable_review_pending_final_head_ci": false,
       "cells": [
         {
           "id": "88-C177-S205/ansi",
@@ -3966,7 +3966,7 @@
       "positive_negative_source_occurrences": "docs/task-196-original-write-occurrences.json",
       "physical_native_class": "original_native_dml_complete_target_bag",
       "portable_review_basis": "source_SQL_literal_algebra_and_full_public_protocol; does_not_attest_external_vendor_execution",
-      "portable_review_pending_final_head_ci": true,
+      "portable_review_pending_final_head_ci": false,
       "cells": [
         {
           "id": "88-C177-S206/ansi",
@@ -4137,7 +4137,7 @@
       "positive_negative_source_occurrences": "docs/task-196-original-write-occurrences.json",
       "physical_native_class": "original_native_dml_complete_target_bag",
       "portable_review_basis": "source_SQL_literal_algebra_and_full_public_protocol; does_not_attest_external_vendor_execution",
-      "portable_review_pending_final_head_ci": true,
+      "portable_review_pending_final_head_ci": false,
       "cells": [
         {
           "id": "88-C177-S207/ansi",
@@ -4308,7 +4308,7 @@
       "positive_negative_source_occurrences": "docs/task-196-original-write-occurrences.json",
       "physical_native_class": "original_native_dml_complete_target_bag",
       "portable_review_basis": "source_SQL_literal_algebra_and_full_public_protocol; does_not_attest_external_vendor_execution",
-      "portable_review_pending_final_head_ci": true,
+      "portable_review_pending_final_head_ci": false,
       "cells": [
         {
           "id": "88-C177-S208/ansi",
@@ -4479,7 +4479,7 @@
       "positive_negative_source_occurrences": "docs/task-196-original-write-occurrences.json",
       "physical_native_class": "original_native_dml_complete_target_bag",
       "portable_review_basis": "source_SQL_literal_algebra_and_full_public_protocol; does_not_attest_external_vendor_execution",
-      "portable_review_pending_final_head_ci": true,
+      "portable_review_pending_final_head_ci": false,
       "cells": [
         {
           "id": "88-C177-S209/ansi",
@@ -4650,7 +4650,7 @@
       "positive_negative_source_occurrences": "docs/task-196-original-write-occurrences.json",
       "physical_native_class": "original_native_dml_complete_target_bag",
       "portable_review_basis": "source_SQL_literal_algebra_and_full_public_protocol; does_not_attest_external_vendor_execution",
-      "portable_review_pending_final_head_ci": true,
+      "portable_review_pending_final_head_ci": false,
       "cells": [
         {
           "id": "88-C177-S210/ansi",
@@ -4821,7 +4821,7 @@
       "positive_negative_source_occurrences": "docs/task-196-original-write-occurrences.json",
       "physical_native_class": "original_native_dml_complete_target_bag",
       "portable_review_basis": "source_SQL_literal_algebra_and_full_public_protocol; does_not_attest_external_vendor_execution",
-      "portable_review_pending_final_head_ci": true,
+      "portable_review_pending_final_head_ci": false,
       "cells": [
         {
           "id": "88-C177-S211/ansi",
@@ -4992,7 +4992,7 @@
       "positive_negative_source_occurrences": "docs/task-196-acceptance-freeze.json",
       "physical_native_class": "original_native_schema_lifecycle_source_and_terminal",
       "portable_review_basis": "source_SQL_literal_algebra_and_full_public_protocol; does_not_attest_external_vendor_execution",
-      "portable_review_pending_final_head_ci": true,
+      "portable_review_pending_final_head_ci": false,
       "cells": [
         {
           "id": "88-C177-S212/ansi",
@@ -5163,7 +5163,7 @@
       "positive_negative_source_occurrences": "docs/task-196-acceptance-freeze.json",
       "physical_native_class": "original_native_schema_lifecycle_source_and_terminal",
       "portable_review_basis": "source_SQL_literal_algebra_and_full_public_protocol; does_not_attest_external_vendor_execution",
-      "portable_review_pending_final_head_ci": true,
+      "portable_review_pending_final_head_ci": false,
       "cells": [
         {
           "id": "88-C177-S213/ansi",
@@ -5334,7 +5334,7 @@
       "positive_negative_source_occurrences": "docs/task-196-acceptance-freeze.json",
       "physical_native_class": "original_native_schema_lifecycle_source_and_terminal",
       "portable_review_basis": "source_SQL_literal_algebra_and_full_public_protocol; does_not_attest_external_vendor_execution",
-      "portable_review_pending_final_head_ci": true,
+      "portable_review_pending_final_head_ci": false,
       "cells": [
         {
           "id": "88-C177-S214/ansi",
@@ -5505,7 +5505,7 @@
       "positive_negative_source_occurrences": "docs/task-196-acceptance-freeze.json",
       "physical_native_class": "original_native_schema_lifecycle_source_and_terminal",
       "portable_review_basis": "source_SQL_literal_algebra_and_full_public_protocol; does_not_attest_external_vendor_execution",
-      "portable_review_pending_final_head_ci": true,
+      "portable_review_pending_final_head_ci": false,
       "cells": [
         {
           "id": "88-C177-S215/ansi",
@@ -5676,7 +5676,7 @@
       "positive_negative_source_occurrences": "docs/task-196-acceptance-freeze.json",
       "physical_native_class": "original_native_schema_lifecycle_source_and_terminal",
       "portable_review_basis": "source_SQL_literal_algebra_and_full_public_protocol; does_not_attest_external_vendor_execution",
-      "portable_review_pending_final_head_ci": true,
+      "portable_review_pending_final_head_ci": false,
       "cells": [
         {
           "id": "88-C177-S216/ansi",
@@ -5847,7 +5847,7 @@
       "positive_negative_source_occurrences": "docs/task-196-acceptance-freeze.json",
       "physical_native_class": "original_native_schema_lifecycle_source_and_terminal",
       "portable_review_basis": "source_SQL_literal_algebra_and_full_public_protocol; does_not_attest_external_vendor_execution",
-      "portable_review_pending_final_head_ci": true,
+      "portable_review_pending_final_head_ci": false,
       "cells": [
         {
           "id": "88-C177-S217/ansi",
@@ -6018,7 +6018,7 @@
       "positive_negative_source_occurrences": "docs/task-196-acceptance-freeze.json",
       "physical_native_class": "original_native_schema_lifecycle_source_and_terminal",
       "portable_review_basis": "source_SQL_literal_algebra_and_full_public_protocol; does_not_attest_external_vendor_execution",
-      "portable_review_pending_final_head_ci": true,
+      "portable_review_pending_final_head_ci": false,
       "cells": [
         {
           "id": "88-C177-S218/ansi",
@@ -6189,7 +6189,7 @@
       "positive_negative_source_occurrences": "docs/task-196-acceptance-freeze.json",
       "physical_native_class": "original_native_schema_lifecycle_source_and_terminal",
       "portable_review_basis": "source_SQL_literal_algebra_and_full_public_protocol; does_not_attest_external_vendor_execution",
-      "portable_review_pending_final_head_ci": true,
+      "portable_review_pending_final_head_ci": false,
       "cells": [
         {
           "id": "88-C177-S219/ansi",
@@ -6360,7 +6360,7 @@
       "positive_negative_source_occurrences": "docs/task-196-acceptance-freeze.json",
       "physical_native_class": "original_native_schema_lifecycle_source_and_terminal",
       "portable_review_basis": "source_SQL_literal_algebra_and_full_public_protocol; does_not_attest_external_vendor_execution",
-      "portable_review_pending_final_head_ci": true,
+      "portable_review_pending_final_head_ci": false,
       "cells": [
         {
           "id": "88-C177-S220/ansi",
@@ -6529,5 +6529,13 @@
   "reviewed_conditional_canonical_C_cells": 26,
   "reviewed_parser_rejections_and_unsupported": 66,
   "approval_requires_exact_head_ci": true,
-  "external_vendor_execution_attested": false
+  "external_vendor_execution_attested": false,
+  "reviewed_implementation_head": "697ba496c974d8749f670160d8d0f9a3f05e4e09",
+  "reviewed_implementation_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/43977550644",
+  "reviewed_implementation_ci_result": "9/9 protocol CI success",
+  "reviewed_consumer_pr": "https://github.com/phdah/sql-tdg/pull/54",
+  "reviewed_consumer_ci": "https://github.com/phdah/sql-tdg/actions/runs/43978131493",
+  "reviewed_consumer_ci_result": "5/5 CI success on exact reviewed implementation pin",
+  "bounded_original_task_done": true,
+  "exact_signoff_metadata_ci_pending": true
 }

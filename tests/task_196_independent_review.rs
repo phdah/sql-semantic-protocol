@@ -68,7 +68,7 @@ fn all_494_original_cells_have_a_case_specific_sql_law_and_explicit_nonvendor_de
                 .is_some_and(|law| law.len() >= 55),
             "{id}: a category label is not an independently reasoned SQL law"
         );
-        assert_eq!(reviewed["portable_review_pending_final_head_ci"], true);
+        assert_eq!(reviewed["portable_review_pending_final_head_ci"], false);
         assert!(reviewed["evidence_owner"].as_str().is_some());
         assert_eq!(reviewed["adapter_handoff_owner"], "TASK-197");
         assert_eq!(reviewed["final_matrix_signoff_owner"], "TASK-180");
