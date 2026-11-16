@@ -65,7 +65,7 @@ fn original_dml_true_false_unknown_and_source_partner_occurrences_match_independ
         } else {
             ordinals(&db, "SELECT rowid FROM customers ORDER BY rowid").len()
         };
-        assert_eq!(count, source["all_customer_occurrences_before"], "{id}");
+        assert_eq!(count as u64, source["all_customer_occurrences_before"].as_u64().expect("customer count"), "{id}");
         assert_eq!(
             ordinals(&db, "SELECT rowid FROM orders ORDER BY rowid").len(),
             source["all_target_occurrences_before"].as_u64().expect("source bag count") as usize
@@ -120,10 +120,15 @@ fn original_dml_true_false_unknown_and_source_partner_occurrences_match_independ
                 .expect("inserted customer occurrences")
                 .is_empty()
             {
-                let unmatched = ordinals(
-                    &db,
-                    "SELECT c.rowid FROM customers c                      WHERE c.id NOT IN (SELECT o.id FROM orders o WHERE o.id IS NOT NULL)                      ORDER BY c.rowid",
-                );
+                let unmatched = if case["kind"] == "insert_select" {
+                    ordinals(&db, "SELECT rowid FROM customers ORDER BY rowid")
+                } else {
+                    ordinals(
+                        &db,
+                        "SELECT c.rowid FROM customers c WHERE c.id NOT IN \
+                         (SELECT o.id FROM orders o WHERE o.id IS NOT NULL) ORDER BY c.rowid",
+                    )
+                };
                 assert_eq!(
                     unmatched,
                     expected(&source["inserted_customer_ordinals"]),
