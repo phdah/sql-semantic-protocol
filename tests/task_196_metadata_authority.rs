@@ -141,7 +141,12 @@ fn both_original_metadata_reads_prefer_warehouse_types_and_fail_closed_on_absenc
         assert_eq!(schema.relation(), "orders");
         assert_eq!(schema.source_kind(), Some(SchemaSourceKind::DbtCatalog));
         assert_eq!(
-            schema.columns().iter().find(|column| column.name() == "id").expect("id column").data_type(),
+            schema
+                .columns()
+                .iter()
+                .find(|column| column.name() == "id")
+                .expect("id column")
+                .data_type(),
             &DataType::SignedInteger { bits: Some(32) },
             "{id}: declared manifest TEXT must not defeat introspection"
         );
@@ -155,7 +160,12 @@ fn both_original_metadata_reads_prefer_warehouse_types_and_fail_closed_on_absenc
             Some(SchemaSourceKind::DbtManifest)
         );
         assert_eq!(
-            fallback_schema.columns().iter().find(|column| column.name() == "id").expect("id column").data_type(),
+            fallback_schema
+                .columns()
+                .iter()
+                .find(|column| column.name() == "id")
+                .expect("id column")
+                .data_type(),
             &DataType::SignedInteger { bits: Some(32) }
         );
         assert!(
