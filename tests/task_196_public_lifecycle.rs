@@ -23,9 +23,9 @@ fn parse(contents: &str) -> Value {
 }
 
 fn integer(value: &Value) -> LiteralValue {
-    value.as_i64().map_or(LiteralValue::Null, |n| {
-        LiteralValue::Number(n.to_string())
-    })
+    value
+        .as_i64()
+        .map_or(LiteralValue::Null, |n| LiteralValue::Number(n.to_string()))
 }
 
 fn row(pair: &Value) -> PhysicalWriteRow {
@@ -41,7 +41,12 @@ fn row(pair: &Value) -> PhysicalWriteRow {
 fn state(relation: &str, source: &Value) -> PhysicalWriteState {
     PhysicalWriteState::new(
         relation,
-        source.as_array().expect("physical source bag").iter().map(row).collect(),
+        source
+            .as_array()
+            .expect("physical source bag")
+            .iter()
+            .map(row)
+            .collect(),
     )
     .expect("source rows retain duplicate physical occurrences")
 }
@@ -55,8 +60,10 @@ fn catalog() -> RelationCatalog {
                     relation,
                     ["id", "amount"]
                         .into_iter()
-                        .map(|name| SchemaColumn::from_sql_type(name, "INTEGER", "duckdb")
-                            .expect("frozen integer schema"))
+                        .map(|name| {
+                            SchemaColumn::from_sql_type(name, "INTEGER", "duckdb")
+                                .expect("frozen integer schema")
+                        })
                         .collect(),
                 )
                 .expect("two-column table")
@@ -78,23 +85,22 @@ fn bundle(sql: &str, enforce_primary_key: bool) -> sql_semantic_protocol::Analys
     let mut bundle = analyze_configured_inputs_with_catalog(&configured, &catalog())
         .expect("original SQL public adapter");
     if enforce_primary_key {
-        bundle.enrich_relation_constraints(&[
-            RelationConstraintSet::new(
-                "orders",
-                vec![
-                    RelationConstraint::primary_key(
-                        vec!["id".to_owned()],
-                        vec![ConstraintEvidence::new(
-                            ConstraintProvenance::new(
-                                ConstraintSourceKind::ExternalMetadata,
-                                "task-196-pk-native",
-                            ).expect("source provenance"),
-                            ConstraintEnforcement::Enforced,
-                        )],
-                    ).expect("PK law"),
-                ],
-            ).expect("source constraint set"),
-        ]);
+        bundle.enrich_relation_constraints(&[RelationConstraintSet::new(
+            "orders",
+            vec![RelationConstraint::primary_key(
+                vec!["id".to_owned()],
+                vec![ConstraintEvidence::new(
+                    ConstraintProvenance::new(
+                        ConstraintSourceKind::ExternalMetadata,
+                        "task-196-pk-native",
+                    )
+                    .expect("source provenance"),
+                    ConstraintEnforcement::Enforced,
+                )],
+            )
+            .expect("PK law")],
+        )
+        .expect("source constraint set")]);
     }
     bundle
 }
@@ -133,8 +139,12 @@ fn all_portable_original_dml_proofs_reconcile_complete_target_source_and_affecte
     let mut residual = 0;
     for case in occurrences["cases"].as_array().expect("16 source laws") {
         let id = case["id"].as_str().expect("original SQL identity");
-        let native = freeze["cases"].as_array().expect("original cases")
-            .iter().find(|entry| entry["id"] == id).expect("matching original DML");
+        let native = freeze["cases"]
+            .as_array()
+            .expect("original cases")
+            .iter()
+            .find(|entry| entry["id"] == id)
+            .expect("matching original DML");
         let oracle = &native["native_oracle"];
         let source = &oracle["complete_source_bags"];
         let initial = if source["customers"].is_null() {
@@ -157,27 +167,39 @@ fn all_portable_original_dml_proofs_reconcile_complete_target_source_and_affecte
             residual += 1;
             continue;
         }
-        let PhysicalWriteStatePlan::Feasible { transitions, final_states } = result
+        let PhysicalWriteStatePlan::Feasible {
+            transitions,
+            final_states,
+        } = result
         else {
             panic!("{id}: source-complete portable DML should be provable: {result:?}");
         };
         assert_eq!(transitions.len(), 1, "{id}: one original mutation");
         let transition = &transitions[0];
-        assert_eq!(transition.before(), &initial[0], "{id}: exact source identity");
-        let final_target = final_states.iter()
+        assert_eq!(
+            transition.before(),
+            &initial[0],
+            "{id}: exact source identity"
+        );
+        let final_target = final_states
+            .iter()
             .find(|state| state.relation() == "orders")
             .expect("preserved physical target identity");
         assert_eq!(
-            bag(final_target), expected_bag(&oracle["expected_poststate_bag"]),
+            bag(final_target),
+            expected_bag(&oracle["expected_poststate_bag"]),
             "{id}: exact full physical final bag"
         );
         assert_eq!(
-            bag(transition.after()), bag(final_target),
+            bag(transition.after()),
+            bag(final_target),
             "{id}: transition output owns the final target"
         );
         if initial.len() == 2 {
             assert_eq!(
-                final_states.iter().find(|state| state.relation() == "customers"),
+                final_states
+                    .iter()
+                    .find(|state| state.relation() == "customers"),
                 Some(&initial[1]),
                 "{id}: source table must not mutate"
             );
