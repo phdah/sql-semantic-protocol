@@ -177,6 +177,15 @@ fn all_portable_original_dml_proofs_reconcile_complete_target_source_and_affecte
         let sql = native["sql"].as_str().expect("immutable original SQL");
         let bundle = bundle(sql, pk);
         let result = physical_ordered_write_state_plan(&bundle, &initial);
+        if id == "88-C177-S198" {
+            // The original DuckDB ON CONFLICT no-op has a native complete-bag
+            // witness, but portable PK/default check ordering is not attested.
+            assert!(
+                matches!(result, PhysicalWriteStatePlan::Residual { .. }),
+                "{id}: engine-dependent constraint validation precedence must remain unapproved"
+            );
+            continue;
+        }
 
         let PhysicalWriteStatePlan::Feasible {
             transitions,
@@ -270,5 +279,5 @@ fn all_portable_original_dml_proofs_reconcile_complete_target_source_and_affecte
         }
         exact += 1;
     }
-    assert_eq!(exact, 16);
+    assert_eq!(exact, 15);
 }
