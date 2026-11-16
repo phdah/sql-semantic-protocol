@@ -511,8 +511,7 @@ fn bounded_mutation_source(
             // integer key is portable. NULL never qualifies a positive IN.
             // A correlated nested WHERE, tuple operand, computed projection,
             // floating coercion or NOT IN requires separate membership laws.
-            if nested.predicates().where_predicate().is_some()
-                || !nested.correlations().is_empty()
+            if nested.predicates().where_predicate().is_some() || !nested.correlations().is_empty()
             {
                 return None;
             }
