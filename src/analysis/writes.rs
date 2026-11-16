@@ -549,25 +549,22 @@ fn bounded_mutation_source(
             }) {
                 return None;
             }
-            let catalog = metadata.catalog?;
-            let lookup = |relation: &str, column: &str| {
-                let canonical = catalog
-                    .resolve(relation, metadata.dialect_name, metadata.relation_context)
-                    .ok()?;
-                catalog
-                    .schemas()
-                    .iter()
-                    .find(|schema| schema.relation() == canonical)?
-                    .columns()
-                    .iter()
-                    .find(|entry| entry.name() == column)
-                    .map(SchemaColumn::data_type)
-            };
+            // Reuse the canonical metadata owner for column type evidence.
+            // The nested projection and the mutation target must both be
+            // explicitly attested signed-integer sources.
+            let outer_ref = ColumnRef::new(
+                Some(target.name().to_string()),
+                outer.name().to_string(),
+            );
+            let inner_ref = ColumnRef::new(
+                Some(source.name().to_string()),
+                inner.name().to_string(),
+            );
             if !matches!(
-                lookup(target.name(), outer.name()),
+                metadata.column_data_type(&outer_ref),
                 Some(DataType::SignedInteger { .. })
             ) || !matches!(
-                lookup(source.name(), inner.name()),
+                metadata.column_data_type(&inner_ref),
                 Some(DataType::SignedInteger { .. })
             ) {
                 return None;
