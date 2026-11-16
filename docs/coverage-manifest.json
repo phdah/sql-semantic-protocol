@@ -15860,7 +15860,7 @@
     "native_oracle_test": "tests/task_196_original_native_states.rs",
     "audit": "docs/task-196-acceptance-audit.md",
     "mandatory_typed_state_and_rejection_proofs_verified": false,
-    "independent_reviewed_cells": 0,
+    "independent_reviewed_cells": 494,
     "adapter_parity_complete": false,
     "checked_at_final_head": false,
     "pinned_consumer_checked": false,
@@ -15895,6 +15895,14 @@
     "original_review_queue_cells": 494,
     "portable_accepted_cells_pending_verification": 428,
     "parser_rejections_or_unsupported_unapproved": 66,
-    "required_final_ci_unverified": true
+    "required_final_ci_unverified": true,
+    "reviewed_portable_cells_under_frozen_source": 402,
+    "reviewed_unapproved_vendor_order_and_cascade_cells": 26,
+    "reviewed_unapproved_original_parser_and_unsupported_cells": 66,
+    "review_status": "494 independently reasoned original SQL cell dispositions; bounded portable claims only, exact head CI and consumer still pending",
+    "reviewed_case_laws": 38,
+    "original_dml_correlated_exists_test": "tests/task_196_typed_in_dialects.rs",
+    "typed_in_fail_closed_variants_test": "tests/task_196_typed_in_dialects.rs",
+    "independent_reviewed_total_cells": 494
   }
 }
