@@ -479,6 +479,26 @@ fn bounded_mutation_source(
     }];
     let predicate =
         analyze_predicate_with_windows(selection, &[], &BTreeMap::new(), &scope, diagnostics);
+    // The generic nested-expression path intentionally has no catalog.
+    // Reanalyze only a positive scalar IN under the explicit mutation schema
+    // authority; unknown nested output resolution must never become Exact.
+    let predicate = match (selection, &predicate) {
+        (
+            Expr::InSubquery {
+                subquery,
+                negated: false,
+                ..
+            },
+            Predicate::InSubquery(membership),
+        ) if !membership.negated() => Predicate::InSubquery(
+            InSubqueryPredicate::with_operand(
+                membership.operand().clone(),
+                analyze_subquery_semantics_with_metadata(subquery, &scope, Some(metadata)),
+                false,
+            ),
+        ),
+        _ => predicate,
+    };
     let nested = match &predicate {
         Predicate::Exists(exists) => exists.subquery(),
         Predicate::InSubquery(membership) if !membership.negated() => membership.subquery(),
