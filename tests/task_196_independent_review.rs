@@ -103,9 +103,14 @@ fn all_494_original_cells_have_a_case_specific_sql_law_and_explicit_nonvendor_de
             );
             assert_eq!(cell["native_vendor_attested"], false);
             assert!(cell["evidence"].as_str().is_some());
-            assert_eq!(cell["source_type_authority"], "SQL_schema_or_authoritative_dbt_catalog_manifest_ODCS_only");
+            assert_eq!(
+                cell["source_type_authority"],
+                "SQL_schema_or_authoritative_dbt_catalog_manifest_ODCS_only"
+            );
             let status = cell["original_observed_status"].as_str().expect("status");
-            let classification = cell["reviewer_classification"].as_str().expect("review class");
+            let classification = cell["reviewer_classification"]
+                .as_str()
+                .expect("review class");
             let expected = match status {
                 "C" if id.ends_with("S198") => {
                     conditional += 1;
@@ -129,12 +134,18 @@ fn all_494_original_cells_have_a_case_specific_sql_law_and_explicit_nonvendor_de
                 }
                 "U" => {
                     u += 1;
-                    assert!(cell["semantic_owner"].as_str().expect("owned gap").starts_with("TASK-"));
+                    assert!(cell["semantic_owner"]
+                        .as_str()
+                        .expect("owned gap")
+                        .starts_with("TASK-"));
                     "reviewed_unapproved_unsupported_analysis"
                 }
                 other => panic!("{id}/{name}: unexpected historical status {other}"),
             };
-            assert_eq!(classification, expected, "{id}/{name}: never approve an unproved semantic cell");
+            assert_eq!(
+                classification, expected,
+                "{id}/{name}: never approve an unproved semantic cell"
+            );
             assert_eq!(
                 cell["final_acceptance"],
                 if classification == "reviewed_bounded_portable_canonical_under_frozen_source" {
