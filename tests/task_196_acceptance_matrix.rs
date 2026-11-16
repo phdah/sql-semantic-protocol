@@ -168,8 +168,14 @@ fn every_original_variant_and_parser_cell_is_frozen_with_a_named_proof_gate() {
     assert_eq!(tracked["dialect_cells"], 494);
     assert_eq!(tracked["independent_reviewed_cells"], 494);
     assert_eq!(tracked["reviewed_portable_cells_under_frozen_source"], 402);
-    assert_eq!(tracked["reviewed_unapproved_vendor_order_and_cascade_cells"], 26);
-    assert_eq!(tracked["reviewed_unapproved_original_parser_and_unsupported_cells"], 66);
+    assert_eq!(
+        tracked["reviewed_unapproved_vendor_order_and_cascade_cells"],
+        26
+    );
+    assert_eq!(
+        tracked["reviewed_unapproved_original_parser_and_unsupported_cells"],
+        66
+    );
     assert_eq!(tracked["task_done"], false);
     assert_eq!(tracked["parent_task88_approved"], false);
     assert_eq!(tracked["release_approved"], false);
