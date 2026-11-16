@@ -43,7 +43,7 @@ pub(super) fn analyze_subquery_semantics_with_metadata(
     );
     let correlations = collect_query_correlations(query, outer_scope);
 
-    inspect_query_features(query, metadata, &mut diagnostics);
+    inspect_query_features(query, None, &mut diagnostics);
     let condition_exactness = analyze_query_condition_exactness(
         query,
         &predicates,
