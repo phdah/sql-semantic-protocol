@@ -6,9 +6,7 @@
 use std::collections::BTreeSet;
 
 use serde_json::Value;
-use sql_semantic_protocol::{
-    analyze_sql, dialect_from_name, to_json, ProtocolStatement,
-};
+use sql_semantic_protocol::{analyze_sql, dialect_from_name, to_json, ProtocolStatement};
 
 const FREEZE: &str = include_str!("../docs/task-196-acceptance-freeze.json");
 const ORIGINAL: &str = include_str!("../docs/task-178-full-variant-inventory.json");
@@ -42,12 +40,18 @@ fn every_original_variant_and_parser_cell_is_frozen_with_a_named_proof_gate() {
     assert_eq!(frozen["case_count"], 38);
     assert_eq!(frozen["parser_cells"], 494);
     assert_eq!(frozen["dialects"], originals["dialects"]);
-    assert_eq!(frozen["family_counts"], serde_json::json!({
-        "schema": 11, "dml": 18, "ddl": 9
-    }));
-    assert_eq!(frozen["observed_parser_cells"], serde_json::json!({
-        "C": 428, "R": 11, "U": 55
-    }));
+    assert_eq!(
+        frozen["family_counts"],
+        serde_json::json!({
+            "schema": 11, "dml": 18, "ddl": 9
+        })
+    );
+    assert_eq!(
+        frozen["observed_parser_cells"],
+        serde_json::json!({
+            "C": 428, "R": 11, "U": 55
+        })
+    );
     assert_eq!(frozen["positive_fixture_id"], "88-C196-P");
     assert_eq!(frozen["negative_fixture_id"], "88-C196-N");
     assert_eq!(frozen["independently_reviewed_cells"], 0);
@@ -59,13 +63,11 @@ fn every_original_variant_and_parser_cell_is_frozen_with_a_named_proof_gate() {
         .expect("TASK-178 original samples")
         .iter()
         .filter(|case| {
-            case["feature_id"]
-                .as_str()
-                .is_some_and(|family| {
-                    family.starts_with("schema.")
-                        || family.starts_with("dml.")
-                        || family.starts_with("ddl.")
-                })
+            case["feature_id"].as_str().is_some_and(|family| {
+                family.starts_with("schema.")
+                    || family.starts_with("dml.")
+                    || family.starts_with("ddl.")
+            })
         })
         .map(|case| case["id"].as_str().expect("source variant"))
         .collect();
@@ -86,7 +88,10 @@ fn every_original_variant_and_parser_cell_is_frozen_with_a_named_proof_gate() {
             .find(|entry| entry["id"] == id)
             .expect("TASK-178 original cannot be replaced");
         assert_eq!(case["sql"], source["sql"], "{id}: original SQL drift");
-        assert_eq!(case["feature_id"], source["feature_id"], "{id}: family drift");
+        assert_eq!(
+            case["feature_id"], source["feature_id"],
+            "{id}: family drift"
+        );
         assert_eq!(case["variant"], source["variant"], "{id}: variant drift");
         assert_eq!(
             case["original_observed_mask"], source["full_document_classification"],
@@ -94,7 +99,10 @@ fn every_original_variant_and_parser_cell_is_frozen_with_a_named_proof_gate() {
         );
 
         let oracle = &case["native_oracle"];
-        match oracle["kind"].as_str().expect("explicit oracle classification") {
+        match oracle["kind"]
+            .as_str()
+            .expect("explicit oracle classification")
+        {
             "original_native_dml_complete_target_bag" => {
                 let source = dml["cases"]
                     .as_array()
@@ -102,8 +110,14 @@ fn every_original_variant_and_parser_cell_is_frozen_with_a_named_proof_gate() {
                     .iter()
                     .find(|entry| entry["id"] == id)
                     .expect("native DML oracle must exist");
-                assert_eq!(oracle["expected_poststate_bag"], source["expected_terminal_bag"]);
-                assert_eq!(oracle["expected_returning_bag"], source["expected_returning_bag"]);
+                assert_eq!(
+                    oracle["expected_poststate_bag"],
+                    source["expected_terminal_bag"]
+                );
+                assert_eq!(
+                    oracle["expected_returning_bag"],
+                    source["expected_returning_bag"]
+                );
                 native_dml += 1;
             }
             "original_native_schema_lifecycle_source_and_terminal" => {
@@ -128,7 +142,9 @@ fn every_original_variant_and_parser_cell_is_frozen_with_a_named_proof_gate() {
             kind => panic!("{id}: unreviewed native classification {kind}"),
         }
 
-        let cells = case["cells"].as_array().expect("13 named parser obligations");
+        let cells = case["cells"]
+            .as_array()
+            .expect("13 named parser obligations");
         assert_eq!(cells.len(), 13, "{id}: no implicit dialect exclusions");
         for (index, cell) in cells.iter().enumerate() {
             let name = cell["dialect"].as_str().expect("dialect identity");
@@ -136,8 +152,7 @@ fn every_original_variant_and_parser_cell_is_frozen_with_a_named_proof_gate() {
             assert_eq!(cell["id"], format!("{id}/{name}"));
             assert!(seen_cells.insert(format!("{id}/{name}")));
             assert_eq!(
-                cell["original_observed_status"],
-                source["dialect_cells"][index]["observed_status"],
+                cell["original_observed_status"], source["dialect_cells"][index]["observed_status"],
                 "{id}/{name}: frozen parser result changed"
             );
             assert_eq!(cell["vendor_native_execution"], "unattested");
@@ -167,11 +182,17 @@ fn original_494_public_cells_retain_explicit_analyzed_unsupported_or_rejected_ou
         let id = case["id"].as_str().expect("source variant ID");
         let sql = case["sql"].as_str().expect("original SQL");
         let mut canonical_reference: Option<Value> = None;
-        for cell in case["cells"].as_array().expect("13 immutable dialect cells") {
+        for cell in case["cells"]
+            .as_array()
+            .expect("13 immutable dialect cells")
+        {
             let name = cell["dialect"].as_str().expect("public parser name");
             let dialect = dialect_from_name(name).expect("public parser registry");
             let analysis = analyze_sql(sql, name, dialect.as_ref());
-            match cell["original_observed_status"].as_str().expect("classification") {
+            match cell["original_observed_status"]
+                .as_str()
+                .expect("classification")
+            {
                 "R" => {
                     assert!(analysis.is_err(), "{id}/{name}: parse rejection was lost");
                     rejected += 1;
