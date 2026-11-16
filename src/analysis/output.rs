@@ -1019,6 +1019,14 @@ fn derive_window_output_domain(window: &WindowFunctionExpression) -> ValueDomain
             )])
         }
         "count" => {
+            if matches!(
+                arguments,
+                [Expression::Literal(literal)]
+                    if matches!(literal.value(), LiteralValue::Null)
+            ) {
+                // Even a nonempty window frame contributes no COUNT(NULL) rows.
+                return ValueDomain::set(SetMode::Include, vec![integer_literal(0)]);
+            }
             // The implicit SQL frame (whole partition without ORDER BY, or
             // UNBOUNDED PRECEDING through CURRENT ROW with ORDER BY) always
             // includes the current output row as well.
