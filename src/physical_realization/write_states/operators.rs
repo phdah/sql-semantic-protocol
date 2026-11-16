@@ -605,7 +605,9 @@ pub(super) fn mutate_rows(
             return Err(residual("mutation has unaccounted physical sources"));
         };
         let Some(predicate) = write.selection() else {
-            return Err(residual("mutation source lacks a canonical membership predicate"));
+            return Err(residual(
+                "mutation source lacks a canonical membership predicate",
+            ));
         };
         let nested = match predicate {
             Predicate::Exists(exists) => exists.subquery(),
@@ -629,7 +631,9 @@ pub(super) fn mutate_rows(
                         .iter()
                         .any(|column| column.relation() != target)
                 {
-                    return Err(residual("EXISTS requires a proved correlated source predicate"));
+                    return Err(residual(
+                        "EXISTS requires a proved correlated source predicate",
+                    ));
                 }
             }
             Predicate::InSubquery(membership) => {
@@ -638,7 +642,9 @@ pub(super) fn mutate_rows(
                     || !matches!(membership.operand().expressions(), [Expression::Column(_)])
                     || !matches!(nested.output().columns(), [column] if matches!(column.expression(), Expression::Column(_)))
                 {
-                    return Err(residual("IN mutation requires one direct scalar source key"));
+                    return Err(residual(
+                        "IN mutation requires one direct scalar source key",
+                    ));
                 }
             }
             _ => return Err(residual("unproved mutation membership shape")),
@@ -742,9 +748,10 @@ pub(super) fn mutate_rows(
                                 match eval(projected.expression(), &inner_context, &aliases)? {
                                     LiteralValue::Null => {}
                                     LiteralValue::Number(candidate) => {
-                                        let candidate = candidate.parse::<i128>().map_err(|_| {
-                                            residual("unproved signed nested candidate")
-                                        })?;
+                                        let candidate =
+                                            candidate.parse::<i128>().map_err(|_| {
+                                                residual("unproved signed nested candidate")
+                                            })?;
                                         if key == candidate {
                                             has_match = true;
                                             break;
