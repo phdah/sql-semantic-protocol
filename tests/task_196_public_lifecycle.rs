@@ -9,8 +9,8 @@ use std::collections::BTreeMap;
 use serde_json::Value;
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, dialect_from_name, physical_ordered_write_state_plan,
-    ConfiguredSqlInput, ConstraintEnforcement, ConstraintEvidence, ConstraintProvenance,
-    ConstraintSourceKind, LiteralValue, PhysicalWriteRow, PhysicalWriteState,
+    ColumnValueKind, ColumnValueSource, ConfiguredSqlInput, ConstraintEnforcement, ConstraintEvidence, ConstraintProvenance,
+    ConstraintSourceKind, ConstraintValue, LiteralValue, PhysicalWriteRow, PhysicalWriteState,
     PhysicalWriteStatePlan, RelationCatalog, RelationConstraint, RelationConstraintSet,
     RelationSchema, SchemaColumn, SqlInput,
 };
@@ -85,22 +85,38 @@ fn bundle(sql: &str, enforce_primary_key: bool) -> sql_semantic_protocol::Analys
     let mut bundle = analyze_configured_inputs_with_catalog(&configured, &catalog())
         .expect("original SQL public adapter");
     if enforce_primary_key {
-        bundle.enrich_relation_constraints(&[RelationConstraintSet::new(
-            "orders",
-            vec![RelationConstraint::primary_key(
-                vec!["id".to_owned()],
-                vec![ConstraintEvidence::new(
-                    ConstraintProvenance::new(
-                        ConstraintSourceKind::ExternalMetadata,
-                        "task-196-pk-native",
-                    )
-                    .expect("source provenance"),
-                    ConstraintEnforcement::Enforced,
-                )],
+        // The frozen DuckDB DDL has an ordinary nullable amount column.
+        // Omission inserts SQL NULL, but that fact must be attested rather
+        // than inferred from a partial RelationCatalog type alone.
+        let evidence = vec![ConstraintEvidence::new(
+            ConstraintProvenance::new(
+                ConstraintSourceKind::ExternalMetadata,
+                "task-196-native-orders-ddl",
             )
-            .expect("PK law")],
-        )
-        .expect("source constraint set")]);
+            .expect("native column DDL provenance"),
+            ConstraintEnforcement::Enforced,
+        )];
+        bundle.enrich_relation_constraints(&[
+            RelationConstraintSet::new(
+                "orders",
+                vec![
+                    RelationConstraint::primary_key(
+                        vec!["id".to_owned()],
+                        evidence.clone(),
+                    ).expect("PK law"),
+                ],
+            )
+            .expect("source constraint set")
+            .with_column_value_sources(vec![
+                ColumnValueSource::new(
+                    "amount",
+                    ColumnValueKind::Default,
+                    Some(ConstraintValue::Null),
+                    evidence,
+                )
+                .expect("DDL-attested implicit nullable default"),
+            ]),
+        ]);
     }
     bundle
 }
