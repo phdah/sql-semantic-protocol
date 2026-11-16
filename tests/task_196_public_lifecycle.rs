@@ -121,10 +121,17 @@ fn bag(state: &PhysicalWriteState) -> Vec<Vec<LiteralValue>> {
 }
 
 fn expected_bag(value: &Value) -> Vec<Vec<LiteralValue>> {
-    let mut result = value.as_array().expect("complete known native output")
+    let mut result = value
+        .as_array()
+        .expect("complete known native output")
         .iter()
         .map(|entry| {
-            entry.as_array().expect("pair").iter().map(integer).collect::<Vec<_>>()
+            entry
+                .as_array()
+                .expect("pair")
+                .iter()
+                .map(integer)
+                .collect::<Vec<_>>()
         })
         .collect::<Vec<_>>();
     result.sort_by_key(|row| format!("{row:?}"));
@@ -205,26 +212,50 @@ fn all_portable_original_dml_proofs_reconcile_complete_target_source_and_affecte
             );
         }
         let law = &case["independent_law"];
-        assert_eq!(transition.affected().inserted(), law["inserted"].as_u64().expect("insert count"), "{id}");
-        assert_eq!(transition.affected().updated(), law["updated"].as_u64().expect("update count"), "{id}");
-        assert_eq!(transition.affected().deleted(), law["deleted"].as_u64().expect("delete count"), "{id}");
+        assert_eq!(
+            transition.affected().inserted(),
+            law["inserted"].as_u64().expect("insert count"),
+            "{id}"
+        );
+        assert_eq!(
+            transition.affected().updated(),
+            law["updated"].as_u64().expect("update count"),
+            "{id}"
+        );
+        assert_eq!(
+            transition.affected().deleted(),
+            law["deleted"].as_u64().expect("delete count"),
+            "{id}"
+        );
         let returned = &oracle["expected_returning_bag"];
         if let Some(expected) = returned.as_array() {
-            let physical = transition.returning().expect("original RETURNING projection");
-            let mut actual = physical.rows().iter().map(|row| {
-                row.values().get("id").expect("RETURNING id").clone()
-            }).collect::<Vec<_>>();
+            let physical = transition
+                .returning()
+                .expect("original RETURNING projection");
+            let mut actual = physical
+                .rows()
+                .iter()
+                .map(|row| row.values().get("id").expect("RETURNING id").clone())
+                .collect::<Vec<_>>();
             actual.sort_by_key(|value| format!("{value:?}"));
-            let mut wanted = expected.iter().map(|entry| {
-                integer(&entry.as_array().expect("RETURNING one-column tuple")[0])
-            }).collect::<Vec<_>>();
+            let mut wanted = expected
+                .iter()
+                .map(|entry| integer(&entry.as_array().expect("RETURNING one-column tuple")[0]))
+                .collect::<Vec<_>>();
             wanted.sort_by_key(|value| format!("{value:?}"));
-            assert_eq!(actual, wanted, "{id}: complete RETURNING physical occurrences");
+            assert_eq!(
+                actual, wanted,
+                "{id}: complete RETURNING physical occurrences"
+            );
         }
-        let schema = bundle.source_schemas().iter()
+        let schema = bundle
+            .source_schemas()
+            .iter()
             .find(|schema| schema.relation() == "orders")
             .expect("authoritative target source columns");
-        let domains = final_target.exact_domains(schema).expect("fully known physical bag");
+        let domains = final_target
+            .exact_domains(schema)
+            .expect("fully known physical bag");
         assert_eq!(domains.len(), 2, "{id}: typed id and amount domains");
         for domain in domains {
             assert_eq!(
