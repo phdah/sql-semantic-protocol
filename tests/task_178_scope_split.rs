@@ -234,6 +234,15 @@ fn new_tasks_and_existing_final_gates_form_one_acyclic_queue() {
             } else {
                 content.contains("status: To Do") || content.contains("status: In Progress")
             }
+        } else if *task == "TASK-196" {
+            let task_196_done = coverage["task_196_schema_write_ddl_acceptance"]["task_done"]
+                .as_bool()
+                .expect("bounded TASK-196 status");
+            if task_196_done {
+                content.contains("status: Done")
+            } else {
+                content.contains("status: To Do") || content.contains("status: In Progress")
+            }
         } else {
             content.contains("status: To Do")
         };
