@@ -9,10 +9,10 @@ use std::collections::BTreeMap;
 use serde_json::Value;
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, dialect_from_name, physical_ordered_write_state_plan,
-    ColumnValueKind, ColumnValueSource, ConfiguredSqlInput, ConstraintEnforcement, ConstraintEvidence, ConstraintProvenance,
-    ConstraintSourceKind, ConstraintValue, LiteralValue, PhysicalWriteRow, PhysicalWriteState,
-    PhysicalWriteStatePlan, RelationCatalog, RelationConstraint, RelationConstraintSet,
-    RelationSchema, SchemaColumn, SqlInput,
+    ColumnValueKind, ColumnValueSource, ConfiguredSqlInput, ConstraintEnforcement,
+    ConstraintEvidence, ConstraintProvenance, ConstraintSourceKind, ConstraintValue, LiteralValue,
+    PhysicalWriteRow, PhysicalWriteState, PhysicalWriteStatePlan, RelationCatalog,
+    RelationConstraint, RelationConstraintSet, RelationSchema, SchemaColumn, SqlInput,
 };
 
 const FREEZE: &str = include_str!("../docs/task-196-acceptance-freeze.json");
@@ -96,27 +96,21 @@ fn bundle(sql: &str, enforce_primary_key: bool) -> sql_semantic_protocol::Analys
             .expect("native column DDL provenance"),
             ConstraintEnforcement::Enforced,
         )];
-        bundle.enrich_relation_constraints(&[
-            RelationConstraintSet::new(
-                "orders",
-                vec![
-                    RelationConstraint::primary_key(
-                        vec!["id".to_owned()],
-                        evidence.clone(),
-                    ).expect("PK law"),
-                ],
-            )
-            .expect("source constraint set")
-            .with_column_value_sources(vec![
-                ColumnValueSource::new(
-                    "amount",
-                    ColumnValueKind::Default,
-                    Some(ConstraintValue::Null),
-                    evidence,
-                )
-                .expect("DDL-attested implicit nullable default"),
-            ]),
-        ]);
+        bundle.enrich_relation_constraints(&[RelationConstraintSet::new(
+            "orders",
+            vec![
+                RelationConstraint::primary_key(vec!["id".to_owned()], evidence.clone())
+                    .expect("PK law"),
+            ],
+        )
+        .expect("source constraint set")
+        .with_column_value_sources(vec![ColumnValueSource::new(
+            "amount",
+            ColumnValueKind::Default,
+            Some(ConstraintValue::Null),
+            evidence,
+        )
+        .expect("DDL-attested implicit nullable default")])]);
     }
     bundle
 }
