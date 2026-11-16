@@ -10,8 +10,8 @@ use serde_json::Value;
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, analyze_inputs, dialect_from_name,
     physical_ordered_write_state_plan, ConfiguredSqlInput, LiteralValue, PhysicalWriteRow,
-    PhysicalWriteState, PhysicalWriteStatePlan, ProtocolStatement, RelationCatalog,
-    RelationSchema, SchemaColumn, SqlInput,
+    PhysicalWriteState, PhysicalWriteStatePlan, ProtocolStatement, RelationCatalog, RelationSchema,
+    SchemaColumn, SqlInput,
 };
 
 const FREEZE: &str = include_str!("../docs/task-196-acceptance-freeze.json");
@@ -19,59 +19,109 @@ const FREEZE: &str = include_str!("../docs/task-196-acceptance-freeze.json");
 fn schema(table: &str, data_type: &str) -> RelationSchema {
     RelationSchema::new(
         table,
-        ["id","amount"]
+        ["id", "amount"]
             .into_iter()
             .map(|column| {
                 SchemaColumn::from_sql_type(
                     column,
                     if column == "id" { data_type } else { "INTEGER" },
-                    "duckdb"
-                ).expect("independent typed source")
+                    "duckdb",
+                )
+                .expect("independent typed source")
             })
             .collect(),
-    ).expect("canonical relation schema")
+    )
+    .expect("canonical relation schema")
 }
 
 fn catalog(data_type: &str) -> RelationCatalog {
-    RelationCatalog::from_schemas(&[
-        schema("orders", data_type),
-        schema("customers", data_type),
-    ]).expect("two independent complete source schemas")
+    RelationCatalog::from_schemas(&[schema("orders", data_type), schema("customers", data_type)])
+        .expect("two independent complete source schemas")
 }
 
 fn state(relation: &str, rows: &[(Option<i64>, Option<i64>)]) -> PhysicalWriteState {
     PhysicalWriteState::new(
         relation,
-        rows.iter().map(|(id, amount)| {
-            PhysicalWriteRow::new(BTreeMap::from([
-                ("id".to_owned(), id.map_or(LiteralValue::Null, |v| LiteralValue::Number(v.to_string()))),
-                ("amount".to_owned(), amount.map_or(LiteralValue::Null, |v| LiteralValue::Number(v.to_string()))),
-            ])).expect("physical NULL or integer")
-        }).collect()
-    ).expect("named source")
+        rows.iter()
+            .map(|(id, amount)| {
+                PhysicalWriteRow::new(BTreeMap::from([
+                    (
+                        "id".to_owned(),
+                        id.map_or(LiteralValue::Null, |v| LiteralValue::Number(v.to_string())),
+                    ),
+                    (
+                        "amount".to_owned(),
+                        amount.map_or(LiteralValue::Null, |v| LiteralValue::Number(v.to_string())),
+                    ),
+                ]))
+                .expect("physical NULL or integer")
+            })
+            .collect(),
+    )
+    .expect("named source")
 }
 
 fn sql<'a>(freeze: &'a Value, suffix: &str) -> &'a str {
-    freeze["cases"].as_array().expect("original SQL")
-        .iter().find(|case| case["id"] == format!("88-C177-{suffix}"))
-        .expect("frozen subquery mutation")["sql"].as_str().expect("literal original SQL")
+    freeze["cases"]
+        .as_array()
+        .expect("original SQL")
+        .iter()
+        .find(|case| case["id"] == format!("88-C177-{suffix}"))
+        .expect("frozen subquery mutation")["sql"]
+        .as_str()
+        .expect("literal original SQL")
 }
 
 #[test]
 fn both_original_scalar_in_mutations_have_exact_13_parser_dialect_physical_outcomes() {
     let frozen: Value = serde_json::from_str(FREEZE).expect("task matrix");
     let initial = [
-        state("orders", &[(Some(1),Some(10)),(Some(2),Some(20)),
-            (Some(2),Some(20)),(Some(3),None),(None,Some(7))]),
-        state("customers", &[(Some(1),Some(100)),(Some(4),Some(40)),
-            (Some(4),Some(40))]),
+        state(
+            "orders",
+            &[
+                (Some(1), Some(10)),
+                (Some(2), Some(20)),
+                (Some(2), Some(20)),
+                (Some(3), None),
+                (None, Some(7)),
+            ],
+        ),
+        state(
+            "customers",
+            &[
+                (Some(1), Some(100)),
+                (Some(4), Some(40)),
+                (Some(4), Some(40)),
+            ],
+        ),
     ];
     let mut cells = 0;
     for (suffix, expected) in [
-        ("S203", state("orders", &[(Some(1),Some(1)),(Some(2),Some(20)),
-            (Some(2),Some(20)),(Some(3),None),(None,Some(7))])),
-        ("S206", state("orders", &[(Some(2),Some(20)),(Some(2),Some(20)),
-            (Some(3),None),(None,Some(7))])),
+        (
+            "S203",
+            state(
+                "orders",
+                &[
+                    (Some(1), Some(1)),
+                    (Some(2), Some(20)),
+                    (Some(2), Some(20)),
+                    (Some(3), None),
+                    (None, Some(7)),
+                ],
+            ),
+        ),
+        (
+            "S206",
+            state(
+                "orders",
+                &[
+                    (Some(2), Some(20)),
+                    (Some(2), Some(20)),
+                    (Some(3), None),
+                    (None, Some(7)),
+                ],
+            ),
+        ),
     ] {
         let original_sql = sql(&frozen, suffix);
         for dialect in frozen["dialects"].as_array().expect("13 public dialects") {
@@ -79,28 +129,53 @@ fn both_original_scalar_in_mutations_have_exact_13_parser_dialect_physical_outco
             let parser = dialect_from_name(name).expect("public parser");
             let input = SqlInput::inline(original_sql);
             let configured = [ConfiguredSqlInput::new(
-                "task196-original-in", &input, name, parser.as_ref(),
+                "task196-original-in",
+                &input,
+                name,
+                parser.as_ref(),
             )];
             let bundle = analyze_configured_inputs_with_catalog(&configured, &catalog("INTEGER"))
                 .unwrap_or_else(|err| panic!("{suffix}/{name}: {err}"));
             assert!(
-                matches!(bundle.inputs()[0].statements()[0], ProtocolStatement::Query(_)),
+                matches!(
+                    bundle.inputs()[0].statements()[0],
+                    ProtocolStatement::Query(_)
+                ),
                 "{suffix}/{name}: typed original IN must not vanish or be unsupported"
             );
             let result = physical_ordered_write_state_plan(&bundle, &initial);
-            let PhysicalWriteStatePlan::Feasible { transitions, final_states } = result else {
+            let PhysicalWriteStatePlan::Feasible {
+                transitions,
+                final_states,
+            } = result
+            else {
                 panic!("{suffix}/{name}: complete typed physical source must certify SQL IN: {result:?}");
             };
             let [transition] = transitions.as_slice() else {
                 panic!("{suffix}/{name}: one original write");
             };
-            assert_eq!(transition.affected_target_ordinals(), &[0], "{suffix}/{name}");
+            assert_eq!(
+                transition.affected_target_ordinals(),
+                &[0],
+                "{suffix}/{name}"
+            );
             assert_eq!(
                 transition.affected().updated() + transition.affected().deleted(),
-                1, "{suffix}/{name}"
+                1,
+                "{suffix}/{name}"
             );
-            assert_eq!(final_states.iter().find(|state| state.relation() == "orders"), Some(&expected));
-            assert_eq!(final_states.iter().find(|state| state.relation() == "customers"), Some(&initial[1]));
+            assert_eq!(
+                final_states
+                    .iter()
+                    .find(|state| state.relation() == "orders"),
+                Some(&expected)
+            );
+            assert_eq!(
+                final_states
+                    .iter()
+                    .find(|state| state.relation() == "customers"),
+                Some(&initial[1])
+            );
             cells += 1;
         }
     }
@@ -128,7 +203,10 @@ fn absent_metadata_and_float_in_subquery_mutations_never_become_exact() {
         );
         let input = SqlInput::inline(original);
         let configured = [ConfiguredSqlInput::new(
-            "task196-float-in", &input, "duckdb", parser.as_ref(),
+            "task196-float-in",
+            &input,
+            "duckdb",
+            parser.as_ref(),
         )];
         let float = analyze_configured_inputs_with_catalog(&configured, &catalog("DOUBLE"))
             .expect("typed floating point parse");
