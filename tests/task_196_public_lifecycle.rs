@@ -143,7 +143,6 @@ fn all_portable_original_dml_proofs_reconcile_complete_target_source_and_affecte
     let freeze = parse(FREEZE);
     let occurrences = parse(OCCURRENCES);
     let mut exact = 0;
-    let mut residual = 0;
     for case in occurrences["cases"].as_array().expect("16 source laws") {
         let id = case["id"].as_str().expect("original SQL identity");
         let native = freeze["cases"]
@@ -166,14 +165,7 @@ fn all_portable_original_dml_proofs_reconcile_complete_target_source_and_affecte
         let sql = native["sql"].as_str().expect("immutable original SQL");
         let bundle = bundle(sql, pk);
         let result = physical_ordered_write_state_plan(&bundle, &initial);
-        if matches!(id, "88-C177-S203" | "88-C177-S206") {
-            assert!(
-                matches!(result, PhysicalWriteStatePlan::Residual { .. }),
-                "{id}: original unsupported correlated DML must not fabricate Exact"
-            );
-            residual += 1;
-            continue;
-        }
+
         let PhysicalWriteStatePlan::Feasible {
             transitions,
             final_states,
@@ -266,5 +258,5 @@ fn all_portable_original_dml_proofs_reconcile_complete_target_source_and_affecte
         }
         exact += 1;
     }
-    assert_eq!((exact, residual), (14, 2));
+    assert_eq!(exact, 16);
 }
