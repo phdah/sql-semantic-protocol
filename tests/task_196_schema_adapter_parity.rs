@@ -26,16 +26,29 @@ fn primary_key(sets: &[RelationConstraintSet]) -> Vec<String> {
 }
 
 fn assert_decimal(schemas: &[sql_semantic_protocol::RelationSchema]) {
-    let orders = schemas.iter().find(|schema| schema.relation() == "orders")
+    let orders = schemas
+        .iter()
+        .find(|schema| schema.relation() == "orders")
         .expect("typed original relation");
     assert_eq!(
-        orders.columns().iter().find(|column| column.name() == "amount")
-            .expect("original amount source").data_type(),
-        &DataType::Decimal { precision: Some(10), scale: Some(2) }
+        orders
+            .columns()
+            .iter()
+            .find(|column| column.name() == "amount")
+            .expect("original amount source")
+            .data_type(),
+        &DataType::Decimal {
+            precision: Some(10),
+            scale: Some(2)
+        }
     );
     assert_eq!(
-        orders.columns().iter().find(|column| column.name() == "id")
-            .expect("original id source").data_type(),
+        orders
+            .columns()
+            .iter()
+            .find(|column| column.name() == "id")
+            .expect("original id source")
+            .data_type(),
         &DataType::SignedInteger { bits: Some(32) }
     );
 }
@@ -80,20 +93,31 @@ fn original_decimal_primary_keys_are_canonical_across_sql_and_dbt_with_distinct_
     let dbt = compiled_dbt();
     assert_decimal(dbt.source_schemas());
     assert_eq!(primary_key(dbt.relation_constraints()), vec!["id"]);
-    assert_eq!(dbt.source_schemas()[0].source_kind(), Some(SchemaSourceKind::DbtManifest));
+    assert_eq!(
+        dbt.source_schemas()[0].source_kind(),
+        Some(SchemaSourceKind::DbtManifest)
+    );
 
     let mut checked = 0;
-    for suffix in ["S190","S192"] {
+    for suffix in ["S190", "S192"] {
         let id = format!("88-C177-{suffix}");
-        let case = frozen["cases"].as_array().expect("original variants")
-            .iter().find(|entry| entry["id"] == id).expect("original SQL DDL");
+        let case = frozen["cases"]
+            .as_array()
+            .expect("original variants")
+            .iter()
+            .find(|entry| entry["id"] == id)
+            .expect("original SQL DDL");
         for cell in case["cells"].as_array().expect("13 frozen parser cells") {
             let name = cell["dialect"].as_str().expect("dialect");
             let parser = dialect_from_name(name).expect("public parser");
             let ddl = analyze_inputs(
-                &[SqlInput::inline(case["sql"].as_str().expect("immutable SQL"))],
-                name, parser.as_ref()
-            ).unwrap_or_else(|err| panic!("{id}/{name}: {err}"));
+                &[SqlInput::inline(
+                    case["sql"].as_str().expect("immutable SQL"),
+                )],
+                name,
+                parser.as_ref(),
+            )
+            .unwrap_or_else(|err| panic!("{id}/{name}: {err}"));
             assert_decimal(ddl.source_schemas());
             assert_eq!(
                 primary_key(ddl.relation_constraints()),
@@ -103,7 +127,10 @@ fn original_decimal_primary_keys_are_canonical_across_sql_and_dbt_with_distinct_
             let source = RelationCatalog::from_schemas(dbt.source_schemas())
                 .expect("complete declared source");
             assert!(
-                source.schemas().iter().any(|schema| schema.relation() == "orders"),
+                source
+                    .schemas()
+                    .iter()
+                    .any(|schema| schema.relation() == "orders"),
                 "{id}/{name}: compiled dbt source not a physical execution attestation"
             );
             checked += 1;
@@ -132,9 +159,11 @@ schema:
         physicalType: DECIMAL(10,2)
 ";
     let parsed = sql_semantic_protocol::parse_odcs_yaml(
-        contract, "duckdb",
-        &RelationCatalog::new(&["orders"]).expect("explicit physical source")
-    ).expect("ODCS typed table declaration");
+        contract,
+        "duckdb",
+        &RelationCatalog::new(&["orders"]).expect("explicit physical source"),
+    )
+    .expect("ODCS typed table declaration");
     assert_decimal(parsed.source_schemas());
     assert_eq!(
         parsed.source_schemas()[0].source_kind(),
