@@ -16,7 +16,9 @@ fn read(source: &str) -> Value {
 }
 
 fn ordinals(db: &Connection, sql: &str) -> Vec<usize> {
-    let mut query = db.prepare(sql).expect("independent native physical identity query");
+    let mut query = db
+        .prepare(sql)
+        .expect("independent native physical identity query");
     query
         .query_map([], |row| row.get::<_, i64>(0))
         .expect("physical rowid result")
@@ -29,7 +31,9 @@ fn expected(value: &Value) -> Vec<usize> {
         .as_array()
         .expect("explicit physical occurrence ids")
         .iter()
-        .map(|entry| usize::try_from(entry.as_u64().expect("nonnegative ordinal")).expect("ordinal"))
+        .map(|entry| {
+            usize::try_from(entry.as_u64().expect("nonnegative ordinal")).expect("ordinal")
+        })
         .collect()
 }
 
@@ -57,54 +61,83 @@ fn original_dml_true_false_unknown_and_source_partner_occurrences_match_independ
         let oracle = &frozen["native_oracle"];
         assert_eq!(oracle["kind"], "original_native_dml_complete_target_bag");
         let db = Connection::open_in_memory().expect("native read-only source witness");
-        db.execute_batch(oracle["source_setup"].as_str().expect("complete original source"))
-            .unwrap_or_else(|error| panic!("{id}: native source fixture {error}"));
+        db.execute_batch(
+            oracle["source_setup"]
+                .as_str()
+                .expect("complete original source"),
+        )
+        .unwrap_or_else(|error| panic!("{id}: native source fixture {error}"));
         let source = &case["independent_law"];
         let count = if source["all_customer_occurrences_before"] == 0 {
             0
         } else {
             ordinals(&db, "SELECT rowid FROM customers ORDER BY rowid").len()
         };
-        assert_eq!(count as u64, source["all_customer_occurrences_before"].as_u64().expect("customer count"), "{id}");
+        assert_eq!(
+            count as u64,
+            source["all_customer_occurrences_before"]
+                .as_u64()
+                .expect("customer count"),
+            "{id}"
+        );
         assert_eq!(
             ordinals(&db, "SELECT rowid FROM orders ORDER BY rowid").len(),
-            source["all_target_occurrences_before"].as_u64().expect("source bag count") as usize
+            source["all_target_occurrences_before"]
+                .as_u64()
+                .expect("source bag count") as usize
         );
         if let Some(predicate) = source["target_predicate"].as_str() {
             selections += 1;
             let selected = ordinals(
                 &db,
-                &format!(
-                    "SELECT rowid FROM orders WHERE ({predicate}) IS TRUE ORDER BY rowid"
-                ),
+                &format!("SELECT rowid FROM orders WHERE ({predicate}) IS TRUE ORDER BY rowid"),
             );
             let rejected = ordinals(
                 &db,
-                &format!(
-                    "SELECT rowid FROM orders WHERE ({predicate}) IS FALSE ORDER BY rowid"
-                ),
+                &format!("SELECT rowid FROM orders WHERE ({predicate}) IS FALSE ORDER BY rowid"),
             );
             let unknown = ordinals(
                 &db,
-                &format!(
-                    "SELECT rowid FROM orders WHERE ({predicate}) IS NULL ORDER BY rowid"
-                ),
+                &format!("SELECT rowid FROM orders WHERE ({predicate}) IS NULL ORDER BY rowid"),
             );
-            assert_eq!(selected, expected(&source["target_true_ordinals"]), "{id}: TRUE");
-            assert_eq!(rejected, expected(&source["target_false_ordinals"]), "{id}: FALSE");
-            assert_eq!(unknown, expected(&source["target_unknown_ordinals"]), "{id}: UNKNOWN");
+            assert_eq!(
+                selected,
+                expected(&source["target_true_ordinals"]),
+                "{id}: TRUE"
+            );
+            assert_eq!(
+                rejected,
+                expected(&source["target_false_ordinals"]),
+                "{id}: FALSE"
+            );
+            assert_eq!(
+                unknown,
+                expected(&source["target_unknown_ordinals"]),
+                "{id}: UNKNOWN"
+            );
             let mut partition = [selected, rejected, unknown].concat();
             partition.sort_unstable();
             assert_eq!(
                 partition,
-                (0..source["all_target_occurrences_before"].as_u64().expect("row count") as usize)
+                (0..source["all_target_occurrences_before"]
+                    .as_u64()
+                    .expect("row count") as usize)
                     .collect::<Vec<_>>(),
                 "{id}: every physical row must be TRUE, FALSE or UNKNOWN exactly once"
             );
         } else {
-            assert!(source["target_true_ordinals"].as_array().expect("no target selection").is_empty());
-            assert!(source["target_false_ordinals"].as_array().expect("no target selection").is_empty());
-            assert!(source["target_unknown_ordinals"].as_array().expect("no target selection").is_empty());
+            assert!(source["target_true_ordinals"]
+                .as_array()
+                .expect("no target selection")
+                .is_empty());
+            assert!(source["target_false_ordinals"]
+                .as_array()
+                .expect("no target selection")
+                .is_empty());
+            assert!(source["target_unknown_ordinals"]
+                .as_array()
+                .expect("no target selection")
+                .is_empty());
         }
         if source["all_customer_occurrences_before"] != 0 {
             let matched = ordinals(
@@ -136,7 +169,9 @@ fn original_dml_true_false_unknown_and_source_partner_occurrences_match_independ
                 );
             }
         }
-        let before_count = source["all_target_occurrences_before"].as_i64().expect("before count");
+        let before_count = source["all_target_occurrences_before"]
+            .as_i64()
+            .expect("before count");
         let after_count = oracle["expected_poststate_bag"]
             .as_array()
             .expect("complete native poststate")
@@ -150,7 +185,10 @@ fn original_dml_true_false_unknown_and_source_partner_occurrences_match_independ
         );
         assert!(
             source["updated"].as_u64().expect("updated count")
-                <= source["target_true_ordinals"].as_array().expect("matched rows").len() as u64,
+                <= source["target_true_ordinals"]
+                    .as_array()
+                    .expect("matched rows")
+                    .len() as u64,
             "{id}: updated occurrences cannot exceed original TRUE target rows"
         );
     }
