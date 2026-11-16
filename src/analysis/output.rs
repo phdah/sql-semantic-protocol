@@ -921,13 +921,18 @@ fn derive_domain(expression: &Expression, ctx: DomainContext<'_>) -> ValueDomain
         }
         Expression::Literal(literal) => ValueDomain::set(SetMode::Include, vec![literal.clone()]),
         Expression::BooleanPredicate(_) => boolean_domain(),
-        Expression::WindowFunction(window)
-            if window.function().name().eq_ignore_ascii_case("row_number") =>
+        Expression::WindowFunction(window) => derive_window_output_domain(window),
+        Expression::Function(function)
+            if function.name().eq_ignore_ascii_case("GROUPING")
+                && !function.distinct()
+                && matches!(function.arguments(), [Expression::Column(_)]) =>
         {
-            integer_lower_bound_domain(1)
-        }
-        Expression::WindowFunction(_) => {
-            ValueDomain::unknown("window-function output domain is not known safely")
+            // One GROUPING key is a provenance bit: 0 for a present key,
+            // 1 for a generated subtotal. Physical NULL is never a subtotal.
+            ValueDomain::set(
+                SetMode::Include,
+                vec![integer_literal(0), integer_literal(1)],
+            )
         }
         Expression::AggregateFunction(function)
             if function.name().eq_ignore_ascii_case("count") =>
@@ -962,6 +967,113 @@ fn derive_domain(expression: &Expression, ctx: DomainContext<'_>) -> ValueDomain
             ))
         }
     }
+}
+
+/// Strongest statement-local numeric value law for supported analytic functions.
+///
+/// These intervals depend on SQL operator semantics, not a test source's row
+/// counts. Invalid bucket arguments and opaque functions must remain unknown.
+fn derive_window_output_domain(window: &WindowFunctionExpression) -> ValueDomain {
+    let function = window.function();
+    let name = function.name().to_ascii_lowercase();
+    let arguments = function.arguments();
+    if function.distinct() && name != "count" {
+        return ValueDomain::unknown("analytic DISTINCT semantics require explicit evidence");
+    }
+    match name.as_str() {
+        "row_number" | "rank" | "dense_rank" if arguments.is_empty() => {
+            integer_lower_bound_domain(1)
+        }
+        "ntile" => {
+            let [Expression::Literal(buckets)] = arguments else {
+                return ValueDomain::unknown("NTILE requires a constant positive bucket count");
+            };
+            if buckets.literal_type() != LiteralType::Integer {
+                return ValueDomain::unknown("NTILE bucket count must be a positive integer");
+            }
+            let LiteralValue::Number(raw) = buckets.value() else {
+                return ValueDomain::unknown("NTILE bucket count must be a numeric literal");
+            };
+            let Ok(count) = raw.parse::<i128>() else {
+                return ValueDomain::unknown("NTILE bucket count is outside supported integers");
+            };
+            if count <= 0 {
+                return ValueDomain::unknown("NTILE requires a positive bucket count");
+            }
+            ValueDomain::ranges(vec![ValueRange::new(
+                Some(Bound::new(integer_literal(1), true)),
+                Some(Bound::new(integer_literal(count), true)),
+            )])
+        }
+        "percent_rank" | "cume_dist" if arguments.is_empty() => {
+            let lower_inclusive = name == "percent_rank";
+            let bound = |value: &str| {
+                LiteralExpression::new(
+                    LiteralType::Decimal,
+                    LiteralValue::Number(value.to_string()),
+                )
+            };
+            ValueDomain::ranges(vec![ValueRange::new(
+                Some(Bound::new(bound("0"), lower_inclusive)),
+                Some(Bound::new(bound("1"), true)),
+            )])
+        }
+        "count" => {
+            if matches!(
+                arguments,
+                [Expression::Literal(literal)]
+                    if matches!(literal.value(), LiteralValue::Null)
+            ) {
+                // Even a nonempty window frame contributes no COUNT(NULL) rows.
+                return ValueDomain::set(SetMode::Include, vec![integer_literal(0)]);
+            }
+            // The implicit SQL frame (whole partition without ORDER BY, or
+            // UNBOUNDED PRECEDING through CURRENT ROW with ORDER BY) always
+            // includes the current output row as well.
+            let includes_current_row = window.window().frame().is_none_or(|frame| {
+                let starts_at_or_before_current = match frame.start_bound() {
+                    WindowFrameBound::UnboundedPreceding
+                    | WindowFrameBound::Preceding(_)
+                    | WindowFrameBound::CurrentRow => true,
+                    WindowFrameBound::Following(offset) => is_zero_frame_offset(offset),
+                    WindowFrameBound::UnboundedFollowing => false,
+                };
+                let ends_at_or_after_current = match frame.end_bound() {
+                    WindowFrameBound::CurrentRow
+                    | WindowFrameBound::Following(_)
+                    | WindowFrameBound::UnboundedFollowing => true,
+                    WindowFrameBound::Preceding(offset) => is_zero_frame_offset(offset),
+                    WindowFrameBound::UnboundedPreceding => false,
+                };
+                starts_at_or_before_current && ends_at_or_after_current
+            });
+            let always_non_null_argument = matches!(
+                arguments,
+                [Expression::Literal(literal)]
+                    if !matches!(literal.value(), LiteralValue::Null)
+            );
+            if always_non_null_argument && includes_current_row {
+                // The analyzer normalizes COUNT(*) to COUNT(1). Each output row
+                // belongs to this frame, so its non-NULL literal contributes.
+                integer_lower_bound_domain(1)
+            } else {
+                integer_lower_bound_domain(0)
+            }
+        }
+        _ => ValueDomain::unknown("window-function output domain is not known safely"),
+    }
+}
+
+/// A literal zero ROWS/RANGE/GROUPS offset denotes CURRENT ROW on either side.
+fn is_zero_frame_offset(expression: &Expression) -> bool {
+    let Expression::Literal(literal) = expression else {
+        return false;
+    };
+    literal.literal_type() == LiteralType::Integer
+        && matches!(
+            literal.value(),
+            LiteralValue::Number(raw) if raw.parse::<i128>().ok() == Some(0)
+        )
 }
 
 /// Union of every CASE arm result domain, with each reachable arm refined by
