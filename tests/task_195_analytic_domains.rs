@@ -201,7 +201,11 @@ fn window_count_of_a_constant_null_is_exactly_zero() {
         };
         assert_eq!(values.mode(), sql_semantic_protocol::SetMode::Include);
         assert_eq!(
-            values.values().iter().map(|value| value.value()).collect::<Vec<_>>(),
+            values
+                .values()
+                .iter()
+                .map(|value| value.value())
+                .collect::<Vec<_>>(),
             vec![&LiteralValue::Number("0".to_string())],
             "{name}: NULL never contributes to COUNT"
         );
