@@ -6,6 +6,16 @@ pub(super) fn analyze_subquery_semantics(
     query: &SqlQuery,
     outer_scope: &[OutputRelation],
 ) -> SubquerySemantics {
+    analyze_subquery_semantics_with_metadata(query, outer_scope, None)
+}
+
+/// The catalog-backed path is reserved for independently typed mutations.
+/// Regular nested predicates retain their untyped conservative boundary.
+pub(super) fn analyze_subquery_semantics_with_metadata(
+    query: &SqlQuery,
+    outer_scope: &[OutputRelation],
+    metadata: Option<&AnalysisMetadata<'_>>,
+) -> SubquerySemantics {
     let mut diagnostics = Vec::new();
     let mut derived_index = 0;
     let relations = analyze_query_relations(
@@ -13,14 +23,14 @@ pub(super) fn analyze_subquery_semantics(
         &BTreeSet::new(),
         &mut diagnostics,
         &mut derived_index,
-        None,
+        metadata,
     );
     let output = analyze_query_output_with_outer_scope(
         query,
         &BTreeMap::new(),
         outer_scope,
         &mut diagnostics,
-        None,
+        metadata,
     );
     let predicates =
         analyze_query_predicates_with_outer_scope(query, outer_scope, &mut diagnostics);
@@ -29,11 +39,11 @@ pub(super) fn analyze_subquery_semantics(
         &BTreeSet::new(),
         &BTreeMap::new(),
         &BTreeMap::new(),
-        None,
+        metadata,
     );
     let correlations = collect_query_correlations(query, outer_scope);
 
-    inspect_query_features(query, None, &mut diagnostics);
+    inspect_query_features(query, metadata, &mut diagnostics);
     let condition_exactness = analyze_query_condition_exactness(
         query,
         &predicates,
