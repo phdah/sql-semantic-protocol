@@ -15,7 +15,14 @@
     "all_parser_cells_independently_reviewed": false,
     "oracle_tests": "tests/task_179_vendor_law_oracles.rs",
     "audit": "docs/task-179-acceptance-audit.md",
-    "parent_task88_signoff": false
+    "parent_task88_signoff": false,
+    "variant_matrix": "docs/task-179-variant-matrix-v2.json",
+    "variant_matrix_version": 2,
+    "named_law_variant_count": 37,
+    "named_law_parser_cells": 481,
+    "named_law_matrix_test": "tests/task_179_dialect_law_matrix.rs",
+    "full_named_variant_freeze": true,
+    "full_independent_semantic_signoff": false
   },
   "task_197_cross_adapter_parity": {
     "owner": "TASK-197",
@@ -54,7 +61,12 @@
     "post_commit_verification": "Check exact current branch head and pinned consumer CI before merge; record immutable results in PR discussion",
     "reviewed_conditional_cells": 152,
     "reviewed_unrepresentable_cells": 106,
-    "source_fact_provenance_sources": ["direct SQL DDL", "compiled dbt manifest", "dbt warehouse catalog", "ODCS"],
+    "source_fact_provenance_sources": [
+      "direct SQL DDL",
+      "compiled dbt manifest",
+      "dbt warehouse catalog",
+      "ODCS"
+    ],
     "owned_native_semantic_review": [
       "docs/task-192-independent-semantic-review.json",
       "docs/task-193-independent-semantic-review.json",
