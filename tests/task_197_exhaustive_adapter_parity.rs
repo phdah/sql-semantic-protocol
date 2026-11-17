@@ -241,7 +241,9 @@ fn every_parser_accepted_original_statement_preserves_full_canonical_semantics_a
     let fixture = original();
     let source_facts: Value =
         serde_json::from_str(SOURCE_FACTS).expect("TASK-197 authoritative source facts");
-    let cases = fixture["cases"].as_array().expect("all original SQL variants");
+    let cases = fixture["cases"]
+        .as_array()
+        .expect("all original SQL variants");
     let fact_cases = source_facts["cases"]
         .as_array()
         .expect("exact original per-case source authorities");
@@ -280,7 +282,8 @@ fn every_parser_accepted_original_statement_preserves_full_canonical_semantics_a
             .is_empty();
         let fact_set = fact["source_fact_set"].as_str();
         assert_eq!(
-            fact_set.is_none(), no_external_fact,
+            fact_set.is_none(),
+            no_external_fact,
             "{id}: missing or unexpected authoritative source types"
         );
         // The frozen source-fact matrix, not a second hard-coded case-ID list,
