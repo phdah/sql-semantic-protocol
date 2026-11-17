@@ -341,3 +341,51 @@ fn correlated_exists_mutations_use_one_shared_complete_source_and_distinct_targe
     }
     assert_eq!(verified, 26);
 }
+
+#[test]
+fn typed_scalar_in_rejects_unproved_source_values_after_an_early_match() {
+    let parser = dialect_from_name("duckdb").expect("public dialect");
+    let initial = [
+        state("orders", &[(Some(1), Some(10))]),
+        PhysicalWriteState::new(
+            "customers",
+            vec![
+                PhysicalWriteRow::new(BTreeMap::from([
+                    ("id".to_owned(), LiteralValue::Number("1".to_owned())),
+                    ("amount".to_owned(), LiteralValue::Number("100".to_owned())),
+                ]))
+                .expect("first matching source candidate"),
+                PhysicalWriteRow::new(BTreeMap::from([
+                    // The API accepts physical literals independently of an SQL
+                    // catalog. An inconsistent signed-integer source must be
+                    // rejected, even if an earlier candidate matches.
+                    ("id".to_owned(), LiteralValue::Number("1.5".to_owned())),
+                    ("amount".to_owned(), LiteralValue::Number("200".to_owned())),
+                ]))
+                .expect("second unproved signed-integer candidate"),
+            ],
+        )
+        .expect("complete source population"),
+    ];
+    for sql in [
+        "UPDATE orders SET amount = 1 WHERE id IN (SELECT id FROM customers)",
+        "DELETE FROM orders WHERE id IN (SELECT id FROM customers)",
+    ] {
+        let input = SqlInput::inline(sql);
+        let configured = [ConfiguredSqlInput::new(
+            "task196-source-validation",
+            &input,
+            "duckdb",
+            parser.as_ref(),
+        )];
+        let bundle = analyze_configured_inputs_with_catalog(&configured, &catalog("INTEGER"))
+            .expect("source-typed scalar IN analysis");
+        assert!(
+            matches!(
+                physical_ordered_write_state_plan(&bundle, &initial),
+                PhysicalWriteStatePlan::Residual { .. }
+            ),
+            "{sql}: validating just the first matching candidate overclaims Exact"
+        );
+    }
+}
