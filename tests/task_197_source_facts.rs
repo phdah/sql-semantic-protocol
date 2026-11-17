@@ -29,8 +29,12 @@ fn every_original_case_has_exact_authoritative_source_columns_or_explicit_non_ap
         "DECIMAL(10,2)"
     );
 
-    let all = recorded["cases"].as_array().expect("all original SQL source facts");
-    let frozen = original["cases"].as_array().expect("immutable 163 original SQL");
+    let all = recorded["cases"]
+        .as_array()
+        .expect("all original SQL source facts");
+    let frozen = original["cases"]
+        .as_array()
+        .expect("immutable 163 original SQL");
     assert_eq!(all.len(), 163);
     let mut seen = BTreeSet::new();
     let mut source_free = 0;
@@ -45,22 +49,31 @@ fn every_original_case_has_exact_authoritative_source_columns_or_explicit_non_ap
         assert_eq!(fact["source_relations"], case["source_relations_mentioned"]);
         assert_eq!(fact["producer_execution"], "unattested");
         assert_eq!(fact["parser_cell_count"], 13);
-        assert!(fact["source_semantic_oracle"].as_str()
+        assert!(fact["source_semantic_oracle"]
+            .as_str()
             .is_some_and(|path| path.ends_with("-acceptance-freeze.json")));
-        assert!(fact["independent_per_dialect_review"].as_str()
+        assert!(fact["independent_per_dialect_review"]
+            .as_str()
             .is_some_and(|path| path.ends_with("-independent-semantic-review.json")));
 
-        let relations = fact["source_relations"].as_array().expect("metadata source scope");
+        let relations = fact["source_relations"]
+            .as_array()
+            .expect("metadata source scope");
         if relations.is_empty() {
             assert_eq!(fact["source_fact_set"], Value::Null);
             assert_eq!(fact["metadata_scope"], "no_external_source_fact");
             assert_eq!(
-                fact["exact_available_columns"].as_object().expect("no source facts").len(),
+                fact["exact_available_columns"]
+                    .as_object()
+                    .expect("no source facts")
+                    .len(),
                 0
             );
             source_free += 1;
         } else {
-            let set = fact["source_fact_set"].as_str().expect("authoritative source type set");
+            let set = fact["source_fact_set"]
+                .as_str()
+                .expect("authoritative source type set");
             for relation in relations {
                 let name = relation.as_str().expect("physical relation identity");
                 assert_eq!(
