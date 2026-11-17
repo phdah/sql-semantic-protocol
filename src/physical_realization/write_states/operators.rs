@@ -674,9 +674,11 @@ pub(super) fn mutate_rows(
                 match eval(projected.expression(), &inner_context, &aliases)? {
                     LiteralValue::Null => {}
                     LiteralValue::Number(value) => {
-                        source_members.insert(value.parse::<i128>().map_err(|_| {
-                            residual("unproved signed nested candidate")
-                        })?);
+                        source_members.insert(
+                            value
+                                .parse::<i128>()
+                                .map_err(|_| residual("unproved signed nested candidate"))?,
+                        );
                     }
                     _ => return Err(residual("unproved nested membership type")),
                 }
@@ -723,7 +725,9 @@ pub(super) fn mutate_rows(
         };
         let matches = if joined.is_some() {
             matched_source.is_some()
-        } else if let Some((source, nested, predicate, population, source_members)) = correlated.as_ref() {
+        } else if let Some((source, nested, predicate, population, source_members)) =
+            correlated.as_ref()
+        {
             let aliases = [source.alias().unwrap_or(source.name()), source.name()];
             match predicate {
                 Predicate::Exists(exists) => {
