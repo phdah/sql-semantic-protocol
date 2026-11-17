@@ -11,7 +11,7 @@ use sql_semantic_protocol::{
     RelationCatalog, SqlInput,
 };
 
-const FREEZE: &str = include_str!("../docs/task-197-acceptance-freeze.json");
+const FREEZE: &str = include_str!("../docs/task-197-acceptance-ledger-v2.json");
 
 fn original() -> Value {
     serde_json::from_str(FREEZE).expect("immutable TASK-197 source SQL ledger")
