@@ -104,8 +104,8 @@ fn initial_vendor_law_freeze_tracks_six_families_all_dialects_and_open_boundarie
         }
     }
     assert_eq!(ids.len(), 14);
-    assert_eq!(freeze["acceptance_criteria"]["ac1"].as_str().is_some(), true);
-    assert_eq!(freeze["acceptance_criteria"]["ac5"].as_str().is_some(), true);
+    assert!(freeze["acceptance_criteria"]["ac1"].as_str().is_some());
+    assert!(freeze["acceptance_criteria"]["ac5"].as_str().is_some());
 }
 
 #[test]
