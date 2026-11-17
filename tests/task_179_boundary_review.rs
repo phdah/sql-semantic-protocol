@@ -36,7 +36,9 @@ fn every_dialect_law_has_individually_owned_review_without_execution_promotion()
     let decisions = review["decisions"].as_array().expect("481 cell decisions");
     let cases = matrix["cases"].as_array().expect("frozen 37 variants");
     let source_proofs = proofs["cases"].as_array().expect("37 source reviews");
-    let dialects = matrix["dialects"].as_array().expect("13 dialect identities");
+    let dialects = matrix["dialects"]
+        .as_array()
+        .expect("13 dialect identities");
     assert_eq!(decisions.len(), cases.len() * dialects.len());
     let mut seen = BTreeSet::new();
     let mut counted = BTreeMap::<&str, usize>::new();
@@ -54,13 +56,27 @@ fn every_dialect_law_has_individually_owned_review_without_execution_promotion()
         assert_eq!(decision["native_non_duckdb_attested"], false);
         assert_eq!(decision["native_duckdb_original_attested"], false);
         assert_eq!(decision["consumer_execution_attested"], false);
-        assert_eq!(decision["conditional_status"], "reviewed_unapproved_external_law");
-        assert_eq!(decision["release_decision"], "external_execution_claim_not_approved");
-        assert_eq!(decision["required_attestation"]["vendor_engine_version"], "not_connected_or_not_executed");
+        assert_eq!(
+            decision["conditional_status"],
+            "reviewed_unapproved_external_law"
+        );
+        assert_eq!(
+            decision["release_decision"],
+            "external_execution_claim_not_approved"
+        );
+        assert_eq!(
+            decision["required_attestation"]["vendor_engine_version"],
+            "not_connected_or_not_executed"
+        );
         let source = &source_proofs[index / dialects.len()];
-        assert_eq!(decision["audited_source_owner"], source["source_semantic_owner"]);
+        assert_eq!(
+            decision["audited_source_owner"],
+            source["source_semantic_owner"]
+        );
         assert_eq!(decision["typed_source_review"], source["source_review"]);
-        assert!(decision["required_vendor_law"].as_str().is_some_and(|law| !law.is_empty()));
+        assert!(decision["required_vendor_law"]
+            .as_str()
+            .is_some_and(|law| !law.is_empty()));
         let class = decision["decision"].as_str().expect("named disposition");
         *counted.entry(class).or_default() += 1;
         match dialect_cell["analyzer_status"].as_str().expect("status") {
@@ -81,7 +97,10 @@ fn every_dialect_law_has_individually_owned_review_without_execution_promotion()
     assert_eq!(
         counted,
         BTreeMap::from([
-            ("bounded_portable_source_semantics_with_vendor_law_unattested", 416),
+            (
+                "bounded_portable_source_semantics_with_vendor_law_unattested",
+                416
+            ),
             ("unsupported_canonical_statement", 35),
             ("parser_rejection", 4),
             ("synthetic_case_specific_vendor_probe", 26),
