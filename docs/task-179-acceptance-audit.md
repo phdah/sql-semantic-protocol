@@ -4,8 +4,8 @@ Status: **In Progress; no acceptance criterion signed off**. This file records t
 
 ## Initial executable fixture inventory
 
-- `docs/task-179-acceptance-freeze.json`: versioned 14-case / 182 parser-cell initial matrix (seven positive and seven negative cases).
-- `tests/task_179_vendor_law_oracles.rs`: independent fixed DuckDB tables, complete typed source bags and selected or rejected terminal IDs, including transaction poststate, covering six mandatory *family headings*.
+- `docs/task-179-acceptance-freeze.json`: versioned 14-case / 182 parser-cell initial matrix (seven positive and seven comparative/rejected controls).
+- `tests/task_179_vendor_law_oracles.rs`: independent fixed DuckDB tables, complete typed source bags and selected, comparative or rejected terminal IDs, including transaction poststate, covering six mandatory *family headings*.
 - Identical portable NULL predicate control across 13 sqlparser dialects, without claiming NULL-sort order or vendor-specific evaluation laws.
 - No other vendor execution is attested. Every parser cell and non-DuckDB runtime law remains explicitly unapproved. Original TASK-177 IDs are references to related variants, **not** claims that a different SQL spelling was executed.
 
