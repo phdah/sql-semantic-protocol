@@ -42,15 +42,24 @@ fn native_like_ilike_padding_collation_and_not_true_do_not_share_one_law() {
         ]
     );
     assert_eq!(
-        nullable_ids(&db, "SELECT row_id FROM names WHERE txt LIKE 'a%' ORDER BY row_id"),
+        nullable_ids(
+            &db,
+            "SELECT row_id FROM names WHERE txt LIKE 'a%' ORDER BY row_id"
+        ),
         vec![Some(1), Some(3), Some(5)]
     );
     assert_eq!(
-        nullable_ids(&db, "SELECT row_id FROM names WHERE txt ILIKE 'a%' ORDER BY row_id"),
+        nullable_ids(
+            &db,
+            "SELECT row_id FROM names WHERE txt ILIKE 'a%' ORDER BY row_id"
+        ),
         vec![Some(1), Some(2), Some(3), Some(5)]
     );
     assert_eq!(
-        nullable_ids(&db, "SELECT row_id FROM names WHERE txt = 'abc' ORDER BY row_id"),
+        nullable_ids(
+            &db,
+            "SELECT row_id FROM names WHERE txt = 'abc' ORDER BY row_id"
+        ),
         vec![Some(1), Some(5)]
     );
     assert_eq!(
@@ -137,7 +146,8 @@ fn malformed_implicit_coercion_fails_where_try_cast_stays_nullable() {
             (3, Some("10".to_string())),
         ]
     );
-    let native_error = db.prepare("SELECT row_id FROM amounts WHERE amount = 'invalid'")
+    let native_error = db
+        .prepare("SELECT row_id FROM amounts WHERE amount = 'invalid'")
         .and_then(|mut stmt| {
             stmt.query_map([], |row| row.get::<_, i64>(0))?
                 .collect::<duckdb::Result<Vec<_>>>()
@@ -185,10 +195,7 @@ fn finite_merge_retains_complete_unmodified_and_inserted_target_bag() {
             &db,
             "SELECT row_id, CAST(amount AS VARCHAR) FROM source ORDER BY row_id"
         ),
-        vec![
-            (1, Some("20".to_string())),
-            (3, Some("30".to_string())),
-        ]
+        vec![(1, Some("20".to_string())), (3, Some("30".to_string())),]
     );
     db.execute_batch(
         "MERGE INTO target AS t USING source AS s ON t.row_id = s.row_id

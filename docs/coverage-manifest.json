@@ -25,7 +25,25 @@
     "full_independent_semantic_signoff": false,
     "adapter_handoff_test": "tests/task_179_adapter_handoff.rs",
     "task197_represented_original_cases": 31,
-    "task179_unrepresented_transaction_or_identifier_cases": 6
+    "task179_unrepresented_transaction_or_identifier_cases": 6,
+    "reconciled_proof_ledger": "docs/task-179-reconciled-proofs-v3.json",
+    "reconciled_proof_test": "tests/task_179_reconciled_proofs.rs",
+    "native_counterexample_test": "tests/task_179_native_counterexamples.rs",
+    "semantic_fail_closed_test": "tests/task_179_semantic_fail_closed.rs",
+    "original_transaction_oracle_test": "tests/task_179_original_transactions.rs",
+    "reviewed_source_semantic_owners": {
+      "TASK-192": 20,
+      "TASK-195": 5,
+      "TASK-196": 6,
+      "TASK-163": 4,
+      "TASK-179": 2
+    },
+    "bounded_duckdb_source_test_cases": 14,
+    "original_transaction_native_cases": 4,
+    "new_native_counterexample_families": 7,
+    "full_independent_task179_review": false,
+    "exact_head_rust_ci_verified": false,
+    "exact_head_consumer_ci_verified": false
   },
   "task_197_cross_adapter_parity": {
     "owner": "TASK-197",

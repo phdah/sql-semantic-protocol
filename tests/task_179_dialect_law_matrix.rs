@@ -55,7 +55,10 @@ fn frozen_named_law_inventory_preserves_all_original_identity_and_dialect_bounda
     let original = source["cases"].as_array().expect("TASK-66 original SQL");
     for case in cases {
         let id = case["id"].as_str().expect("stable TASK-179 variant");
-        assert!(identities.insert(id), "duplicate task fixture identity {id}");
+        assert!(
+            identities.insert(id),
+            "duplicate task fixture identity {id}"
+        );
         let family = case["family"].as_str().expect("named vendor law");
         *actual_families.entry(family).or_insert(0_usize) += 1;
         assert!(!case["sql"].as_str().expect("SQL fixture").is_empty());
@@ -64,7 +67,9 @@ fn frozen_named_law_inventory_preserves_all_original_identity_and_dialect_bounda
         assert!(case["requirements"].as_str().is_some());
         assert!(case["portable_expected_domain"].as_str().is_some());
         assert!(case["source_instance"].as_str().is_some());
-        assert!(case["physical_source_terminal_disposition"].as_str().is_some());
+        assert!(case["physical_source_terminal_disposition"]
+            .as_str()
+            .is_some());
         assert!(case["adapter_disposition"].as_str().is_some());
         if let Some(original_id) = case["source_case_id"].as_str() {
             let entry = original
@@ -105,7 +110,9 @@ fn frozen_named_law_inventory_preserves_all_original_identity_and_dialect_bounda
 fn all_original_task179_parser_and_analysis_cells_match_the_frozen_public_boundary() {
     let matrix = read(MATRIX);
     let cases = matrix["cases"].as_array().expect("vendor law rows");
-    let dialects = matrix["dialects"].as_array().expect("13 dialect identities");
+    let dialects = matrix["dialects"]
+        .as_array()
+        .expect("13 dialect identities");
     let mut observations = 0_usize;
     for case in cases {
         let Some(id) = case["source_case_id"].as_str() else {
@@ -134,10 +141,9 @@ fn all_original_task179_parser_and_analysis_cells_match_the_frozen_public_bounda
                     panic!("{id}/{dialect_name}: rejected original spelling now parses: {bundle:?}")
                 }
                 Ok(bundle)
-                    if bundle
-                        .statements()
-                        .iter()
-                        .any(|statement| matches!(statement, ProtocolStatement::Unsupported(_))) =>
+                    if bundle.statements().iter().any(|statement| {
+                        matches!(statement, ProtocolStatement::Unsupported(_))
+                    }) =>
                 {
                     b'U'
                 }

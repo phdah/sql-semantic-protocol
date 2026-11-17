@@ -29,8 +29,12 @@ fn each_conditional_vendor_law_preserves_authoritative_source_types_or_explains_
         "tests/task_179_adapter_handoff.rs"
     );
 
-    let source_cases = facts["cases"].as_array().expect("complete source-fact ledger");
-    let cases = law["cases"].as_array().expect("complete TASK-179 law matrix");
+    let source_cases = facts["cases"]
+        .as_array()
+        .expect("complete source-fact ledger");
+    let cases = law["cases"]
+        .as_array()
+        .expect("complete TASK-179 law matrix");
     let mut total = 0;
     let mut representable = 0;
     let mut unrepresented = BTreeSet::new();
@@ -48,7 +52,10 @@ fn each_conditional_vendor_law_preserves_authoritative_source_types_or_explains_
             representable += 1;
             assert_eq!(provenance["reuse"], "docs/task-197-source-fact-matrix.json");
             assert_eq!(provenance["owner"], source["owner"]);
-            assert_eq!(provenance["original_sql_metadata_scope"], source["metadata_scope"]);
+            assert_eq!(
+                provenance["original_sql_metadata_scope"],
+                source["metadata_scope"]
+            );
             assert_eq!(provenance["source_fact_set"], source["source_fact_set"]);
             assert_eq!(provenance["source_relations"], source["source_relations"]);
             assert_eq!(case["sql"], source["sql"]);
@@ -98,5 +105,8 @@ fn each_conditional_vendor_law_preserves_authoritative_source_types_or_explains_
     assert_eq!(representable, 31);
     assert_eq!(unrepresented.len(), 6);
     assert_eq!(law["task197_represented_original_case_count"], 31);
-    assert_eq!(law["task179_unrepresented_original_or_synthetic_case_count"], 6);
+    assert_eq!(
+        law["task179_unrepresented_original_or_synthetic_case_count"],
+        6
+    );
 }

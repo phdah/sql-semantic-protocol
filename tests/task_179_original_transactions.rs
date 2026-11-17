@@ -32,7 +32,7 @@ fn rows(db: &Connection, sql: &str) -> Vec<Vec<Option<i64>>> {
 }
 
 fn expected(source: &Value, key: &str) -> Vec<Vec<Option<i64>>> {
-    let mut bag = serde_json::from_value(source[key].clone())
+    let mut bag: Vec<Vec<Option<i64>>> = serde_json::from_value(source[key].clone())
         .expect("independently frozen source bag or terminal");
     bag.sort();
     bag

@@ -17,11 +17,9 @@ const ORIGINAL: &str = include_str!("../docs/task-177-parser-samples.json");
 
 fn source_catalog(ty: &str) -> RelationCatalog {
     let parser = dialect_from_name("duckdb").expect("supported source DDL");
-    let source = SqlInput::inline(format!(
-        "CREATE TABLE customers (id INTEGER, name {ty})"
-    ));
-    let analyzed = analyze_inputs(&[source], "duckdb", parser.as_ref())
-        .expect("authoritative source DDL");
+    let source = SqlInput::inline(format!("CREATE TABLE customers (id INTEGER, name {ty})"));
+    let analyzed =
+        analyze_inputs(&[source], "duckdb", parser.as_ref()).expect("authoritative source DDL");
     RelationCatalog::from_schemas(analyzed.source_schemas()).expect("typed catalog")
 }
 
@@ -114,7 +112,10 @@ fn no_unattested_collation_padding_or_pattern_can_be_promoted_to_exact() {
             exact_row_coupled_witness(sql, name, &variable, &declared_laws);
         assert!(exact, "{name}: attested VARCHAR witness lost");
         assert!(
-            matches!(output_domain, ValueDomain::Unbounded | ValueDomain::Unknown(_)),
+            matches!(
+                output_domain,
+                ValueDomain::Unbounded | ValueDomain::Unknown(_)
+            ),
             "{name}: filtered string cannot prove finite projected ID domain"
         );
         assert!(
@@ -166,11 +167,8 @@ fn vendor_transaction_and_cross_session_laws_remain_residual() {
         PhysicalTransactionSessionLaw::VendorImplicitDdlCommit,
         PhysicalTransactionSessionLaw::VendorTransactionOptions,
     ] {
-        let proof = physical_duckdb_sql_transaction_plan_with_laws(
-            &["BEGIN", "COMMIT"],
-            &empty,
-            &[law],
-        );
+        let proof =
+            physical_duckdb_sql_transaction_plan_with_laws(&["BEGIN", "COMMIT"], &empty, &[law]);
         match proof {
             PhysicalTransactionScriptProof::Residual {
                 step_index: 0,
