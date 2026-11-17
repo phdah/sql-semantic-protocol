@@ -168,7 +168,26 @@
         }
       ],
       "review": "not_signed_off",
-      "boundary": "explicit last, tie-break by unique row id"
+      "boundary": "explicit last, tie-break by unique row id",
+      "source_snapshot_sql": "SELECT row_id, CAST(amount AS VARCHAR) FROM sort_rows ORDER BY row_id",
+      "expected_native_source_rows": [
+        [
+          1,
+          null
+        ],
+        [
+          2,
+          "0"
+        ],
+        [
+          3,
+          "0"
+        ],
+        [
+          4,
+          "2"
+        ]
+      ]
     },
     {
       "id": "88-C179-N01",
@@ -289,7 +308,26 @@
         }
       ],
       "review": "not_signed_off",
-      "boundary": "explicit first, tie-break by unique row id"
+      "boundary": "explicit first, tie-break by unique row id",
+      "source_snapshot_sql": "SELECT row_id, CAST(amount AS VARCHAR) FROM sort_rows ORDER BY row_id",
+      "expected_native_source_rows": [
+        [
+          1,
+          null
+        ],
+        [
+          2,
+          "0"
+        ],
+        [
+          3,
+          "0"
+        ],
+        [
+          4,
+          "2"
+        ]
+      ]
     },
     {
       "id": "88-C179-P02",
@@ -408,7 +446,26 @@
         }
       ],
       "review": "not_signed_off",
-      "boundary": "DuckDB NOCASE only, no external vendor collation claim"
+      "boundary": "DuckDB NOCASE only, no external vendor collation claim",
+      "source_snapshot_sql": "SELECT row_id, txt FROM string_rows ORDER BY row_id",
+      "expected_native_source_rows": [
+        [
+          1,
+          "abc"
+        ],
+        [
+          2,
+          "ABC"
+        ],
+        [
+          3,
+          "def"
+        ],
+        [
+          4,
+          null
+        ]
+      ]
     },
     {
       "id": "88-C179-N02",
@@ -526,7 +583,26 @@
         }
       ],
       "review": "not_signed_off",
-      "boundary": "default DuckDB collation; no inferred portable binary law"
+      "boundary": "default DuckDB collation; no inferred portable binary law",
+      "source_snapshot_sql": "SELECT row_id, txt FROM string_rows ORDER BY row_id",
+      "expected_native_source_rows": [
+        [
+          1,
+          "abc"
+        ],
+        [
+          2,
+          "ABC"
+        ],
+        [
+          3,
+          "def"
+        ],
+        [
+          4,
+          null
+        ]
+      ]
     },
     {
       "id": "88-C179-P03",
@@ -644,7 +720,22 @@
         }
       ],
       "review": "not_signed_off",
-      "boundary": "DuckDB implicit coercion, not a portable comparison"
+      "boundary": "DuckDB implicit coercion, not a portable comparison",
+      "source_snapshot_sql": "SELECT row_id, CAST(amount AS VARCHAR) FROM cast_rows ORDER BY row_id",
+      "expected_native_source_rows": [
+        [
+          1,
+          "2"
+        ],
+        [
+          2,
+          "10"
+        ],
+        [
+          3,
+          null
+        ]
+      ]
     },
     {
       "id": "88-C179-N03",
@@ -762,7 +853,22 @@
         }
       ],
       "review": "not_signed_off",
-      "boundary": "explicit cast is a control, not proof of the implicit vendor law"
+      "boundary": "explicit cast is a control, not proof of the implicit vendor law",
+      "source_snapshot_sql": "SELECT row_id, CAST(amount AS VARCHAR) FROM cast_rows ORDER BY row_id",
+      "expected_native_source_rows": [
+        [
+          1,
+          "2"
+        ],
+        [
+          2,
+          "10"
+        ],
+        [
+          3,
+          null
+        ]
+      ]
     },
     {
       "id": "88-C179-P04",
@@ -881,7 +987,26 @@
         }
       ],
       "review": "not_signed_off",
-      "boundary": "signed zero comparison is DuckDB native only"
+      "boundary": "signed zero comparison is DuckDB native only",
+      "source_snapshot_sql": "SELECT row_id, CAST(amount AS VARCHAR) FROM float_rows ORDER BY row_id",
+      "expected_native_source_rows": [
+        [
+          1,
+          "0.0"
+        ],
+        [
+          2,
+          "-0.0"
+        ],
+        [
+          3,
+          "1.0"
+        ],
+        [
+          4,
+          null
+        ]
+      ]
     },
     {
       "id": "88-C179-N04",
@@ -1000,7 +1125,26 @@
         }
       ],
       "review": "not_signed_off",
-      "boundary": "NOT TRUE retains the NULL occurrence"
+      "boundary": "NOT TRUE retains the NULL occurrence",
+      "source_snapshot_sql": "SELECT row_id, CAST(amount AS VARCHAR) FROM float_rows ORDER BY row_id",
+      "expected_native_source_rows": [
+        [
+          1,
+          "0.0"
+        ],
+        [
+          2,
+          "-0.0"
+        ],
+        [
+          3,
+          "1.0"
+        ],
+        [
+          4,
+          null
+        ]
+      ]
     },
     {
       "id": "88-C179-P05",
@@ -1125,7 +1269,18 @@
         }
       ],
       "review": "not_signed_off",
-      "boundary": "post-commit full state; deterministic DuckDB local transaction"
+      "boundary": "post-commit full state; deterministic DuckDB local transaction",
+      "source_snapshot_sql": "SELECT row_id, CAST(amount AS VARCHAR) FROM state_rows ORDER BY row_id",
+      "expected_native_source_rows": [
+        [
+          1,
+          "10"
+        ],
+        [
+          2,
+          null
+        ]
+      ]
     },
     {
       "id": "88-C179-N05",
@@ -1250,7 +1405,18 @@
         }
       ],
       "review": "not_signed_off",
-      "boundary": "post-rollback full state; no external engine atomicity claim"
+      "boundary": "post-rollback full state; no external engine atomicity claim",
+      "source_snapshot_sql": "SELECT row_id, CAST(amount AS VARCHAR) FROM state_rows ORDER BY row_id",
+      "expected_native_source_rows": [
+        [
+          1,
+          "10"
+        ],
+        [
+          2,
+          null
+        ]
+      ]
     },
     {
       "id": "88-C179-P06",
@@ -1369,7 +1535,18 @@
         }
       ],
       "review": "not_signed_off",
-      "boundary": "DuckDB quoted identifiers compare case-insensitively, not a universal dialect law"
+      "boundary": "DuckDB quoted identifiers compare case-insensitively, not a universal dialect law",
+      "source_snapshot_sql": "SELECT \"ResultValue\", CAST(\"ResultValue\" AS VARCHAR) FROM \"MixedCase\" ORDER BY 1",
+      "expected_native_source_rows": [
+        [
+          1,
+          "1"
+        ],
+        [
+          2,
+          "2"
+        ]
+      ]
     },
     {
       "id": "88-C179-N06",
@@ -1488,7 +1665,18 @@
         }
       ],
       "review": "not_signed_off",
-      "boundary": "DuckDB unquoted identifiers compare case-insensitively; vendor case folding unverified"
+      "boundary": "DuckDB unquoted identifiers compare case-insensitively; vendor case folding unverified",
+      "source_snapshot_sql": "SELECT \"ResultValue\", CAST(\"ResultValue\" AS VARCHAR) FROM \"MixedCase\" ORDER BY 1",
+      "expected_native_source_rows": [
+        [
+          1,
+          "1"
+        ],
+        [
+          2,
+          "2"
+        ]
+      ]
     },
     {
       "id": "88-C179-P07",
@@ -1608,7 +1796,22 @@
         }
       ],
       "review": "not_signed_off",
-      "boundary": "same instant with explicit UTC/offset, no unbound session inference"
+      "boundary": "same instant with explicit UTC/offset, no unbound session inference",
+      "source_snapshot_sql": "SELECT row_id, CAST(epoch_ms(stamp) AS VARCHAR) FROM zoned_rows ORDER BY row_id",
+      "expected_native_source_rows": [
+        [
+          1,
+          "1577836800000"
+        ],
+        [
+          2,
+          "1577836800000"
+        ],
+        [
+          3,
+          null
+        ]
+      ]
     },
     {
       "id": "88-C179-N07",
@@ -1727,7 +1930,23 @@
         }
       ],
       "review": "not_signed_off",
-      "boundary": "explicit UTC and NULL negative path"
+      "boundary": "explicit UTC and NULL negative path",
+      "source_snapshot_sql": "SELECT row_id, CAST(epoch_ms(stamp) AS VARCHAR) FROM zoned_rows ORDER BY row_id",
+      "expected_native_source_rows": [
+        [
+          1,
+          "1577836800000"
+        ],
+        [
+          2,
+          "1577836800000"
+        ],
+        [
+          3,
+          null
+        ]
+      ]
     }
-  ]
+  ],
+  "source_snapshot_contract": "Every task-owned native case independently checks the entire ordered source bag, with SQL data types fixed by source_setup; timestamps are normalized to epoch milliseconds and floating values preserve signed-zero text."
 }
