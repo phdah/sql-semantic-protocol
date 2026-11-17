@@ -240,14 +240,19 @@ fn every_parser_accepted_original_statement_preserves_full_canonical_semantics_a
     let fixture = original();
     let direct_integer = direct_catalog("INTEGER");
     let direct_float = direct_catalog("DOUBLE");
+    let direct_decimal = direct_catalog("DECIMAL(10,2)");
     let dbt_integer = dbt_catalog("INTEGER");
     let dbt_float = dbt_catalog("DOUBLE");
+    let dbt_decimal = dbt_catalog("DECIMAL(10,2)");
     let warehouse_integer = dbt_warehouse_catalog("INTEGER");
     let warehouse_float = dbt_warehouse_catalog("DOUBLE");
+    let warehouse_decimal = dbt_warehouse_catalog("DECIMAL(10,2)");
     #[cfg(feature = "odcs")]
     let odcs_integer = odcs_catalog("INTEGER");
     #[cfg(feature = "odcs")]
     let odcs_float = odcs_catalog("DOUBLE");
+    #[cfg(feature = "odcs")]
+    let odcs_decimal = odcs_catalog("DECIMAL(10,2)");
     let mut checked = 0;
     let mut bypassed = 0;
     let mut parser_boundaries = 0;
@@ -263,19 +268,36 @@ fn every_parser_accepted_original_statement_preserves_full_canonical_semantics_a
             .expect("named source scope")
             .is_empty();
         let floating = matches!(id, "88-C177-S040" | "88-C177-S041");
+        let decimal = matches!(id, "88-C177-S191" | "88-C177-S193");
         let direct = if floating {
             &direct_float
+        } else if decimal {
+            &direct_decimal
         } else {
             &direct_integer
         };
-        let dbt = if floating { &dbt_float } else { &dbt_integer };
+        let dbt = if floating {
+            &dbt_float
+        } else if decimal {
+            &dbt_decimal
+        } else {
+            &dbt_integer
+        };
         let warehouse = if floating {
             &warehouse_float
+        } else if decimal {
+            &warehouse_decimal
         } else {
             &warehouse_integer
         };
         #[cfg(feature = "odcs")]
-        let odcs = if floating { &odcs_float } else { &odcs_integer };
+        let odcs = if floating {
+            &odcs_float
+        } else if decimal {
+            &odcs_decimal
+        } else {
+            &odcs_integer
+        };
 
         for cell in case["cells"].as_array().expect("all 13 parser identities") {
             let name = cell["dialect"].as_str().expect("parser name");
