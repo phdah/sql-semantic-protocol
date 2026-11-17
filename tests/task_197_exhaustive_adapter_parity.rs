@@ -6,10 +6,10 @@
 
 use serde_json::{json, Value};
 use sql_semantic_protocol::{
-    analyze_configured_inputs_with_catalog, analyze_dbt_artifacts, analyze_dbt_manifest_with_schemas,
-    analyze_inputs,
-    dialect_from_name, parse_dbt_catalog, parse_dbt_manifest, to_bundle_json, ConfiguredSqlInput,
-    ProducerExecution, RelationCatalog, SchemaSourceKind, SqlInput,
+    analyze_configured_inputs_with_catalog, analyze_dbt_artifacts,
+    analyze_dbt_manifest_with_schemas, analyze_inputs, dialect_from_name, parse_dbt_catalog,
+    parse_dbt_manifest, to_bundle_json, ConfiguredSqlInput, ProducerExecution, RelationCatalog,
+    SchemaSourceKind, SqlInput,
 };
 
 const FREEZE: &str = include_str!("../docs/task-197-acceptance-ledger-v2.json");
@@ -81,7 +81,6 @@ fn dbt_manifest_source(amount_type: &str) -> Value {
     });
     manifest
 }
-
 
 fn dbt_catalog(amount_type: &str) -> RelationCatalog {
     let parsed = parse_dbt_manifest(&dbt_manifest_source(amount_type).to_string())
@@ -155,10 +154,14 @@ fn dbt_warehouse_catalog(amount_type: &str) -> RelationCatalog {
     let dialect = dialect_from_name("duckdb").expect("dbt source dialect");
     let bundle = analyze_dbt_artifacts(&manifest, &warehouse, "duckdb", dialect.as_ref())
         .expect("introspected catalog is authoritative for source types");
-    assert!(bundle.producer_evidence().iter().all(|p|
-        p.execution() == ProducerExecution::Unattested));
-    assert!(bundle.source_schemas().iter().all(|schema|
-        schema.source_kind() == Some(SchemaSourceKind::DbtCatalog)));
+    assert!(bundle
+        .producer_evidence()
+        .iter()
+        .all(|p| p.execution() == ProducerExecution::Unattested));
+    assert!(bundle
+        .source_schemas()
+        .iter()
+        .all(|schema| schema.source_kind() == Some(SchemaSourceKind::DbtCatalog)));
     RelationCatalog::from_schemas(bundle.source_schemas())
         .expect("warehouse introspected source types")
 }
