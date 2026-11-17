@@ -9,7 +9,7 @@ use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, analyze_dbt_artifacts,
     analyze_dbt_manifest_with_schemas, analyze_inputs, dialect_from_name, parse_dbt_catalog,
     parse_dbt_manifest, to_bundle_json, ConfiguredSqlInput, ProducerExecution, RelationCatalog,
-    SchemaSourceKind, SqlInput,
+    SchemaColumn, SchemaSourceKind, SqlInput,
 };
 
 const FREEZE: &str = include_str!("../docs/task-197-acceptance-ledger-v2.json");
@@ -233,6 +233,79 @@ fn canonical_semantics(catalog: &RelationCatalog, sql: &str, dialect: &str) -> V
         "layers": document["layers"],
         "graph": document["graph"],
     })
+}
+
+// The source-fact matrix is the authority, not the independently written
+// adapter input templates above. Compare normalized column types so a changed
+// matrix cannot leave all four test adapters agreeing on stale source evidence.
+fn assert_source_fact_authority(
+    catalog: &RelationCatalog,
+    matrix: &Value,
+    fact_set: &str,
+    adapter: &str,
+) {
+    let relations = matrix["relation_source_fact_sets"][fact_set]
+        .as_object()
+        .expect("frozen source relation type authority");
+    for (relation, columns) in relations {
+        let schema = catalog
+            .schemas()
+            .iter()
+            .find(|schema| schema.relation() == relation)
+            .unwrap_or_else(|| panic!("{adapter}/{fact_set}: missing relation {relation}"));
+        let columns = columns.as_object().expect("frozen source columns");
+        assert_eq!(
+            schema.columns().len(),
+            columns.len(),
+            "{adapter}/{fact_set}/{relation}: source column inventory drift"
+        );
+        for (column, data_type) in columns {
+            let actual = schema
+                .columns()
+                .iter()
+                .find(|candidate| candidate.name() == column)
+                .unwrap_or_else(|| {
+                    panic!("{adapter}/{fact_set}/{relation}: missing column {column}")
+                });
+            let expected = SchemaColumn::from_sql_type(
+                column.as_str(),
+                data_type.as_str().expect("authoritative SQL datatype"),
+                "duckdb",
+            )
+            .expect("canonical frozen source datatype");
+            assert_eq!(
+                actual.data_type(),
+                expected.data_type(),
+                "{adapter}/{fact_set}/{relation}/{column}: type authority drift"
+            );
+        }
+    }
+}
+
+#[test]
+fn adapter_source_facts_match_the_frozen_authority() {
+    let matrix: Value =
+        serde_json::from_str(SOURCE_FACTS).expect("TASK-197 authoritative source facts");
+    for (fact_set, amount_type) in [
+        ("integer_amount", "INTEGER"),
+        ("floating_amount", "DOUBLE"),
+        ("decimal_amount", "DECIMAL(10,2)"),
+    ] {
+        for (adapter, catalog) in [
+            ("direct DDL", direct_catalog(amount_type)),
+            ("dbt manifest", dbt_catalog(amount_type)),
+            ("dbt warehouse catalog", dbt_warehouse_catalog(amount_type)),
+        ] {
+            assert_source_fact_authority(&catalog, &matrix, fact_set, adapter);
+        }
+        #[cfg(feature = "odcs")]
+        assert_source_fact_authority(
+            &odcs_catalog(amount_type),
+            &matrix,
+            fact_set,
+            "ODCS",
+        );
+    }
 }
 
 #[test]
