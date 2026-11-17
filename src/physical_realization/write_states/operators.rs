@@ -723,7 +723,7 @@ pub(super) fn mutate_rows(
         };
         let matches = if joined.is_some() {
             matched_source.is_some()
-        } else if let Some((source, nested, predicate, population, source_members)) = correlated {
+        } else if let Some((source, nested, predicate, population, source_members)) = correlated.as_ref() {
             let aliases = [source.alias().unwrap_or(source.name()), source.name()];
             match predicate {
                 Predicate::Exists(exists) => {
