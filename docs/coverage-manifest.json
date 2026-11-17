@@ -43,7 +43,9 @@
     "new_native_counterexample_families": 7,
     "full_independent_task179_review": false,
     "exact_head_rust_ci_verified": false,
-    "exact_head_consumer_ci_verified": false
+    "exact_head_consumer_ci_verified": false,
+    "bounded_boundary_review": "docs/task-179-boundary-review.json",
+    "bounded_boundary_review_test": "tests/task_179_boundary_review.rs"
   },
   "task_197_cross_adapter_parity": {
     "owner": "TASK-197",

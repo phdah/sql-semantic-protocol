@@ -16,13 +16,8 @@ fn read(source: &str) -> Value {
 
 fn rows(db: &Connection, sql: &str) -> Vec<Vec<Option<i64>>> {
     let mut stmt = db.prepare(sql).expect("complete source/terminal query");
-    let width = stmt.column_count();
     let output = stmt
-        .query_map([], |row| {
-            (0..width)
-                .map(|column| row.get::<usize, Option<i64>>(column))
-                .collect::<duckdb::Result<Vec<_>>>()
-        })
+        .query_map([], |row| Ok(vec![row.get::<usize, Option<i64>>(0)?]))
         .expect("bounded source rows");
     let mut bag = output
         .map(|item| item.expect("native SQL row"))
