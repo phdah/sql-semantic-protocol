@@ -326,7 +326,7 @@ fn every_parser_accepted_original_statement_preserves_full_canonical_semantics_a
         "historical R/U boundaries remain explicit"
     );
     assert_eq!(
-        bypassed, 26,
-        "only two source-free SQL statements lack adapter facts"
+        bypassed, 24,
+        "24 accepted source-free cells; two others are parser boundaries"
     );
 }
