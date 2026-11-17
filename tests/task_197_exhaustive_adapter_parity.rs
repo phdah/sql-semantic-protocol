@@ -46,8 +46,8 @@ fn dbt_catalog(amount_type: &str) -> RelationCatalog {
                 "resource_type": "model", "name": "source_probe",
                 "language": "sql", "relation_name": "source_probe",
                 "config": {"materialized": "view"},
-                "compiled_code": "SELECT id FROM orders",
-                "depends_on": {"nodes": ["source.task197.orders"]}
+                "compiled_code": "SELECT o.id FROM orders o LEFT JOIN customers c ON o.id = c.id LEFT JOIN products p ON p.id = o.id",
+                "depends_on": {"nodes": ["source.task197.orders", "source.task197.customers", "source.task197.products"]}
             }
         },
         "sources": {
