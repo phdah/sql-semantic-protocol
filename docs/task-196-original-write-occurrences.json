@@ -1,0 +1,496 @@
+{
+  "schema_version": 1,
+  "owner": "TASK-196",
+  "source": "original_SQL_and_independent_three_valued_SQL_laws",
+  "frozen_sql": "docs/task-196-acceptance-freeze.json",
+  "independent_reasoning": "Selection ordinals are computed from the original SQL conditions and fixed source rows, independently of protocol analyzer output. Physical target row order is source insertion order, never SQL value deduplication. TRUE, FALSE and UNKNOWN partition all occurrences. Mutation effects use original statement semantics and retain independent source rows.",
+  "source_order": {
+    "orders": [
+      [
+        1,
+        10
+      ],
+      [
+        2,
+        20
+      ],
+      [
+        2,
+        20
+      ],
+      [
+        3,
+        null
+      ],
+      [
+        null,
+        7
+      ]
+    ],
+    "customers": [
+      [
+        1,
+        100
+      ],
+      [
+        4,
+        40
+      ],
+      [
+        4,
+        40
+      ]
+    ],
+    "orders_primary_key": [
+      [
+        1,
+        10
+      ],
+      [
+        2,
+        20
+      ],
+      [
+        3,
+        null
+      ]
+    ]
+  },
+  "counts": {
+    "original_dml_cases": 16,
+    "selected_mutation_cases": 11,
+    "returning_cases": 3,
+    "source_and_target_occurrence_laws": 16
+  },
+  "native_execution_only": "duckdb",
+  "external_vendor_execution_attested": false,
+  "release_approved": false,
+  "cases": [
+    {
+      "id": "88-C177-S194",
+      "kind": "insert_values",
+      "independent_law": {
+        "inserted": 1,
+        "updated": 0,
+        "deleted": 0,
+        "conflict_rejected_values": 0,
+        "target_predicate": null,
+        "target_true_ordinals": [],
+        "target_false_ordinals": [],
+        "target_unknown_ordinals": [],
+        "matched_customer_ordinals": [],
+        "inserted_customer_ordinals": [],
+        "all_target_occurrences_before": 5,
+        "all_customer_occurrences_before": 3,
+        "selected_target_occurrences_are_physical_not_id_equality": true
+      },
+      "disposition": "native_duckdb_algebra_grounded_not_vendor_attestation"
+    },
+    {
+      "id": "88-C177-S195",
+      "kind": "insert_select",
+      "independent_law": {
+        "inserted": 3,
+        "updated": 0,
+        "deleted": 0,
+        "conflict_rejected_values": 0,
+        "target_predicate": null,
+        "target_true_ordinals": [],
+        "target_false_ordinals": [],
+        "target_unknown_ordinals": [],
+        "matched_customer_ordinals": [],
+        "inserted_customer_ordinals": [
+          0,
+          1,
+          2
+        ],
+        "all_target_occurrences_before": 5,
+        "all_customer_occurrences_before": 3,
+        "selected_target_occurrences_are_physical_not_id_equality": true
+      },
+      "disposition": "native_duckdb_algebra_grounded_not_vendor_attestation"
+    },
+    {
+      "id": "88-C177-S196",
+      "kind": "multi_values",
+      "independent_law": {
+        "inserted": 2,
+        "updated": 0,
+        "deleted": 0,
+        "conflict_rejected_values": 0,
+        "target_predicate": null,
+        "target_true_ordinals": [],
+        "target_false_ordinals": [],
+        "target_unknown_ordinals": [],
+        "matched_customer_ordinals": [],
+        "inserted_customer_ordinals": [],
+        "all_target_occurrences_before": 5,
+        "all_customer_occurrences_before": 3,
+        "selected_target_occurrences_are_physical_not_id_equality": true
+      },
+      "disposition": "native_duckdb_algebra_grounded_not_vendor_attestation"
+    },
+    {
+      "id": "88-C177-S197",
+      "kind": "insert_returning",
+      "independent_law": {
+        "inserted": 1,
+        "updated": 0,
+        "deleted": 0,
+        "conflict_rejected_values": 0,
+        "target_predicate": null,
+        "target_true_ordinals": [],
+        "target_false_ordinals": [],
+        "target_unknown_ordinals": [],
+        "matched_customer_ordinals": [],
+        "inserted_customer_ordinals": [],
+        "all_target_occurrences_before": 5,
+        "all_customer_occurrences_before": 3,
+        "selected_target_occurrences_are_physical_not_id_equality": true
+      },
+      "disposition": "native_duckdb_algebra_grounded_not_vendor_attestation"
+    },
+    {
+      "id": "88-C177-S198",
+      "kind": "conflict_do_nothing",
+      "independent_law": {
+        "inserted": 0,
+        "updated": 0,
+        "deleted": 0,
+        "conflict_rejected_values": 1,
+        "target_predicate": null,
+        "target_true_ordinals": [],
+        "target_false_ordinals": [],
+        "target_unknown_ordinals": [],
+        "matched_customer_ordinals": [],
+        "inserted_customer_ordinals": [],
+        "all_target_occurrences_before": 3,
+        "all_customer_occurrences_before": 0,
+        "selected_target_occurrences_are_physical_not_id_equality": true
+      },
+      "disposition": "native_duckdb_algebra_grounded_not_vendor_attestation"
+    },
+    {
+      "id": "88-C177-S201",
+      "kind": "update_from",
+      "independent_law": {
+        "inserted": 0,
+        "updated": 1,
+        "deleted": 0,
+        "conflict_rejected_values": 0,
+        "target_predicate": "id IN (SELECT id FROM customers)",
+        "target_true_ordinals": [
+          0
+        ],
+        "target_false_ordinals": [
+          1,
+          2,
+          3
+        ],
+        "target_unknown_ordinals": [
+          4
+        ],
+        "matched_customer_ordinals": [
+          0
+        ],
+        "inserted_customer_ordinals": [],
+        "all_target_occurrences_before": 5,
+        "all_customer_occurrences_before": 3,
+        "selected_target_occurrences_are_physical_not_id_equality": true
+      },
+      "disposition": "native_duckdb_algebra_grounded_not_vendor_attestation"
+    },
+    {
+      "id": "88-C177-S202",
+      "kind": "computed_update",
+      "independent_law": {
+        "inserted": 0,
+        "updated": 4,
+        "deleted": 0,
+        "conflict_rejected_values": 0,
+        "target_predicate": "id > 0",
+        "target_true_ordinals": [
+          0,
+          1,
+          2,
+          3
+        ],
+        "target_false_ordinals": [],
+        "target_unknown_ordinals": [
+          4
+        ],
+        "matched_customer_ordinals": [],
+        "inserted_customer_ordinals": [],
+        "all_target_occurrences_before": 5,
+        "all_customer_occurrences_before": 3,
+        "selected_target_occurrences_are_physical_not_id_equality": true
+      },
+      "disposition": "native_duckdb_algebra_grounded_not_vendor_attestation"
+    },
+    {
+      "id": "88-C177-S203",
+      "kind": "correlated_in_update",
+      "independent_law": {
+        "inserted": 0,
+        "updated": 1,
+        "deleted": 0,
+        "conflict_rejected_values": 0,
+        "target_predicate": "id IN (SELECT id FROM customers)",
+        "target_true_ordinals": [
+          0
+        ],
+        "target_false_ordinals": [
+          1,
+          2,
+          3
+        ],
+        "target_unknown_ordinals": [
+          4
+        ],
+        "matched_customer_ordinals": [],
+        "inserted_customer_ordinals": [],
+        "all_target_occurrences_before": 5,
+        "all_customer_occurrences_before": 3,
+        "selected_target_occurrences_are_physical_not_id_equality": true
+      },
+      "disposition": "original_analyzer_unsupported_core_requires_residual_review"
+    },
+    {
+      "id": "88-C177-S204",
+      "kind": "update_returning",
+      "independent_law": {
+        "inserted": 0,
+        "updated": 1,
+        "deleted": 0,
+        "conflict_rejected_values": 0,
+        "target_predicate": "id = 1",
+        "target_true_ordinals": [
+          0
+        ],
+        "target_false_ordinals": [
+          1,
+          2,
+          3
+        ],
+        "target_unknown_ordinals": [
+          4
+        ],
+        "matched_customer_ordinals": [],
+        "inserted_customer_ordinals": [],
+        "all_target_occurrences_before": 5,
+        "all_customer_occurrences_before": 3,
+        "selected_target_occurrences_are_physical_not_id_equality": true
+      },
+      "disposition": "native_duckdb_algebra_grounded_not_vendor_attestation"
+    },
+    {
+      "id": "88-C177-S205",
+      "kind": "delete_using",
+      "independent_law": {
+        "inserted": 0,
+        "updated": 0,
+        "deleted": 1,
+        "conflict_rejected_values": 0,
+        "target_predicate": "id IN (SELECT id FROM customers)",
+        "target_true_ordinals": [
+          0
+        ],
+        "target_false_ordinals": [
+          1,
+          2,
+          3
+        ],
+        "target_unknown_ordinals": [
+          4
+        ],
+        "matched_customer_ordinals": [
+          0
+        ],
+        "inserted_customer_ordinals": [],
+        "all_target_occurrences_before": 5,
+        "all_customer_occurrences_before": 3,
+        "selected_target_occurrences_are_physical_not_id_equality": true
+      },
+      "disposition": "native_duckdb_algebra_grounded_not_vendor_attestation"
+    },
+    {
+      "id": "88-C177-S206",
+      "kind": "subquery_delete",
+      "independent_law": {
+        "inserted": 0,
+        "updated": 0,
+        "deleted": 1,
+        "conflict_rejected_values": 0,
+        "target_predicate": "id IN (SELECT id FROM customers)",
+        "target_true_ordinals": [
+          0
+        ],
+        "target_false_ordinals": [
+          1,
+          2,
+          3
+        ],
+        "target_unknown_ordinals": [
+          4
+        ],
+        "matched_customer_ordinals": [],
+        "inserted_customer_ordinals": [],
+        "all_target_occurrences_before": 5,
+        "all_customer_occurrences_before": 3,
+        "selected_target_occurrences_are_physical_not_id_equality": true
+      },
+      "disposition": "original_analyzer_unsupported_core_requires_residual_review"
+    },
+    {
+      "id": "88-C177-S207",
+      "kind": "delete_returning",
+      "independent_law": {
+        "inserted": 0,
+        "updated": 0,
+        "deleted": 1,
+        "conflict_rejected_values": 0,
+        "target_predicate": "amount IS NULL",
+        "target_true_ordinals": [
+          3
+        ],
+        "target_false_ordinals": [
+          0,
+          1,
+          2,
+          4
+        ],
+        "target_unknown_ordinals": [],
+        "matched_customer_ordinals": [],
+        "inserted_customer_ordinals": [],
+        "all_target_occurrences_before": 5,
+        "all_customer_occurrences_before": 3,
+        "selected_target_occurrences_are_physical_not_id_equality": true
+      },
+      "disposition": "native_duckdb_algebra_grounded_not_vendor_attestation"
+    },
+    {
+      "id": "88-C177-S208",
+      "kind": "delete_by_id",
+      "independent_law": {
+        "inserted": 0,
+        "updated": 0,
+        "deleted": 1,
+        "conflict_rejected_values": 0,
+        "target_predicate": "id = 1",
+        "target_true_ordinals": [
+          0
+        ],
+        "target_false_ordinals": [
+          1,
+          2,
+          3
+        ],
+        "target_unknown_ordinals": [
+          4
+        ],
+        "matched_customer_ordinals": [],
+        "inserted_customer_ordinals": [],
+        "all_target_occurrences_before": 5,
+        "all_customer_occurrences_before": 3,
+        "selected_target_occurrences_are_physical_not_id_equality": true
+      },
+      "disposition": "native_duckdb_algebra_grounded_not_vendor_attestation"
+    },
+    {
+      "id": "88-C177-S209",
+      "kind": "merge_update_insert",
+      "independent_law": {
+        "inserted": 2,
+        "updated": 1,
+        "deleted": 0,
+        "conflict_rejected_values": 0,
+        "target_predicate": "id IN (SELECT id FROM customers)",
+        "target_true_ordinals": [
+          0
+        ],
+        "target_false_ordinals": [
+          1,
+          2,
+          3
+        ],
+        "target_unknown_ordinals": [
+          4
+        ],
+        "matched_customer_ordinals": [
+          0
+        ],
+        "inserted_customer_ordinals": [
+          1,
+          2
+        ],
+        "all_target_occurrences_before": 5,
+        "all_customer_occurrences_before": 3,
+        "selected_target_occurrences_are_physical_not_id_equality": true
+      },
+      "disposition": "native_duckdb_algebra_grounded_not_vendor_attestation"
+    },
+    {
+      "id": "88-C177-S210",
+      "kind": "merge_guarded_delete",
+      "independent_law": {
+        "inserted": 0,
+        "updated": 0,
+        "deleted": 1,
+        "conflict_rejected_values": 0,
+        "target_predicate": "id IN (SELECT id FROM customers)",
+        "target_true_ordinals": [
+          0
+        ],
+        "target_false_ordinals": [
+          1,
+          2,
+          3
+        ],
+        "target_unknown_ordinals": [
+          4
+        ],
+        "matched_customer_ordinals": [
+          0
+        ],
+        "inserted_customer_ordinals": [],
+        "all_target_occurrences_before": 5,
+        "all_customer_occurrences_before": 3,
+        "selected_target_occurrences_are_physical_not_id_equality": true
+      },
+      "disposition": "native_duckdb_algebra_grounded_not_vendor_attestation"
+    },
+    {
+      "id": "88-C177-S211",
+      "kind": "merge_delete_insert",
+      "independent_law": {
+        "inserted": 2,
+        "updated": 0,
+        "deleted": 1,
+        "conflict_rejected_values": 0,
+        "target_predicate": "id IN (SELECT id FROM customers)",
+        "target_true_ordinals": [
+          0
+        ],
+        "target_false_ordinals": [
+          1,
+          2,
+          3
+        ],
+        "target_unknown_ordinals": [
+          4
+        ],
+        "matched_customer_ordinals": [
+          0
+        ],
+        "inserted_customer_ordinals": [
+          1,
+          2
+        ],
+        "all_target_occurrences_before": 5,
+        "all_customer_occurrences_before": 3,
+        "selected_target_occurrences_are_physical_not_id_equality": true
+      },
+      "disposition": "native_duckdb_algebra_grounded_not_vendor_attestation"
+    }
+  ]
+}
