@@ -179,7 +179,22 @@
         }
       ],
       "requirements": "source order with ties must be fixed; implicit NULL placement remains session conditional",
-      "expected_native_oracle": "see separately pinned original-oracle row; no invented complete source/output for unexecuted original SQL"
+      "expected_native_oracle": "see separately pinned original-oracle row; no invented complete source/output for unexecuted original SQL",
+      "source_adapter_provenance": {
+        "reuse": "docs/task-197-source-fact-matrix.json",
+        "owner": "TASK-192",
+        "original_sql_metadata_scope": "complete_compiled_read_and_source_types_where_parser_supports",
+        "source_fact_set": "integer_amount",
+        "source_relations": [
+          "orders"
+        ],
+        "direct_sql": "source_fact_type_only",
+        "dbt_manifest": "source_fact_type_only",
+        "dbt_warehouse_catalog": "source_fact_type_only",
+        "odcs": "source_fact_type_only",
+        "equality_oracle": "tests/task_197_exhaustive_adapter_parity.rs",
+        "execution": "unattested"
+      }
     },
     {
       "id": "88-C179-002",
@@ -319,7 +334,22 @@
         }
       ],
       "requirements": "source order with ties must be fixed; implicit NULL placement remains session conditional",
-      "expected_native_oracle": "see separately pinned original-oracle row; no invented complete source/output for unexecuted original SQL"
+      "expected_native_oracle": "see separately pinned original-oracle row; no invented complete source/output for unexecuted original SQL",
+      "source_adapter_provenance": {
+        "reuse": "docs/task-197-source-fact-matrix.json",
+        "owner": "TASK-195",
+        "original_sql_metadata_scope": "complete_compiled_read_and_source_types_where_parser_supports",
+        "source_fact_set": "integer_amount",
+        "source_relations": [
+          "orders"
+        ],
+        "direct_sql": "source_fact_type_only",
+        "dbt_manifest": "source_fact_type_only",
+        "dbt_warehouse_catalog": "source_fact_type_only",
+        "odcs": "source_fact_type_only",
+        "equality_oracle": "tests/task_197_exhaustive_adapter_parity.rs",
+        "execution": "unattested"
+      }
     },
     {
       "id": "88-C179-003",
@@ -459,7 +489,22 @@
         }
       ],
       "requirements": "source order with ties must be fixed; implicit NULL placement remains session conditional",
-      "expected_native_oracle": "see separately pinned original-oracle row; no invented complete source/output for unexecuted original SQL"
+      "expected_native_oracle": "see separately pinned original-oracle row; no invented complete source/output for unexecuted original SQL",
+      "source_adapter_provenance": {
+        "reuse": "docs/task-197-source-fact-matrix.json",
+        "owner": "TASK-195",
+        "original_sql_metadata_scope": "complete_compiled_read_and_source_types_where_parser_supports",
+        "source_fact_set": "integer_amount",
+        "source_relations": [
+          "orders"
+        ],
+        "direct_sql": "source_fact_type_only",
+        "dbt_manifest": "source_fact_type_only",
+        "dbt_warehouse_catalog": "source_fact_type_only",
+        "odcs": "source_fact_type_only",
+        "equality_oracle": "tests/task_197_exhaustive_adapter_parity.rs",
+        "execution": "unattested"
+      }
     },
     {
       "id": "88-C179-004",
@@ -599,7 +644,22 @@
         }
       ],
       "requirements": "source order with ties must be fixed; implicit NULL placement remains session conditional",
-      "expected_native_oracle": "see separately pinned original-oracle row; no invented complete source/output for unexecuted original SQL"
+      "expected_native_oracle": "see separately pinned original-oracle row; no invented complete source/output for unexecuted original SQL",
+      "source_adapter_provenance": {
+        "reuse": "docs/task-197-source-fact-matrix.json",
+        "owner": "TASK-195",
+        "original_sql_metadata_scope": "complete_compiled_read_and_source_types_where_parser_supports",
+        "source_fact_set": "integer_amount",
+        "source_relations": [
+          "orders"
+        ],
+        "direct_sql": "source_fact_type_only",
+        "dbt_manifest": "source_fact_type_only",
+        "dbt_warehouse_catalog": "source_fact_type_only",
+        "odcs": "source_fact_type_only",
+        "equality_oracle": "tests/task_197_exhaustive_adapter_parity.rs",
+        "execution": "unattested"
+      }
     },
     {
       "id": "88-C179-005",
@@ -739,7 +799,22 @@
         }
       ],
       "requirements": "source order with ties must be fixed; implicit NULL placement remains session conditional",
-      "expected_native_oracle": "see separately pinned original-oracle row; no invented complete source/output for unexecuted original SQL"
+      "expected_native_oracle": "see separately pinned original-oracle row; no invented complete source/output for unexecuted original SQL",
+      "source_adapter_provenance": {
+        "reuse": "docs/task-197-source-fact-matrix.json",
+        "owner": "TASK-195",
+        "original_sql_metadata_scope": "complete_compiled_read_and_source_types_where_parser_supports",
+        "source_fact_set": "integer_amount",
+        "source_relations": [
+          "orders"
+        ],
+        "direct_sql": "source_fact_type_only",
+        "dbt_manifest": "source_fact_type_only",
+        "dbt_warehouse_catalog": "source_fact_type_only",
+        "odcs": "source_fact_type_only",
+        "equality_oracle": "tests/task_197_exhaustive_adapter_parity.rs",
+        "execution": "unattested"
+      }
     },
     {
       "id": "88-C179-006",
@@ -879,7 +954,22 @@
         }
       ],
       "requirements": "source order with ties must be fixed; implicit NULL placement remains session conditional",
-      "expected_native_oracle": "see separately pinned original-oracle row; no invented complete source/output for unexecuted original SQL"
+      "expected_native_oracle": "see separately pinned original-oracle row; no invented complete source/output for unexecuted original SQL",
+      "source_adapter_provenance": {
+        "reuse": "docs/task-197-source-fact-matrix.json",
+        "owner": "TASK-195",
+        "original_sql_metadata_scope": "complete_compiled_read_and_source_types_where_parser_supports",
+        "source_fact_set": "integer_amount",
+        "source_relations": [
+          "orders"
+        ],
+        "direct_sql": "source_fact_type_only",
+        "dbt_manifest": "source_fact_type_only",
+        "dbt_warehouse_catalog": "source_fact_type_only",
+        "odcs": "source_fact_type_only",
+        "equality_oracle": "tests/task_197_exhaustive_adapter_parity.rs",
+        "execution": "unattested"
+      }
     },
     {
       "id": "88-C179-007",
@@ -1019,7 +1109,22 @@
         }
       ],
       "requirements": "binary/no-padding witness only after explicit declarations; locale, regex and case-folding remain conditional",
-      "expected_native_oracle": "see separately pinned original-oracle row; no invented complete source/output for unexecuted original SQL"
+      "expected_native_oracle": "see separately pinned original-oracle row; no invented complete source/output for unexecuted original SQL",
+      "source_adapter_provenance": {
+        "reuse": "docs/task-197-source-fact-matrix.json",
+        "owner": "TASK-192",
+        "original_sql_metadata_scope": "complete_compiled_read_and_source_types_where_parser_supports",
+        "source_fact_set": "integer_amount",
+        "source_relations": [
+          "customers"
+        ],
+        "direct_sql": "source_fact_type_only",
+        "dbt_manifest": "source_fact_type_only",
+        "dbt_warehouse_catalog": "source_fact_type_only",
+        "odcs": "source_fact_type_only",
+        "equality_oracle": "tests/task_197_exhaustive_adapter_parity.rs",
+        "execution": "unattested"
+      }
     },
     {
       "id": "88-C179-008",
@@ -1159,7 +1264,22 @@
         }
       ],
       "requirements": "binary/no-padding witness only after explicit declarations; locale, regex and case-folding remain conditional",
-      "expected_native_oracle": "see separately pinned original-oracle row; no invented complete source/output for unexecuted original SQL"
+      "expected_native_oracle": "see separately pinned original-oracle row; no invented complete source/output for unexecuted original SQL",
+      "source_adapter_provenance": {
+        "reuse": "docs/task-197-source-fact-matrix.json",
+        "owner": "TASK-192",
+        "original_sql_metadata_scope": "complete_compiled_read_and_source_types_where_parser_supports",
+        "source_fact_set": "integer_amount",
+        "source_relations": [
+          "customers"
+        ],
+        "direct_sql": "source_fact_type_only",
+        "dbt_manifest": "source_fact_type_only",
+        "dbt_warehouse_catalog": "source_fact_type_only",
+        "odcs": "source_fact_type_only",
+        "equality_oracle": "tests/task_197_exhaustive_adapter_parity.rs",
+        "execution": "unattested"
+      }
     },
     {
       "id": "88-C179-009",
@@ -1299,7 +1419,22 @@
         }
       ],
       "requirements": "binary/no-padding witness only after explicit declarations; locale, regex and case-folding remain conditional",
-      "expected_native_oracle": "see separately pinned original-oracle row; no invented complete source/output for unexecuted original SQL"
+      "expected_native_oracle": "see separately pinned original-oracle row; no invented complete source/output for unexecuted original SQL",
+      "source_adapter_provenance": {
+        "reuse": "docs/task-197-source-fact-matrix.json",
+        "owner": "TASK-192",
+        "original_sql_metadata_scope": "complete_compiled_read_and_source_types_where_parser_supports",
+        "source_fact_set": "integer_amount",
+        "source_relations": [
+          "customers"
+        ],
+        "direct_sql": "source_fact_type_only",
+        "dbt_manifest": "source_fact_type_only",
+        "dbt_warehouse_catalog": "source_fact_type_only",
+        "odcs": "source_fact_type_only",
+        "equality_oracle": "tests/task_197_exhaustive_adapter_parity.rs",
+        "execution": "unattested"
+      }
     },
     {
       "id": "88-C179-010",
@@ -1439,7 +1574,22 @@
         }
       ],
       "requirements": "binary/no-padding witness only after explicit declarations; locale, regex and case-folding remain conditional",
-      "expected_native_oracle": "see separately pinned original-oracle row; no invented complete source/output for unexecuted original SQL"
+      "expected_native_oracle": "see separately pinned original-oracle row; no invented complete source/output for unexecuted original SQL",
+      "source_adapter_provenance": {
+        "reuse": "docs/task-197-source-fact-matrix.json",
+        "owner": "TASK-192",
+        "original_sql_metadata_scope": "complete_compiled_read_and_source_types_where_parser_supports",
+        "source_fact_set": "integer_amount",
+        "source_relations": [
+          "customers"
+        ],
+        "direct_sql": "source_fact_type_only",
+        "dbt_manifest": "source_fact_type_only",
+        "dbt_warehouse_catalog": "source_fact_type_only",
+        "odcs": "source_fact_type_only",
+        "equality_oracle": "tests/task_197_exhaustive_adapter_parity.rs",
+        "execution": "unattested"
+      }
     },
     {
       "id": "88-C179-011",
@@ -1579,7 +1729,22 @@
         }
       ],
       "requirements": "binary/no-padding witness only after explicit declarations; locale, regex and case-folding remain conditional",
-      "expected_native_oracle": "see separately pinned original-oracle row; no invented complete source/output for unexecuted original SQL"
+      "expected_native_oracle": "see separately pinned original-oracle row; no invented complete source/output for unexecuted original SQL",
+      "source_adapter_provenance": {
+        "reuse": "docs/task-197-source-fact-matrix.json",
+        "owner": "TASK-192",
+        "original_sql_metadata_scope": "complete_compiled_read_and_source_types_where_parser_supports",
+        "source_fact_set": "integer_amount",
+        "source_relations": [
+          "customers"
+        ],
+        "direct_sql": "source_fact_type_only",
+        "dbt_manifest": "source_fact_type_only",
+        "dbt_warehouse_catalog": "source_fact_type_only",
+        "odcs": "source_fact_type_only",
+        "equality_oracle": "tests/task_197_exhaustive_adapter_parity.rs",
+        "execution": "unattested"
+      }
     },
     {
       "id": "88-C179-012",
@@ -1719,7 +1884,22 @@
         }
       ],
       "requirements": "binary/no-padding witness only after explicit declarations; locale, regex and case-folding remain conditional",
-      "expected_native_oracle": "see separately pinned original-oracle row; no invented complete source/output for unexecuted original SQL"
+      "expected_native_oracle": "see separately pinned original-oracle row; no invented complete source/output for unexecuted original SQL",
+      "source_adapter_provenance": {
+        "reuse": "docs/task-197-source-fact-matrix.json",
+        "owner": "TASK-192",
+        "original_sql_metadata_scope": "complete_compiled_read_and_source_types_where_parser_supports",
+        "source_fact_set": "integer_amount",
+        "source_relations": [
+          "customers"
+        ],
+        "direct_sql": "source_fact_type_only",
+        "dbt_manifest": "source_fact_type_only",
+        "dbt_warehouse_catalog": "source_fact_type_only",
+        "odcs": "source_fact_type_only",
+        "equality_oracle": "tests/task_197_exhaustive_adapter_parity.rs",
+        "execution": "unattested"
+      }
     },
     {
       "id": "88-C179-013",
@@ -1859,7 +2039,22 @@
         }
       ],
       "requirements": "binary/no-padding witness only after explicit declarations; locale, regex and case-folding remain conditional",
-      "expected_native_oracle": "see separately pinned original-oracle row; no invented complete source/output for unexecuted original SQL"
+      "expected_native_oracle": "see separately pinned original-oracle row; no invented complete source/output for unexecuted original SQL",
+      "source_adapter_provenance": {
+        "reuse": "docs/task-197-source-fact-matrix.json",
+        "owner": "TASK-192",
+        "original_sql_metadata_scope": "complete_compiled_read_and_source_types_where_parser_supports",
+        "source_fact_set": "integer_amount",
+        "source_relations": [
+          "customers"
+        ],
+        "direct_sql": "source_fact_type_only",
+        "dbt_manifest": "source_fact_type_only",
+        "dbt_warehouse_catalog": "source_fact_type_only",
+        "odcs": "source_fact_type_only",
+        "equality_oracle": "tests/task_197_exhaustive_adapter_parity.rs",
+        "execution": "unattested"
+      }
     },
     {
       "id": "88-C179-014",
@@ -1999,7 +2194,22 @@
         }
       ],
       "requirements": "binary/no-padding witness only after explicit declarations; locale, regex and case-folding remain conditional",
-      "expected_native_oracle": "see separately pinned original-oracle row; no invented complete source/output for unexecuted original SQL"
+      "expected_native_oracle": "see separately pinned original-oracle row; no invented complete source/output for unexecuted original SQL",
+      "source_adapter_provenance": {
+        "reuse": "docs/task-197-source-fact-matrix.json",
+        "owner": "TASK-192",
+        "original_sql_metadata_scope": "complete_compiled_read_and_source_types_where_parser_supports",
+        "source_fact_set": "integer_amount",
+        "source_relations": [
+          "customers"
+        ],
+        "direct_sql": "source_fact_type_only",
+        "dbt_manifest": "source_fact_type_only",
+        "dbt_warehouse_catalog": "source_fact_type_only",
+        "odcs": "source_fact_type_only",
+        "equality_oracle": "tests/task_197_exhaustive_adapter_parity.rs",
+        "execution": "unattested"
+      }
     },
     {
       "id": "88-C179-015",
@@ -2139,7 +2349,22 @@
         }
       ],
       "requirements": "binary/no-padding witness only after explicit declarations; locale, regex and case-folding remain conditional",
-      "expected_native_oracle": "see separately pinned original-oracle row; no invented complete source/output for unexecuted original SQL"
+      "expected_native_oracle": "see separately pinned original-oracle row; no invented complete source/output for unexecuted original SQL",
+      "source_adapter_provenance": {
+        "reuse": "docs/task-197-source-fact-matrix.json",
+        "owner": "TASK-192",
+        "original_sql_metadata_scope": "complete_compiled_read_and_source_types_where_parser_supports",
+        "source_fact_set": "integer_amount",
+        "source_relations": [
+          "customers"
+        ],
+        "direct_sql": "source_fact_type_only",
+        "dbt_manifest": "source_fact_type_only",
+        "dbt_warehouse_catalog": "source_fact_type_only",
+        "odcs": "source_fact_type_only",
+        "equality_oracle": "tests/task_197_exhaustive_adapter_parity.rs",
+        "execution": "unattested"
+      }
     },
     {
       "id": "88-C179-016",
@@ -2279,7 +2504,22 @@
         }
       ],
       "requirements": "typed conversion/overflow behavior must be supported by exact engine law or explicit residual",
-      "expected_native_oracle": "see separately pinned original-oracle row; no invented complete source/output for unexecuted original SQL"
+      "expected_native_oracle": "see separately pinned original-oracle row; no invented complete source/output for unexecuted original SQL",
+      "source_adapter_provenance": {
+        "reuse": "docs/task-197-source-fact-matrix.json",
+        "owner": "TASK-192",
+        "original_sql_metadata_scope": "complete_compiled_read_and_source_types_where_parser_supports",
+        "source_fact_set": "integer_amount",
+        "source_relations": [
+          "orders"
+        ],
+        "direct_sql": "source_fact_type_only",
+        "dbt_manifest": "source_fact_type_only",
+        "dbt_warehouse_catalog": "source_fact_type_only",
+        "odcs": "source_fact_type_only",
+        "equality_oracle": "tests/task_197_exhaustive_adapter_parity.rs",
+        "execution": "unattested"
+      }
     },
     {
       "id": "88-C179-017",
@@ -2419,7 +2659,20 @@
         }
       ],
       "requirements": "typed conversion/overflow behavior must be supported by exact engine law or explicit residual",
-      "expected_native_oracle": "see separately pinned original-oracle row; no invented complete source/output for unexecuted original SQL"
+      "expected_native_oracle": "see separately pinned original-oracle row; no invented complete source/output for unexecuted original SQL",
+      "source_adapter_provenance": {
+        "reuse": "docs/task-197-source-fact-matrix.json",
+        "owner": "TASK-192",
+        "original_sql_metadata_scope": "no_external_source_fact",
+        "source_fact_set": null,
+        "source_relations": [],
+        "direct_sql": "source_fact_type_only",
+        "dbt_manifest": "source_fact_type_only",
+        "dbt_warehouse_catalog": "source_fact_type_only",
+        "odcs": "source_fact_type_only",
+        "equality_oracle": "tests/task_197_exhaustive_adapter_parity.rs",
+        "execution": "unattested"
+      }
     },
     {
       "id": "88-C179-018",
@@ -2559,7 +2812,22 @@
         }
       ],
       "requirements": "typed conversion/overflow behavior must be supported by exact engine law or explicit residual",
-      "expected_native_oracle": "see separately pinned original-oracle row; no invented complete source/output for unexecuted original SQL"
+      "expected_native_oracle": "see separately pinned original-oracle row; no invented complete source/output for unexecuted original SQL",
+      "source_adapter_provenance": {
+        "reuse": "docs/task-197-source-fact-matrix.json",
+        "owner": "TASK-192",
+        "original_sql_metadata_scope": "complete_compiled_read_and_source_types_where_parser_supports",
+        "source_fact_set": "integer_amount",
+        "source_relations": [
+          "orders"
+        ],
+        "direct_sql": "source_fact_type_only",
+        "dbt_manifest": "source_fact_type_only",
+        "dbt_warehouse_catalog": "source_fact_type_only",
+        "odcs": "source_fact_type_only",
+        "equality_oracle": "tests/task_197_exhaustive_adapter_parity.rs",
+        "execution": "unattested"
+      }
     },
     {
       "id": "88-C179-019",
@@ -2699,7 +2967,22 @@
         }
       ],
       "requirements": "FLOAT NaN, signed zero, timezone/DST and widened integer arithmetic are engine/session laws",
-      "expected_native_oracle": "see separately pinned original-oracle row; no invented complete source/output for unexecuted original SQL"
+      "expected_native_oracle": "see separately pinned original-oracle row; no invented complete source/output for unexecuted original SQL",
+      "source_adapter_provenance": {
+        "reuse": "docs/task-197-source-fact-matrix.json",
+        "owner": "TASK-192",
+        "original_sql_metadata_scope": "complete_compiled_read_and_source_types_where_parser_supports",
+        "source_fact_set": "integer_amount",
+        "source_relations": [
+          "orders"
+        ],
+        "direct_sql": "source_fact_type_only",
+        "dbt_manifest": "source_fact_type_only",
+        "dbt_warehouse_catalog": "source_fact_type_only",
+        "odcs": "source_fact_type_only",
+        "equality_oracle": "tests/task_197_exhaustive_adapter_parity.rs",
+        "execution": "unattested"
+      }
     },
     {
       "id": "88-C179-020",
@@ -2839,7 +3122,22 @@
         }
       ],
       "requirements": "FLOAT NaN, signed zero, timezone/DST and widened integer arithmetic are engine/session laws",
-      "expected_native_oracle": "see separately pinned original-oracle row; no invented complete source/output for unexecuted original SQL"
+      "expected_native_oracle": "see separately pinned original-oracle row; no invented complete source/output for unexecuted original SQL",
+      "source_adapter_provenance": {
+        "reuse": "docs/task-197-source-fact-matrix.json",
+        "owner": "TASK-192",
+        "original_sql_metadata_scope": "complete_compiled_read_and_source_types_where_parser_supports",
+        "source_fact_set": "integer_amount",
+        "source_relations": [
+          "orders"
+        ],
+        "direct_sql": "source_fact_type_only",
+        "dbt_manifest": "source_fact_type_only",
+        "dbt_warehouse_catalog": "source_fact_type_only",
+        "odcs": "source_fact_type_only",
+        "equality_oracle": "tests/task_197_exhaustive_adapter_parity.rs",
+        "execution": "unattested"
+      }
     },
     {
       "id": "88-C179-021",
@@ -2979,7 +3277,22 @@
         }
       ],
       "requirements": "FLOAT NaN, signed zero, timezone/DST and widened integer arithmetic are engine/session laws",
-      "expected_native_oracle": "see separately pinned original-oracle row; no invented complete source/output for unexecuted original SQL"
+      "expected_native_oracle": "see separately pinned original-oracle row; no invented complete source/output for unexecuted original SQL",
+      "source_adapter_provenance": {
+        "reuse": "docs/task-197-source-fact-matrix.json",
+        "owner": "TASK-192",
+        "original_sql_metadata_scope": "complete_compiled_read_and_source_types_where_parser_supports",
+        "source_fact_set": "integer_amount",
+        "source_relations": [
+          "orders"
+        ],
+        "direct_sql": "source_fact_type_only",
+        "dbt_manifest": "source_fact_type_only",
+        "dbt_warehouse_catalog": "source_fact_type_only",
+        "odcs": "source_fact_type_only",
+        "equality_oracle": "tests/task_197_exhaustive_adapter_parity.rs",
+        "execution": "unattested"
+      }
     },
     {
       "id": "88-C179-022",
@@ -3119,7 +3432,22 @@
         }
       ],
       "requirements": "FLOAT NaN, signed zero, timezone/DST and widened integer arithmetic are engine/session laws",
-      "expected_native_oracle": "see separately pinned original-oracle row; no invented complete source/output for unexecuted original SQL"
+      "expected_native_oracle": "see separately pinned original-oracle row; no invented complete source/output for unexecuted original SQL",
+      "source_adapter_provenance": {
+        "reuse": "docs/task-197-source-fact-matrix.json",
+        "owner": "TASK-192",
+        "original_sql_metadata_scope": "complete_compiled_read_and_source_types_where_parser_supports",
+        "source_fact_set": "integer_amount",
+        "source_relations": [
+          "orders"
+        ],
+        "direct_sql": "source_fact_type_only",
+        "dbt_manifest": "source_fact_type_only",
+        "dbt_warehouse_catalog": "source_fact_type_only",
+        "odcs": "source_fact_type_only",
+        "equality_oracle": "tests/task_197_exhaustive_adapter_parity.rs",
+        "execution": "unattested"
+      }
     },
     {
       "id": "88-C179-023",
@@ -3259,7 +3587,22 @@
         }
       ],
       "requirements": "FLOAT NaN, signed zero, timezone/DST and widened integer arithmetic are engine/session laws",
-      "expected_native_oracle": "see separately pinned original-oracle row; no invented complete source/output for unexecuted original SQL"
+      "expected_native_oracle": "see separately pinned original-oracle row; no invented complete source/output for unexecuted original SQL",
+      "source_adapter_provenance": {
+        "reuse": "docs/task-197-source-fact-matrix.json",
+        "owner": "TASK-192",
+        "original_sql_metadata_scope": "complete_compiled_read_and_source_types_where_parser_supports",
+        "source_fact_set": "integer_amount",
+        "source_relations": [
+          "orders"
+        ],
+        "direct_sql": "source_fact_type_only",
+        "dbt_manifest": "source_fact_type_only",
+        "dbt_warehouse_catalog": "source_fact_type_only",
+        "odcs": "source_fact_type_only",
+        "equality_oracle": "tests/task_197_exhaustive_adapter_parity.rs",
+        "execution": "unattested"
+      }
     },
     {
       "id": "88-C179-024",
@@ -3399,7 +3742,22 @@
         }
       ],
       "requirements": "FLOAT NaN, signed zero, timezone/DST and widened integer arithmetic are engine/session laws",
-      "expected_native_oracle": "see separately pinned original-oracle row; no invented complete source/output for unexecuted original SQL"
+      "expected_native_oracle": "see separately pinned original-oracle row; no invented complete source/output for unexecuted original SQL",
+      "source_adapter_provenance": {
+        "reuse": "docs/task-197-source-fact-matrix.json",
+        "owner": "TASK-192",
+        "original_sql_metadata_scope": "complete_compiled_read_and_source_types_where_parser_supports",
+        "source_fact_set": "floating_amount",
+        "source_relations": [
+          "orders"
+        ],
+        "direct_sql": "source_fact_type_only",
+        "dbt_manifest": "source_fact_type_only",
+        "dbt_warehouse_catalog": "source_fact_type_only",
+        "odcs": "source_fact_type_only",
+        "equality_oracle": "tests/task_197_exhaustive_adapter_parity.rs",
+        "execution": "unattested"
+      }
     },
     {
       "id": "88-C179-025",
@@ -3539,7 +3897,22 @@
         }
       ],
       "requirements": "FLOAT NaN, signed zero, timezone/DST and widened integer arithmetic are engine/session laws",
-      "expected_native_oracle": "see separately pinned original-oracle row; no invented complete source/output for unexecuted original SQL"
+      "expected_native_oracle": "see separately pinned original-oracle row; no invented complete source/output for unexecuted original SQL",
+      "source_adapter_provenance": {
+        "reuse": "docs/task-197-source-fact-matrix.json",
+        "owner": "TASK-192",
+        "original_sql_metadata_scope": "complete_compiled_read_and_source_types_where_parser_supports",
+        "source_fact_set": "floating_amount",
+        "source_relations": [
+          "orders"
+        ],
+        "direct_sql": "source_fact_type_only",
+        "dbt_manifest": "source_fact_type_only",
+        "dbt_warehouse_catalog": "source_fact_type_only",
+        "odcs": "source_fact_type_only",
+        "equality_oracle": "tests/task_197_exhaustive_adapter_parity.rs",
+        "execution": "unattested"
+      }
     },
     {
       "id": "88-C179-026",
@@ -3679,7 +4052,22 @@
         }
       ],
       "requirements": "mutations preserve complete physical states; unexecuted isolation, MERGE multiplicity and DDL transaction rules unverified",
-      "expected_native_oracle": "see separately pinned original-oracle row; no invented complete source/output for unexecuted original SQL"
+      "expected_native_oracle": "see separately pinned original-oracle row; no invented complete source/output for unexecuted original SQL",
+      "source_adapter_provenance": {
+        "reuse": "docs/task-197-source-fact-matrix.json",
+        "owner": "TASK-196",
+        "original_sql_metadata_scope": "DML_program_requires_original_SQL_metadata_only",
+        "source_fact_set": "integer_amount",
+        "source_relations": [
+          "orders"
+        ],
+        "direct_sql": "source_fact_type_only",
+        "dbt_manifest": "source_fact_type_only",
+        "dbt_warehouse_catalog": "source_fact_type_only",
+        "odcs": "source_fact_type_only",
+        "equality_oracle": "tests/task_197_exhaustive_adapter_parity.rs",
+        "execution": "unattested"
+      }
     },
     {
       "id": "88-C179-027",
@@ -3819,7 +4207,23 @@
         }
       ],
       "requirements": "mutations preserve complete physical states; unexecuted isolation, MERGE multiplicity and DDL transaction rules unverified",
-      "expected_native_oracle": "see separately pinned original-oracle row; no invented complete source/output for unexecuted original SQL"
+      "expected_native_oracle": "see separately pinned original-oracle row; no invented complete source/output for unexecuted original SQL",
+      "source_adapter_provenance": {
+        "reuse": "docs/task-197-source-fact-matrix.json",
+        "owner": "TASK-196",
+        "original_sql_metadata_scope": "DML_program_requires_original_SQL_metadata_only",
+        "source_fact_set": "integer_amount",
+        "source_relations": [
+          "orders",
+          "customers"
+        ],
+        "direct_sql": "source_fact_type_only",
+        "dbt_manifest": "source_fact_type_only",
+        "dbt_warehouse_catalog": "source_fact_type_only",
+        "odcs": "source_fact_type_only",
+        "equality_oracle": "tests/task_197_exhaustive_adapter_parity.rs",
+        "execution": "unattested"
+      }
     },
     {
       "id": "88-C179-028",
@@ -3959,7 +4363,22 @@
         }
       ],
       "requirements": "mutations preserve complete physical states; unexecuted isolation, MERGE multiplicity and DDL transaction rules unverified",
-      "expected_native_oracle": "see separately pinned original-oracle row; no invented complete source/output for unexecuted original SQL"
+      "expected_native_oracle": "see separately pinned original-oracle row; no invented complete source/output for unexecuted original SQL",
+      "source_adapter_provenance": {
+        "reuse": "docs/task-197-source-fact-matrix.json",
+        "owner": "TASK-196",
+        "original_sql_metadata_scope": "DML_program_requires_original_SQL_metadata_only",
+        "source_fact_set": "integer_amount",
+        "source_relations": [
+          "orders"
+        ],
+        "direct_sql": "source_fact_type_only",
+        "dbt_manifest": "source_fact_type_only",
+        "dbt_warehouse_catalog": "source_fact_type_only",
+        "odcs": "source_fact_type_only",
+        "equality_oracle": "tests/task_197_exhaustive_adapter_parity.rs",
+        "execution": "unattested"
+      }
     },
     {
       "id": "88-C179-029",
@@ -4099,7 +4518,23 @@
         }
       ],
       "requirements": "mutations preserve complete physical states; unexecuted isolation, MERGE multiplicity and DDL transaction rules unverified",
-      "expected_native_oracle": "see separately pinned original-oracle row; no invented complete source/output for unexecuted original SQL"
+      "expected_native_oracle": "see separately pinned original-oracle row; no invented complete source/output for unexecuted original SQL",
+      "source_adapter_provenance": {
+        "reuse": "docs/task-197-source-fact-matrix.json",
+        "owner": "TASK-196",
+        "original_sql_metadata_scope": "DML_program_requires_original_SQL_metadata_only",
+        "source_fact_set": "integer_amount",
+        "source_relations": [
+          "orders",
+          "customers"
+        ],
+        "direct_sql": "source_fact_type_only",
+        "dbt_manifest": "source_fact_type_only",
+        "dbt_warehouse_catalog": "source_fact_type_only",
+        "odcs": "source_fact_type_only",
+        "equality_oracle": "tests/task_197_exhaustive_adapter_parity.rs",
+        "execution": "unattested"
+      }
     },
     {
       "id": "88-C179-030",
@@ -4239,7 +4674,23 @@
         }
       ],
       "requirements": "mutations preserve complete physical states; unexecuted isolation, MERGE multiplicity and DDL transaction rules unverified",
-      "expected_native_oracle": "see separately pinned original-oracle row; no invented complete source/output for unexecuted original SQL"
+      "expected_native_oracle": "see separately pinned original-oracle row; no invented complete source/output for unexecuted original SQL",
+      "source_adapter_provenance": {
+        "reuse": "docs/task-197-source-fact-matrix.json",
+        "owner": "TASK-196",
+        "original_sql_metadata_scope": "DML_program_requires_original_SQL_metadata_only",
+        "source_fact_set": "integer_amount",
+        "source_relations": [
+          "orders",
+          "customers"
+        ],
+        "direct_sql": "source_fact_type_only",
+        "dbt_manifest": "source_fact_type_only",
+        "dbt_warehouse_catalog": "source_fact_type_only",
+        "odcs": "source_fact_type_only",
+        "equality_oracle": "tests/task_197_exhaustive_adapter_parity.rs",
+        "execution": "unattested"
+      }
     },
     {
       "id": "88-C179-031",
@@ -4379,7 +4830,23 @@
         }
       ],
       "requirements": "mutations preserve complete physical states; unexecuted isolation, MERGE multiplicity and DDL transaction rules unverified",
-      "expected_native_oracle": "see separately pinned original-oracle row; no invented complete source/output for unexecuted original SQL"
+      "expected_native_oracle": "see separately pinned original-oracle row; no invented complete source/output for unexecuted original SQL",
+      "source_adapter_provenance": {
+        "reuse": "docs/task-197-source-fact-matrix.json",
+        "owner": "TASK-196",
+        "original_sql_metadata_scope": "DML_program_requires_original_SQL_metadata_only",
+        "source_fact_set": "integer_amount",
+        "source_relations": [
+          "orders",
+          "customers"
+        ],
+        "direct_sql": "source_fact_type_only",
+        "dbt_manifest": "source_fact_type_only",
+        "dbt_warehouse_catalog": "source_fact_type_only",
+        "odcs": "source_fact_type_only",
+        "equality_oracle": "tests/task_197_exhaustive_adapter_parity.rs",
+        "execution": "unattested"
+      }
     },
     {
       "id": "88-C179-032",
@@ -4519,7 +4986,20 @@
         }
       ],
       "requirements": "mutations preserve complete physical states; unexecuted isolation, MERGE multiplicity and DDL transaction rules unverified",
-      "expected_native_oracle": "see separately pinned original-oracle row; no invented complete source/output for unexecuted original SQL"
+      "expected_native_oracle": "see separately pinned original-oracle row; no invented complete source/output for unexecuted original SQL",
+      "source_adapter_provenance": {
+        "reuse": null,
+        "owner": "TASK-179",
+        "original_sql_metadata_scope": "not_represented_in_TASK197",
+        "source_fact_set": null,
+        "source_relations": [],
+        "direct_sql": "requires_task_179_transaction_source_fixture",
+        "dbt_manifest": "metadata_cannot_attest_transaction",
+        "dbt_warehouse_catalog": "metadata_cannot_attest_transaction",
+        "odcs": "metadata_cannot_attest_transaction",
+        "equality_oracle": null,
+        "execution": "unattested"
+      }
     },
     {
       "id": "88-C179-033",
@@ -4659,7 +5139,20 @@
         }
       ],
       "requirements": "mutations preserve complete physical states; unexecuted isolation, MERGE multiplicity and DDL transaction rules unverified",
-      "expected_native_oracle": "see separately pinned original-oracle row; no invented complete source/output for unexecuted original SQL"
+      "expected_native_oracle": "see separately pinned original-oracle row; no invented complete source/output for unexecuted original SQL",
+      "source_adapter_provenance": {
+        "reuse": null,
+        "owner": "TASK-179",
+        "original_sql_metadata_scope": "not_represented_in_TASK197",
+        "source_fact_set": null,
+        "source_relations": [],
+        "direct_sql": "requires_task_179_transaction_source_fixture",
+        "dbt_manifest": "metadata_cannot_attest_transaction",
+        "dbt_warehouse_catalog": "metadata_cannot_attest_transaction",
+        "odcs": "metadata_cannot_attest_transaction",
+        "equality_oracle": null,
+        "execution": "unattested"
+      }
     },
     {
       "id": "88-C179-034",
@@ -4799,7 +5292,20 @@
         }
       ],
       "requirements": "mutations preserve complete physical states; unexecuted isolation, MERGE multiplicity and DDL transaction rules unverified",
-      "expected_native_oracle": "see separately pinned original-oracle row; no invented complete source/output for unexecuted original SQL"
+      "expected_native_oracle": "see separately pinned original-oracle row; no invented complete source/output for unexecuted original SQL",
+      "source_adapter_provenance": {
+        "reuse": null,
+        "owner": "TASK-179",
+        "original_sql_metadata_scope": "not_represented_in_TASK197",
+        "source_fact_set": null,
+        "source_relations": [],
+        "direct_sql": "requires_task_179_transaction_source_fixture",
+        "dbt_manifest": "metadata_cannot_attest_transaction",
+        "dbt_warehouse_catalog": "metadata_cannot_attest_transaction",
+        "odcs": "metadata_cannot_attest_transaction",
+        "equality_oracle": null,
+        "execution": "unattested"
+      }
     },
     {
       "id": "88-C179-035",
@@ -4939,7 +5445,20 @@
         }
       ],
       "requirements": "mutations preserve complete physical states; unexecuted isolation, MERGE multiplicity and DDL transaction rules unverified",
-      "expected_native_oracle": "see separately pinned original-oracle row; no invented complete source/output for unexecuted original SQL"
+      "expected_native_oracle": "see separately pinned original-oracle row; no invented complete source/output for unexecuted original SQL",
+      "source_adapter_provenance": {
+        "reuse": null,
+        "owner": "TASK-179",
+        "original_sql_metadata_scope": "not_represented_in_TASK197",
+        "source_fact_set": null,
+        "source_relations": [],
+        "direct_sql": "requires_task_179_transaction_source_fixture",
+        "dbt_manifest": "metadata_cannot_attest_transaction",
+        "dbt_warehouse_catalog": "metadata_cannot_attest_transaction",
+        "odcs": "metadata_cannot_attest_transaction",
+        "equality_oracle": null,
+        "execution": "unattested"
+      }
     },
     {
       "id": "88-C179-036",
@@ -5079,7 +5598,20 @@
         }
       ],
       "requirements": "quoted/unquoted identifier folding and case collision are vendor rules, not stable portable facts",
-      "expected_native_oracle": "docs/task-179-acceptance-freeze.json"
+      "expected_native_oracle": "docs/task-179-acceptance-freeze.json",
+      "source_adapter_provenance": {
+        "reuse": null,
+        "owner": "TASK-179",
+        "original_sql_metadata_scope": "not_represented_in_TASK197",
+        "source_fact_set": null,
+        "source_relations": [],
+        "direct_sql": "requires_task_179_transaction_source_fixture",
+        "dbt_manifest": "metadata_cannot_attest_transaction",
+        "dbt_warehouse_catalog": "metadata_cannot_attest_transaction",
+        "odcs": "metadata_cannot_attest_transaction",
+        "equality_oracle": null,
+        "execution": "unattested"
+      }
     },
     {
       "id": "88-C179-037",
@@ -5219,7 +5751,22 @@
         }
       ],
       "requirements": "quoted/unquoted identifier folding and case collision are vendor rules, not stable portable facts",
-      "expected_native_oracle": "docs/task-179-acceptance-freeze.json"
+      "expected_native_oracle": "docs/task-179-acceptance-freeze.json",
+      "source_adapter_provenance": {
+        "reuse": null,
+        "owner": "TASK-179",
+        "original_sql_metadata_scope": "not_represented_in_TASK197",
+        "source_fact_set": null,
+        "source_relations": [],
+        "direct_sql": "requires_task_179_transaction_source_fixture",
+        "dbt_manifest": "metadata_cannot_attest_transaction",
+        "dbt_warehouse_catalog": "metadata_cannot_attest_transaction",
+        "odcs": "metadata_cannot_attest_transaction",
+        "equality_oracle": null,
+        "execution": "unattested"
+      }
     }
-  ]
+  ],
+  "task197_represented_original_case_count": 31,
+  "task179_unrepresented_original_or_synthetic_case_count": 6
 }
