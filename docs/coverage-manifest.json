@@ -22,7 +22,10 @@
     "named_law_parser_cells": 481,
     "named_law_matrix_test": "tests/task_179_dialect_law_matrix.rs",
     "full_named_variant_freeze": true,
-    "full_independent_semantic_signoff": false
+    "full_independent_semantic_signoff": false,
+    "adapter_handoff_test": "tests/task_179_adapter_handoff.rs",
+    "task197_represented_original_cases": 31,
+    "task179_unrepresented_transaction_or_identifier_cases": 6
   },
   "task_197_cross_adapter_parity": {
     "owner": "TASK-197",
