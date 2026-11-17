@@ -1,4 +1,22 @@
 {
+  "task_179_vendor_session_laws": {
+    "owner": "TASK-179",
+    "parent": "TASK-88",
+    "status": "in_progress_initial_oracle_slice",
+    "freeze": "docs/task-179-acceptance-freeze.json",
+    "freeze_version": 1,
+    "case_count": 14,
+    "parser_cells": 182,
+    "dialects": 13,
+    "native_engine_attested": "DuckDB only, bounded fixed source examples",
+    "external_native_vendor_execution_attested": false,
+    "complete_named_variant_freeze": false,
+    "all_acceptance_criteria_signed_off": false,
+    "all_parser_cells_independently_reviewed": false,
+    "oracle_tests": "tests/task_179_vendor_law_oracles.rs",
+    "audit": "docs/task-179-acceptance-audit.md",
+    "parent_task88_signoff": false
+  },
   "task_197_cross_adapter_parity": {
     "owner": "TASK-197",
     "parent": "TASK-88",
