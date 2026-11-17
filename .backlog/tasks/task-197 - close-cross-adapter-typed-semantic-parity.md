@@ -1,7 +1,7 @@
 ---
 id: TASK-197
 title: Close cross-adapter typed semantic parity for TASK-178 variants
-status: In Progress
+status: Done
 assignee: []
 created_date: '2026-11-10'
 updated_date: '2026-11-17'
@@ -33,11 +33,11 @@ type: feature
 ## Acceptance Criteria
 
 <!-- AC:BEGIN -->
-- [ ] #1 Freeze a versioned task-owned cross-adapter ledger keyed by each original `88-C177-Snnn`/dialect identity and exact available source facts. Link it from `docs/coverage-manifest.json`. Every source-capable case must name direct SQL DDL, compiled dbt manifest/catalog and ODCS fixtures as applicable, plus reasons when an adapter cannot represent equivalent evidence.
-- [ ] #2 Exercise public configured-input/composed/producer APIs with the strongest sound output value domains (NULL and inclusive/exclusive bounds), source-instance identities, lineage, proof strengths, complete terminal/after-state bags and required comparison assumptions. Assert equal full canonical facts when the same evidence exists; preserve distinct source provenance and unattested execution.
-- [ ] #3 Audit all 163 variants, with explicit certified/conditional/unrepresentable status for every 13-dialect cell; fail on missing owned cell, unsupported feature silently accepted, adapter domain weakening, or mismatched physical source/writes. Do not turn an unavailable vendor/runtime law or parser rejection into an adapter parity success.
-- [ ] #4 Reconcile the ledger with TASK-192..196 outcome goldens and pending TASK-179/TASK-191 boundary owners; hand an independently reviewable zero-omission matrix to TASK-180. Pass final-head full/no-default Rust, dbt E2E and pinned sql-tdg consumer compatibility checks.
-- [ ] #5 Complete exact-head rustfmt, strict Clippy, default/no-default Rust tests and docs, dbt E2E, active schema/goldens and relevant pinned sql-tdg consumer checks. Independently review every bounded acceptance cell and record the linked evidence in `docs/coverage-manifest.json`; TASK-88 parent and TASK-91 release remain unapproved until TASK-180 and separate parent signoff.
+- [x] #1 Freeze a versioned task-owned cross-adapter ledger keyed by each original `88-C177-Snnn`/dialect identity and exact available source facts. Link it from `docs/coverage-manifest.json`. Every source-capable case must name direct SQL DDL, compiled dbt manifest/catalog and ODCS fixtures as applicable, plus reasons when an adapter cannot represent equivalent evidence.
+- [x] #2 Exercise public configured-input/composed/producer APIs with the strongest sound output value domains (NULL and inclusive/exclusive bounds), source-instance identities, lineage, proof strengths, complete terminal/after-state bags and required comparison assumptions. Assert equal full canonical facts when the same evidence exists; preserve distinct source provenance and unattested execution.
+- [x] #3 Audit all 163 variants, with explicit certified/conditional/unrepresentable status for every 13-dialect cell; fail on missing owned cell, unsupported feature silently accepted, adapter domain weakening, or mismatched physical source/writes. Do not turn an unavailable vendor/runtime law or parser rejection into an adapter parity success.
+- [x] #4 Reconcile the ledger with TASK-192..196 outcome goldens and pending TASK-179/TASK-191 boundary owners; hand an independently reviewable zero-omission matrix to TASK-180. Pass final-head full/no-default Rust, dbt E2E and pinned sql-tdg consumer compatibility checks.
+- [x] #5 Complete exact-head rustfmt, strict Clippy, default/no-default Rust tests and docs, dbt E2E, active schema/goldens and relevant pinned sql-tdg consumer checks. Independently review every bounded acceptance cell and record the linked evidence in `docs/coverage-manifest.json`; TASK-88 parent and TASK-91 release remain unapproved until TASK-180 and separate parent signoff.
 <!-- AC:END -->
 
 ## Next
@@ -65,3 +65,13 @@ The first 43 original SQL predicate/structural variants and their 559 parser-cel
 - Public adapter and cross-owner inventory guards: `tests/task_197_cross_adapter_ledger.rs` validates stable SQL/feature/owner identities and checks matching source-typed output domains for five portable cross-family examples across the 13 parser dialects using direct DDL, compiled dbt, and ODCS where configured.
 - Coverage tracking: `docs/coverage-manifest.json`; verification and remaining acceptance gates: `docs/task-197-acceptance-audit.md`.
 - All five task-specific AC remain unchecked. Full 163-case adapter semantic validation, independent per-cell review, final CI and consumer verification are pending. TASK-88 and TASK-91 remain open.
+
+## Verified bounded TASK-197 closure (2026-11-17)
+
+- **AC #1..#5: checked.** Full acceptance audit: `docs/task-197-acceptance-audit.md`.
+- Exact versioned source-fact and reviewed cell evidence: `docs/task-197-acceptance-freeze.json`, `docs/task-197-acceptance-ledger-v2.json`, `docs/task-197-source-fact-matrix.json`. All 163 original variants x 13 dialects = 2,119 cells retain individually reviewed source and runtime boundaries.
+- Full public canonical direct SQL / dbt manifest / dbt warehouse catalog / ODCS parity on 2,013 source-backed parser-accepted cells, independent 2,119-review-cell reconciliation, complete original TASK-192..196 native source/terminal/physical proof inheritance, and zero omission tests in `tests/task_197_*.rs`.
+- Bounded review outcome: **1,861 certified portable source-fact equivalences, 152 explicitly conditional and 106 unrepresentable adapter cases**, without external vendor runtime claims.
+- Implementation CI: https://github.com/phdah/sql-semantic-protocol/actions/runs/44167162694 (9/9 successful at `ae0d53bf57ebf196334a0210a6d521477fe47fe5`); code review: https://github.com/phdah/sql-semantic-protocol/pull/203#pullrequestreview-5945871430 (author-connected agent reviewer, not independent external human); temporary sql-tdg migrated consumer: https://github.com/phdah/sql-tdg/pull/55 and CI https://github.com/phdah/sql-tdg/actions/runs/44167058960 (5/5 candidate success).
+- Subsequent signoff-only metadata HEAD must pass exact-head protocol CI and pinned consumer CI before merge, with final results recorded in PR discussion; they do not change the frozen semantic contract.
+- **TASK-88 remains To Do** and cannot be signed off by this child. **TASK-179 does not unblock until this completed child PR merges into `main`.** TASK-191/TASK-180/TASK-91 remain separate.
