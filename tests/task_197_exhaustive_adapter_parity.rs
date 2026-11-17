@@ -13,6 +13,7 @@ use sql_semantic_protocol::{
 };
 
 const FREEZE: &str = include_str!("../docs/task-197-acceptance-ledger-v2.json");
+const SOURCE_FACTS: &str = include_str!("../docs/task-197-source-fact-matrix.json");
 
 fn original() -> Value {
     serde_json::from_str(FREEZE).expect("immutable TASK-197 source SQL ledger")
@@ -238,6 +239,13 @@ fn canonical_semantics(catalog: &RelationCatalog, sql: &str, dialect: &str) -> V
 fn every_parser_accepted_original_statement_preserves_full_canonical_semantics_across_equal_sources(
 ) {
     let fixture = original();
+    let source_facts: Value =
+        serde_json::from_str(SOURCE_FACTS).expect("TASK-197 authoritative source facts");
+    let cases = fixture["cases"].as_array().expect("all original SQL variants");
+    let fact_cases = source_facts["cases"]
+        .as_array()
+        .expect("exact original per-case source authorities");
+    assert_eq!(cases.len(), fact_cases.len(), "source-fact inventory drift");
     let direct_integer = direct_catalog("INTEGER");
     let direct_float = direct_catalog("DOUBLE");
     let direct_decimal = direct_catalog("DECIMAL(10,2)");
@@ -257,46 +265,39 @@ fn every_parser_accepted_original_statement_preserves_full_canonical_semantics_a
     let mut bypassed = 0;
     let mut parser_boundaries = 0;
 
-    for case in fixture["cases"]
-        .as_array()
-        .expect("all original SQL variants")
-    {
+    for (case, fact) in cases.iter().zip(fact_cases) {
         let id = case["id"].as_str().expect("stable fixture id");
         let sql = case["sql"].as_str().expect("original SQL");
+        assert_eq!(fact["id"], case["id"], "{id}: source-fact identity drift");
+        assert_eq!(fact["sql"], case["sql"], "{id}: source-fact SQL drift");
+        assert_eq!(
+            fact["source_relations"], case["source_relations_mentioned"],
+            "{id}: source relation drift"
+        );
         let no_external_fact = case["source_relations_mentioned"]
             .as_array()
             .expect("named source scope")
             .is_empty();
-        let floating = matches!(id, "88-C177-S040" | "88-C177-S041");
-        let decimal = matches!(id, "88-C177-S191" | "88-C177-S193");
-        let direct = if floating {
-            &direct_float
-        } else if decimal {
-            &direct_decimal
-        } else {
-            &direct_integer
-        };
-        let dbt = if floating {
-            &dbt_float
-        } else if decimal {
-            &dbt_decimal
-        } else {
-            &dbt_integer
-        };
-        let warehouse = if floating {
-            &warehouse_float
-        } else if decimal {
-            &warehouse_decimal
-        } else {
-            &warehouse_integer
+        let fact_set = fact["source_fact_set"].as_str();
+        assert_eq!(
+            fact_set.is_none(), no_external_fact,
+            "{id}: missing or unexpected authoritative source types"
+        );
+        // The frozen source-fact matrix, not a second hard-coded case-ID list,
+        // determines which equivalent type authorities each adapter receives.
+        let (direct, dbt, warehouse) = match fact_set {
+            Some("integer_amount") => (&direct_integer, &dbt_integer, &warehouse_integer),
+            Some("floating_amount") => (&direct_float, &dbt_float, &warehouse_float),
+            Some("decimal_amount") => (&direct_decimal, &dbt_decimal, &warehouse_decimal),
+            None => (&direct_integer, &dbt_integer, &warehouse_integer),
+            Some(other) => panic!("{id}: unknown source fact set {other}"),
         };
         #[cfg(feature = "odcs")]
-        let odcs = if floating {
-            &odcs_float
-        } else if decimal {
-            &odcs_decimal
-        } else {
-            &odcs_integer
+        let odcs = match fact_set {
+            Some("floating_amount") => &odcs_float,
+            Some("decimal_amount") => &odcs_decimal,
+            Some("integer_amount") | None => &odcs_integer,
+            Some(other) => panic!("{id}: unknown ODCS source fact set {other}"),
         };
 
         for cell in case["cells"].as_array().expect("all 13 parser identities") {
