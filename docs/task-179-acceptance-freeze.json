@@ -64,7 +64,7 @@
       ],
       "typed_source": "integer row_id, nullable integer amount",
       "expected_protocol_domain": "no stronger than source-typed portable proof without external session law",
-      "expected_true_not_true": "native DuckDB exact under fixed source; external vendor residual until attested",
+      "expected_true_not_true": "DuckDB positive terminal only; portable truth-partition/physical certification pending.",
       "source_instance_identity": "row_id (unique within named physical table)",
       "sessions": [
         "DuckDB in-memory default"
@@ -187,7 +187,8 @@
           4,
           "2"
         ]
-      ]
+      ],
+      "control_direction": "positive_native_terminal"
     },
     {
       "id": "88-C179-N01",
@@ -204,7 +205,7 @@
       ],
       "typed_source": "integer row_id, nullable integer amount",
       "expected_protocol_domain": "no stronger than source-typed portable proof without external session law",
-      "expected_true_not_true": "native DuckDB exact under fixed source; external vendor residual until attested",
+      "expected_true_not_true": "Comparator/control only; this is not a NOT TRUE or Impossible witness.",
       "source_instance_identity": "row_id (unique within named physical table)",
       "sessions": [
         "DuckDB in-memory default"
@@ -327,7 +328,8 @@
           4,
           "2"
         ]
-      ]
+      ],
+      "control_direction": "alternative_law_control"
     },
     {
       "id": "88-C179-P02",
@@ -342,7 +344,7 @@
       ],
       "typed_source": "integer row_id, nullable VARCHAR txt",
       "expected_protocol_domain": "no stronger than source-typed portable proof without external session law",
-      "expected_true_not_true": "native DuckDB exact under fixed source; external vendor residual until attested",
+      "expected_true_not_true": "DuckDB positive terminal only; portable truth-partition/physical certification pending.",
       "source_instance_identity": "row_id (unique within named physical table)",
       "sessions": [
         "DuckDB in-memory default"
@@ -465,7 +467,8 @@
           4,
           null
         ]
-      ]
+      ],
+      "control_direction": "positive_native_terminal"
     },
     {
       "id": "88-C179-N02",
@@ -479,7 +482,7 @@
       ],
       "typed_source": "integer row_id, nullable VARCHAR txt",
       "expected_protocol_domain": "no stronger than source-typed portable proof without external session law",
-      "expected_true_not_true": "native DuckDB exact under fixed source; external vendor residual until attested",
+      "expected_true_not_true": "Comparator/control only; this is not a NOT TRUE or Impossible witness.",
       "source_instance_identity": "row_id (unique within named physical table)",
       "sessions": [
         "DuckDB in-memory default"
@@ -602,7 +605,8 @@
           4,
           null
         ]
-      ]
+      ],
+      "control_direction": "alternative_law_control"
     },
     {
       "id": "88-C179-P03",
@@ -616,7 +620,7 @@
       ],
       "typed_source": "integer row_id, nullable integer amount",
       "expected_protocol_domain": "no stronger than source-typed portable proof without external session law",
-      "expected_true_not_true": "native DuckDB exact under fixed source; external vendor residual until attested",
+      "expected_true_not_true": "DuckDB positive terminal only; portable truth-partition/physical certification pending.",
       "source_instance_identity": "row_id (unique within named physical table)",
       "sessions": [
         "DuckDB in-memory default"
@@ -735,7 +739,8 @@
           3,
           null
         ]
-      ]
+      ],
+      "control_direction": "positive_native_terminal"
     },
     {
       "id": "88-C179-N03",
@@ -749,7 +754,7 @@
       ],
       "typed_source": "integer row_id, nullable integer amount",
       "expected_protocol_domain": "no stronger than source-typed portable proof without external session law",
-      "expected_true_not_true": "native DuckDB exact under fixed source; external vendor residual until attested",
+      "expected_true_not_true": "Comparator/control only; this is not a NOT TRUE or Impossible witness.",
       "source_instance_identity": "row_id (unique within named physical table)",
       "sessions": [
         "DuckDB in-memory default"
@@ -868,7 +873,8 @@
           3,
           null
         ]
-      ]
+      ],
+      "control_direction": "alternative_law_control"
     },
     {
       "id": "88-C179-P04",
@@ -883,7 +889,7 @@
       ],
       "typed_source": "integer row_id, nullable floating-point amount",
       "expected_protocol_domain": "no stronger than source-typed portable proof without external session law",
-      "expected_true_not_true": "native DuckDB exact under fixed source; external vendor residual until attested",
+      "expected_true_not_true": "DuckDB positive terminal only; portable truth-partition/physical certification pending.",
       "source_instance_identity": "row_id (unique within named physical table)",
       "sessions": [
         "DuckDB in-memory default"
@@ -1006,7 +1012,8 @@
           4,
           null
         ]
-      ]
+      ],
+      "control_direction": "positive_native_terminal"
     },
     {
       "id": "88-C179-N04",
@@ -1021,7 +1028,7 @@
       ],
       "typed_source": "integer row_id, nullable floating-point amount",
       "expected_protocol_domain": "no stronger than source-typed portable proof without external session law",
-      "expected_true_not_true": "native DuckDB exact under fixed source; external vendor residual until attested",
+      "expected_true_not_true": "Full DuckDB NOT TRUE output includes the NULL source occurrence; independent portable witness remains unverified.",
       "source_instance_identity": "row_id (unique within named physical table)",
       "sessions": [
         "DuckDB in-memory default"
@@ -1144,7 +1151,8 @@
           4,
           null
         ]
-      ]
+      ],
+      "control_direction": "not_true_rejection"
     },
     {
       "id": "88-C179-P05",
@@ -1165,7 +1173,7 @@
       ],
       "typed_source": "integer row_id, nullable integer amount",
       "expected_protocol_domain": "no stronger than source-typed portable proof without external session law",
-      "expected_true_not_true": "native DuckDB exact under fixed source; external vendor residual until attested",
+      "expected_true_not_true": "DuckDB positive terminal only; portable truth-partition/physical certification pending.",
       "source_instance_identity": "row_id (unique within named physical table)",
       "sessions": [
         "DuckDB in-memory default"
@@ -1280,7 +1288,8 @@
           2,
           null
         ]
-      ]
+      ],
+      "control_direction": "committed_state"
     },
     {
       "id": "88-C179-N05",
@@ -1301,7 +1310,7 @@
       ],
       "typed_source": "integer row_id, nullable integer amount",
       "expected_protocol_domain": "no stronger than source-typed portable proof without external session law",
-      "expected_true_not_true": "native DuckDB exact under fixed source; external vendor residual until attested",
+      "expected_true_not_true": "Complete rollback state comparison, not a SQL Boolean NOT TRUE witness.",
       "source_instance_identity": "row_id (unique within named physical table)",
       "sessions": [
         "DuckDB in-memory default"
@@ -1416,7 +1425,8 @@
           2,
           null
         ]
-      ]
+      ],
+      "control_direction": "rollback_counterexample"
     },
     {
       "id": "88-C179-P06",
@@ -1431,7 +1441,7 @@
       ],
       "typed_source": "quoted mixed-case relation and column names",
       "expected_protocol_domain": "no stronger than source-typed portable proof without external session law",
-      "expected_true_not_true": "native DuckDB exact under fixed source; external vendor residual until attested",
+      "expected_true_not_true": "DuckDB positive terminal only; portable truth-partition/physical certification pending.",
       "source_instance_identity": "row_id (unique within named physical table)",
       "sessions": [
         "DuckDB in-memory default"
@@ -1546,7 +1556,8 @@
           2,
           "2"
         ]
-      ]
+      ],
+      "control_direction": "positive_native_terminal"
     },
     {
       "id": "88-C179-N06",
@@ -1561,7 +1572,7 @@
       ],
       "typed_source": "quoted mixed-case relation and column names",
       "expected_protocol_domain": "no stronger than source-typed portable proof without external session law",
-      "expected_true_not_true": "native DuckDB exact under fixed source; external vendor residual until attested",
+      "expected_true_not_true": "Comparator/control only; this is not a NOT TRUE or Impossible witness.",
       "source_instance_identity": "row_id (unique within named physical table)",
       "sessions": [
         "DuckDB in-memory default"
@@ -1676,7 +1687,8 @@
           2,
           "2"
         ]
-      ]
+      ],
+      "control_direction": "alternative_law_control"
     },
     {
       "id": "88-C179-P07",
@@ -1691,7 +1703,7 @@
       ],
       "typed_source": "integer row_id, nullable TIMESTAMPTZ stamp",
       "expected_protocol_domain": "no stronger than source-typed portable proof without external session law",
-      "expected_true_not_true": "native DuckDB exact under fixed source; external vendor residual until attested",
+      "expected_true_not_true": "DuckDB positive terminal only; portable truth-partition/physical certification pending.",
       "source_instance_identity": "row_id (unique within named physical table)",
       "sessions": [
         "DuckDB in-memory default",
@@ -1811,7 +1823,8 @@
           3,
           null
         ]
-      ]
+      ],
+      "control_direction": "positive_native_terminal"
     },
     {
       "id": "88-C179-N07",
@@ -1825,7 +1838,7 @@
       ],
       "typed_source": "integer row_id, nullable TIMESTAMPTZ stamp",
       "expected_protocol_domain": "no stronger than source-typed portable proof without external session law",
-      "expected_true_not_true": "native DuckDB exact under fixed source; external vendor residual until attested",
+      "expected_true_not_true": "Full DuckDB NOT TRUE output includes the NULL source occurrence; independent portable witness remains unverified.",
       "source_instance_identity": "row_id (unique within named physical table)",
       "sessions": [
         "DuckDB in-memory default",
@@ -1945,8 +1958,10 @@
           3,
           null
         ]
-      ]
+      ],
+      "control_direction": "not_true_rejection"
     }
   ],
-  "source_snapshot_contract": "Every task-owned native case independently checks the entire ordered source bag, with SQL data types fixed by source_setup; timestamps are normalized to epoch milliseconds and floating values preserve signed-zero text."
+  "source_snapshot_contract": "Every task-owned native case independently checks the entire ordered source bag, with SQL data types fixed by source_setup; timestamps are normalized to epoch milliseconds and floating values preserve signed-zero text.",
+  "control_direction_contract": "N-labelled cases include counterfactual vendor-law controls and SQL NOT TRUE/rollback negatives; N does not automatically imply a rejected Boolean witness."
 }
