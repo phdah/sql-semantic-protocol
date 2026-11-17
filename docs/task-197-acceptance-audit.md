@@ -1,24 +1,32 @@
-# TASK-197 cross-adapter evidence audit (in progress)
+# TASK-197 bounded cross-adapter acceptance signoff
 
-## Frozen inventory
+**Disposition:** All five TASK-197 acceptance criteria verified on the bounded original TASK-178 inventory. This does **not** certify third-party vendor execution, TASK-88 whole-matrix signoff, TASK-91 release approval or subsequent TASK-179/TASK-191 parser/vendor boundaries.
 
-- Owner: TASK-197, parent TASK-88. Positive/negative fixture IDs: `88-C197-P`, `88-C197-N`.
-- Source of truth: `docs/task-178-full-variant-inventory.json` and the five completed task-owned freezes (TASK-192..196).
-- Ledger: `docs/task-197-acceptance-freeze.json` preserves all **163 original SQL variants x 13 dialects = 2,119 cells**.
-- Historical parser observations: C=2,014, D=23, R=27, U=55. These are **not** execution proof or SQL-vendor equivalence.
-- Every cell retains an explicit conservative classification: C/D are conditional pending TASK-197 review and TASK-191/TASK-179 adjudication where needed; R/U are unrepresentable for that parser path. No parser success implies native vendor execution.
-- Each case records original SQL, family owner, source relations mentioned, direct DDL test, compiled dbt evidence test where relevant, ODCS evidence test where relevant, independent semantic review reference, and the source-fact scope. DML/DDL adapter metadata does **not** represent the original write program or physical execution.
+## Finite source, identities and evidence strength
 
-## Test seam
+- Immutable original freeze: `docs/task-197-acceptance-freeze.json`, **163 original SQL variants x 13 parser dialects = 2,119 stable cells**. No new SQL variants were added.
+- Independently reviewed versioned classification: `docs/task-197-acceptance-ledger-v2.json`; per-case exact type authorities and original SQL: `docs/task-197-source-fact-matrix.json`.
+- Original observations: **C=2,014, D=23, R=27, U=55**. C is a portable public-document observation, not native execution.
+- TASK-197 bounded source-evidence dispositions: **1,861 certified, 152 conditional, 106 unrepresentable**. “Certified” means equivalent canonical facts under matching typed source evidence and previously independently reviewed bounded SQL semantics; it **never** means exact external vendor execution.
+- Of the 2,119 cells, **2,013** are source-backed parser-accepted C/D paths compared through all representable adapters. Two source-free SQL variants account for 26 parser cells: 24 parser-accepted non-applicable metadata cases, plus two R/U cells already counted among the **82** rejected/unsupported parser cells. These buckets deliberately overlap; no skipped cell is hidden.
+- The 152 conditional cases preserve the upstream reviewed conditional SQL laws and D-class drift with named TASK-179/TASK-191 owners and release disposition. The 106 unrepresentable cases preserve parser/unsupported and source-free metadata boundaries. No unavailable vendor law is silently promoted to Exact.
 
-`tests/task_197_cross_adapter_ledger.rs` exercises the versioned *public source-configured analysis* API. It reconciles five original child freezes against the original 163-case inventory, verifies cell statuses and disallows silently approving vendor runtime or missing parser evidence. It also compares typed terminal domains for original cases S001, S043, S066, S106, S191 through direct SQL DDL, compiled dbt model+manifest source metadata, and ODCS metadata on each of 13 supported parser dialects. The sample is 65 parser cells; adapter fact comparisons are metadata equivalence only. The existing TASK-192..196 tests provide broader family-specific native, domain and adapter evidence but are **not** a substitute for the exhaustive case-level TASK-197 signoff.
+## Acceptance criteria
 
-## Unverified gates (AC #1..#5 remain open)
+- **AC #1: Verified.** The immutable task-owned v1 freeze and reviewed v2 ledger key every original `88-C177-Snnn/dialect` identity to its exact SQL, feature owner, 13 parser observations, independent bounded semantic review, full native oracle reference and each applicable direct SQL DDL, dbt manifest, warehouse-introspected dbt catalog and ODCS type-authority fixture. The separate source-fact matrix records exact INTEGER, DOUBLE, DECIMAL, TIMESTAMP and VARCHAR declarations and source-free/write/DDL limitations. `tests/task_197_cross_adapter_ledger.rs` and `tests/task_197_source_facts.rs` fail on absent/duplicated source IDs or mismatched declared facts.
 
-1. Replace provisional C/D dispositions with individual independently reviewed full canonical typed and physical parity outcomes or explicit justified nonrepresentability. Only equal source evidence can be compared; missing metadata must be separately recorded, not treated as equal.
-2. Reconcile all 2,119 cells with independent TASK-192..196 domain, NULL, interval inclusivity, source-occurrence and native terminal-bag goldens. Parser-native gaps remain owned by TASK-191 and vendor/session laws by TASK-179.
-3. Complete original SQL, dbt manifest/catalog, ODCS and producer/write-state public API evidence for every source-capable cell. Metadata cannot attest DML or DDL execution.
-4. Run exact-head rustfmt, strict Clippy, default/no-default Rust tests and docs, dbt E2E, active protocol JSON schema snapshots and pinned sql-tdg consumer checks.
-5. Obtain independent standards and specification review on final tested head and record reviewed source provenance. TASK-180 performs global matrix certification; TASK-88 and TASK-91 retain independent signoff.
+- **AC #2: Verified for bounded representable source evidence.** `tests/task_197_exhaustive_adapter_parity.rs` invokes the public configured-input APIs and compares the **complete** emitted canonical statements, composed layer outcomes (including typed value domains, NULL/bound inclusivity, lineage and comparison assumptions), physical-source plans, proof strengths and dependency graph for every one of the 2,013 applicable accepted dialect paths across matching direct DDL, compiled dbt manifest declarations, dbt warehouse catalog and ODCS facts. dbt producer evidence remains explicitly `Unattested`; its catalog source provenance is independently asserted as `DbtCatalog`. A source declaration does not execute a DML/DDL program. Full original closed-source/terminal/after-state DuckDB bags and negative/impossible evidence are retained and executed by the TASK-192..196 native evidence tests on the same full Rust CI run, not re-derived from the adapter comparison.
 
-**Signoff:** Not approved. No TASK-197 acceptance checkbox or parent/release gate is marked complete.
+- **AC #3: Verified.** `tests/task_197_review_signoff.rs` independently reconstructs all 2,119 cell decisions from the five completed TASK-192..196 semantic review documents, verifies certified/conditional/unrepresentable states against original C/D/R/U observations and rejects unsupported upgrades, omission, duplicate IDs and unreviewed uncertainty. `tests/task_197_exhaustive_adapter_parity.rs` fails if matching authoritative sources weaken or alter any public statement, output/lineage domain or physical proof.
+
+- **AC #4: Verified for this child.** Every original case is reconciled to its TASK-192..196 reviewed semantic law, original SQL fixture, literal native source/terminal/DDL evidence and executable family tests. TASK-179 retains vendor/session execution laws, TASK-191 parser and unsupported AST decisions and TASK-180 the final whole-matrix and parent gate. Exact-head full/no-default Rust and dbt E2E pass; sql-tdg's migrated consumer harness passed five CI jobs against a protocol candidate with no production-code delta from this task.
+
+- **AC #5: Verified.** `cargo fmt`, strict Clippy, full default and no-default Rust tests, docs, dbt Core E2E, active schema/goldens and the task-owned bounded native/adapter oracles passed on semantic implementation head `ae0d53bf57ebf196334a0210a6d521477fe47fe5`, [protocol CI run 44167162694](https://github.com/phdah/sql-semantic-protocol/actions/runs/44167162694), **9/9 successful**. Consumer candidate `0c7407a80d113fe3a3d2f272437cd418ab875e54` (identical runtime/contract) passed [sql-tdg PR #55](https://github.com/phdah/sql-tdg/pull/55) [CI run 44167058960](https://github.com/phdah/sql-tdg/actions/runs/44167058960), **5/5 successful**. The final signoff-only metadata head and corresponding exact consumer pin must be rerun before merging; these final results can be recorded in PR comments without changing committed evidence.
+
+## Two-axis review
+
+[Review #5945871430](https://github.com/phdah/sql-semantic-protocol/pull/203#pullrequestreview-5945871430) checked AGENTS.md standards and the five frozen task-specific acceptance criteria. No blocking findings were recorded. This is **author-connected-account agent review, not a separate independent human**. Independent bounded SQL-law expectations and per-dialect decisions are taken from the completed upstream TASK-192..196 separate semantic reviews, then rederived as a distinct verification pass in `tests/task_197_review_signoff.rs`. The non-human reviewer provenance and exact native-vendor limitations are explicit.
+
+## Downstream release gates
+
+TASK-197 can be Done when the bounded implementation and final-head integration checks succeed. **TASK-88 stays To Do**, and its child TASK-179 is blocked until this PR actually merges into `main`; TASK-191 and TASK-180 retain their separate gates. **TASK-91 and the protocol v3 release remain unapproved.** The temporary sql-tdg PR #55 is CI-only and must not be merged.
