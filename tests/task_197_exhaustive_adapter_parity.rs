@@ -6,9 +6,10 @@
 
 use serde_json::{json, Value};
 use sql_semantic_protocol::{
-    analyze_configured_inputs_with_catalog, analyze_dbt_manifest_with_schemas, analyze_inputs,
-    dialect_from_name, parse_dbt_manifest, to_bundle_json, ConfiguredSqlInput, ProducerExecution,
-    RelationCatalog, SqlInput,
+    analyze_configured_inputs_with_catalog, analyze_dbt_artifacts, analyze_dbt_manifest_with_schemas,
+    analyze_inputs,
+    dialect_from_name, parse_dbt_catalog, parse_dbt_manifest, to_bundle_json, ConfiguredSqlInput,
+    ProducerExecution, RelationCatalog, SchemaSourceKind, SqlInput,
 };
 
 const FREEZE: &str = include_str!("../docs/task-197-acceptance-ledger-v2.json");
@@ -33,7 +34,7 @@ fn direct_catalog(amount_type: &str) -> RelationCatalog {
     RelationCatalog::from_schemas(sources.source_schemas()).expect("DDL physical source types")
 }
 
-fn dbt_catalog(amount_type: &str) -> RelationCatalog {
+fn dbt_manifest_source(amount_type: &str) -> Value {
     let manifest = json!({
         "metadata": {
             "dbt_schema_version": "https://schemas.getdbt.com/dbt/manifest/v12.json",
@@ -78,7 +79,13 @@ fn dbt_catalog(amount_type: &str) -> RelationCatalog {
             }
         }
     });
-    let parsed = parse_dbt_manifest(&manifest.to_string()).expect("compiled dbt manifest");
+    manifest
+}
+
+
+fn dbt_catalog(amount_type: &str) -> RelationCatalog {
+    let parsed = parse_dbt_manifest(&dbt_manifest_source(amount_type).to_string())
+        .expect("compiled dbt source manifest");
     let dialect = dialect_from_name("duckdb").expect("metadata dialect");
     let bundle = analyze_dbt_manifest_with_schemas(&parsed, "duckdb", dialect.as_ref())
         .expect("source declarations and compiled probe");
@@ -87,6 +94,73 @@ fn dbt_catalog(amount_type: &str) -> RelationCatalog {
         .iter()
         .all(|p| p.execution() == ProducerExecution::Unattested));
     RelationCatalog::from_schemas(bundle.source_schemas()).expect("dbt authoritative facts")
+}
+
+fn dbt_warehouse_catalog(amount_type: &str) -> RelationCatalog {
+    let manifest = parse_dbt_manifest(&dbt_manifest_source(amount_type).to_string())
+        .expect("complete dbt manifest source identities");
+    let mut sources = serde_json::Map::new();
+    for (name, columns) in [
+        (
+            "orders",
+            vec![
+                ("id", "INTEGER"),
+                ("amount", amount_type),
+                ("created_at", "TIMESTAMP"),
+                ("__physical_row_id", "VARCHAR"),
+            ],
+        ),
+        (
+            "customers",
+            vec![
+                ("id", "INTEGER"),
+                ("amount", "INTEGER"),
+                ("name", "VARCHAR"),
+                ("__physical_row_id", "VARCHAR"),
+            ],
+        ),
+        ("products", vec![("id", "INTEGER")]),
+    ] {
+        let mut column_map = serde_json::Map::new();
+        for (index, (column, data_type)) in columns.into_iter().enumerate() {
+            column_map.insert(
+                column.to_string(),
+                json!({"name": column, "type": data_type, "index": index + 1}),
+            );
+        }
+        let id = format!("source.task197.{name}");
+        sources.insert(
+            id.clone(),
+            json!({
+                "unique_id": id,
+                "metadata": {
+                    "type": "BASE TABLE",
+                    "database": null,
+                    "schema": null,
+                    "name": name
+                },
+                "columns": column_map,
+                "stats": {}
+            }),
+        );
+    }
+    let raw_catalog = json!({
+        "metadata": {
+            "dbt_schema_version": "https://schemas.getdbt.com/dbt/catalog/v1.json",
+            "dbt_version": "1.11.8"
+        },
+        "nodes": {}, "sources": sources, "errors": null
+    });
+    let warehouse = parse_dbt_catalog(&raw_catalog.to_string()).expect("native warehouse catalog");
+    let dialect = dialect_from_name("duckdb").expect("dbt source dialect");
+    let bundle = analyze_dbt_artifacts(&manifest, &warehouse, "duckdb", dialect.as_ref())
+        .expect("introspected catalog is authoritative for source types");
+    assert!(bundle.producer_evidence().iter().all(|p|
+        p.execution() == ProducerExecution::Unattested));
+    assert!(bundle.source_schemas().iter().all(|schema|
+        schema.source_kind() == Some(SchemaSourceKind::DbtCatalog)));
+    RelationCatalog::from_schemas(bundle.source_schemas())
+        .expect("warehouse introspected source types")
 }
 
 #[cfg(feature = "odcs")]
@@ -165,6 +239,8 @@ fn every_parser_accepted_original_statement_preserves_full_canonical_semantics_a
     let direct_float = direct_catalog("DOUBLE");
     let dbt_integer = dbt_catalog("INTEGER");
     let dbt_float = dbt_catalog("DOUBLE");
+    let warehouse_integer = dbt_warehouse_catalog("INTEGER");
+    let warehouse_float = dbt_warehouse_catalog("DOUBLE");
     #[cfg(feature = "odcs")]
     let odcs_integer = odcs_catalog("INTEGER");
     #[cfg(feature = "odcs")]
@@ -190,6 +266,11 @@ fn every_parser_accepted_original_statement_preserves_full_canonical_semantics_a
             &direct_integer
         };
         let dbt = if floating { &dbt_float } else { &dbt_integer };
+        let warehouse = if floating {
+            &warehouse_float
+        } else {
+            &warehouse_integer
+        };
         #[cfg(feature = "odcs")]
         let odcs = if floating { &odcs_float } else { &odcs_integer };
 
@@ -217,6 +298,11 @@ fn every_parser_accepted_original_statement_preserves_full_canonical_semantics_a
                 canonical_semantics(dbt, sql, name),
                 expected,
                 "{id}/{name}: dbt authoritative source metadata changed canonical facts"
+            );
+            assert_eq!(
+                canonical_semantics(warehouse, sql, name),
+                expected,
+                "{id}/{name}: dbt catalog introspection changed canonical facts"
             );
             #[cfg(feature = "odcs")]
             assert_eq!(
