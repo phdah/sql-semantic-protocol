@@ -82,7 +82,12 @@ fn each_conditional_vendor_law_preserves_authoritative_source_types_or_explains_
             assert_eq!(provenance["owner"], "TASK-179");
             for adapter in ["dbt_manifest", "dbt_warehouse_catalog", "odcs"] {
                 assert_eq!(
-                    provenance[adapter], "metadata_cannot_attest_transaction",
+                    provenance[adapter],
+                    if case["family"] == "identifier_case" {
+                        "metadata_cannot_attest_identifier_folding"
+                    } else {
+                        "metadata_cannot_attest_transaction"
+                    },
                     "{id}: no invented execution evidence"
                 );
             }
