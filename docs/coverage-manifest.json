@@ -16,6 +16,8 @@
     "ledger_reconciliation_test": "tests/task_197_cross_adapter_ledger.rs",
     "independent_bounded_review_test": "tests/task_197_review_signoff.rs",
     "complete_public_adapter_parity_test": "tests/task_197_exhaustive_adapter_parity.rs",
+    "exact_original_source_fact_matrix": "docs/task-197-source-fact-matrix.json",
+    "original_source_fact_authority_test": "tests/task_197_source_facts.rs",
     "per_adapter_source_backed_parser_cells": 2013,
     "source_free_parser_cells": 26,
     "source_free_parser_accepted_cells": 24,
