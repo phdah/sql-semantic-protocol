@@ -299,12 +299,7 @@ fn adapter_source_facts_match_the_frozen_authority() {
             assert_source_fact_authority(&catalog, &matrix, fact_set, adapter);
         }
         #[cfg(feature = "odcs")]
-        assert_source_fact_authority(
-            &odcs_catalog(amount_type),
-            &matrix,
-            fact_set,
-            "ODCS",
-        );
+        assert_source_fact_authority(&odcs_catalog(amount_type), &matrix, fact_set, "ODCS");
     }
 }
 
