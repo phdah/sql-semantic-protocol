@@ -148,8 +148,8 @@ fn canonical_semantics(catalog: &RelationCatalog, sql: &str, dialect: &str) -> V
     )];
     let analyzed = analyze_configured_inputs_with_catalog(&configured, catalog)
         .unwrap_or_else(|error| panic!("{dialect}: original source-aware SQL: {error}"));
-    let document: Value = serde_json::from_str(&to_bundle_json(&analyzed))
-        .expect("complete public JSON contract");
+    let document: Value =
+        serde_json::from_str(&to_bundle_json(&analyzed)).expect("complete public JSON contract");
     json!({
         "statements": document["inputs"][0]["statements"],
         "layers": document["layers"],
@@ -158,7 +158,8 @@ fn canonical_semantics(catalog: &RelationCatalog, sql: &str, dialect: &str) -> V
 }
 
 #[test]
-fn every_parser_accepted_original_statement_preserves_full_canonical_semantics_across_equal_sources() {
+fn every_parser_accepted_original_statement_preserves_full_canonical_semantics_across_equal_sources(
+) {
     let fixture = original();
     let direct_integer = direct_catalog("INTEGER");
     let direct_float = direct_catalog("DOUBLE");
@@ -172,20 +173,31 @@ fn every_parser_accepted_original_statement_preserves_full_canonical_semantics_a
     let mut bypassed = 0;
     let mut parser_boundaries = 0;
 
-    for case in fixture["cases"].as_array().expect("all original SQL variants") {
+    for case in fixture["cases"]
+        .as_array()
+        .expect("all original SQL variants")
+    {
         let id = case["id"].as_str().expect("stable fixture id");
         let sql = case["sql"].as_str().expect("original SQL");
         let no_external_fact = case["source_relations_mentioned"]
-            .as_array().expect("named source scope").is_empty();
+            .as_array()
+            .expect("named source scope")
+            .is_empty();
         let floating = matches!(id, "88-C177-S040" | "88-C177-S041");
-        let direct = if floating { &direct_float } else { &direct_integer };
+        let direct = if floating {
+            &direct_float
+        } else {
+            &direct_integer
+        };
         let dbt = if floating { &dbt_float } else { &dbt_integer };
         #[cfg(feature = "odcs")]
         let odcs = if floating { &odcs_float } else { &odcs_integer };
 
         for cell in case["cells"].as_array().expect("all 13 parser identities") {
             let name = cell["dialect"].as_str().expect("parser name");
-            let status = cell["original_observation"].as_str().expect("historical status");
+            let status = cell["original_observation"]
+                .as_str()
+                .expect("historical status");
             if status == "R" || status == "U" {
                 assert_eq!(cell["status"], "unrepresentable", "{id}/{name}");
                 parser_boundaries += 1;
@@ -202,19 +214,30 @@ fn every_parser_accepted_original_statement_preserves_full_canonical_semantics_a
             // permission for equal sources to diverge within this dialect.
             let expected = canonical_semantics(direct, sql, name);
             assert_eq!(
-                canonical_semantics(dbt, sql, name), expected,
+                canonical_semantics(dbt, sql, name),
+                expected,
                 "{id}/{name}: dbt authoritative source metadata changed canonical facts"
             );
             #[cfg(feature = "odcs")]
             assert_eq!(
-                canonical_semantics(odcs, sql, name), expected,
+                canonical_semantics(odcs, sql, name),
+                expected,
                 "{id}/{name}: ODCS authoritative source metadata changed canonical facts"
             );
             checked += 1;
         }
     }
     assert_eq!(checked + bypassed + parser_boundaries, 2119);
-    assert!(checked > 1900, "every source-backed parser-accepted original needs parity");
-    assert_eq!(parser_boundaries, 82, "historical R/U boundaries remain explicit");
-    assert_eq!(bypassed, 26, "only two source-free SQL statements lack adapter facts");
+    assert!(
+        checked > 1900,
+        "every source-backed parser-accepted original needs parity"
+    );
+    assert_eq!(
+        parser_boundaries, 82,
+        "historical R/U boundaries remain explicit"
+    );
+    assert_eq!(
+        bypassed, 26,
+        "only two source-free SQL statements lack adapter facts"
+    );
 }
