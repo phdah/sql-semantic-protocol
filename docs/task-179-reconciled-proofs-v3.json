@@ -1,0 +1,912 @@
+{
+  "schema_version": 3,
+  "task_id": "TASK-179",
+  "basis": "Source-anchored review reconciliation, not a new independent physical oracle nor an external vendor runtime certification",
+  "owner": "TASK-179",
+  "variant_matrix": "docs/task-179-variant-matrix-v2.json",
+  "source_owner_counts": {
+    "TASK-192": 20,
+    "TASK-195": 5,
+    "TASK-196": 6,
+    "TASK-163": 4,
+    "TASK-179": 2
+  },
+  "case_count": 37,
+  "cell_count": 481,
+  "native_warehouse": "DuckDB via source proof only",
+  "external_vendor_execution_attested": false,
+  "source_review_inheritance": "TASK-192/195/196 bounded original SQL semantics are inherited unchanged; transaction and new identifier conditions have separate owners; each external law remains conditional until actually executed and reviewed",
+  "cases": [
+    {
+      "id": "88-C179-001",
+      "original_id": "88-C177-S042",
+      "family": "null_ordering",
+      "sql": "SELECT id FROM orders ORDER BY amount NULLS LAST",
+      "external_vendor_semantics": "conditionally_unverified",
+      "release_status": "not_attested",
+      "runtime_owner": "TASK-179",
+      "adapter_owner": "TASK-197_for_source_facts_only",
+      "source_semantic_owner": "TASK-192",
+      "source_review": "docs/task-192-independent-semantic-review.json",
+      "independent_semantic_expectation": {
+        "physical_source": "orders",
+        "output_column": "id",
+        "where_operator": "none",
+        "projected_domain_kind": "unbounded",
+        "condition_exactness": "exact",
+        "residual_reason": null,
+        "undeclared_session_laws": []
+      },
+      "source_native_oracle": "docs/task-192-native-partitions.json",
+      "original_parser_cells": 13,
+      "execution_limit": "unattested"
+    },
+    {
+      "id": "88-C179-002",
+      "original_id": "88-C177-S110",
+      "family": "null_ordering",
+      "sql": "SELECT ROW_NUMBER() OVER (ORDER BY amount NULLS LAST) FROM orders",
+      "external_vendor_semantics": "conditionally_unverified",
+      "release_status": "not_attested",
+      "runtime_owner": "TASK-179",
+      "adapter_owner": "TASK-197_for_source_facts_only",
+      "source_semantic_owner": "TASK-195",
+      "source_review": "docs/task-195-independent-semantic-review.json",
+      "independent_sql_law": "Explicit NULLS LAST controls NULL-key position, not identity of equal amount=10 peers.",
+      "physical_source_instance_ids": [
+        "orders#0",
+        "orders#1",
+        "orders#2",
+        "orders#3",
+        "orders#4",
+        "orders#5"
+      ],
+      "expected_native_terminal_bag": [
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          3
+        ],
+        [
+          4
+        ],
+        [
+          5
+        ],
+        [
+          6
+        ]
+      ],
+      "expected_native_rejected_candidate_bag": [],
+      "public_output_laws": [
+        "analytic_positive_integer"
+      ],
+      "native_disposition": "complete_original_DuckDB_bag_verified"
+    },
+    {
+      "id": "88-C179-003",
+      "original_id": "88-C177-S154",
+      "family": "null_ordering",
+      "sql": "SELECT id FROM orders ORDER BY amount",
+      "external_vendor_semantics": "conditionally_unverified",
+      "release_status": "not_attested",
+      "runtime_owner": "TASK-179",
+      "adapter_owner": "TASK-197_for_source_facts_only",
+      "source_semantic_owner": "TASK-195",
+      "source_review": "docs/task-195-independent-semantic-review.json",
+      "independent_sql_law": "ORDER BY amount reorders but does not eliminate, invent or duplicate any id value; peer/NULL order remains engine-specific.",
+      "physical_source_instance_ids": [
+        "orders#0",
+        "orders#1",
+        "orders#2",
+        "orders#3",
+        "orders#4",
+        "orders#5"
+      ],
+      "expected_native_terminal_bag": [
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          3
+        ],
+        [
+          null
+        ],
+        [
+          4
+        ]
+      ],
+      "expected_native_rejected_candidate_bag": [],
+      "public_output_laws": [
+        "nullable_source_id_unbounded"
+      ],
+      "native_disposition": "complete_original_DuckDB_bag_verified"
+    },
+    {
+      "id": "88-C179-004",
+      "original_id": "88-C177-S156",
+      "family": "null_ordering",
+      "sql": "SELECT id FROM orders ORDER BY amount NULLS FIRST",
+      "external_vendor_semantics": "conditionally_unverified",
+      "release_status": "not_attested",
+      "runtime_owner": "TASK-179",
+      "adapter_owner": "TASK-197_for_source_facts_only",
+      "source_semantic_owner": "TASK-195",
+      "source_review": "docs/task-195-independent-semantic-review.json",
+      "independent_sql_law": "Explicit NULLS FIRST determines NULL sort bucket but cannot identify equal numeric sort peers.",
+      "physical_source_instance_ids": [
+        "orders#0",
+        "orders#1",
+        "orders#2",
+        "orders#3",
+        "orders#4",
+        "orders#5"
+      ],
+      "expected_native_terminal_bag": [
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          3
+        ],
+        [
+          null
+        ],
+        [
+          4
+        ]
+      ],
+      "expected_native_rejected_candidate_bag": [],
+      "public_output_laws": [
+        "nullable_source_id_unbounded"
+      ],
+      "native_disposition": "complete_original_DuckDB_bag_verified"
+    },
+    {
+      "id": "88-C179-005",
+      "original_id": "88-C177-S158",
+      "family": "null_ordering",
+      "sql": "SELECT id FROM orders ORDER BY amount",
+      "external_vendor_semantics": "conditionally_unverified",
+      "release_status": "not_attested",
+      "runtime_owner": "TASK-179",
+      "adapter_owner": "TASK-197_for_source_facts_only",
+      "source_semantic_owner": "TASK-195",
+      "source_review": "docs/task-195-independent-semantic-review.json",
+      "independent_sql_law": "Duplicated original SQL is independently retained as a separate source-owned variant, not silently deduplicated.",
+      "physical_source_instance_ids": [
+        "orders#0",
+        "orders#1",
+        "orders#2",
+        "orders#3",
+        "orders#4",
+        "orders#5"
+      ],
+      "expected_native_terminal_bag": [
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          3
+        ],
+        [
+          null
+        ],
+        [
+          4
+        ]
+      ],
+      "expected_native_rejected_candidate_bag": [],
+      "public_output_laws": [
+        "nullable_source_id_unbounded"
+      ],
+      "native_disposition": "complete_original_DuckDB_bag_verified"
+    },
+    {
+      "id": "88-C179-006",
+      "original_id": "88-C177-S162",
+      "family": "null_ordering",
+      "sql": "SELECT id FROM orders ORDER BY amount LIMIT 2",
+      "external_vendor_semantics": "conditionally_unverified",
+      "release_status": "not_attested",
+      "runtime_owner": "TASK-179",
+      "adapter_owner": "TASK-197_for_source_facts_only",
+      "source_semantic_owner": "TASK-195",
+      "source_review": "docs/task-195-independent-semantic-review.json",
+      "independent_sql_law": "LIMIT 2 under amount ordering picks id=4 first and one peer with amount=10; which physical peer survives is under-specified.",
+      "physical_source_instance_ids": [
+        "orders#0",
+        "orders#1",
+        "orders#2",
+        "orders#3",
+        "orders#4",
+        "orders#5"
+      ],
+      "expected_native_terminal_bag": null,
+      "expected_native_rejected_candidate_bag": [],
+      "public_output_laws": [
+        "nullable_source_id_unbounded"
+      ],
+      "native_disposition": "conditional_or_rejected_original_native_spelling"
+    },
+    {
+      "id": "88-C179-007",
+      "original_id": "88-C177-S020",
+      "family": "collation",
+      "sql": "SELECT id FROM customers WHERE name LIKE 'A%'",
+      "external_vendor_semantics": "conditionally_unverified",
+      "release_status": "not_attested",
+      "runtime_owner": "TASK-179",
+      "adapter_owner": "TASK-197_for_source_facts_only",
+      "source_semantic_owner": "TASK-192",
+      "source_review": "docs/task-192-independent-semantic-review.json",
+      "independent_semantic_expectation": {
+        "physical_source": "customers",
+        "output_column": "id",
+        "where_operator": "like_prefix",
+        "projected_domain_kind": "unbounded",
+        "condition_exactness": "residual",
+        "residual_reason": "computed_expression",
+        "undeclared_session_laws": []
+      },
+      "source_native_oracle": "docs/task-192-acceptance-freeze.json",
+      "original_parser_cells": 13,
+      "execution_limit": "unattested"
+    },
+    {
+      "id": "88-C179-008",
+      "original_id": "88-C177-S021",
+      "family": "collation",
+      "sql": "SELECT id FROM customers WHERE name ILIKE 'a%'",
+      "external_vendor_semantics": "conditionally_unverified",
+      "release_status": "not_attested",
+      "runtime_owner": "TASK-179",
+      "adapter_owner": "TASK-197_for_source_facts_only",
+      "source_semantic_owner": "TASK-192",
+      "source_review": "docs/task-192-independent-semantic-review.json",
+      "independent_semantic_expectation": {
+        "physical_source": "customers",
+        "output_column": "id",
+        "where_operator": "boolean_expression",
+        "projected_domain_kind": "unbounded",
+        "condition_exactness": "residual",
+        "residual_reason": "computed_expression",
+        "undeclared_session_laws": []
+      },
+      "source_native_oracle": "docs/task-192-acceptance-freeze.json",
+      "original_parser_cells": 13,
+      "execution_limit": "unattested"
+    },
+    {
+      "id": "88-C179-009",
+      "original_id": "88-C177-S022",
+      "family": "collation",
+      "sql": "SELECT id FROM customers WHERE name LIKE 'A!_%' ESCAPE '!'",
+      "external_vendor_semantics": "conditionally_unverified",
+      "release_status": "not_attested",
+      "runtime_owner": "TASK-179",
+      "adapter_owner": "TASK-197_for_source_facts_only",
+      "source_semantic_owner": "TASK-192",
+      "source_review": "docs/task-192-independent-semantic-review.json",
+      "independent_semantic_expectation": {
+        "physical_source": "customers",
+        "output_column": "id",
+        "where_operator": "like_prefix",
+        "projected_domain_kind": "unbounded",
+        "condition_exactness": "residual",
+        "residual_reason": "computed_expression",
+        "undeclared_session_laws": []
+      },
+      "source_native_oracle": "docs/task-192-acceptance-freeze.json",
+      "original_parser_cells": 13,
+      "execution_limit": "unattested"
+    },
+    {
+      "id": "88-C179-010",
+      "original_id": "88-C177-S023",
+      "family": "collation",
+      "sql": "SELECT id FROM customers WHERE name SIMILAR TO '(A|B)%'",
+      "external_vendor_semantics": "conditionally_unverified",
+      "release_status": "not_attested",
+      "runtime_owner": "TASK-179",
+      "adapter_owner": "TASK-197_for_source_facts_only",
+      "source_semantic_owner": "TASK-192",
+      "source_review": "docs/task-192-independent-semantic-review.json",
+      "independent_semantic_expectation": {
+        "physical_source": "customers",
+        "output_column": "id",
+        "where_operator": "boolean_expression",
+        "projected_domain_kind": "unbounded",
+        "condition_exactness": "residual",
+        "residual_reason": "computed_expression",
+        "undeclared_session_laws": []
+      },
+      "source_native_oracle": "docs/task-192-native-partitions.json",
+      "original_parser_cells": 13,
+      "execution_limit": "unattested"
+    },
+    {
+      "id": "88-C179-011",
+      "original_id": "88-C177-S024",
+      "family": "collation",
+      "sql": "SELECT id FROM customers WHERE name ~ '^A'",
+      "external_vendor_semantics": "conditionally_unverified",
+      "release_status": "not_attested",
+      "runtime_owner": "TASK-179",
+      "adapter_owner": "TASK-197_for_source_facts_only",
+      "source_semantic_owner": "TASK-192",
+      "source_review": "docs/task-192-independent-semantic-review.json",
+      "independent_semantic_expectation": {
+        "physical_source": "customers",
+        "output_column": "id",
+        "where_operator": "boolean_expression",
+        "projected_domain_kind": "unbounded",
+        "condition_exactness": "residual",
+        "residual_reason": "computed_expression",
+        "undeclared_session_laws": []
+      },
+      "source_native_oracle": "docs/task-192-native-partitions.json",
+      "original_parser_cells": 13,
+      "execution_limit": "unattested"
+    },
+    {
+      "id": "88-C179-012",
+      "original_id": "88-C177-S025",
+      "family": "collation",
+      "sql": "SELECT id FROM customers WHERE name LIKE 'ABC%'",
+      "external_vendor_semantics": "conditionally_unverified",
+      "release_status": "not_attested",
+      "runtime_owner": "TASK-179",
+      "adapter_owner": "TASK-197_for_source_facts_only",
+      "source_semantic_owner": "TASK-192",
+      "source_review": "docs/task-192-independent-semantic-review.json",
+      "independent_semantic_expectation": {
+        "physical_source": "customers",
+        "output_column": "id",
+        "where_operator": "like_prefix",
+        "projected_domain_kind": "unbounded",
+        "condition_exactness": "residual",
+        "residual_reason": "computed_expression",
+        "undeclared_session_laws": []
+      },
+      "source_native_oracle": "docs/task-192-acceptance-freeze.json",
+      "original_parser_cells": 13,
+      "execution_limit": "unattested"
+    },
+    {
+      "id": "88-C179-013",
+      "original_id": "88-C177-S026",
+      "family": "collation",
+      "sql": "SELECT id FROM customers WHERE name COLLATE en_US = 'a'",
+      "external_vendor_semantics": "conditionally_unverified",
+      "release_status": "not_attested",
+      "runtime_owner": "TASK-179",
+      "adapter_owner": "TASK-197_for_source_facts_only",
+      "source_semantic_owner": "TASK-192",
+      "source_review": "docs/task-192-independent-semantic-review.json",
+      "independent_semantic_expectation": {
+        "physical_source": "customers",
+        "output_column": "id",
+        "where_operator": "comparison",
+        "projected_domain_kind": "unbounded",
+        "condition_exactness": "residual",
+        "residual_reason": "computed_expression",
+        "undeclared_session_laws": []
+      },
+      "source_native_oracle": "docs/task-192-native-partitions.json",
+      "original_parser_cells": 13,
+      "execution_limit": "unattested"
+    },
+    {
+      "id": "88-C179-014",
+      "original_id": "88-C177-S038",
+      "family": "collation",
+      "sql": "SELECT id FROM customers WHERE name COLLATE en_US = 'abc'",
+      "external_vendor_semantics": "conditionally_unverified",
+      "release_status": "not_attested",
+      "runtime_owner": "TASK-179",
+      "adapter_owner": "TASK-197_for_source_facts_only",
+      "source_semantic_owner": "TASK-192",
+      "source_review": "docs/task-192-independent-semantic-review.json",
+      "independent_semantic_expectation": {
+        "physical_source": "customers",
+        "output_column": "id",
+        "where_operator": "comparison",
+        "projected_domain_kind": "unbounded",
+        "condition_exactness": "residual",
+        "residual_reason": "computed_expression",
+        "undeclared_session_laws": []
+      },
+      "source_native_oracle": "docs/task-192-native-partitions.json",
+      "original_parser_cells": 13,
+      "execution_limit": "unattested"
+    },
+    {
+      "id": "88-C179-015",
+      "original_id": "88-C177-S039",
+      "family": "collation",
+      "sql": "SELECT id FROM customers WHERE name = 'abc '",
+      "external_vendor_semantics": "conditionally_unverified",
+      "release_status": "not_attested",
+      "runtime_owner": "TASK-179",
+      "adapter_owner": "TASK-197_for_source_facts_only",
+      "source_semantic_owner": "TASK-192",
+      "source_review": "docs/task-192-independent-semantic-review.json",
+      "independent_semantic_expectation": {
+        "physical_source": "customers",
+        "output_column": "id",
+        "where_operator": "comparison",
+        "projected_domain_kind": "unbounded",
+        "condition_exactness": "conditional",
+        "residual_reason": null,
+        "undeclared_session_laws": [
+          "binary_collation",
+          "no_char_padding"
+        ]
+      },
+      "source_native_oracle": "docs/task-192-native-partitions.json",
+      "original_parser_cells": 13,
+      "execution_limit": "unattested"
+    },
+    {
+      "id": "88-C179-016",
+      "original_id": "88-C177-S028",
+      "family": "implicit_coercion",
+      "sql": "SELECT id FROM orders WHERE CAST(amount AS BIGINT) > 10",
+      "external_vendor_semantics": "conditionally_unverified",
+      "release_status": "not_attested",
+      "runtime_owner": "TASK-179",
+      "adapter_owner": "TASK-197_for_source_facts_only",
+      "source_semantic_owner": "TASK-192",
+      "source_review": "docs/task-192-independent-semantic-review.json",
+      "independent_semantic_expectation": {
+        "physical_source": "orders",
+        "output_column": "id",
+        "where_operator": "comparison",
+        "projected_domain_kind": "unbounded",
+        "condition_exactness": "residual",
+        "residual_reason": "computed_expression",
+        "undeclared_session_laws": []
+      },
+      "source_native_oracle": "docs/task-177-predicate-oracles.json",
+      "original_parser_cells": 13,
+      "execution_limit": "unattested"
+    },
+    {
+      "id": "88-C179-017",
+      "original_id": "88-C177-S033",
+      "family": "implicit_coercion",
+      "sql": "SELECT 9223372036854775807 + 1 AS overflow_case",
+      "external_vendor_semantics": "conditionally_unverified",
+      "release_status": "not_attested",
+      "runtime_owner": "TASK-179",
+      "adapter_owner": "TASK-197_for_source_facts_only",
+      "source_semantic_owner": "TASK-192",
+      "source_review": "docs/task-192-independent-semantic-review.json",
+      "independent_semantic_expectation": {
+        "physical_source": null,
+        "output_column": "overflow_case",
+        "where_operator": "none",
+        "projected_domain_kind": "unknown",
+        "condition_exactness": "exact",
+        "residual_reason": null,
+        "undeclared_session_laws": []
+      },
+      "source_native_oracle": "docs/task-192-native-partitions.json",
+      "original_parser_cells": 13,
+      "execution_limit": "unattested"
+    },
+    {
+      "id": "88-C179-018",
+      "original_id": "88-C177-S036",
+      "family": "implicit_coercion",
+      "sql": "SELECT id FROM orders WHERE CAST(created_at AS DATE) = DATE '2020-01-01'",
+      "external_vendor_semantics": "conditionally_unverified",
+      "release_status": "not_attested",
+      "runtime_owner": "TASK-179",
+      "adapter_owner": "TASK-197_for_source_facts_only",
+      "source_semantic_owner": "TASK-192",
+      "source_review": "docs/task-192-independent-semantic-review.json",
+      "independent_semantic_expectation": {
+        "physical_source": "orders",
+        "output_column": "id",
+        "where_operator": "comparison",
+        "projected_domain_kind": "unbounded",
+        "condition_exactness": "residual",
+        "residual_reason": "computed_expression",
+        "undeclared_session_laws": []
+      },
+      "source_native_oracle": "docs/task-192-native-partitions.json",
+      "original_parser_cells": 13,
+      "execution_limit": "unattested"
+    },
+    {
+      "id": "88-C179-019",
+      "original_id": "88-C177-S027",
+      "family": "float_timezone",
+      "sql": "SELECT id FROM orders WHERE amount + 2 > 10",
+      "external_vendor_semantics": "conditionally_unverified",
+      "release_status": "not_attested",
+      "runtime_owner": "TASK-179",
+      "adapter_owner": "TASK-197_for_source_facts_only",
+      "source_semantic_owner": "TASK-192",
+      "source_review": "docs/task-192-independent-semantic-review.json",
+      "independent_semantic_expectation": {
+        "physical_source": "orders",
+        "output_column": "id",
+        "where_operator": "comparison",
+        "projected_domain_kind": "unbounded",
+        "condition_exactness": "residual",
+        "residual_reason": "computed_expression",
+        "undeclared_session_laws": []
+      },
+      "source_native_oracle": "docs/task-177-predicate-oracles.json",
+      "original_parser_cells": 13,
+      "execution_limit": "unattested"
+    },
+    {
+      "id": "88-C179-020",
+      "original_id": "88-C177-S032",
+      "family": "float_timezone",
+      "sql": "SELECT id FROM orders WHERE ABS(amount) > 2",
+      "external_vendor_semantics": "conditionally_unverified",
+      "release_status": "not_attested",
+      "runtime_owner": "TASK-179",
+      "adapter_owner": "TASK-197_for_source_facts_only",
+      "source_semantic_owner": "TASK-192",
+      "source_review": "docs/task-192-independent-semantic-review.json",
+      "independent_semantic_expectation": {
+        "physical_source": "orders",
+        "output_column": "id",
+        "where_operator": "comparison",
+        "projected_domain_kind": "unbounded",
+        "condition_exactness": "residual",
+        "residual_reason": "computed_expression",
+        "undeclared_session_laws": []
+      },
+      "source_native_oracle": "docs/task-177-predicate-oracles.json",
+      "original_parser_cells": 13,
+      "execution_limit": "unattested"
+    },
+    {
+      "id": "88-C179-021",
+      "original_id": "88-C177-S034",
+      "family": "float_timezone",
+      "sql": "SELECT id FROM orders WHERE created_at >= TIMESTAMP '2020-01-01 00:00:00' + INTERVAL '1' DAY",
+      "external_vendor_semantics": "conditionally_unverified",
+      "release_status": "not_attested",
+      "runtime_owner": "TASK-179",
+      "adapter_owner": "TASK-197_for_source_facts_only",
+      "source_semantic_owner": "TASK-192",
+      "source_review": "docs/task-192-independent-semantic-review.json",
+      "independent_semantic_expectation": {
+        "physical_source": "orders",
+        "output_column": "id",
+        "where_operator": "comparison",
+        "projected_domain_kind": "unbounded",
+        "condition_exactness": "residual",
+        "residual_reason": "computed_expression",
+        "undeclared_session_laws": []
+      },
+      "source_native_oracle": "docs/task-192-native-partitions.json",
+      "original_parser_cells": 13,
+      "execution_limit": "unattested"
+    },
+    {
+      "id": "88-C179-022",
+      "original_id": "88-C177-S035",
+      "family": "float_timezone",
+      "sql": "SELECT id FROM orders WHERE created_at AT TIME ZONE 'UTC' > TIMESTAMP '2020-01-01 00:00:00'",
+      "external_vendor_semantics": "conditionally_unverified",
+      "release_status": "not_attested",
+      "runtime_owner": "TASK-179",
+      "adapter_owner": "TASK-197_for_source_facts_only",
+      "source_semantic_owner": "TASK-192",
+      "source_review": "docs/task-192-independent-semantic-review.json",
+      "independent_semantic_expectation": {
+        "physical_source": "orders",
+        "output_column": "id",
+        "where_operator": "comparison",
+        "projected_domain_kind": "unbounded",
+        "condition_exactness": "residual",
+        "residual_reason": "computed_expression",
+        "undeclared_session_laws": []
+      },
+      "source_native_oracle": "docs/task-192-native-partitions.json",
+      "original_parser_cells": 13,
+      "execution_limit": "unattested"
+    },
+    {
+      "id": "88-C179-023",
+      "original_id": "88-C177-S037",
+      "family": "float_timezone",
+      "sql": "SELECT id FROM orders WHERE created_at BETWEEN TIMESTAMP '2020-03-08 01:00:00' AND TIMESTAMP '2020-03-08 03:00:00'",
+      "external_vendor_semantics": "conditionally_unverified",
+      "release_status": "not_attested",
+      "runtime_owner": "TASK-179",
+      "adapter_owner": "TASK-197_for_source_facts_only",
+      "source_semantic_owner": "TASK-192",
+      "source_review": "docs/task-192-independent-semantic-review.json",
+      "independent_semantic_expectation": {
+        "physical_source": "orders",
+        "output_column": "id",
+        "where_operator": "between",
+        "projected_domain_kind": "unbounded",
+        "condition_exactness": "conditional",
+        "residual_reason": null,
+        "undeclared_session_laws": [
+          "session_time_zone"
+        ]
+      },
+      "source_native_oracle": "docs/task-192-native-partitions.json",
+      "original_parser_cells": 13,
+      "execution_limit": "unattested"
+    },
+    {
+      "id": "88-C179-024",
+      "original_id": "88-C177-S040",
+      "family": "float_timezone",
+      "sql": "SELECT id FROM orders WHERE amount = 'NaN'",
+      "external_vendor_semantics": "conditionally_unverified",
+      "release_status": "not_attested",
+      "runtime_owner": "TASK-179",
+      "adapter_owner": "TASK-197_for_source_facts_only",
+      "source_semantic_owner": "TASK-192",
+      "source_review": "docs/task-192-independent-semantic-review.json",
+      "independent_semantic_expectation": {
+        "physical_source": "orders",
+        "output_column": "id",
+        "where_operator": "comparison",
+        "projected_domain_kind": "unbounded",
+        "condition_exactness": "residual",
+        "residual_reason": "comparison_semantics",
+        "undeclared_session_laws": [
+          "binary_collation",
+          "no_char_padding"
+        ]
+      },
+      "source_native_oracle": "docs/task-192-native-partitions.json",
+      "original_parser_cells": 13,
+      "execution_limit": "unattested"
+    },
+    {
+      "id": "88-C179-025",
+      "original_id": "88-C177-S041",
+      "family": "float_timezone",
+      "sql": "SELECT id FROM orders WHERE amount = -0.0",
+      "external_vendor_semantics": "conditionally_unverified",
+      "release_status": "not_attested",
+      "runtime_owner": "TASK-179",
+      "adapter_owner": "TASK-197_for_source_facts_only",
+      "source_semantic_owner": "TASK-192",
+      "source_review": "docs/task-192-independent-semantic-review.json",
+      "independent_semantic_expectation": {
+        "physical_source": "orders",
+        "output_column": "id",
+        "where_operator": "comparison",
+        "projected_domain_kind": "unbounded",
+        "condition_exactness": "residual",
+        "residual_reason": "computed_expression",
+        "undeclared_session_laws": []
+      },
+      "source_native_oracle": "docs/task-192-native-partitions.json",
+      "original_parser_cells": 13,
+      "execution_limit": "unattested"
+    },
+    {
+      "id": "88-C179-026",
+      "original_id": "88-C177-S198",
+      "family": "dml_transaction",
+      "sql": "INSERT INTO orders (id) VALUES (1) ON CONFLICT (id) DO NOTHING",
+      "external_vendor_semantics": "conditionally_unverified",
+      "release_status": "not_attested",
+      "runtime_owner": "TASK-179",
+      "adapter_owner": "TASK-197_for_source_facts_only",
+      "source_semantic_owner": "TASK-196",
+      "source_review": "docs/task-196-independent-semantic-review.json",
+      "independent_sql_law": "ON CONFLICT (id) DO NOTHING against an enforced primary key with id=1 already present inserts zero rows; target state stays identical.",
+      "native_proof_source": "docs/task-177-write-oracles.json",
+      "physical_native_class": "original_native_dml_complete_target_bag",
+      "parser_cells": 13
+    },
+    {
+      "id": "88-C179-027",
+      "original_id": "88-C177-S203",
+      "family": "dml_transaction",
+      "sql": "UPDATE orders SET amount = 1 WHERE id IN (SELECT id FROM customers)",
+      "external_vendor_semantics": "conditionally_unverified",
+      "release_status": "not_attested",
+      "runtime_owner": "TASK-179",
+      "adapter_owner": "TASK-197_for_source_facts_only",
+      "source_semantic_owner": "TASK-196",
+      "source_review": "docs/task-196-independent-semantic-review.json",
+      "independent_sql_law": "Correlated IN UPDATE selects id=1 under the complete customers bag, with NULL id UNKNOWN; original analyzer reports an unsupported subquery, so native success cannot be promoted to Exact.",
+      "native_proof_source": "docs/task-177-write-oracles.json",
+      "physical_native_class": "original_native_dml_complete_target_bag",
+      "parser_cells": 13
+    },
+    {
+      "id": "88-C179-028",
+      "original_id": "88-C177-S208",
+      "family": "dml_transaction",
+      "sql": "DELETE FROM orders WHERE id = 1",
+      "external_vendor_semantics": "conditionally_unverified",
+      "release_status": "not_attested",
+      "runtime_owner": "TASK-179",
+      "adapter_owner": "TASK-197_for_source_facts_only",
+      "source_semantic_owner": "TASK-196",
+      "source_review": "docs/task-196-independent-semantic-review.json",
+      "independent_sql_law": "DELETE id=1 removes one target row; NULL id and other keys remain unchanged. Cascade effects cannot be inferred without authoritative FK actions.",
+      "native_proof_source": "docs/task-177-write-oracles.json",
+      "physical_native_class": "original_native_dml_complete_target_bag",
+      "parser_cells": 13
+    },
+    {
+      "id": "88-C179-029",
+      "original_id": "88-C177-S209",
+      "family": "dml_transaction",
+      "sql": "MERGE INTO orders o USING customers c ON o.id = c.id WHEN MATCHED THEN UPDATE SET amount = c.amount WHEN NOT MATCHED THEN INSERT (id, amount) VALUES (c.id, c.amount)",
+      "external_vendor_semantics": "conditionally_unverified",
+      "release_status": "not_attested",
+      "runtime_owner": "TASK-179",
+      "adapter_owner": "TASK-197_for_source_facts_only",
+      "source_semantic_owner": "TASK-196",
+      "source_review": "docs/task-196-independent-semantic-review.json",
+      "independent_sql_law": "MERGE matched target id=1 updates from customer amount=100; two separate unmatched customer id=4 rows each insert (4,40), retaining bag multiplicity.",
+      "native_proof_source": "docs/task-177-write-oracles.json",
+      "physical_native_class": "original_native_dml_complete_target_bag",
+      "parser_cells": 13
+    },
+    {
+      "id": "88-C179-030",
+      "original_id": "88-C177-S210",
+      "family": "dml_transaction",
+      "sql": "MERGE INTO orders o USING customers c ON o.id = c.id WHEN MATCHED AND c.amount > 0 THEN DELETE WHEN MATCHED THEN UPDATE SET amount = c.amount",
+      "external_vendor_semantics": "conditionally_unverified",
+      "release_status": "not_attested",
+      "runtime_owner": "TASK-179",
+      "adapter_owner": "TASK-197_for_source_facts_only",
+      "source_semantic_owner": "TASK-196",
+      "source_review": "docs/task-196-independent-semantic-review.json",
+      "independent_sql_law": "Ordered MERGE WHEN branches select first matching positive source amount and DELETE target id=1; no later UPDATE branch can also execute.",
+      "native_proof_source": "docs/task-177-write-oracles.json",
+      "physical_native_class": "original_native_dml_complete_target_bag",
+      "parser_cells": 13
+    },
+    {
+      "id": "88-C179-031",
+      "original_id": "88-C177-S211",
+      "family": "dml_transaction",
+      "sql": "MERGE INTO orders o USING customers c ON o.id = c.id WHEN MATCHED THEN DELETE WHEN NOT MATCHED THEN INSERT (id) VALUES (c.id)",
+      "external_vendor_semantics": "conditionally_unverified",
+      "release_status": "not_attested",
+      "runtime_owner": "TASK-179",
+      "adapter_owner": "TASK-197_for_source_facts_only",
+      "source_semantic_owner": "TASK-196",
+      "source_review": "docs/task-196-independent-semantic-review.json",
+      "independent_sql_law": "MERGE matched id=1 DELETE plus two unmatched customer id=4 INSERT(id) results in two distinct (4,NULL) target rows.",
+      "native_proof_source": "docs/task-177-write-oracles.json",
+      "physical_native_class": "original_native_dml_complete_target_bag",
+      "parser_cells": 13
+    },
+    {
+      "id": "88-C179-032",
+      "original_id": "88-C177-S221",
+      "family": "dml_transaction",
+      "sql": "CREATE TABLE orders (id INT); INSERT INTO orders VALUES (1); SELECT id FROM orders",
+      "external_vendor_semantics": "conditionally_unverified",
+      "release_status": "not_attested",
+      "runtime_owner": "TASK-179",
+      "adapter_owner": "TASK-197_for_source_facts_only",
+      "source_semantic_owner": "TASK-163",
+      "source_review": "tests/task_163_session_laws.rs",
+      "independent_sql_law": "Only a single-connection closed DuckDB transaction can be certified; external/session and unbounded warehouse states remain explicit Residual.",
+      "native_proof_source": "docs/task-177-schema-lifecycle-oracles.json",
+      "physical_native_class": "transaction-specific owner not inherited from TASK-197",
+      "parser_cells": 13
+    },
+    {
+      "id": "88-C179-033",
+      "original_id": "88-C177-S222",
+      "family": "dml_transaction",
+      "sql": "BEGIN; INSERT INTO orders VALUES (1); SELECT id FROM orders; COMMIT",
+      "external_vendor_semantics": "conditionally_unverified",
+      "release_status": "not_attested",
+      "runtime_owner": "TASK-179",
+      "adapter_owner": "TASK-197_for_source_facts_only",
+      "source_semantic_owner": "TASK-163",
+      "source_review": "tests/task_163_session_laws.rs",
+      "independent_sql_law": "Only a single-connection closed DuckDB transaction can be certified; external/session and unbounded warehouse states remain explicit Residual.",
+      "native_proof_source": "docs/task-177-schema-lifecycle-oracles.json",
+      "physical_native_class": "transaction-specific owner not inherited from TASK-197",
+      "parser_cells": 13
+    },
+    {
+      "id": "88-C179-034",
+      "original_id": "88-C177-S223",
+      "family": "dml_transaction",
+      "sql": "CREATE TABLE orders (id INT); INSERT INTO orders VALUES (1); SELECT id FROM orders",
+      "external_vendor_semantics": "conditionally_unverified",
+      "release_status": "not_attested",
+      "runtime_owner": "TASK-179",
+      "adapter_owner": "TASK-197_for_source_facts_only",
+      "source_semantic_owner": "TASK-163",
+      "source_review": "tests/task_163_session_laws.rs",
+      "independent_sql_law": "Only a single-connection closed DuckDB transaction can be certified; external/session and unbounded warehouse states remain explicit Residual.",
+      "native_proof_source": "docs/task-177-schema-lifecycle-oracles.json",
+      "physical_native_class": "transaction-specific owner not inherited from TASK-197",
+      "parser_cells": 13
+    },
+    {
+      "id": "88-C179-035",
+      "original_id": "88-C177-S224",
+      "family": "dml_transaction",
+      "sql": "BEGIN; UPDATE orders SET id = 2; ROLLBACK",
+      "external_vendor_semantics": "conditionally_unverified",
+      "release_status": "not_attested",
+      "runtime_owner": "TASK-179",
+      "adapter_owner": "TASK-197_for_source_facts_only",
+      "source_semantic_owner": "TASK-163",
+      "source_review": "tests/task_163_session_laws.rs",
+      "independent_sql_law": "Only a single-connection closed DuckDB transaction can be certified; external/session and unbounded warehouse states remain explicit Residual.",
+      "native_proof_source": "docs/task-177-schema-lifecycle-oracles.json",
+      "physical_native_class": "transaction-specific owner not inherited from TASK-197",
+      "parser_cells": 13
+    },
+    {
+      "id": "88-C179-036",
+      "original_id": null,
+      "family": "identifier_case",
+      "sql": "SELECT \"resultvalue\" FROM \"mixedcase\" ORDER BY 1",
+      "external_vendor_semantics": "conditionally_unverified",
+      "release_status": "not_attested",
+      "runtime_owner": "TASK-179",
+      "adapter_owner": "TASK-197_for_source_facts_only",
+      "source_semantic_owner": "TASK-179",
+      "source_review": "tests/task_179_vendor_law_oracles.rs",
+      "independent_sql_law": "DuckDB quoted/unquoted identifiers are compared according to a fixed engine-specific probe; portability is unverified.",
+      "native_proof_source": "docs/task-179-acceptance-freeze.json",
+      "physical_native_class": "bounded_DuckDB_probe",
+      "parser_cells": 13
+    },
+    {
+      "id": "88-C179-037",
+      "original_id": null,
+      "family": "identifier_case",
+      "sql": "SELECT resultvalue FROM mixedcase ORDER BY 1",
+      "external_vendor_semantics": "conditionally_unverified",
+      "release_status": "not_attested",
+      "runtime_owner": "TASK-179",
+      "adapter_owner": "TASK-197_for_source_facts_only",
+      "source_semantic_owner": "TASK-179",
+      "source_review": "tests/task_179_vendor_law_oracles.rs",
+      "independent_sql_law": "DuckDB quoted/unquoted identifiers are compared according to a fixed engine-specific probe; portability is unverified.",
+      "native_proof_source": "docs/task-179-acceptance-freeze.json",
+      "physical_native_class": "bounded_DuckDB_probe",
+      "parser_cells": 13
+    }
+  ]
+}
