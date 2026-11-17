@@ -993,7 +993,7 @@
         }
       ],
       "review": "not_signed_off",
-      "boundary": "signed zero comparison is DuckDB native only",
+      "boundary": "signed zero comparison is DuckDB native only; DuckDB storage/cast normalizes -0.0 text, so its sign is not an independently proven preserved source bit.",
       "source_snapshot_sql": "SELECT row_id, CAST(amount AS VARCHAR) FROM float_rows ORDER BY row_id",
       "expected_native_source_rows": [
         [
@@ -1002,7 +1002,7 @@
         ],
         [
           2,
-          "-0.0"
+          "0.0"
         ],
         [
           3,
@@ -1132,7 +1132,7 @@
         }
       ],
       "review": "not_signed_off",
-      "boundary": "NOT TRUE retains the NULL occurrence",
+      "boundary": "NOT TRUE retains the NULL occurrence; DuckDB storage/cast normalizes -0.0 text, so its sign is not an independently proven preserved source bit.",
       "source_snapshot_sql": "SELECT row_id, CAST(amount AS VARCHAR) FROM float_rows ORDER BY row_id",
       "expected_native_source_rows": [
         [
@@ -1141,7 +1141,7 @@
         ],
         [
           2,
-          "-0.0"
+          "0.0"
         ],
         [
           3,
