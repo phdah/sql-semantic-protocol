@@ -1,10 +1,10 @@
 ---
 id: TASK-179
 title: Classify conditional session and vendor execution laws
-status: To Do
+status: In Progress
 assignee: []
 created_date: '2026-10-17'
-updated_date: '2026-11-09'
+updated_date: '2026-11-17'
 labels: []
 milestone: m-3
 dependencies:
@@ -54,3 +54,8 @@ TASK-178's bounded portable baseline is completed in PR #197, but full semantic 
 - S021/S023/S024 nonbinary ILIKE/SIMILAR/regex and S026/S038 COLLATE require named vendor collation/execution laws. S020/S022/S025 safe LIKE prefix and S039 padded VARCHAR equality have exact **source-local typed** witnesses only with explicitly supplied `binary_collation` and `no_char_padding` assumptions; no actual external warehouse session was attested.
 - S034/S035/S036/S037 temporal offset, DST and date-conversion behavior, S040 NaN/implicit cast, S041 signed zero, and S042 NULL sorting retain session/vendor boundaries. S027 BIGINT max addition succeeds in the original DuckDB test through engine-specific widening, while S032 ABS(BIGINT min) fails; neither is a proven 13-vendor arithmetic law. `tests/task_192_computed_witness.rs` supplies independent original SQL oracles.
 - TASK-179 must later adjudicate these on its own finite acceptance matrix, not infer runtime vendor behavior from TASK-192 parser or DuckDB evidence.
+
+
+## Initial implementation slice (2026-11-17)
+
+Versioned initial 14-case / 182 parser-cell vendor-law freeze: `docs/task-179-acceptance-freeze.json`. DuckDB positive/rejected controls and shared portable 13-parser check: `tests/task_179_vendor_law_oracles.rs`. The acceptance audit at `docs/task-179-acceptance-audit.md` records all remaining mandatory named variants and independent signoff gates. All five ACs remain unchecked, and TASK-191 is not unblocked by this candidate PR.
