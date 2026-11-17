@@ -61,41 +61,74 @@ fn every_original_variant_dialect_and_owner_has_an_unapproved_evidence_dispositi
         let task = freeze["task_id"].as_str().expect("source owner");
         for upstream in freeze["cases"].as_array().expect("frozen original cases") {
             let id = upstream["id"].as_str().expect("stable source ID");
-            assert!(observed_ids.insert(id.to_string()), "{id}: duplicated family owner");
-            let case = cases.iter().find(|entry| entry["id"] == id)
+            assert!(
+                observed_ids.insert(id.to_string()),
+                "{id}: duplicated family owner"
+            );
+            let case = cases
+                .iter()
+                .find(|entry| entry["id"] == id)
                 .unwrap_or_else(|| panic!("{id}: missing TASK-197 ledger case"));
-            let original_case = original.iter().find(|entry| entry["id"] == id)
+            let original_case = original
+                .iter()
+                .find(|entry| entry["id"] == id)
                 .unwrap_or_else(|| panic!("{id}: missing original TASK-178 SQL"));
             assert_eq!(case["owner"], task, "{id}: owner drift");
-            assert_eq!(case["feature_id"], upstream["feature_id"], "{id}: feature drift");
+            assert_eq!(
+                case["feature_id"], upstream["feature_id"],
+                "{id}: feature drift"
+            );
             assert_eq!(case["sql"], upstream["sql"], "{id}: owner SQL drift");
-            assert_eq!(case["sql"], original_case["sql"], "{id}: original SQL drift");
-            assert_eq!(case["evidence"]["owner_freeze"],
-                format!("docs/task-{}-acceptance-freeze.json", &task[5..]));
-            assert!(case["evidence"]["direct_sql"].as_array().is_some_and(|v| !v.is_empty()));
-            assert!(case["evidence"]["independent_semantic_review"].as_str().is_some());
+            assert_eq!(
+                case["sql"], original_case["sql"],
+                "{id}: original SQL drift"
+            );
+            assert_eq!(
+                case["evidence"]["owner_freeze"],
+                format!("docs/task-{}-acceptance-freeze.json", &task[5..])
+            );
+            assert!(case["evidence"]["direct_sql"]
+                .as_array()
+                .is_some_and(|v| !v.is_empty()));
+            assert!(case["evidence"]["independent_semantic_review"]
+                .as_str()
+                .is_some());
 
-            let source_cells = upstream["dialect_cells"].as_array()
+            let source_cells = upstream["dialect_cells"]
+                .as_array()
                 .or_else(|| upstream["cells"].as_array())
                 .expect("source dialect obligations");
-            let ledger_cells = case["cells"].as_array().expect("ledger dialect obligations");
-            assert_eq!(source_cells.len(), 13, "{id}: incomplete source dialect inventory");
+            let ledger_cells = case["cells"]
+                .as_array()
+                .expect("ledger dialect obligations");
+            assert_eq!(
+                source_cells.len(),
+                13,
+                "{id}: incomplete source dialect inventory"
+            );
             assert_eq!(ledger_cells.len(), 13, "{id}: incomplete adapter inventory");
             for (index, (source_cell, entry)) in source_cells.iter().zip(ledger_cells).enumerate() {
                 let name = dialects[index].as_str().expect("dialect name");
                 let status = observed_status(source_cell);
                 assert_eq!(source_cell["dialect"], name, "{id}: source dialect drift");
                 assert_eq!(entry["dialect"], name, "{id}: ledger dialect drift");
-                assert_eq!(entry["original_observation"], status, "{id}/{name}: observation drift");
+                assert_eq!(
+                    entry["original_observation"], status,
+                    "{id}/{name}: observation drift"
+                );
                 let expected = if status == "R" || status == "U" {
                     "unrepresentable"
                 } else {
                     "conditional"
                 };
-                assert_eq!(entry["status"], expected,
-                    "{id}/{name}: unsupported or unattested evidence promoted");
+                assert_eq!(
+                    entry["status"], expected,
+                    "{id}/{name}: unsupported or unattested evidence promoted"
+                );
                 assert_eq!(entry["external_native_execution"], "unattested");
-                assert!(entry["reason"].as_str().is_some_and(|value| !value.is_empty()));
+                assert!(entry["reason"]
+                    .as_str()
+                    .is_some_and(|value| !value.is_empty()));
                 observed_cells += 1;
             }
         }
@@ -104,7 +137,9 @@ fn every_original_variant_dialect_and_owner_has_an_unapproved_evidence_dispositi
     assert_eq!(observed_cells, 2119);
     assert_eq!(frozen["case_count"], 163);
     assert_eq!(frozen["cell_count"], 2119);
-    assert!(cases.iter().all(|case| case["id"].as_str().is_some_and(|id| observed_ids.contains(id))));
+    assert!(cases.iter().all(|case| case["id"]
+        .as_str()
+        .is_some_and(|id| observed_ids.contains(id))));
 }
 
 fn direct_catalog() -> RelationCatalog {
@@ -169,7 +204,10 @@ fn dbt_catalog(sql: &str) -> RelationCatalog {
     let dialect = dialect_from_name("duckdb").expect("dbt dialect");
     let bundle = analyze_dbt_manifest_with_schemas(&parsed, "duckdb", dialect.as_ref())
         .expect("compiled source and model");
-    assert!(bundle.producer_evidence().iter().all(|p| p.execution() == ProducerExecution::Unattested));
+    assert!(bundle
+        .producer_evidence()
+        .iter()
+        .all(|p| p.execution() == ProducerExecution::Unattested));
     RelationCatalog::from_schemas(bundle.source_schemas()).expect("dbt authoritative catalog")
 }
 
@@ -207,20 +245,30 @@ schema:
         "duckdb",
         &RelationCatalog::new(&["orders", "customers", "products"])
             .expect("declared physical relations"),
-    ).expect("ODCS typed source declarations");
+    )
+    .expect("ODCS typed source declarations");
     RelationCatalog::from_schemas(parsed.source_schemas()).expect("ODCS catalog")
 }
 
 fn output_domains(catalog: &RelationCatalog, sql: &str, dialect: &str) -> Vec<ValueDomain> {
     let parser = dialect_from_name(dialect).expect("one of thirteen parsers");
     let input = SqlInput::inline(sql);
-    let configured = [ConfiguredSqlInput::new("task197-parity", &input, dialect, parser.as_ref())];
+    let configured = [ConfiguredSqlInput::new(
+        "task197-parity",
+        &input,
+        dialect,
+        parser.as_ref(),
+    )];
     let bundle = analyze_configured_inputs_with_catalog(&configured, catalog)
         .unwrap_or_else(|error| panic!("{dialect}: source-aware public analysis: {error}"));
     let terminal = bundle.layers().last().expect("one terminal SQL projection");
     match terminal.composed_semantics() {
-        ComposedSemantics::Resolved(semantics) => semantics.output().columns()
-            .iter().map(|column| column.domain().clone()).collect(),
+        ComposedSemantics::Resolved(semantics) => semantics
+            .output()
+            .columns()
+            .iter()
+            .map(|column| column.domain().clone())
+            .collect(),
         _ => panic!("{dialect}: expected a resolved typed terminal"),
     }
 }
@@ -241,19 +289,32 @@ fn original_cross_family_typed_reads_agree_for_matching_sql_dbt_and_odcs_source_
     let odcs = odcs_catalog();
     let mut compared = 0;
     for id in PORTABLE_CASES {
-        let case = evidence["cases"].as_array().expect("all original SQL")
-            .iter().find(|c| c["id"] == *id).expect("original cross-family exemplar");
+        let case = evidence["cases"]
+            .as_array()
+            .expect("all original SQL")
+            .iter()
+            .find(|c| c["id"] == *id)
+            .expect("original cross-family exemplar");
         let sql = case["sql"].as_str().expect("original SQL");
         let dbt = dbt_catalog(sql);
         for cell in case["cells"].as_array().expect("thirteen dialects") {
             let name = cell["dialect"].as_str().expect("named parser");
-            assert_eq!(cell["original_observation"], "C", "{id}/{name}: portable SQL");
+            assert_eq!(
+                cell["original_observation"], "C",
+                "{id}/{name}: portable SQL"
+            );
             let expected = output_domains(&direct, sql, name);
-            assert_eq!(output_domains(&dbt, sql, name), expected,
-                "{id}/{name}: manifest/catalog cannot weaken source-typed output domain");
+            assert_eq!(
+                output_domains(&dbt, sql, name),
+                expected,
+                "{id}/{name}: manifest/catalog cannot weaken source-typed output domain"
+            );
             #[cfg(feature = "odcs")]
-            assert_eq!(output_domains(&odcs, sql, name), expected,
-                "{id}/{name}: ODCS cannot weaken source-typed output domain");
+            assert_eq!(
+                output_domains(&odcs, sql, name),
+                expected,
+                "{id}/{name}: ODCS cannot weaken source-typed output domain"
+            );
             compared += 1;
         }
     }
