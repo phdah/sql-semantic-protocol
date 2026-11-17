@@ -5606,9 +5606,9 @@
         "source_fact_set": null,
         "source_relations": [],
         "direct_sql": "requires_task_179_transaction_source_fixture",
-        "dbt_manifest": "metadata_cannot_attest_transaction",
-        "dbt_warehouse_catalog": "metadata_cannot_attest_transaction",
-        "odcs": "metadata_cannot_attest_transaction",
+        "dbt_manifest": "metadata_cannot_attest_identifier_folding",
+        "dbt_warehouse_catalog": "metadata_cannot_attest_identifier_folding",
+        "odcs": "metadata_cannot_attest_identifier_folding",
         "equality_oracle": null,
         "execution": "unattested"
       }
@@ -5759,9 +5759,9 @@
         "source_fact_set": null,
         "source_relations": [],
         "direct_sql": "requires_task_179_transaction_source_fixture",
-        "dbt_manifest": "metadata_cannot_attest_transaction",
-        "dbt_warehouse_catalog": "metadata_cannot_attest_transaction",
-        "odcs": "metadata_cannot_attest_transaction",
+        "dbt_manifest": "metadata_cannot_attest_identifier_folding",
+        "dbt_warehouse_catalog": "metadata_cannot_attest_identifier_folding",
+        "odcs": "metadata_cannot_attest_identifier_folding",
         "equality_oracle": null,
         "execution": "unattested"
       }
