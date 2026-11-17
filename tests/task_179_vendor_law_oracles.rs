@@ -27,6 +27,15 @@ fn ordered_ids(db: &Connection, sql: &str) -> Vec<i64> {
         .collect()
 }
 
+fn source_rows(db: &Connection, sql: &str) -> Vec<(i64, Option<String>)> {
+    let mut statement = db.prepare(sql).expect("complete source query");
+    statement
+        .query_map([], |row| Ok((row.get(0)?, row.get(1)?)))
+        .expect("typed native source")
+        .map(|row| row.expect("source row with nullable value"))
+        .collect()
+}
+
 fn state_rows(db: &Connection) -> Vec<Vec<Option<i64>>> {
     let mut statement = db
         .prepare("SELECT row_id, amount FROM state_rows ORDER BY row_id")
@@ -90,6 +99,8 @@ fn initial_vendor_law_freeze_tracks_six_families_all_dialects_and_open_boundarie
         assert!(case["boundary"].as_str().is_some_and(|why| !why.is_empty()));
         assert!(case["typed_source"].as_str().is_some());
         assert!(case["source_instance_identity"].as_str().is_some());
+        assert!(case["source_snapshot_sql"].as_str().is_some());
+        assert!(case["expected_native_source_rows"].is_array());
         if let Some(original_id) = case["source_sample"].as_str() {
             assert!(
                 source_cases.iter().any(|entry| entry["id"] == original_id),
@@ -122,36 +133,18 @@ fn fixed_native_sources_produce_both_complete_positive_and_negative_outcomes() {
         db.execute_batch(case["setup"].as_str().expect("fixed physical inputs"))
             .unwrap_or_else(|error| panic!("{id}: source setup: {error}"));
 
-        // Verify every source row identity exists before making a terminal claim.
-        // Multiplicity, NULL values and types are fixed by the explicit INSERT.
-        let (source_sql, source_ids): (&str, &[i64]) = match family {
-            "null_ordering" => (
-                "SELECT row_id FROM sort_rows ORDER BY row_id",
-                &[1, 2, 3, 4],
-            ),
-            "collation" => (
-                "SELECT row_id FROM string_rows ORDER BY row_id",
-                &[1, 2, 3, 4],
-            ),
-            "implicit_coercion" => ("SELECT row_id FROM cast_rows ORDER BY row_id", &[1, 2, 3]),
-            "float_timezone" if case["variant"].as_str().unwrap_or("").contains("offset") => {
-                ("SELECT row_id FROM zoned_rows ORDER BY row_id", &[1, 2, 3])
-            }
-            "float_timezone" => (
-                "SELECT row_id FROM float_rows ORDER BY row_id",
-                &[1, 2, 3, 4],
-            ),
-            "dml_transaction" => ("SELECT row_id FROM state_rows ORDER BY row_id", &[1, 2]),
-            "identifier_case" => (
-                "SELECT \"ResultValue\" FROM \"MixedCase\" ORDER BY 1",
-                &[1, 2],
-            ),
-            other => panic!("{id}: unknown family {other}"),
-        };
+        // Every physical input value, duplicate and NULL is an independently
+        // frozen source row, not merely a successful parser or identity check.
+        let snapshot = case["source_snapshot_sql"]
+            .as_str()
+            .expect("typed source snapshot query");
+        let expected_source: Vec<(i64, Option<String>)> =
+            serde_json::from_value(case["expected_native_source_rows"].clone())
+                .expect("independently pinned complete source bag");
         assert_eq!(
-            ordered_ids(&db, source_sql),
-            source_ids,
-            "{id}: source identities"
+            source_rows(&db, snapshot),
+            expected_source,
+            "{id}: complete physical source bag"
         );
 
         let sql = case["sql"].as_str().expect("exact candidate SQL");
