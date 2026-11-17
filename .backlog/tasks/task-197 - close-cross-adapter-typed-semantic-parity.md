@@ -1,10 +1,10 @@
 ---
 id: TASK-197
 title: Close cross-adapter typed semantic parity for TASK-178 variants
-status: To Do
+status: In Progress
 assignee: []
 created_date: '2026-11-10'
-updated_date: '2026-11-10'
+updated_date: '2026-11-17'
 labels: []
 milestone: m-3
 dependencies:
@@ -58,3 +58,10 @@ The first 43 original SQL predicate/structural variants and their 559 parser-cel
 - The unchanged S013 original correlated EXISTS has independent complete DuckDB outer/inner NULL and duplicate source bags, a 13-dialect typed source witness, and a new schema-backed `__physical_row_id` that distinguishes physical occurrences from numeric SQL `id` keys. `tests/task_192_correlated_exists.rs` proves semijoin partner multiplicity and the full terminal. `tests/task_192_adapter_parity.rs` proves this exact finite supplied-bag result through original compiled dbt, direct DDL, and ODCS sources.
 - S010/S011 public `physical_source_plan` TRUE/NOT TRUE obligations and all 43 manually specified query shapes additionally preserve original semantics without promoting residual whole-query scalar domains.
 - TASK-197 still owns all 163-case *cross-family* reconciliation, differing adapter provenance and missing evidence disposition; this note is a handoff, **not** a claim TASK-192 or TASK-197 is Done.
+
+## Implementation PR (2026-11-17, in progress)
+
+- Frozen TASK-197 ledger: `docs/task-197-acceptance-freeze.json` covers all 163 original SQL variants and 2,119 dialect identities, with explicit C/D/R/U dispositions and no unsupported vendor-native certification.
+- Public adapter and cross-owner inventory guards: `tests/task_197_cross_adapter_ledger.rs` validates stable SQL/feature/owner identities and checks matching source-typed output domains for five portable cross-family examples across the 13 parser dialects using direct DDL, compiled dbt, and ODCS where configured.
+- Coverage tracking: `docs/coverage-manifest.json`; verification and remaining acceptance gates: `docs/task-197-acceptance-audit.md`.
+- All five task-specific AC remain unchecked. Full 163-case adapter semantic validation, independent per-cell review, final CI and consumer verification are pending. TASK-88 and TASK-91 remain open.
