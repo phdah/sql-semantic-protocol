@@ -656,7 +656,33 @@ pub(super) fn mutate_rows(
                 "mutation membership needs complete independent source population",
             )
         })?;
-        Some((source, nested, predicate, population))
+        // Validate the entire independent source population once. Stopping
+        // on the first matching IN candidate would otherwise accept later
+        // unproved values and incorrectly certify an exact physical state.
+        let mut source_members = BTreeSet::new();
+        if let Predicate::InSubquery(_) = predicate {
+            let [projected] = nested.output().columns() else {
+                return Err(residual("unproved nested membership projection arity"));
+            };
+            let aliases = [source.alias().unwrap_or(source.name()), source.name()];
+            for candidate in &population.rows {
+                let inner_context = Context {
+                    target: None,
+                    target_alias: None,
+                    source: Some((source.name(), candidate)),
+                };
+                match eval(projected.expression(), &inner_context, &aliases)? {
+                    LiteralValue::Null => {}
+                    LiteralValue::Number(value) => {
+                        source_members.insert(value.parse::<i128>().map_err(|_| {
+                            residual("unproved signed nested candidate")
+                        })?);
+                    }
+                    _ => return Err(residual("unproved nested membership type")),
+                }
+            }
+        }
+        Some((source, nested, predicate, population, source_members))
     } else {
         None
     };
@@ -697,7 +723,7 @@ pub(super) fn mutate_rows(
         };
         let matches = if joined.is_some() {
             matched_source.is_some()
-        } else if let Some((source, nested, predicate, population)) = correlated {
+        } else if let Some((source, nested, predicate, population, source_members)) = correlated {
             let aliases = [source.alias().unwrap_or(source.name()), source.name()];
             match predicate {
                 Predicate::Exists(exists) => {
@@ -723,9 +749,6 @@ pub(super) fn mutate_rows(
                     let [outer_key] = membership.operand().expressions() else {
                         return Err(residual("unproved scalar membership arity"));
                     };
-                    let [projected] = nested.output().columns() else {
-                        return Err(residual("unproved nested membership projection arity"));
-                    };
                     let outer_context = Context {
                         target: Some((target, row)),
                         target_alias: write.target_alias(),
@@ -738,29 +761,7 @@ pub(super) fn mutate_rows(
                             let key = value
                                 .parse::<i128>()
                                 .map_err(|_| residual("unproved signed membership value"))?;
-                            let mut has_match = false;
-                            for candidate in &population.rows {
-                                let inner_context = Context {
-                                    target: None,
-                                    target_alias: None,
-                                    source: Some((source.name(), candidate)),
-                                };
-                                match eval(projected.expression(), &inner_context, &aliases)? {
-                                    LiteralValue::Null => {}
-                                    LiteralValue::Number(candidate) => {
-                                        let candidate =
-                                            candidate.parse::<i128>().map_err(|_| {
-                                                residual("unproved signed nested candidate")
-                                            })?;
-                                        if key == candidate {
-                                            has_match = true;
-                                            break;
-                                        }
-                                    }
-                                    _ => return Err(residual("unproved nested membership type")),
-                                }
-                            }
-                            has_match
+                            source_members.contains(&key)
                         }
                         _ => return Err(residual("unproved mutation membership key type")),
                     }
