@@ -1,4 +1,34 @@
 {
+  "task_197_cross_adapter_parity": {
+    "owner": "TASK-197",
+    "parent": "TASK-88",
+    "status": "in_progress_unverified_freeze",
+    "freeze": "docs/task-197-acceptance-freeze.json",
+    "freeze_version": 1,
+    "original_inventory": "docs/task-178-full-variant-inventory.json",
+    "original_cases": 163,
+    "parser_cells": 2119,
+    "dialect_count": 13,
+    "positive_fixture": "88-C197-P",
+    "negative_fixture": "88-C197-N",
+    "ledger_reconciliation_test": "tests/task_197_cross_adapter_ledger.rs",
+    "bounded_public_adapter_comparisons": 65,
+    "owner_adapter_evidence": [
+      "tests/task_192_adapter_parity.rs",
+      "tests/task_193_adapter_parity.rs",
+      "tests/task_194_adapter_parity.rs",
+      "tests/task_195_adapter_parity.rs",
+      "tests/task_196_write_adapter_parity.rs",
+      "tests/task_196_schema_adapter_parity.rs"
+    ],
+    "acceptance_audit": "docs/task-197-acceptance-audit.md",
+    "independently_signed_off_cells": 0,
+    "all_163_variants_certified": false,
+    "vendor_execution_attested": false,
+    "task_complete": false,
+    "parent_task88_signoff": false,
+    "release_approved": false
+  },
   "task_195_window_grouping_ordering_acceptance": {
     "native_not_true_partition_test": "tests/task_195_native_partitions.rs",
     "statement_local_analytic_domain_owner": "src/analysis/output.rs::derive_window_output_domain",
