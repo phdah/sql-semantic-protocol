@@ -125,7 +125,7 @@ fn every_original_executable_predicate_replays_true_and_not_true_on_same_source(
             )
             .find(|entry| entry["id"] == case["source_id"])
         {
-            let mut emitted = positive
+            let emitted = positive
                 .iter()
                 .map(|ordinal| vec![case["source_bag"][*ordinal as usize][0].clone()])
                 .collect::<Vec<_>>();
