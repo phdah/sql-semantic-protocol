@@ -52,9 +52,29 @@ fn every_original_executable_predicate_replays_true_and_not_true_on_same_source(
             &db,
             &format!("SELECT rowid FROM {relation} WHERE ({predicate}) IS NOT TRUE"),
         );
+        let false_rows = source_ordinals(
+            &db,
+            &format!("SELECT rowid FROM {relation} WHERE ({predicate}) IS FALSE"),
+        );
+        let unknown_rows = source_ordinals(
+            &db,
+            &format!("SELECT rowid FROM {relation} WHERE ({predicate}) IS NULL"),
+        );
         assert!(
             positive.is_disjoint(&not_true),
             "{id}: TRUE and NOT TRUE cannot share a physical row"
+        );
+        assert!(
+            false_rows.is_disjoint(&unknown_rows),
+            "{id}: FALSE and UNKNOWN are distinct physical source occurrences"
+        );
+        assert_eq!(
+            false_rows
+                .union(&unknown_rows)
+                .copied()
+                .collect::<BTreeSet<_>>(),
+            not_true,
+            "{id}: NOT TRUE must include both FALSE and UNKNOWN"
         );
         let all = source_ordinals(&db, &format!("SELECT rowid FROM {relation}"));
         assert_eq!(
@@ -71,6 +91,18 @@ fn every_original_executable_predicate_replays_true_and_not_true_on_same_source(
             "{id}: source row count drift"
         );
         let truth = &case["negative_truth_evidence"];
+        for (key, actual) in [
+            ("rejected_false_ordinals", &false_rows),
+            ("rejected_unknown_ordinals", &unknown_rows),
+        ] {
+            if let Some(ordinals) = truth[key].as_array() {
+                let expected = ordinals
+                    .iter()
+                    .map(|ordinal| ordinal.as_i64().expect("frozen physical ordinal"))
+                    .collect::<BTreeSet<_>>();
+                assert_eq!(*actual, expected, "{id}: independently pinned {key}");
+            }
+        }
         if let Some(ordinals) = truth["selected_source_ordinals"].as_array() {
             let expected = ordinals
                 .iter()
@@ -143,9 +175,9 @@ fn every_original_executable_predicate_replays_true_and_not_true_on_same_source(
         }
         tested += 1;
     }
-    assert!(
-        tested >= 18,
-        "must replay all conditional original WHERE variants"
+    assert_eq!(
+        tested, 20,
+        "must replay every conditional original WHERE variant, including DML"
     );
     assert!(
         pinned >= 10,
