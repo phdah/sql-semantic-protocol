@@ -1,10 +1,10 @@
 ---
 id: TASK-191
 title: Adjudicate TASK-177 parser and native boundaries
-status: To Do
+status: In Progress
 assignee: []
 created_date: '2026-11-09'
-updated_date: '2026-11-09'
+updated_date: '2026-11-18'
 labels: []
 milestone: m-3
 dependencies:
@@ -63,3 +63,9 @@ The original TASK-178 semantic family proofs are now TASK-192..196, with cross-a
 
 - Original S179 `CAST(ROW(1,'a') AS STRUCT(a INT,b VARCHAR))` succeeds natively in DuckDB with a structured scalar but remains a typed canonical Unknown/Unsupported output in the current portable protocol. BigQuery and generic parsers reject that **original spelling**; the DuckDB historical drift is explicitly retained/repaired. TASK-191 owns the later parser/STRUCT disposition rather than treating the native DuckDB scalar as a universal supported output.
 - Original S033 signed fixed-width overflow is a native **error** (not a successful scalar), S042 NULLS LAST ordered bag is independently captured without inventing tie ordering, and S027/S032 engine-specific arithmetic width differences are recorded. TASK-191 retains its own independently reviewed boundary ledger and separate Done gate.
+
+## TASK-191 initial implementation (2026-11-18)
+
+- The task-owned [v1 immutable acceptance freeze](../../docs/task-191-acceptance-freeze.json) joins exactly 55 rejected parser cells, 116 canonical Unsupported cells and 23 original native nonterminal cases to their original source SQL IDs, semantic owners and conservative reviewed-proof obligations. The 13 source dialect identities and the exact original SQL spelling remain authoritative in TASK-177.
+- [Public API and DuckDB acceptance tests](../../tests/task_191_boundary_disposition.rs) re-evaluate the original error/Unsupported boundaries and two physical companion oracles with complete nullable, duplicate and stable row-identity source bags. Original LEFT SEMI/ANTI DuckDB rejection is checked explicitly. No external native vendor/runtime certification or alternate-original equivalence is claimed.
+- [Acceptance audit](../../docs/task-191-acceptance-audit.md) itemizes every remaining signoff gate. **All five ACs remain unchecked** until independent per-cell reviews, full CI, external limitations and cross-adapter parity have actually been validated. TASK-88, TASK-180 and release TASK-91 remain blocked.
