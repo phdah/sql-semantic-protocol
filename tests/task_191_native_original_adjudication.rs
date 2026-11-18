@@ -262,14 +262,16 @@ fn random_and_explain_originals_keep_runtime_and_plan_uncertainty_explicit() {
         explain["original_id"].as_str().expect("plan ID"),
     );
     let mut stmt = db.prepare(plan_sql).expect("native EXPLAIN SQL");
-    let plan_rows: Vec<String> = stmt
-        .query_map([], |row| row.get(0))
+    let plan_rows: Vec<(String, String)> = stmt
+        .query_map([], |row| Ok((row.get(0)?, row.get(1)?)))
         .expect("plan metadata rows")
-        .map(|value| value.expect("plan label"))
+        .map(|value| value.expect("plan label and content"))
         .collect();
     assert!(
-        !plan_rows.is_empty(),
-        "EXPLAIN must execute in pinned DuckDB"
+        plan_rows
+            .iter()
+            .any(|(label, content)| !label.is_empty() && !content.trim().is_empty()),
+        "EXPLAIN must produce nonempty plan content in pinned DuckDB"
     );
     assert_eq!(explain["original_fixed_terminal_certified"], false);
     assert_eq!(all_source_rows(&db), before);
