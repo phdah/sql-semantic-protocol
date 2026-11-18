@@ -3558,7 +3558,7 @@
   "positive_negative_oracles": {
     "positive": "Original S054/S055 are DuckDB-rejected; an independently frozen EXISTS positive companion is separately tested, never relabeled original.",
     "negative": "An independently frozen NOT EXISTS rejected-partner control uses the same complete nullable/duplicate source bag.",
-    "source_setup": "CREATE TABLE orders(row_id INTEGER, id INTEGER, amount INTEGER); INSERT INTO orders VALUES (1,1,10),(2,1,11),(3,2,20),(4,NULL,30),(5,3,NULL); CREATE TABLE customers(row_id INTEGER,id INTEGER); INSERT INTO customers VALUES (6,1),(7,1),(8,NULL),(9,4);",
+    "source_setup": "CREATE TABLE orders(row_id INTEGER NOT NULL, id INTEGER, amount INTEGER); INSERT INTO orders VALUES (1,1,10),(2,1,11),(3,2,20),(4,NULL,30),(5,3,NULL); CREATE TABLE customers(row_id INTEGER NOT NULL,id INTEGER); INSERT INTO customers VALUES (6,1),(7,1),(8,NULL),(9,4);",
     "original_positive_id": "88-C177-S054",
     "original_negative_id": "88-C177-S055",
     "expected_ordered_orders": [
