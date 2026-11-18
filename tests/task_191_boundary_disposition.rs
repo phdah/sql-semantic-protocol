@@ -85,8 +85,12 @@ fn freeze_reconciles_every_exception_against_the_independent_original_ledgers() 
                 .chars()
                 .enumerate()
                 .filter_map(move |(index, marker)| {
-                    (marker == 'R')
-                        .then(|| format!("{id}-{}", dialects[index].as_str().expect("dialect")))
+                    if marker == 'R' {
+                        let dialect = dialects[index].as_str().expect("dialect");
+                        Some(format!("{id}-{dialect}"))
+                    } else {
+                        None
+                    }
                 })
         })
         .collect();
@@ -102,8 +106,12 @@ fn freeze_reconciles_every_exception_against_the_independent_original_ledgers() 
                 .chars()
                 .enumerate()
                 .filter_map(move |(index, marker)| {
-                    (marker == 'U')
-                        .then(|| format!("{id}-{}", dialects[index].as_str().expect("dialect")))
+                    if marker == 'U' {
+                        let dialect = dialects[index].as_str().expect("dialect");
+                        Some(format!("{id}-{dialect}"))
+                    } else {
+                        None
+                    }
                 })
         })
         .collect();
