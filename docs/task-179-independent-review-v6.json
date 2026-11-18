@@ -37,15 +37,17 @@
     "8": "explicit vendor/session residuals and exact attestation requirements"
   },
   "approvals": {
-    "ac1": "candidate_pending_final_exact_head_ci",
-    "ac2": "candidate_pending_final_exact_head_ci",
-    "ac3": "candidate_pending_final_exact_head_ci",
-    "ac4": "candidate_pending_final_exact_head_ci",
-    "ac5": "candidate_pending_final_exact_head_ci"
+    "ac1": "signed_off_complete_versioned_evidence_and_reviewed_scope_amendment",
+    "ac2": "signed_off_strongest_sound_typed_portable_and_explicit_vendor_residual",
+    "ac3": "signed_off_independent_37_native_source_and_terminal_or_error_bag_replay",
+    "ac4": "signed_off_481_dialects_and_representable_adapter_evidence_with_residual_vendor_laws",
+    "ac5": "signed_off_full_protocol_and_exact_pin_consumer_CI_after_independent_review"
   },
-  "signoff_task179": false,
+  "signoff_task179": true,
   "signoff_parent88": false,
   "release_approved": false,
-  "final_head_protocol_ci": null,
-  "final_head_consumer_ci": null
+  "final_head_protocol_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/44253188449",
+  "final_head_consumer_ci": "https://github.com/phdah/sql-tdg/actions/runs/44253292565",
+  "verified_implementation_head": "bf8179fcf7d610efe78435b64ce35ca7eb8b179e",
+  "marker_commit_ci_gate": "The metadata/task signoff commit on this PR must also pass the full CI matrix; no next child until TASK-179 Done is merged into main."
 }

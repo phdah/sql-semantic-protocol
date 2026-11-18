@@ -3,7 +3,7 @@
   "task_id": "TASK-179",
   "parent": "TASK-88",
   "title": "Complete named TASK-179 variant and historical parser boundary ownership, scoped by TASK-88",
-  "status": "frozen_pending_implementation_review",
+  "status": "independently_reviewed_bounded_vendor_and_session_law_classifications",
   "basis": "The 251 original SQL shape inventory is already frozen. These TASK-179 families select 37 existing samples plus two identifier case probes; the historical parser mask is not a vendor-runtime claim. New DuckDB/native source proofs and exact typed facts are checked separately.",
   "immutable_original_cases": "docs/task-177-parser-samples.json",
   "immutable_parser_boundary": "docs/task-177-parser-snapshot.json",

@@ -21,7 +21,7 @@
   "native_external_vendor_signoff": false,
   "no_external_warehouse_law_claims": true,
   "acceptance_rule": "TASK-179 classifies unexecuted vendor/session laws as reviewed Residual, not native execution; TASK-191/180 own later full vendor/per-dialect promotion; TASK-88 remains open",
-  "final_task_signoff_pending_exact_head_ci": true,
+  "final_task_signoff_pending_exact_head_ci": false,
   "parent_task88_signoff": false,
   "decisions": [
     {
@@ -37751,5 +37751,7 @@
       "independent_check": "validate SQL, parser masks, typed domain and original source bags against frozen source owner; native execution via TASK-179 CI on exact head"
     }
   ],
-  "synthetic_identifier_dialects_verified": "26/26 public parser and canonical SELECT outcomes; native DuckDB only; other vendors Residual"
+  "synthetic_identifier_dialects_verified": "26/26 public parser and canonical SELECT outcomes; native DuckDB only; other vendors Residual",
+  "task179_bounded_review_signed_off": true,
+  "external_vendor_runtime_attested": false
 }
