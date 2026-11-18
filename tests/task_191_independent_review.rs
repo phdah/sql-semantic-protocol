@@ -224,6 +224,8 @@ fn every_original_unsupported_diagnostic_is_source_bound_and_precisely_regressed
         let expected_category = text(row, "expected_unsupported_category");
         let expected_code = text(row, "expected_diagnostic_code");
         let expected_message = text(row, "expected_diagnostic_message");
+        let expected_area = text(row, "diagnostic_area");
+        let expected_severity = text(row, "diagnostic_severity");
         let unsupported: Vec<_> = protocol
             .statements()
             .iter()
@@ -242,8 +244,8 @@ fn every_original_unsupported_diagnostic_is_source_bound_and_precisely_regressed
                     && statement.diagnostics().iter().any(|diagnostic| {
                         diagnostic.code() == expected_code
                             && diagnostic.message() == expected_message
-                            && format!("{:?}", diagnostic.area()) == "Statement"
-                            && format!("{:?}", diagnostic.severity()) == "Warning"
+                            && format!("{:?}", diagnostic.area()) == expected_area
+                            && format!("{:?}", diagnostic.severity()) == expected_severity
                             && !diagnostic.message().is_empty()
                     })
             }),
