@@ -84,7 +84,7 @@ fn freeze_reconciles_every_exception_against_the_independent_original_ledgers() 
                 .expect("parser mask")
                 .chars()
                 .enumerate()
-                .filter_map(|(index, marker)| {
+                .filter_map(move |(index, marker)| {
                     (marker == 'R')
                         .then(|| format!("{id}-{}", dialects[index].as_str().expect("dialect")))
                 })
@@ -101,7 +101,7 @@ fn freeze_reconciles_every_exception_against_the_independent_original_ledgers() 
                 .expect("analyzer mask")
                 .chars()
                 .enumerate()
-                .filter_map(|(index, marker)| {
+                .filter_map(move |(index, marker)| {
                     (marker == 'U')
                         .then(|| format!("{id}-{}", dialects[index].as_str().expect("dialect")))
                 })
