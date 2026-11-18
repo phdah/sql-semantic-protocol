@@ -38,7 +38,10 @@ fn sample_by_id<'a>(samples: &'a Value, id: &str) -> &'a Value {
 }
 
 fn exact_ids(rows: &[Value], field: &str) -> BTreeSet<String> {
-    let all: Vec<_> = rows.iter().map(|row| string(row, field).to_owned()).collect();
+    let all: Vec<_> = rows
+        .iter()
+        .map(|row| string(row, field).to_owned())
+        .collect();
     let ids: BTreeSet<_> = all.iter().cloned().collect();
     assert_eq!(ids.len(), all.len(), "{field}: duplicate frozen row");
     ids
@@ -77,16 +80,14 @@ fn freeze_reconciles_every_exception_against_the_independent_original_ledgers() 
         .expect("historical parser masks")
         .iter()
         .flat_map(|(id, mask)| {
-            mask.as_str().expect("parser mask").chars().enumerate().filter_map(
-                |(index, marker)| {
-                    (marker == 'R').then(|| {
-                        format!(
-                            "{id}-{}",
-                            dialects[index].as_str().expect("dialect")
-                        )
-                    })
-                },
-            )
+            mask.as_str()
+                .expect("parser mask")
+                .chars()
+                .enumerate()
+                .filter_map(|(index, marker)| {
+                    (marker == 'R')
+                        .then(|| format!("{id}-{}", dialects[index].as_str().expect("dialect")))
+                })
         })
         .collect();
     assert_eq!(expected_parser.len(), 55);
@@ -96,16 +97,14 @@ fn freeze_reconciles_every_exception_against_the_independent_original_ledgers() 
         .expect("historical analyzer masks")
         .iter()
         .flat_map(|(id, mask)| {
-            mask.as_str().expect("analyzer mask").chars().enumerate().filter_map(
-                |(index, marker)| {
-                    (marker == 'U').then(|| {
-                        format!(
-                            "{id}-{}",
-                            dialects[index].as_str().expect("dialect")
-                        )
-                    })
-                },
-            )
+            mask.as_str()
+                .expect("analyzer mask")
+                .chars()
+                .enumerate()
+                .filter_map(|(index, marker)| {
+                    (marker == 'U')
+                        .then(|| format!("{id}-{}", dialects[index].as_str().expect("dialect")))
+                })
         })
         .collect();
     assert_eq!(expected_unsupported.len(), 116);
@@ -179,7 +178,10 @@ fn freeze_reconciles_every_exception_against_the_independent_original_ledgers() 
             "no_fixed_successful_original_terminal"
         );
         assert_eq!(row["external_vendor_session"], "not_certified");
-        assert_eq!(row["release_decision"], "blocked_pending_independent_review");
+        assert_eq!(
+            row["release_decision"],
+            "blocked_pending_independent_review"
+        );
     }
 
     let coverage = &coverage["task_191_boundary_disposition_acceptance"];
@@ -200,7 +202,10 @@ fn every_task_191_original_parser_and_analyzer_boundary_stays_fail_closed() {
         let dialect = dialect_from_name(name).expect("exposed parser dialect");
         let sql = string(sample_by_id(&sources, id), "sql");
         assert!(
-            matches!(analyze_sql(sql, name, dialect.as_ref()), Err(Error::Parse(_))),
+            matches!(
+                analyze_sql(sql, name, dialect.as_ref()),
+                Err(Error::Parse(_))
+            ),
             "{id}/{name}: rejected original syntax unexpectedly accepted"
         );
         assert_eq!(row["parser_disposition"], "blocked_original_syntax");
@@ -221,8 +226,14 @@ fn every_task_191_original_parser_and_analyzer_boundary_stays_fail_closed() {
                 .any(|statement| matches!(statement, ProtocolStatement::Unsupported(_))),
             "{id}/{name}: unsupported original lost its explicit diagnostic boundary"
         );
-        assert_eq!(row["safe_protocol_outcome"], "explicit_unsupported_not_exact");
-        assert_eq!(row["review_disposition"], "blocking_unimplemented_or_unproved");
+        assert_eq!(
+            row["safe_protocol_outcome"],
+            "explicit_unsupported_not_exact"
+        );
+        assert_eq!(
+            row["review_disposition"],
+            "blocking_unimplemented_or_unproved"
+        );
     }
 }
 
@@ -304,7 +315,11 @@ fn positive_and_rejected_partner_controls_use_one_complete_nullable_source_bag()
         before_orders.len(),
         "EXISTS and NOT EXISTS must partition every physical outer occurrence"
     );
-    assert_eq!(order_rows(&db), before_orders, "read-only control mutated orders");
+    assert_eq!(
+        order_rows(&db),
+        before_orders,
+        "read-only control mutated orders"
+    );
     assert_eq!(
         customer_rows(&db),
         before_customers,
