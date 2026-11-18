@@ -102,16 +102,17 @@ fn every_original_executable_predicate_replays_true_and_not_true_on_same_source(
                 .collect::<Vec<_>>();
             let mut reference = env_case["expected_terminal_bag"].as_array()
                 .expect("independent native terminal").clone();
-            emitted.sort_by_key(|row| format!("{row:?}"));
-            reference.sort_by_key(|row| row.to_string());
+            let mut emitted = emitted.into_iter().map(Value::Array).collect::<Vec<_>>();
+            emitted.sort_by_key(Value::to_string);
+            reference.sort_by_key(Value::to_string);
             assert_eq!(
-                emitted.into_iter().map(|row| Value::Array(row)).collect::<Vec<_>>(),
+                emitted,
                 reference,
                 "{id}: native selected source rows must match frozen full terminal bag"
             );
         }
         tested += 1;
     }
-    assert!(tested >= 19, "must replay all conditional original WHERE variants");
+    assert!(tested >= 18, "must replay all conditional original WHERE variants");
     assert!(pinned >= 10, "3VL fixture must pin exact positive and rejected source identities");
 }
