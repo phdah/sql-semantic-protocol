@@ -69,3 +69,10 @@ The original TASK-178 semantic family proofs are now TASK-192..196, with cross-a
 - The task-owned [v1 immutable acceptance freeze](../../docs/task-191-acceptance-freeze.json) joins exactly 55 rejected parser cells, 116 canonical Unsupported cells and 23 original native nonterminal cases to their original source SQL IDs, semantic owners and conservative reviewed-proof obligations. The 13 source dialect identities and the exact original SQL spelling remain authoritative in TASK-177.
 - [Public API and DuckDB acceptance tests](../../tests/task_191_boundary_disposition.rs) re-evaluate the original error/Unsupported boundaries and two physical companion oracles with complete nullable, duplicate and stable row-identity source bags. Original LEFT SEMI/ANTI DuckDB rejection is checked explicitly. No external native vendor/runtime certification or alternate-original equivalence is claimed.
 - [Acceptance audit](../../docs/task-191-acceptance-audit.md) itemizes every remaining signoff gate. **All five ACs remain unchecked** until independent per-cell reviews, full CI, external limitations and cross-adapter parity have actually been validated. TASK-88, TASK-180 and release TASK-91 remain blocked.
+
+## TASK-191 complete exception review candidate (2026-11-18)
+
+- [v2 independent source-bound disposition](../../docs/task-191-reviewed-dispositions-v2.json) audits the original 55 parser, 116 analyzer and 23 native exception entries without weakening any release-blocking mandatory feature.
+- [v3 TASK-178/179/197/180 handoff](../../docs/task-191-downstream-handoff-v3.json) retains 194 disjoint review obligations, source-fact adapter authority, exact SQL and native-vendor limitations.
+- Added task-local original [native execution](../../tests/task_191_native_original_adjudication.rs), [public diagnostics](../../tests/task_191_independent_review.rs), and [downstream parity reconciliation](../../tests/task_191_downstream_handoff.rs) tests.
+- Acceptance signoff remains pending final-head verification, independent review and pinned consumer. TASK-88/TASK-180/TASK-91 stay separately blocked.
