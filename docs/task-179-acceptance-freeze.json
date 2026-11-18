@@ -1,0 +1,1967 @@
+{
+  "schema_version": 1,
+  "task_id": "TASK-179",
+  "parent": "TASK-88",
+  "status": "initial_frozen_unverified_acceptance_matrix",
+  "positive_fixture_id": "88-C179-P",
+  "negative_fixture_id": "88-C179-N",
+  "source_parser_inventory": "docs/task-177-parser-samples.json",
+  "source_dialect_inventory": "docs/task-177-parser-snapshot.json",
+  "dialects": [
+    "ansi",
+    "bigquery",
+    "clickhouse",
+    "databricks",
+    "duckdb",
+    "generic",
+    "hive",
+    "mssql",
+    "mysql",
+    "postgresql",
+    "redshift",
+    "snowflake",
+    "sqlite"
+  ],
+  "canonical_claim": "No vendor/session equivalence is certified by a DuckDB oracle. Each parser/dialect cell remains unapproved until independently reviewed.",
+  "family_scope": [
+    "null_ordering",
+    "collation",
+    "implicit_coercion",
+    "float_timezone",
+    "dml_transaction",
+    "identifier_case"
+  ],
+  "case_count": 14,
+  "dialect_cell_count": 182,
+  "outstanding_named_variants": [
+    "nonbinary ILIKE/SIMILAR/regex and locale collation execution",
+    "character padding and nonbinary comparisons",
+    "NaN, overflow and implicit failed-cast laws",
+    "DST and timezone without fixed session",
+    "MERGE multiplicity and engine transaction/DDL autocommit",
+    "identifier normalization across all vendors"
+  ],
+  "acceptance_criteria": {
+    "ac1": "partial; initial 14-case versioned matrix, not complete family freeze",
+    "ac2": "pending semantic evaluation of mandatory family variants",
+    "ac3": "initial DuckDB closed-fixture oracles required",
+    "ac4": "pending 13 parser and dbt/ODCS equivalence",
+    "ac5": "pending final-head CI, consumer compatibility and independent review"
+  },
+  "cases": [
+    {
+      "id": "88-C179-P01",
+      "family": "null_ordering",
+      "variant": "explicit_nulls_last",
+      "source_sample": "88-C177-S042",
+      "setup": "CREATE TABLE sort_rows (row_id INTEGER, amount INTEGER); INSERT INTO sort_rows VALUES (1,NULL),(2,0),(3,0),(4,2);",
+      "sql": "SELECT row_id FROM sort_rows ORDER BY amount ASC NULLS LAST, row_id ASC",
+      "expected_duckdb_terminal_or_poststate": [
+        2,
+        3,
+        4,
+        1
+      ],
+      "typed_source": "integer row_id, nullable integer amount",
+      "expected_protocol_domain": "no stronger than source-typed portable proof without external session law",
+      "expected_true_not_true": "DuckDB positive terminal only; portable truth-partition/physical certification pending.",
+      "source_instance_identity": "row_id (unique within named physical table)",
+      "sessions": [
+        "DuckDB in-memory default"
+      ],
+      "adapter_evidence": {
+        "direct_sql": "source DDL supplied",
+        "dbt": "pending equivalent manifest+catalog facts",
+        "odcs": "pending representable contract facts"
+      },
+      "dialect_cells": [
+        {
+          "dialect": "ansi",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "bigquery",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "clickhouse",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "databricks",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "duckdb",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "generic",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "hive",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "mssql",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "mysql",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "postgresql",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "redshift",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "snowflake",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "sqlite",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        }
+      ],
+      "review": "not_signed_off",
+      "boundary": "explicit last, tie-break by unique row id",
+      "source_snapshot_sql": "SELECT row_id, CAST(amount AS VARCHAR) FROM sort_rows ORDER BY row_id",
+      "expected_native_source_rows": [
+        [
+          1,
+          null
+        ],
+        [
+          2,
+          "0"
+        ],
+        [
+          3,
+          "0"
+        ],
+        [
+          4,
+          "2"
+        ]
+      ],
+      "control_direction": "positive_native_terminal"
+    },
+    {
+      "id": "88-C179-N01",
+      "family": "null_ordering",
+      "variant": "explicit_nulls_first",
+      "source_sample": "88-C177-S156",
+      "setup": "CREATE TABLE sort_rows (row_id INTEGER, amount INTEGER); INSERT INTO sort_rows VALUES (1,NULL),(2,0),(3,0),(4,2);",
+      "sql": "SELECT row_id FROM sort_rows ORDER BY amount ASC NULLS FIRST, row_id ASC",
+      "expected_duckdb_terminal_or_poststate": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "typed_source": "integer row_id, nullable integer amount",
+      "expected_protocol_domain": "no stronger than source-typed portable proof without external session law",
+      "expected_true_not_true": "Comparator/control only; this is not a NOT TRUE or Impossible witness.",
+      "source_instance_identity": "row_id (unique within named physical table)",
+      "sessions": [
+        "DuckDB in-memory default"
+      ],
+      "adapter_evidence": {
+        "direct_sql": "source DDL supplied",
+        "dbt": "pending equivalent manifest+catalog facts",
+        "odcs": "pending representable contract facts"
+      },
+      "dialect_cells": [
+        {
+          "dialect": "ansi",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "bigquery",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "clickhouse",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "databricks",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "duckdb",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "generic",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "hive",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "mssql",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "mysql",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "postgresql",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "redshift",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "snowflake",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "sqlite",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        }
+      ],
+      "review": "not_signed_off",
+      "boundary": "explicit first, tie-break by unique row id",
+      "source_snapshot_sql": "SELECT row_id, CAST(amount AS VARCHAR) FROM sort_rows ORDER BY row_id",
+      "expected_native_source_rows": [
+        [
+          1,
+          null
+        ],
+        [
+          2,
+          "0"
+        ],
+        [
+          3,
+          "0"
+        ],
+        [
+          4,
+          "2"
+        ]
+      ],
+      "control_direction": "alternative_law_control"
+    },
+    {
+      "id": "88-C179-P02",
+      "family": "collation",
+      "variant": "nocase_equality",
+      "source_sample": "88-C177-S038",
+      "setup": "CREATE TABLE string_rows (row_id INTEGER, txt VARCHAR); INSERT INTO string_rows VALUES (1,'abc'),(2,'ABC'),(3,'def'),(4,NULL);",
+      "sql": "SELECT row_id FROM string_rows WHERE txt COLLATE NOCASE = 'abc' ORDER BY row_id",
+      "expected_duckdb_terminal_or_poststate": [
+        1,
+        2
+      ],
+      "typed_source": "integer row_id, nullable VARCHAR txt",
+      "expected_protocol_domain": "no stronger than source-typed portable proof without external session law",
+      "expected_true_not_true": "DuckDB positive terminal only; portable truth-partition/physical certification pending.",
+      "source_instance_identity": "row_id (unique within named physical table)",
+      "sessions": [
+        "DuckDB in-memory default"
+      ],
+      "adapter_evidence": {
+        "direct_sql": "source DDL supplied",
+        "dbt": "pending equivalent manifest+catalog facts",
+        "odcs": "pending representable contract facts"
+      },
+      "dialect_cells": [
+        {
+          "dialect": "ansi",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "bigquery",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "clickhouse",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "databricks",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "duckdb",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "generic",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "hive",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "mssql",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "mysql",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "postgresql",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "redshift",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "snowflake",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "sqlite",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        }
+      ],
+      "review": "not_signed_off",
+      "boundary": "DuckDB NOCASE only, no external vendor collation claim",
+      "source_snapshot_sql": "SELECT row_id, txt FROM string_rows ORDER BY row_id",
+      "expected_native_source_rows": [
+        [
+          1,
+          "abc"
+        ],
+        [
+          2,
+          "ABC"
+        ],
+        [
+          3,
+          "def"
+        ],
+        [
+          4,
+          null
+        ]
+      ],
+      "control_direction": "positive_native_terminal"
+    },
+    {
+      "id": "88-C179-N02",
+      "family": "collation",
+      "variant": "default_equality",
+      "source_sample": "88-C177-S039",
+      "setup": "CREATE TABLE string_rows (row_id INTEGER, txt VARCHAR); INSERT INTO string_rows VALUES (1,'abc'),(2,'ABC'),(3,'def'),(4,NULL);",
+      "sql": "SELECT row_id FROM string_rows WHERE txt = 'abc' ORDER BY row_id",
+      "expected_duckdb_terminal_or_poststate": [
+        1
+      ],
+      "typed_source": "integer row_id, nullable VARCHAR txt",
+      "expected_protocol_domain": "no stronger than source-typed portable proof without external session law",
+      "expected_true_not_true": "Comparator/control only; this is not a NOT TRUE or Impossible witness.",
+      "source_instance_identity": "row_id (unique within named physical table)",
+      "sessions": [
+        "DuckDB in-memory default"
+      ],
+      "adapter_evidence": {
+        "direct_sql": "source DDL supplied",
+        "dbt": "pending equivalent manifest+catalog facts",
+        "odcs": "pending representable contract facts"
+      },
+      "dialect_cells": [
+        {
+          "dialect": "ansi",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "bigquery",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "clickhouse",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "databricks",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "duckdb",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "generic",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "hive",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "mssql",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "mysql",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "postgresql",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "redshift",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "snowflake",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "sqlite",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        }
+      ],
+      "review": "not_signed_off",
+      "boundary": "default DuckDB collation; no inferred portable binary law",
+      "source_snapshot_sql": "SELECT row_id, txt FROM string_rows ORDER BY row_id",
+      "expected_native_source_rows": [
+        [
+          1,
+          "abc"
+        ],
+        [
+          2,
+          "ABC"
+        ],
+        [
+          3,
+          "def"
+        ],
+        [
+          4,
+          null
+        ]
+      ],
+      "control_direction": "alternative_law_control"
+    },
+    {
+      "id": "88-C179-P03",
+      "family": "implicit_coercion",
+      "variant": "integer_compared_to_string",
+      "source_sample": "88-C177-S040",
+      "setup": "CREATE TABLE cast_rows (row_id INTEGER, amount INTEGER); INSERT INTO cast_rows VALUES (1,2),(2,10),(3,NULL);",
+      "sql": "SELECT row_id FROM cast_rows WHERE amount = '2' ORDER BY row_id",
+      "expected_duckdb_terminal_or_poststate": [
+        1
+      ],
+      "typed_source": "integer row_id, nullable integer amount",
+      "expected_protocol_domain": "no stronger than source-typed portable proof without external session law",
+      "expected_true_not_true": "DuckDB positive terminal only; portable truth-partition/physical certification pending.",
+      "source_instance_identity": "row_id (unique within named physical table)",
+      "sessions": [
+        "DuckDB in-memory default"
+      ],
+      "adapter_evidence": {
+        "direct_sql": "source DDL supplied",
+        "dbt": "pending equivalent manifest+catalog facts",
+        "odcs": "pending representable contract facts"
+      },
+      "dialect_cells": [
+        {
+          "dialect": "ansi",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "bigquery",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "clickhouse",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "databricks",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "duckdb",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "generic",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "hive",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "mssql",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "mysql",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "postgresql",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "redshift",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "snowflake",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "sqlite",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        }
+      ],
+      "review": "not_signed_off",
+      "boundary": "DuckDB implicit coercion, not a portable comparison",
+      "source_snapshot_sql": "SELECT row_id, CAST(amount AS VARCHAR) FROM cast_rows ORDER BY row_id",
+      "expected_native_source_rows": [
+        [
+          1,
+          "2"
+        ],
+        [
+          2,
+          "10"
+        ],
+        [
+          3,
+          null
+        ]
+      ],
+      "control_direction": "positive_native_terminal"
+    },
+    {
+      "id": "88-C179-N03",
+      "family": "implicit_coercion",
+      "variant": "explicit_typed_control",
+      "source_sample": "88-C177-S036",
+      "setup": "CREATE TABLE cast_rows (row_id INTEGER, amount INTEGER); INSERT INTO cast_rows VALUES (1,2),(2,10),(3,NULL);",
+      "sql": "SELECT row_id FROM cast_rows WHERE amount = CAST('2' AS INTEGER) ORDER BY row_id",
+      "expected_duckdb_terminal_or_poststate": [
+        1
+      ],
+      "typed_source": "integer row_id, nullable integer amount",
+      "expected_protocol_domain": "no stronger than source-typed portable proof without external session law",
+      "expected_true_not_true": "Comparator/control only; this is not a NOT TRUE or Impossible witness.",
+      "source_instance_identity": "row_id (unique within named physical table)",
+      "sessions": [
+        "DuckDB in-memory default"
+      ],
+      "adapter_evidence": {
+        "direct_sql": "source DDL supplied",
+        "dbt": "pending equivalent manifest+catalog facts",
+        "odcs": "pending representable contract facts"
+      },
+      "dialect_cells": [
+        {
+          "dialect": "ansi",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "bigquery",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "clickhouse",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "databricks",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "duckdb",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "generic",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "hive",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "mssql",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "mysql",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "postgresql",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "redshift",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "snowflake",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "sqlite",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        }
+      ],
+      "review": "not_signed_off",
+      "boundary": "explicit cast is a control, not proof of the implicit vendor law",
+      "source_snapshot_sql": "SELECT row_id, CAST(amount AS VARCHAR) FROM cast_rows ORDER BY row_id",
+      "expected_native_source_rows": [
+        [
+          1,
+          "2"
+        ],
+        [
+          2,
+          "10"
+        ],
+        [
+          3,
+          null
+        ]
+      ],
+      "control_direction": "alternative_law_control"
+    },
+    {
+      "id": "88-C179-P04",
+      "family": "float_timezone",
+      "variant": "signed_zero_equal",
+      "source_sample": "88-C177-S041",
+      "setup": "CREATE TABLE float_rows (row_id INTEGER, amount DOUBLE); INSERT INTO float_rows VALUES (1,0.0),(2,-0.0),(3,1.0),(4,NULL);",
+      "sql": "SELECT row_id FROM float_rows WHERE amount = 0.0 ORDER BY row_id",
+      "expected_duckdb_terminal_or_poststate": [
+        1,
+        2
+      ],
+      "typed_source": "integer row_id, nullable floating-point amount",
+      "expected_protocol_domain": "no stronger than source-typed portable proof without external session law",
+      "expected_true_not_true": "DuckDB positive terminal only; portable truth-partition/physical certification pending.",
+      "source_instance_identity": "row_id (unique within named physical table)",
+      "sessions": [
+        "DuckDB in-memory default"
+      ],
+      "adapter_evidence": {
+        "direct_sql": "source DDL supplied",
+        "dbt": "pending equivalent manifest+catalog facts",
+        "odcs": "pending representable contract facts"
+      },
+      "dialect_cells": [
+        {
+          "dialect": "ansi",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "bigquery",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "clickhouse",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "databricks",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "duckdb",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "generic",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "hive",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "mssql",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "mysql",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "postgresql",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "redshift",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "snowflake",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "sqlite",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        }
+      ],
+      "review": "not_signed_off",
+      "boundary": "signed zero comparison is DuckDB native only; DuckDB storage/cast normalizes -0.0 text, so its sign is not an independently proven preserved source bit.",
+      "source_snapshot_sql": "SELECT row_id, CAST(amount AS VARCHAR) FROM float_rows ORDER BY row_id",
+      "expected_native_source_rows": [
+        [
+          1,
+          "0.0"
+        ],
+        [
+          2,
+          "0.0"
+        ],
+        [
+          3,
+          "1.0"
+        ],
+        [
+          4,
+          null
+        ]
+      ],
+      "control_direction": "positive_native_terminal"
+    },
+    {
+      "id": "88-C179-N04",
+      "family": "float_timezone",
+      "variant": "signed_zero_not_true",
+      "source_sample": "88-C177-S041",
+      "setup": "CREATE TABLE float_rows (row_id INTEGER, amount DOUBLE); INSERT INTO float_rows VALUES (1,0.0),(2,-0.0),(3,1.0),(4,NULL);",
+      "sql": "SELECT row_id FROM float_rows WHERE (amount = 0.0) IS NOT TRUE ORDER BY row_id",
+      "expected_duckdb_terminal_or_poststate": [
+        3,
+        4
+      ],
+      "typed_source": "integer row_id, nullable floating-point amount",
+      "expected_protocol_domain": "no stronger than source-typed portable proof without external session law",
+      "expected_true_not_true": "Full DuckDB NOT TRUE output includes the NULL source occurrence; independent portable witness remains unverified.",
+      "source_instance_identity": "row_id (unique within named physical table)",
+      "sessions": [
+        "DuckDB in-memory default"
+      ],
+      "adapter_evidence": {
+        "direct_sql": "source DDL supplied",
+        "dbt": "pending equivalent manifest+catalog facts",
+        "odcs": "pending representable contract facts"
+      },
+      "dialect_cells": [
+        {
+          "dialect": "ansi",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "bigquery",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "clickhouse",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "databricks",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "duckdb",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "generic",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "hive",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "mssql",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "mysql",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "postgresql",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "redshift",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "snowflake",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "sqlite",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        }
+      ],
+      "review": "not_signed_off",
+      "boundary": "NOT TRUE retains the NULL occurrence; DuckDB storage/cast normalizes -0.0 text, so its sign is not an independently proven preserved source bit.",
+      "source_snapshot_sql": "SELECT row_id, CAST(amount AS VARCHAR) FROM float_rows ORDER BY row_id",
+      "expected_native_source_rows": [
+        [
+          1,
+          "0.0"
+        ],
+        [
+          2,
+          "0.0"
+        ],
+        [
+          3,
+          "1.0"
+        ],
+        [
+          4,
+          null
+        ]
+      ],
+      "control_direction": "not_true_rejection"
+    },
+    {
+      "id": "88-C179-P05",
+      "family": "dml_transaction",
+      "variant": "committed_update",
+      "source_sample": "88-C177-S222",
+      "setup": "CREATE TABLE state_rows (row_id INTEGER, amount INTEGER); INSERT INTO state_rows VALUES (1,10),(2,NULL);",
+      "sql": "BEGIN; UPDATE state_rows SET amount = 20 WHERE row_id = 1; COMMIT;",
+      "expected_duckdb_terminal_or_poststate": [
+        [
+          1,
+          20
+        ],
+        [
+          2,
+          null
+        ]
+      ],
+      "typed_source": "integer row_id, nullable integer amount",
+      "expected_protocol_domain": "no stronger than source-typed portable proof without external session law",
+      "expected_true_not_true": "DuckDB positive terminal only; portable truth-partition/physical certification pending.",
+      "source_instance_identity": "row_id (unique within named physical table)",
+      "sessions": [
+        "DuckDB in-memory default"
+      ],
+      "adapter_evidence": {
+        "direct_sql": "source DDL supplied",
+        "dbt": "pending equivalent manifest+catalog facts",
+        "odcs": "pending representable contract facts"
+      },
+      "dialect_cells": [
+        {
+          "dialect": "ansi",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "bigquery",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "clickhouse",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "databricks",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "duckdb",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "generic",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "hive",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "mssql",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "mysql",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "postgresql",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "redshift",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "snowflake",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "sqlite",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        }
+      ],
+      "review": "not_signed_off",
+      "boundary": "post-commit full state; deterministic DuckDB local transaction",
+      "source_snapshot_sql": "SELECT row_id, CAST(amount AS VARCHAR) FROM state_rows ORDER BY row_id",
+      "expected_native_source_rows": [
+        [
+          1,
+          "10"
+        ],
+        [
+          2,
+          null
+        ]
+      ],
+      "control_direction": "committed_state"
+    },
+    {
+      "id": "88-C179-N05",
+      "family": "dml_transaction",
+      "variant": "rolled_back_update",
+      "source_sample": "88-C177-S224",
+      "setup": "CREATE TABLE state_rows (row_id INTEGER, amount INTEGER); INSERT INTO state_rows VALUES (1,10),(2,NULL);",
+      "sql": "BEGIN; UPDATE state_rows SET amount = 20 WHERE row_id = 1; ROLLBACK;",
+      "expected_duckdb_terminal_or_poststate": [
+        [
+          1,
+          10
+        ],
+        [
+          2,
+          null
+        ]
+      ],
+      "typed_source": "integer row_id, nullable integer amount",
+      "expected_protocol_domain": "no stronger than source-typed portable proof without external session law",
+      "expected_true_not_true": "Complete rollback state comparison, not a SQL Boolean NOT TRUE witness.",
+      "source_instance_identity": "row_id (unique within named physical table)",
+      "sessions": [
+        "DuckDB in-memory default"
+      ],
+      "adapter_evidence": {
+        "direct_sql": "source DDL supplied",
+        "dbt": "pending equivalent manifest+catalog facts",
+        "odcs": "pending representable contract facts"
+      },
+      "dialect_cells": [
+        {
+          "dialect": "ansi",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "bigquery",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "clickhouse",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "databricks",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "duckdb",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "generic",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "hive",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "mssql",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "mysql",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "postgresql",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "redshift",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "snowflake",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "sqlite",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        }
+      ],
+      "review": "not_signed_off",
+      "boundary": "post-rollback full state; no external engine atomicity claim",
+      "source_snapshot_sql": "SELECT row_id, CAST(amount AS VARCHAR) FROM state_rows ORDER BY row_id",
+      "expected_native_source_rows": [
+        [
+          1,
+          "10"
+        ],
+        [
+          2,
+          null
+        ]
+      ],
+      "control_direction": "rollback_counterexample"
+    },
+    {
+      "id": "88-C179-P06",
+      "family": "identifier_case",
+      "variant": "quoted_mixed_spelling",
+      "source_sample": null,
+      "setup": "CREATE TABLE \"MixedCase\" (\"ResultValue\" INTEGER); INSERT INTO \"MixedCase\" VALUES (1),(2);",
+      "sql": "SELECT \"resultvalue\" FROM \"mixedcase\" ORDER BY 1",
+      "expected_duckdb_terminal_or_poststate": [
+        1,
+        2
+      ],
+      "typed_source": "quoted mixed-case relation and column names",
+      "expected_protocol_domain": "no stronger than source-typed portable proof without external session law",
+      "expected_true_not_true": "DuckDB positive terminal only; portable truth-partition/physical certification pending.",
+      "source_instance_identity": "row_id (unique within named physical table)",
+      "sessions": [
+        "DuckDB in-memory default"
+      ],
+      "adapter_evidence": {
+        "direct_sql": "source DDL supplied",
+        "dbt": "pending equivalent manifest+catalog facts",
+        "odcs": "pending representable contract facts"
+      },
+      "dialect_cells": [
+        {
+          "dialect": "ansi",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "bigquery",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "clickhouse",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "databricks",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "duckdb",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "generic",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "hive",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "mssql",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "mysql",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "postgresql",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "redshift",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "snowflake",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "sqlite",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        }
+      ],
+      "review": "not_signed_off",
+      "boundary": "DuckDB quoted identifiers compare case-insensitively, not a universal dialect law",
+      "source_snapshot_sql": "SELECT \"ResultValue\", CAST(\"ResultValue\" AS VARCHAR) FROM \"MixedCase\" ORDER BY 1",
+      "expected_native_source_rows": [
+        [
+          1,
+          "1"
+        ],
+        [
+          2,
+          "2"
+        ]
+      ],
+      "control_direction": "positive_native_terminal"
+    },
+    {
+      "id": "88-C179-N06",
+      "family": "identifier_case",
+      "variant": "unquoted_mixed_spelling",
+      "source_sample": null,
+      "setup": "CREATE TABLE \"MixedCase\" (\"ResultValue\" INTEGER); INSERT INTO \"MixedCase\" VALUES (1),(2);",
+      "sql": "SELECT resultvalue FROM mixedcase ORDER BY 1",
+      "expected_duckdb_terminal_or_poststate": [
+        1,
+        2
+      ],
+      "typed_source": "quoted mixed-case relation and column names",
+      "expected_protocol_domain": "no stronger than source-typed portable proof without external session law",
+      "expected_true_not_true": "Comparator/control only; this is not a NOT TRUE or Impossible witness.",
+      "source_instance_identity": "row_id (unique within named physical table)",
+      "sessions": [
+        "DuckDB in-memory default"
+      ],
+      "adapter_evidence": {
+        "direct_sql": "source DDL supplied",
+        "dbt": "pending equivalent manifest+catalog facts",
+        "odcs": "pending representable contract facts"
+      },
+      "dialect_cells": [
+        {
+          "dialect": "ansi",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "bigquery",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "clickhouse",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "databricks",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "duckdb",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "generic",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "hive",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "mssql",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "mysql",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "postgresql",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "redshift",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "snowflake",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "sqlite",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        }
+      ],
+      "review": "not_signed_off",
+      "boundary": "DuckDB unquoted identifiers compare case-insensitively; vendor case folding unverified",
+      "source_snapshot_sql": "SELECT \"ResultValue\", CAST(\"ResultValue\" AS VARCHAR) FROM \"MixedCase\" ORDER BY 1",
+      "expected_native_source_rows": [
+        [
+          1,
+          "1"
+        ],
+        [
+          2,
+          "2"
+        ]
+      ],
+      "control_direction": "alternative_law_control"
+    },
+    {
+      "id": "88-C179-P07",
+      "family": "float_timezone",
+      "variant": "explicit_offset_instant",
+      "source_sample": "88-C177-S035",
+      "setup": "SET TimeZone='UTC'; CREATE TABLE zoned_rows (row_id INTEGER, stamp TIMESTAMPTZ); INSERT INTO zoned_rows VALUES (1,TIMESTAMPTZ '2020-01-01 00:00:00+00'),(2,TIMESTAMPTZ '2019-12-31 19:00:00-05'),(3,NULL);",
+      "sql": "SELECT row_id FROM zoned_rows WHERE stamp = TIMESTAMPTZ '2020-01-01 00:00:00+00' ORDER BY row_id",
+      "expected_duckdb_terminal_or_poststate": [
+        1,
+        2
+      ],
+      "typed_source": "integer row_id, nullable TIMESTAMPTZ stamp",
+      "expected_protocol_domain": "no stronger than source-typed portable proof without external session law",
+      "expected_true_not_true": "DuckDB positive terminal only; portable truth-partition/physical certification pending.",
+      "source_instance_identity": "row_id (unique within named physical table)",
+      "sessions": [
+        "DuckDB in-memory default",
+        "TimeZone=UTC"
+      ],
+      "adapter_evidence": {
+        "direct_sql": "source DDL supplied",
+        "dbt": "pending equivalent manifest+catalog facts",
+        "odcs": "pending representable contract facts"
+      },
+      "dialect_cells": [
+        {
+          "dialect": "ansi",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "bigquery",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "clickhouse",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "databricks",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "duckdb",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "generic",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "hive",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "mssql",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "mysql",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "postgresql",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "redshift",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "snowflake",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "sqlite",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        }
+      ],
+      "review": "not_signed_off",
+      "boundary": "same instant with explicit UTC/offset, no unbound session inference",
+      "source_snapshot_sql": "SELECT row_id, CAST(epoch_ms(stamp) AS VARCHAR) FROM zoned_rows ORDER BY row_id",
+      "expected_native_source_rows": [
+        [
+          1,
+          "1577836800000"
+        ],
+        [
+          2,
+          "1577836800000"
+        ],
+        [
+          3,
+          null
+        ]
+      ],
+      "control_direction": "positive_native_terminal"
+    },
+    {
+      "id": "88-C179-N07",
+      "family": "float_timezone",
+      "variant": "explicit_offset_not_true",
+      "source_sample": "88-C177-S035",
+      "setup": "SET TimeZone='UTC'; CREATE TABLE zoned_rows (row_id INTEGER, stamp TIMESTAMPTZ); INSERT INTO zoned_rows VALUES (1,TIMESTAMPTZ '2020-01-01 00:00:00+00'),(2,TIMESTAMPTZ '2019-12-31 19:00:00-05'),(3,NULL);",
+      "sql": "SELECT row_id FROM zoned_rows WHERE (stamp = TIMESTAMPTZ '2020-01-01 00:00:00+00') IS NOT TRUE ORDER BY row_id",
+      "expected_duckdb_terminal_or_poststate": [
+        3
+      ],
+      "typed_source": "integer row_id, nullable TIMESTAMPTZ stamp",
+      "expected_protocol_domain": "no stronger than source-typed portable proof without external session law",
+      "expected_true_not_true": "Full DuckDB NOT TRUE output includes the NULL source occurrence; independent portable witness remains unverified.",
+      "source_instance_identity": "row_id (unique within named physical table)",
+      "sessions": [
+        "DuckDB in-memory default",
+        "TimeZone=UTC"
+      ],
+      "adapter_evidence": {
+        "direct_sql": "source DDL supplied",
+        "dbt": "pending equivalent manifest+catalog facts",
+        "odcs": "pending representable contract facts"
+      },
+      "dialect_cells": [
+        {
+          "dialect": "ansi",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "bigquery",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "clickhouse",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "databricks",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "duckdb",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "generic",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "hive",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "mssql",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "mysql",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "postgresql",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "redshift",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "snowflake",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        },
+        {
+          "dialect": "sqlite",
+          "parser": "unverified_until_executable_check",
+          "canonical": "unverified_until_executable_check",
+          "external_native": "unattested",
+          "release_disposition": "unapproved_pending_review"
+        }
+      ],
+      "review": "not_signed_off",
+      "boundary": "explicit UTC and NULL negative path",
+      "source_snapshot_sql": "SELECT row_id, CAST(epoch_ms(stamp) AS VARCHAR) FROM zoned_rows ORDER BY row_id",
+      "expected_native_source_rows": [
+        [
+          1,
+          "1577836800000"
+        ],
+        [
+          2,
+          "1577836800000"
+        ],
+        [
+          3,
+          null
+        ]
+      ],
+      "control_direction": "not_true_rejection"
+    }
+  ],
+  "source_snapshot_contract": "Every task-owned native case independently checks the entire ordered source bag, with SQL data types fixed by source_setup; timestamps are normalized to epoch milliseconds and floating values preserve signed-zero text.",
+  "control_direction_contract": "N-labelled cases include counterfactual vendor-law controls and SQL NOT TRUE/rollback negatives; N does not automatically imply a rejected Boolean witness."
+}

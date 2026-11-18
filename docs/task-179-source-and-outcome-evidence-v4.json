@@ -1,0 +1,3491 @@
+{
+  "schema_version": 4,
+  "task_id": "TASK-179",
+  "parent": "TASK-88",
+  "kind": "source-complete conditional vendor law evidence extension",
+  "historical_preimplementation_freeze": "docs/task-179-acceptance-freeze.json",
+  "amendment_reason": "Supplement v1's 14 fixed native controls with all 35 original named law variants and two identifier probes. No claim of pre-implementation freeze for later-added variants.",
+  "source_variant_matrix": "docs/task-179-variant-matrix-v2.json",
+  "source_semantic_review": "docs/task-179-reconciled-proofs-v3.json",
+  "case_count": 37,
+  "parser_cell_count": 481,
+  "native_engine": "DuckDB 1.10506.0",
+  "external_native_execution": false,
+  "external_vendor_disposition": "Residual until exact vendor/version/session native source and terminal evidence is provided; no runtime claim from sqlparser dialect.",
+  "formal_proof_rule": "Record exact three-valued source occurrence partitions when an original predicate has an executable fixed oracle; ordering or mutation statements use complete source/terminal bags; evaluation errors have no fabricated terminal.",
+  "cases": [
+    {
+      "id": "88-C179-001",
+      "source_id": "88-C177-S042",
+      "family": "null_ordering",
+      "variant": "NULL sorting",
+      "sql": "SELECT id FROM orders ORDER BY amount NULLS LAST",
+      "review_owner": "TASK-192",
+      "native_engine": "duckdb",
+      "native_engine_version": "1.10506.0",
+      "source_fixture": "docs/task-177-native-expansion.json",
+      "source_setup": "CREATE TABLE orders(id INTEGER, amount INTEGER); INSERT INTO orders VALUES (2,20),(1,10),(3,NULL),(4,-5),(NULL,15),(1,10);",
+      "source_relation": "orders",
+      "source_instance_basis": "physical_row_occurrence_not_sql_key",
+      "source_columns": [
+        "id INTEGER NULL",
+        "amount INTEGER NULL"
+      ],
+      "source_bag": [
+        [
+          2,
+          20
+        ],
+        [
+          1,
+          10
+        ],
+        [
+          3,
+          null
+        ],
+        [
+          4,
+          -5
+        ],
+        [
+          null,
+          15
+        ],
+        [
+          1,
+          10
+        ]
+      ],
+      "exact_terminal_bag": [
+        [
+          4
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          null
+        ],
+        [
+          2
+        ],
+        [
+          3
+        ]
+      ],
+      "exact_terminal_rows_ordered": [
+        [
+          4
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          null
+        ],
+        [
+          2
+        ],
+        [
+          3
+        ]
+      ],
+      "terminal_outcome": "exact_original_DuckDB_terminal_or_three_valued_truth_if_oracle_attested",
+      "negative_truth_evidence": null,
+      "typed_output_claim": {
+        "kind": "unbounded",
+        "name": "id",
+        "lower": null,
+        "lower_inclusive": null,
+        "upper": null,
+        "upper_inclusive": null,
+        "condition_exactness": "exact",
+        "residual_reason": null,
+        "undeclared_laws": [],
+        "nullable": "depends_on_source_column_and_ORACLE_NULL_presence"
+      },
+      "canonical_proof_status": "bounded_original_oracle_inherited_or_explicit_engine_residual_review",
+      "vendor_runtime_portability": "unattested"
+    },
+    {
+      "id": "88-C179-002",
+      "source_id": "88-C177-S110",
+      "family": "null_ordering",
+      "variant": "NULL ordering",
+      "sql": "SELECT ROW_NUMBER() OVER (ORDER BY amount NULLS LAST) FROM orders",
+      "review_owner": "TASK-195",
+      "native_engine": "duckdb",
+      "native_engine_version": "1.10506.0",
+      "source_fixture": "docs/task-195-acceptance-freeze.json",
+      "source_setup": "CREATE TABLE orders(id INTEGER, amount INTEGER); INSERT INTO orders VALUES (1,10),(1,10),(2,20),(3,NULL),(NULL,10),(4,-5); CREATE TABLE customers(id INTEGER, amount INTEGER); INSERT INTO customers VALUES (1,10),(1,10),(2,100),(5,-5),(NULL,10); CREATE TABLE products(id INTEGER); INSERT INTO products VALUES (1),(2),(3);",
+      "source_relation": "orders",
+      "source_instance_basis": "physical_row_occurrence_not_sql_key",
+      "source_columns": [
+        "id INTEGER NULL",
+        "amount INTEGER NULL"
+      ],
+      "source_bag": [
+        [
+          null,
+          10
+        ],
+        [
+          1,
+          10
+        ],
+        [
+          1,
+          10
+        ],
+        [
+          2,
+          20
+        ],
+        [
+          3,
+          null
+        ],
+        [
+          4,
+          -5
+        ]
+      ],
+      "exact_terminal_bag": [
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          3
+        ],
+        [
+          4
+        ],
+        [
+          5
+        ],
+        [
+          6
+        ]
+      ],
+      "exact_terminal_rows_ordered": null,
+      "terminal_outcome": "complete_original_DuckDB_bag_verified",
+      "negative_truth_evidence": {
+        "expected_rejected_candidate_bag": [],
+        "physical_source_instance_ids": [
+          "orders#0",
+          "orders#1",
+          "orders#2",
+          "orders#3",
+          "orders#4",
+          "orders#5"
+        ]
+      },
+      "typed_output_claim": {
+        "kind": "positive_integer_lower_bound_inclusive",
+        "name": "row_number",
+        "lower": 1,
+        "lower_inclusive": true,
+        "upper": null,
+        "upper_inclusive": null,
+        "nullable": false,
+        "source_law_ids": [
+          "analytic_positive_integer"
+        ]
+      },
+      "canonical_proof_status": "bounded_original_oracle_inherited_or_explicit_engine_residual_review",
+      "vendor_runtime_portability": "unattested"
+    },
+    {
+      "id": "88-C179-003",
+      "source_id": "88-C177-S154",
+      "family": "null_ordering",
+      "variant": "ORDER BY",
+      "sql": "SELECT id FROM orders ORDER BY amount",
+      "review_owner": "TASK-195",
+      "native_engine": "duckdb",
+      "native_engine_version": "1.10506.0",
+      "source_fixture": "docs/task-195-acceptance-freeze.json",
+      "source_setup": "CREATE TABLE orders(id INTEGER, amount INTEGER); INSERT INTO orders VALUES (1,10),(1,10),(2,20),(3,NULL),(NULL,10),(4,-5); CREATE TABLE customers(id INTEGER, amount INTEGER); INSERT INTO customers VALUES (1,10),(1,10),(2,100),(5,-5),(NULL,10); CREATE TABLE products(id INTEGER); INSERT INTO products VALUES (1),(2),(3);",
+      "source_relation": "orders",
+      "source_instance_basis": "physical_row_occurrence_not_sql_key",
+      "source_columns": [
+        "id INTEGER NULL",
+        "amount INTEGER NULL"
+      ],
+      "source_bag": [
+        [
+          null,
+          10
+        ],
+        [
+          1,
+          10
+        ],
+        [
+          1,
+          10
+        ],
+        [
+          2,
+          20
+        ],
+        [
+          3,
+          null
+        ],
+        [
+          4,
+          -5
+        ]
+      ],
+      "exact_terminal_bag": [
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          3
+        ],
+        [
+          null
+        ],
+        [
+          4
+        ]
+      ],
+      "exact_terminal_rows_ordered": [
+        [
+          4
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          null
+        ],
+        [
+          2
+        ],
+        [
+          3
+        ]
+      ],
+      "terminal_outcome": "complete_original_DuckDB_bag_verified",
+      "negative_truth_evidence": {
+        "expected_rejected_candidate_bag": [],
+        "physical_source_instance_ids": [
+          "orders#0",
+          "orders#1",
+          "orders#2",
+          "orders#3",
+          "orders#4",
+          "orders#5"
+        ]
+      },
+      "typed_output_claim": {
+        "kind": "nullable_source_id_unbounded",
+        "name": "id",
+        "lower": null,
+        "lower_inclusive": null,
+        "upper": null,
+        "upper_inclusive": null,
+        "nullable": true,
+        "source_law_ids": [
+          "nullable_source_id_unbounded"
+        ]
+      },
+      "canonical_proof_status": "bounded_original_oracle_inherited_or_explicit_engine_residual_review",
+      "vendor_runtime_portability": "unattested"
+    },
+    {
+      "id": "88-C179-004",
+      "source_id": "88-C177-S156",
+      "family": "null_ordering",
+      "variant": "NULLS FIRST/LAST",
+      "sql": "SELECT id FROM orders ORDER BY amount NULLS FIRST",
+      "review_owner": "TASK-195",
+      "native_engine": "duckdb",
+      "native_engine_version": "1.10506.0",
+      "source_fixture": "docs/task-195-acceptance-freeze.json",
+      "source_setup": "CREATE TABLE orders(id INTEGER, amount INTEGER); INSERT INTO orders VALUES (1,10),(1,10),(2,20),(3,NULL),(NULL,10),(4,-5); CREATE TABLE customers(id INTEGER, amount INTEGER); INSERT INTO customers VALUES (1,10),(1,10),(2,100),(5,-5),(NULL,10); CREATE TABLE products(id INTEGER); INSERT INTO products VALUES (1),(2),(3);",
+      "source_relation": "orders",
+      "source_instance_basis": "physical_row_occurrence_not_sql_key",
+      "source_columns": [
+        "id INTEGER NULL",
+        "amount INTEGER NULL"
+      ],
+      "source_bag": [
+        [
+          null,
+          10
+        ],
+        [
+          1,
+          10
+        ],
+        [
+          1,
+          10
+        ],
+        [
+          2,
+          20
+        ],
+        [
+          3,
+          null
+        ],
+        [
+          4,
+          -5
+        ]
+      ],
+      "exact_terminal_bag": [
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          3
+        ],
+        [
+          null
+        ],
+        [
+          4
+        ]
+      ],
+      "exact_terminal_rows_ordered": [
+        [
+          3
+        ],
+        [
+          4
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          null
+        ],
+        [
+          2
+        ]
+      ],
+      "terminal_outcome": "complete_original_DuckDB_bag_verified",
+      "negative_truth_evidence": {
+        "expected_rejected_candidate_bag": [],
+        "physical_source_instance_ids": [
+          "orders#0",
+          "orders#1",
+          "orders#2",
+          "orders#3",
+          "orders#4",
+          "orders#5"
+        ]
+      },
+      "typed_output_claim": {
+        "kind": "nullable_source_id_unbounded",
+        "name": "id",
+        "lower": null,
+        "lower_inclusive": null,
+        "upper": null,
+        "upper_inclusive": null,
+        "nullable": true,
+        "source_law_ids": [
+          "nullable_source_id_unbounded"
+        ]
+      },
+      "canonical_proof_status": "bounded_original_oracle_inherited_or_explicit_engine_residual_review",
+      "vendor_runtime_portability": "unattested"
+    },
+    {
+      "id": "88-C179-005",
+      "source_id": "88-C177-S158",
+      "family": "null_ordering",
+      "variant": "ties",
+      "sql": "SELECT id FROM orders ORDER BY amount",
+      "review_owner": "TASK-195",
+      "native_engine": "duckdb",
+      "native_engine_version": "1.10506.0",
+      "source_fixture": "docs/task-195-acceptance-freeze.json",
+      "source_setup": "CREATE TABLE orders(id INTEGER, amount INTEGER); INSERT INTO orders VALUES (1,10),(1,10),(2,20),(3,NULL),(NULL,10),(4,-5); CREATE TABLE customers(id INTEGER, amount INTEGER); INSERT INTO customers VALUES (1,10),(1,10),(2,100),(5,-5),(NULL,10); CREATE TABLE products(id INTEGER); INSERT INTO products VALUES (1),(2),(3);",
+      "source_relation": "orders",
+      "source_instance_basis": "physical_row_occurrence_not_sql_key",
+      "source_columns": [
+        "id INTEGER NULL",
+        "amount INTEGER NULL"
+      ],
+      "source_bag": [
+        [
+          null,
+          10
+        ],
+        [
+          1,
+          10
+        ],
+        [
+          1,
+          10
+        ],
+        [
+          2,
+          20
+        ],
+        [
+          3,
+          null
+        ],
+        [
+          4,
+          -5
+        ]
+      ],
+      "exact_terminal_bag": [
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          3
+        ],
+        [
+          null
+        ],
+        [
+          4
+        ]
+      ],
+      "exact_terminal_rows_ordered": [
+        [
+          4
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          null
+        ],
+        [
+          2
+        ],
+        [
+          3
+        ]
+      ],
+      "terminal_outcome": "complete_original_DuckDB_bag_verified",
+      "negative_truth_evidence": {
+        "expected_rejected_candidate_bag": [],
+        "physical_source_instance_ids": [
+          "orders#0",
+          "orders#1",
+          "orders#2",
+          "orders#3",
+          "orders#4",
+          "orders#5"
+        ]
+      },
+      "typed_output_claim": {
+        "kind": "nullable_source_id_unbounded",
+        "name": "id",
+        "lower": null,
+        "lower_inclusive": null,
+        "upper": null,
+        "upper_inclusive": null,
+        "nullable": true,
+        "source_law_ids": [
+          "nullable_source_id_unbounded"
+        ]
+      },
+      "canonical_proof_status": "bounded_original_oracle_inherited_or_explicit_engine_residual_review",
+      "vendor_runtime_portability": "unattested"
+    },
+    {
+      "id": "88-C179-006",
+      "source_id": "88-C177-S162",
+      "family": "null_ordering",
+      "variant": "row ordering stability",
+      "sql": "SELECT id FROM orders ORDER BY amount LIMIT 2",
+      "review_owner": "TASK-195",
+      "native_engine": "duckdb",
+      "native_engine_version": "1.10506.0",
+      "source_fixture": "docs/task-195-acceptance-freeze.json",
+      "source_setup": "CREATE TABLE orders(id INTEGER, amount INTEGER); INSERT INTO orders VALUES (1,10),(1,10),(2,20),(3,NULL),(NULL,10),(4,-5); CREATE TABLE customers(id INTEGER, amount INTEGER); INSERT INTO customers VALUES (1,10),(1,10),(2,100),(5,-5),(NULL,10); CREATE TABLE products(id INTEGER); INSERT INTO products VALUES (1),(2),(3);",
+      "source_relation": "orders",
+      "source_instance_basis": "physical_row_occurrence_not_sql_key",
+      "source_columns": [
+        "id INTEGER NULL",
+        "amount INTEGER NULL"
+      ],
+      "source_bag": [
+        [
+          null,
+          10
+        ],
+        [
+          1,
+          10
+        ],
+        [
+          1,
+          10
+        ],
+        [
+          2,
+          20
+        ],
+        [
+          3,
+          null
+        ],
+        [
+          4,
+          -5
+        ]
+      ],
+      "exact_terminal_bag": null,
+      "exact_terminal_rows_ordered": null,
+      "terminal_outcome": "peer_tie_order_is_unconstrained_and_requires_an_explicit_deterministic_tie_breaker",
+      "negative_truth_evidence": {
+        "kind": "ordering_tie_residual",
+        "initial_source_rows": 6,
+        "limit": 2,
+        "guaranteed_rows": [
+          [
+            4,
+            -5
+          ]
+        ],
+        "unproved_second_peer_choice": [
+          "orders#0",
+          "orders#1",
+          "orders#4"
+        ],
+        "only_positive_certified_first_source_row": 5
+      },
+      "typed_output_claim": {
+        "kind": "nullable_source_id_unbounded",
+        "name": "id",
+        "lower": null,
+        "lower_inclusive": null,
+        "upper": null,
+        "upper_inclusive": null,
+        "nullable": true,
+        "source_law_ids": [
+          "nullable_source_id_unbounded"
+        ]
+      },
+      "canonical_proof_status": "bounded_original_oracle_inherited_or_explicit_engine_residual_review",
+      "vendor_runtime_portability": "unattested"
+    },
+    {
+      "id": "88-C179-007",
+      "source_id": "88-C177-S020",
+      "family": "collation",
+      "variant": "LIKE",
+      "sql": "SELECT id FROM customers WHERE name LIKE 'A%'",
+      "review_owner": "TASK-192",
+      "native_engine": "duckdb",
+      "native_engine_version": "1.10506.0",
+      "source_fixture": "docs/task-177-predicate-environment-oracles.json",
+      "source_setup": "CREATE TABLE customers (id INT, name VARCHAR); INSERT INTO customers VALUES (1,'Alice'),(1,'Alice'),(2,'Amy'),(3,'Bob'),(4,'A_foo'),(5,'abc'),(6,NULL),(7,'ABC'),(8,'abc '),(9,'A%');",
+      "source_relation": "customers",
+      "source_instance_basis": "physical_row_occurrence_not_sql_key",
+      "source_columns": [
+        "id INTEGER NULL",
+        "name VARCHAR NULL"
+      ],
+      "source_bag": [
+        [
+          1,
+          "Alice"
+        ],
+        [
+          1,
+          "Alice"
+        ],
+        [
+          2,
+          "Amy"
+        ],
+        [
+          3,
+          "Bob"
+        ],
+        [
+          4,
+          "A_foo"
+        ],
+        [
+          5,
+          "abc"
+        ],
+        [
+          6,
+          null
+        ],
+        [
+          7,
+          "ABC"
+        ],
+        [
+          8,
+          "abc "
+        ],
+        [
+          9,
+          "A%"
+        ]
+      ],
+      "exact_terminal_bag": [
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          4
+        ],
+        [
+          7
+        ],
+        [
+          9
+        ]
+      ],
+      "exact_terminal_rows_ordered": null,
+      "terminal_outcome": "exact_original_DuckDB_terminal_or_three_valued_truth_if_oracle_attested",
+      "negative_truth_evidence": null,
+      "typed_output_claim": {
+        "kind": "unbounded",
+        "name": "id",
+        "lower": null,
+        "lower_inclusive": null,
+        "upper": null,
+        "upper_inclusive": null,
+        "condition_exactness": "residual",
+        "residual_reason": "computed_expression",
+        "undeclared_laws": [],
+        "nullable": "depends_on_source_column_and_ORACLE_NULL_presence"
+      },
+      "canonical_proof_status": "bounded_original_oracle_inherited_or_explicit_engine_residual_review",
+      "vendor_runtime_portability": "unattested"
+    },
+    {
+      "id": "88-C179-008",
+      "source_id": "88-C177-S021",
+      "family": "collation",
+      "variant": "ILIKE",
+      "sql": "SELECT id FROM customers WHERE name ILIKE 'a%'",
+      "review_owner": "TASK-192",
+      "native_engine": "duckdb",
+      "native_engine_version": "1.10506.0",
+      "source_fixture": "docs/task-177-predicate-environment-oracles.json",
+      "source_setup": "CREATE TABLE customers (id INT, name VARCHAR); INSERT INTO customers VALUES (1,'Alice'),(1,'Alice'),(2,'Amy'),(3,'Bob'),(4,'A_foo'),(5,'abc'),(6,NULL),(7,'ABC'),(8,'abc '),(9,'A%');",
+      "source_relation": "customers",
+      "source_instance_basis": "physical_row_occurrence_not_sql_key",
+      "source_columns": [
+        "id INTEGER NULL",
+        "name VARCHAR NULL"
+      ],
+      "source_bag": [
+        [
+          1,
+          "Alice"
+        ],
+        [
+          1,
+          "Alice"
+        ],
+        [
+          2,
+          "Amy"
+        ],
+        [
+          3,
+          "Bob"
+        ],
+        [
+          4,
+          "A_foo"
+        ],
+        [
+          5,
+          "abc"
+        ],
+        [
+          6,
+          null
+        ],
+        [
+          7,
+          "ABC"
+        ],
+        [
+          8,
+          "abc "
+        ],
+        [
+          9,
+          "A%"
+        ]
+      ],
+      "exact_terminal_bag": [
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          4
+        ],
+        [
+          5
+        ],
+        [
+          7
+        ],
+        [
+          8
+        ],
+        [
+          9
+        ]
+      ],
+      "exact_terminal_rows_ordered": null,
+      "terminal_outcome": "exact_original_DuckDB_terminal_or_three_valued_truth_if_oracle_attested",
+      "negative_truth_evidence": null,
+      "typed_output_claim": {
+        "kind": "unbounded",
+        "name": "id",
+        "lower": null,
+        "lower_inclusive": null,
+        "upper": null,
+        "upper_inclusive": null,
+        "condition_exactness": "residual",
+        "residual_reason": "computed_expression",
+        "undeclared_laws": [],
+        "nullable": "depends_on_source_column_and_ORACLE_NULL_presence"
+      },
+      "canonical_proof_status": "bounded_original_oracle_inherited_or_explicit_engine_residual_review",
+      "vendor_runtime_portability": "unattested"
+    },
+    {
+      "id": "88-C179-009",
+      "source_id": "88-C177-S022",
+      "family": "collation",
+      "variant": "ESCAPE",
+      "sql": "SELECT id FROM customers WHERE name LIKE 'A!_%' ESCAPE '!'",
+      "review_owner": "TASK-192",
+      "native_engine": "duckdb",
+      "native_engine_version": "1.10506.0",
+      "source_fixture": "docs/task-177-predicate-environment-oracles.json",
+      "source_setup": "CREATE TABLE customers (id INT, name VARCHAR); INSERT INTO customers VALUES (1,'Alice'),(1,'Alice'),(2,'Amy'),(3,'Bob'),(4,'A_foo'),(5,'abc'),(6,NULL),(7,'ABC'),(8,'abc '),(9,'A%');",
+      "source_relation": "customers",
+      "source_instance_basis": "physical_row_occurrence_not_sql_key",
+      "source_columns": [
+        "id INTEGER NULL",
+        "name VARCHAR NULL"
+      ],
+      "source_bag": [
+        [
+          1,
+          "Alice"
+        ],
+        [
+          1,
+          "Alice"
+        ],
+        [
+          2,
+          "Amy"
+        ],
+        [
+          3,
+          "Bob"
+        ],
+        [
+          4,
+          "A_foo"
+        ],
+        [
+          5,
+          "abc"
+        ],
+        [
+          6,
+          null
+        ],
+        [
+          7,
+          "ABC"
+        ],
+        [
+          8,
+          "abc "
+        ],
+        [
+          9,
+          "A%"
+        ]
+      ],
+      "exact_terminal_bag": [
+        [
+          4
+        ]
+      ],
+      "exact_terminal_rows_ordered": null,
+      "terminal_outcome": "exact_original_DuckDB_terminal_or_three_valued_truth_if_oracle_attested",
+      "negative_truth_evidence": null,
+      "typed_output_claim": {
+        "kind": "unbounded",
+        "name": "id",
+        "lower": null,
+        "lower_inclusive": null,
+        "upper": null,
+        "upper_inclusive": null,
+        "condition_exactness": "residual",
+        "residual_reason": "computed_expression",
+        "undeclared_laws": [],
+        "nullable": "depends_on_source_column_and_ORACLE_NULL_presence"
+      },
+      "canonical_proof_status": "bounded_original_oracle_inherited_or_explicit_engine_residual_review",
+      "vendor_runtime_portability": "unattested"
+    },
+    {
+      "id": "88-C179-010",
+      "source_id": "88-C177-S023",
+      "family": "collation",
+      "variant": "SIMILAR TO",
+      "sql": "SELECT id FROM customers WHERE name SIMILAR TO '(A|B)%'",
+      "review_owner": "TASK-192",
+      "native_engine": "duckdb",
+      "native_engine_version": "1.10506.0",
+      "source_fixture": "docs/task-177-predicate-environment-oracles.json",
+      "source_setup": "CREATE TABLE customers (id INT, name VARCHAR); INSERT INTO customers VALUES (1,'Alice'),(1,'Alice'),(2,'Amy'),(3,'Bob'),(4,'A_foo'),(5,'abc'),(6,NULL),(7,'ABC'),(8,'abc '),(9,'A%');",
+      "source_relation": "customers",
+      "source_instance_basis": "physical_row_occurrence_not_sql_key",
+      "source_columns": [
+        "id INTEGER NULL",
+        "name VARCHAR NULL"
+      ],
+      "source_bag": [
+        [
+          1,
+          "Alice"
+        ],
+        [
+          1,
+          "Alice"
+        ],
+        [
+          2,
+          "Amy"
+        ],
+        [
+          3,
+          "Bob"
+        ],
+        [
+          4,
+          "A_foo"
+        ],
+        [
+          5,
+          "abc"
+        ],
+        [
+          6,
+          null
+        ],
+        [
+          7,
+          "ABC"
+        ],
+        [
+          8,
+          "abc "
+        ],
+        [
+          9,
+          "A%"
+        ]
+      ],
+      "exact_terminal_bag": [
+        [
+          9
+        ]
+      ],
+      "exact_terminal_rows_ordered": null,
+      "terminal_outcome": "exact_original_DuckDB_three_valued_partition_from_fixed_native_source",
+      "negative_truth_evidence": {
+        "selected_source_ordinals": [
+          9
+        ],
+        "rejected_false_ordinals": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          7,
+          8
+        ],
+        "rejected_unknown_ordinals": [
+          6
+        ],
+        "not_true_source_ordinals": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8
+        ],
+        "interpretation": "TRUE, FALSE, SQL UNKNOWN partition; source ordinals are not SQL id keys"
+      },
+      "typed_output_claim": {
+        "kind": "unbounded",
+        "name": "id",
+        "lower": null,
+        "lower_inclusive": null,
+        "upper": null,
+        "upper_inclusive": null,
+        "condition_exactness": "residual",
+        "residual_reason": "computed_expression",
+        "undeclared_laws": [],
+        "nullable": "depends_on_source_column_and_ORACLE_NULL_presence"
+      },
+      "canonical_proof_status": "bounded_original_oracle_inherited_or_explicit_engine_residual_review",
+      "vendor_runtime_portability": "unattested"
+    },
+    {
+      "id": "88-C179-011",
+      "source_id": "88-C177-S024",
+      "family": "collation",
+      "variant": "regex",
+      "sql": "SELECT id FROM customers WHERE name ~ '^A'",
+      "review_owner": "TASK-192",
+      "native_engine": "duckdb",
+      "native_engine_version": "1.10506.0",
+      "source_fixture": "docs/task-177-predicate-environment-oracles.json",
+      "source_setup": "CREATE TABLE customers (id INT, name VARCHAR); INSERT INTO customers VALUES (1,'Alice'),(1,'Alice'),(2,'Amy'),(3,'Bob'),(4,'A_foo'),(5,'abc'),(6,NULL),(7,'ABC'),(8,'abc '),(9,'A%');",
+      "source_relation": "customers",
+      "source_instance_basis": "physical_row_occurrence_not_sql_key",
+      "source_columns": [
+        "id INTEGER NULL",
+        "name VARCHAR NULL"
+      ],
+      "source_bag": [
+        [
+          1,
+          "Alice"
+        ],
+        [
+          1,
+          "Alice"
+        ],
+        [
+          2,
+          "Amy"
+        ],
+        [
+          3,
+          "Bob"
+        ],
+        [
+          4,
+          "A_foo"
+        ],
+        [
+          5,
+          "abc"
+        ],
+        [
+          6,
+          null
+        ],
+        [
+          7,
+          "ABC"
+        ],
+        [
+          8,
+          "abc "
+        ],
+        [
+          9,
+          "A%"
+        ]
+      ],
+      "exact_terminal_bag": [],
+      "exact_terminal_rows_ordered": null,
+      "terminal_outcome": "exact_original_DuckDB_three_valued_partition_from_fixed_native_source",
+      "negative_truth_evidence": {
+        "selected_source_ordinals": [],
+        "rejected_false_ordinals": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          7,
+          8,
+          9
+        ],
+        "rejected_unknown_ordinals": [
+          6
+        ],
+        "not_true_source_ordinals": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9
+        ],
+        "interpretation": "TRUE, FALSE, SQL UNKNOWN partition; source ordinals are not SQL id keys"
+      },
+      "typed_output_claim": {
+        "kind": "unbounded",
+        "name": "id",
+        "lower": null,
+        "lower_inclusive": null,
+        "upper": null,
+        "upper_inclusive": null,
+        "condition_exactness": "residual",
+        "residual_reason": "computed_expression",
+        "undeclared_laws": [],
+        "nullable": "depends_on_source_column_and_ORACLE_NULL_presence"
+      },
+      "canonical_proof_status": "bounded_original_oracle_inherited_or_explicit_engine_residual_review",
+      "vendor_runtime_portability": "unattested"
+    },
+    {
+      "id": "88-C179-012",
+      "source_id": "88-C177-S025",
+      "family": "collation",
+      "variant": "prefix",
+      "sql": "SELECT id FROM customers WHERE name LIKE 'ABC%'",
+      "review_owner": "TASK-192",
+      "native_engine": "duckdb",
+      "native_engine_version": "1.10506.0",
+      "source_fixture": "docs/task-177-predicate-environment-oracles.json",
+      "source_setup": "CREATE TABLE customers (id INT, name VARCHAR); INSERT INTO customers VALUES (1,'Alice'),(1,'Alice'),(2,'Amy'),(3,'Bob'),(4,'A_foo'),(5,'abc'),(6,NULL),(7,'ABC'),(8,'abc '),(9,'A%');",
+      "source_relation": "customers",
+      "source_instance_basis": "physical_row_occurrence_not_sql_key",
+      "source_columns": [
+        "id INTEGER NULL",
+        "name VARCHAR NULL"
+      ],
+      "source_bag": [
+        [
+          1,
+          "Alice"
+        ],
+        [
+          1,
+          "Alice"
+        ],
+        [
+          2,
+          "Amy"
+        ],
+        [
+          3,
+          "Bob"
+        ],
+        [
+          4,
+          "A_foo"
+        ],
+        [
+          5,
+          "abc"
+        ],
+        [
+          6,
+          null
+        ],
+        [
+          7,
+          "ABC"
+        ],
+        [
+          8,
+          "abc "
+        ],
+        [
+          9,
+          "A%"
+        ]
+      ],
+      "exact_terminal_bag": [
+        [
+          7
+        ]
+      ],
+      "exact_terminal_rows_ordered": null,
+      "terminal_outcome": "exact_original_DuckDB_terminal_or_three_valued_truth_if_oracle_attested",
+      "negative_truth_evidence": null,
+      "typed_output_claim": {
+        "kind": "unbounded",
+        "name": "id",
+        "lower": null,
+        "lower_inclusive": null,
+        "upper": null,
+        "upper_inclusive": null,
+        "condition_exactness": "residual",
+        "residual_reason": "computed_expression",
+        "undeclared_laws": [],
+        "nullable": "depends_on_source_column_and_ORACLE_NULL_presence"
+      },
+      "canonical_proof_status": "bounded_original_oracle_inherited_or_explicit_engine_residual_review",
+      "vendor_runtime_portability": "unattested"
+    },
+    {
+      "id": "88-C179-013",
+      "source_id": "88-C177-S026",
+      "family": "collation",
+      "variant": "collations",
+      "sql": "SELECT id FROM customers WHERE name COLLATE en_US = 'a'",
+      "review_owner": "TASK-192",
+      "native_engine": "duckdb",
+      "native_engine_version": "1.10506.0",
+      "source_fixture": "docs/task-177-predicate-environment-oracles.json",
+      "source_setup": "CREATE TABLE customers (id INT, name VARCHAR); INSERT INTO customers VALUES (1,'Alice'),(1,'Alice'),(2,'Amy'),(3,'Bob'),(4,'A_foo'),(5,'abc'),(6,NULL),(7,'ABC'),(8,'abc '),(9,'A%');",
+      "source_relation": "customers",
+      "source_instance_basis": "physical_row_occurrence_not_sql_key",
+      "source_columns": [
+        "id INTEGER NULL",
+        "name VARCHAR NULL"
+      ],
+      "source_bag": [
+        [
+          1,
+          "Alice"
+        ],
+        [
+          1,
+          "Alice"
+        ],
+        [
+          2,
+          "Amy"
+        ],
+        [
+          3,
+          "Bob"
+        ],
+        [
+          4,
+          "A_foo"
+        ],
+        [
+          5,
+          "abc"
+        ],
+        [
+          6,
+          null
+        ],
+        [
+          7,
+          "ABC"
+        ],
+        [
+          8,
+          "abc "
+        ],
+        [
+          9,
+          "A%"
+        ]
+      ],
+      "exact_terminal_bag": [],
+      "exact_terminal_rows_ordered": null,
+      "terminal_outcome": "exact_original_DuckDB_three_valued_partition_from_fixed_native_source",
+      "negative_truth_evidence": {
+        "selected_source_ordinals": [],
+        "rejected_false_ordinals": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          7,
+          8,
+          9
+        ],
+        "rejected_unknown_ordinals": [
+          6
+        ],
+        "not_true_source_ordinals": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9
+        ],
+        "interpretation": "TRUE, FALSE, SQL UNKNOWN partition; source ordinals are not SQL id keys"
+      },
+      "typed_output_claim": {
+        "kind": "unbounded",
+        "name": "id",
+        "lower": null,
+        "lower_inclusive": null,
+        "upper": null,
+        "upper_inclusive": null,
+        "condition_exactness": "residual",
+        "residual_reason": "computed_expression",
+        "undeclared_laws": [],
+        "nullable": "depends_on_source_column_and_ORACLE_NULL_presence"
+      },
+      "canonical_proof_status": "bounded_original_oracle_inherited_or_explicit_engine_residual_review",
+      "vendor_runtime_portability": "unattested"
+    },
+    {
+      "id": "88-C179-014",
+      "source_id": "88-C177-S038",
+      "family": "collation",
+      "variant": "binary/locale collation",
+      "sql": "SELECT id FROM customers WHERE name COLLATE en_US = 'abc'",
+      "review_owner": "TASK-192",
+      "native_engine": "duckdb",
+      "native_engine_version": "1.10506.0",
+      "source_fixture": "docs/task-177-predicate-environment-oracles.json",
+      "source_setup": "CREATE TABLE customers (id INT, name VARCHAR); INSERT INTO customers VALUES (1,'Alice'),(1,'Alice'),(2,'Amy'),(3,'Bob'),(4,'A_foo'),(5,'abc'),(6,NULL),(7,'ABC'),(8,'abc '),(9,'A%');",
+      "source_relation": "customers",
+      "source_instance_basis": "physical_row_occurrence_not_sql_key",
+      "source_columns": [
+        "id INTEGER NULL",
+        "name VARCHAR NULL"
+      ],
+      "source_bag": [
+        [
+          1,
+          "Alice"
+        ],
+        [
+          1,
+          "Alice"
+        ],
+        [
+          2,
+          "Amy"
+        ],
+        [
+          3,
+          "Bob"
+        ],
+        [
+          4,
+          "A_foo"
+        ],
+        [
+          5,
+          "abc"
+        ],
+        [
+          6,
+          null
+        ],
+        [
+          7,
+          "ABC"
+        ],
+        [
+          8,
+          "abc "
+        ],
+        [
+          9,
+          "A%"
+        ]
+      ],
+      "exact_terminal_bag": [
+        [
+          5
+        ]
+      ],
+      "exact_terminal_rows_ordered": null,
+      "terminal_outcome": "exact_original_DuckDB_three_valued_partition_from_fixed_native_source",
+      "negative_truth_evidence": {
+        "selected_source_ordinals": [
+          5
+        ],
+        "rejected_false_ordinals": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          7,
+          8,
+          9
+        ],
+        "rejected_unknown_ordinals": [
+          6
+        ],
+        "not_true_source_ordinals": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          6,
+          7,
+          8,
+          9
+        ],
+        "interpretation": "TRUE, FALSE, SQL UNKNOWN partition; source ordinals are not SQL id keys"
+      },
+      "typed_output_claim": {
+        "kind": "unbounded",
+        "name": "id",
+        "lower": null,
+        "lower_inclusive": null,
+        "upper": null,
+        "upper_inclusive": null,
+        "condition_exactness": "residual",
+        "residual_reason": "computed_expression",
+        "undeclared_laws": [],
+        "nullable": "depends_on_source_column_and_ORACLE_NULL_presence"
+      },
+      "canonical_proof_status": "bounded_original_oracle_inherited_or_explicit_engine_residual_review",
+      "vendor_runtime_portability": "unattested"
+    },
+    {
+      "id": "88-C179-015",
+      "source_id": "88-C177-S039",
+      "family": "collation",
+      "variant": "padding",
+      "sql": "SELECT id FROM customers WHERE name = 'abc '",
+      "review_owner": "TASK-192",
+      "native_engine": "duckdb",
+      "native_engine_version": "1.10506.0",
+      "source_fixture": "docs/task-177-predicate-environment-oracles.json",
+      "source_setup": "CREATE TABLE customers (id INT, name VARCHAR); INSERT INTO customers VALUES (1,'Alice'),(1,'Alice'),(2,'Amy'),(3,'Bob'),(4,'A_foo'),(5,'abc'),(6,NULL),(7,'ABC'),(8,'abc '),(9,'A%');",
+      "source_relation": "customers",
+      "source_instance_basis": "physical_row_occurrence_not_sql_key",
+      "source_columns": [
+        "id INTEGER NULL",
+        "name VARCHAR NULL"
+      ],
+      "source_bag": [
+        [
+          1,
+          "Alice"
+        ],
+        [
+          1,
+          "Alice"
+        ],
+        [
+          2,
+          "Amy"
+        ],
+        [
+          3,
+          "Bob"
+        ],
+        [
+          4,
+          "A_foo"
+        ],
+        [
+          5,
+          "abc"
+        ],
+        [
+          6,
+          null
+        ],
+        [
+          7,
+          "ABC"
+        ],
+        [
+          8,
+          "abc "
+        ],
+        [
+          9,
+          "A%"
+        ]
+      ],
+      "exact_terminal_bag": [
+        [
+          8
+        ]
+      ],
+      "exact_terminal_rows_ordered": null,
+      "terminal_outcome": "exact_original_DuckDB_terminal_or_three_valued_truth_if_oracle_attested",
+      "negative_truth_evidence": {
+        "selected_source_ordinals": [
+          8
+        ],
+        "rejected_false_ordinals": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          7,
+          9
+        ],
+        "rejected_unknown_ordinals": [
+          6
+        ],
+        "not_true_source_ordinals": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          9
+        ],
+        "interpretation": "TRUE, FALSE, SQL UNKNOWN partition; source ordinals are not SQL id keys"
+      },
+      "typed_output_claim": {
+        "kind": "unbounded",
+        "name": "id",
+        "lower": null,
+        "lower_inclusive": null,
+        "upper": null,
+        "upper_inclusive": null,
+        "condition_exactness": "conditional",
+        "residual_reason": null,
+        "undeclared_laws": [
+          "binary_collation",
+          "no_char_padding"
+        ],
+        "nullable": "depends_on_source_column_and_ORACLE_NULL_presence"
+      },
+      "canonical_proof_status": "bounded_original_oracle_inherited_or_explicit_engine_residual_review",
+      "vendor_runtime_portability": "unattested"
+    },
+    {
+      "id": "88-C179-016",
+      "source_id": "88-C177-S028",
+      "family": "implicit_coercion",
+      "variant": "casts",
+      "sql": "SELECT id FROM orders WHERE CAST(amount AS BIGINT) > 10",
+      "review_owner": "TASK-192",
+      "native_engine": "duckdb",
+      "native_engine_version": "1.10506.0",
+      "source_fixture": "docs/task-177-predicate-oracles.json",
+      "source_setup": "CREATE TABLE orders(id INTEGER, amount INTEGER); INSERT INTO orders VALUES (-1,-5),(0,0),(1,10),(2,10),(3,19),(4,20),(5,NULL),(6,5),(7,0),(8,1),(9,20); CREATE TABLE customers(id INTEGER, amount INTEGER); INSERT INTO customers VALUES (-1,-5),(1,10),(3,20),(3,20),(8,NULL),(10,25),(11,NULL);",
+      "source_relation": "orders",
+      "source_instance_basis": "physical_row_occurrence_not_sql_key",
+      "source_columns": [
+        "id INTEGER NULL",
+        "amount INTEGER NULL"
+      ],
+      "source_bag": [
+        [
+          -1,
+          -5
+        ],
+        [
+          0,
+          0
+        ],
+        [
+          1,
+          10
+        ],
+        [
+          2,
+          10
+        ],
+        [
+          3,
+          19
+        ],
+        [
+          4,
+          20
+        ],
+        [
+          5,
+          null
+        ],
+        [
+          6,
+          5
+        ],
+        [
+          7,
+          0
+        ],
+        [
+          8,
+          1
+        ],
+        [
+          9,
+          20
+        ]
+      ],
+      "exact_terminal_bag": [
+        [
+          3
+        ],
+        [
+          4
+        ],
+        [
+          9
+        ]
+      ],
+      "exact_terminal_rows_ordered": null,
+      "terminal_outcome": "exact_original_DuckDB_terminal_or_three_valued_truth_if_oracle_attested",
+      "negative_truth_evidence": {
+        "selected_ids": [
+          3,
+          4,
+          9
+        ],
+        "rejected_false_ids": [
+          -1,
+          0,
+          1,
+          2,
+          6,
+          7,
+          8
+        ],
+        "rejected_unknown_ids": [
+          5
+        ],
+        "selected_rows": [
+          [
+            3,
+            19
+          ],
+          [
+            4,
+            20
+          ],
+          [
+            9,
+            20
+          ]
+        ],
+        "false_rows": [
+          [
+            -1,
+            -5
+          ],
+          [
+            0,
+            0
+          ],
+          [
+            1,
+            10
+          ],
+          [
+            2,
+            10
+          ],
+          [
+            6,
+            5
+          ],
+          [
+            7,
+            0
+          ],
+          [
+            8,
+            1
+          ]
+        ],
+        "unknown_rows": [
+          [
+            5,
+            null
+          ]
+        ],
+        "interpretation": "Independently pinned finite integer source and three-valued truth for original SQL"
+      },
+      "typed_output_claim": {
+        "kind": "unbounded",
+        "name": "id",
+        "lower": null,
+        "lower_inclusive": null,
+        "upper": null,
+        "upper_inclusive": null,
+        "condition_exactness": "residual",
+        "residual_reason": "computed_expression",
+        "undeclared_laws": [],
+        "nullable": "depends_on_source_column_and_ORACLE_NULL_presence"
+      },
+      "canonical_proof_status": "bounded_original_oracle_inherited_or_explicit_engine_residual_review",
+      "vendor_runtime_portability": "unattested"
+    },
+    {
+      "id": "88-C179-017",
+      "source_id": "88-C177-S033",
+      "family": "implicit_coercion",
+      "variant": "overflow",
+      "sql": "SELECT 9223372036854775807 + 1 AS overflow_case",
+      "review_owner": "TASK-192",
+      "native_engine": "duckdb",
+      "native_engine_version": "1.10506.0",
+      "source_fixture": "docs/task-192-native-partitions.json",
+      "source_setup": "",
+      "source_relation": null,
+      "source_instance_basis": "physical_row_occurrence_not_sql_key",
+      "source_columns": [],
+      "source_bag": [],
+      "exact_terminal_bag": null,
+      "exact_terminal_rows_ordered": null,
+      "terminal_outcome": "native_DuckDB_arithmetic_overflow_error_no_successful_output",
+      "negative_truth_evidence": {
+        "kind": "execution_failure",
+        "expected_error_class": "overflow",
+        "no_successful_terminal": true
+      },
+      "typed_output_claim": {
+        "kind": "unknown",
+        "name": "overflow_case",
+        "lower": null,
+        "lower_inclusive": null,
+        "upper": null,
+        "upper_inclusive": null,
+        "condition_exactness": "exact",
+        "residual_reason": null,
+        "undeclared_laws": [],
+        "nullable": "depends_on_source_column_and_ORACLE_NULL_presence"
+      },
+      "canonical_proof_status": "bounded_original_oracle_inherited_or_explicit_engine_residual_review",
+      "vendor_runtime_portability": "unattested"
+    },
+    {
+      "id": "88-C179-018",
+      "source_id": "88-C177-S036",
+      "family": "implicit_coercion",
+      "variant": "coercion",
+      "sql": "SELECT id FROM orders WHERE CAST(created_at AS DATE) = DATE '2020-01-01'",
+      "review_owner": "TASK-192",
+      "native_engine": "duckdb",
+      "native_engine_version": "1.10506.0",
+      "source_fixture": "docs/task-177-predicate-environment-oracles.json",
+      "source_setup": "SET TimeZone = 'UTC'; CREATE TABLE orders(id INT, created_at TIMESTAMP); INSERT INTO orders VALUES (1,'2020-01-01 00:00:00'),(1,'2020-01-02 00:00:00'),(2,'2020-01-02 12:00:00'),(3,'2020-03-08 01:30:00'),(4,'2020-03-08 03:30:00'),(5,NULL),(NULL,'2020-03-08 02:30:00');",
+      "source_relation": "orders",
+      "source_instance_basis": "physical_row_occurrence_not_sql_key",
+      "source_columns": [
+        "id INTEGER NULL",
+        "created_at TIMESTAMP NULL"
+      ],
+      "source_bag": [
+        [
+          1,
+          "2020-01-01 00:00:00"
+        ],
+        [
+          1,
+          "2020-01-02 00:00:00"
+        ],
+        [
+          2,
+          "2020-01-02 12:00:00"
+        ],
+        [
+          3,
+          "2020-03-08 01:30:00"
+        ],
+        [
+          4,
+          "2020-03-08 03:30:00"
+        ],
+        [
+          5,
+          null
+        ],
+        [
+          null,
+          "2020-03-08 02:30:00"
+        ]
+      ],
+      "exact_terminal_bag": [
+        [
+          1
+        ]
+      ],
+      "exact_terminal_rows_ordered": null,
+      "terminal_outcome": "exact_original_DuckDB_terminal_or_three_valued_truth_if_oracle_attested",
+      "negative_truth_evidence": {
+        "selected_source_ordinals": [
+          0
+        ],
+        "rejected_false_ordinals": [
+          1,
+          2,
+          3,
+          4,
+          6
+        ],
+        "rejected_unknown_ordinals": [
+          5
+        ],
+        "not_true_source_ordinals": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "interpretation": "TRUE, FALSE, SQL UNKNOWN partition; source ordinals are not SQL id keys"
+      },
+      "typed_output_claim": {
+        "kind": "unbounded",
+        "name": "id",
+        "lower": null,
+        "lower_inclusive": null,
+        "upper": null,
+        "upper_inclusive": null,
+        "condition_exactness": "residual",
+        "residual_reason": "computed_expression",
+        "undeclared_laws": [],
+        "nullable": "depends_on_source_column_and_ORACLE_NULL_presence"
+      },
+      "canonical_proof_status": "bounded_original_oracle_inherited_or_explicit_engine_residual_review",
+      "vendor_runtime_portability": "unattested"
+    },
+    {
+      "id": "88-C179-019",
+      "source_id": "88-C177-S027",
+      "family": "float_timezone",
+      "variant": "arithmetic",
+      "sql": "SELECT id FROM orders WHERE amount + 2 > 10",
+      "review_owner": "TASK-192",
+      "native_engine": "duckdb",
+      "native_engine_version": "1.10506.0",
+      "source_fixture": "docs/task-177-predicate-oracles.json",
+      "source_setup": "CREATE TABLE orders(id INTEGER, amount INTEGER); INSERT INTO orders VALUES (-1,-5),(0,0),(1,10),(2,10),(3,19),(4,20),(5,NULL),(6,5),(7,0),(8,1),(9,20); CREATE TABLE customers(id INTEGER, amount INTEGER); INSERT INTO customers VALUES (-1,-5),(1,10),(3,20),(3,20),(8,NULL),(10,25),(11,NULL);",
+      "source_relation": "orders",
+      "source_instance_basis": "physical_row_occurrence_not_sql_key",
+      "source_columns": [
+        "id INTEGER NULL",
+        "amount INTEGER NULL"
+      ],
+      "source_bag": [
+        [
+          -1,
+          -5
+        ],
+        [
+          0,
+          0
+        ],
+        [
+          1,
+          10
+        ],
+        [
+          2,
+          10
+        ],
+        [
+          3,
+          19
+        ],
+        [
+          4,
+          20
+        ],
+        [
+          5,
+          null
+        ],
+        [
+          6,
+          5
+        ],
+        [
+          7,
+          0
+        ],
+        [
+          8,
+          1
+        ],
+        [
+          9,
+          20
+        ]
+      ],
+      "exact_terminal_bag": [
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          3
+        ],
+        [
+          4
+        ],
+        [
+          9
+        ]
+      ],
+      "exact_terminal_rows_ordered": null,
+      "terminal_outcome": "exact_original_DuckDB_terminal_or_three_valued_truth_if_oracle_attested",
+      "negative_truth_evidence": {
+        "selected_ids": [
+          1,
+          2,
+          3,
+          4,
+          9
+        ],
+        "rejected_false_ids": [
+          -1,
+          0,
+          6,
+          7,
+          8
+        ],
+        "rejected_unknown_ids": [
+          5
+        ],
+        "selected_rows": [
+          [
+            1,
+            10
+          ],
+          [
+            2,
+            10
+          ],
+          [
+            3,
+            19
+          ],
+          [
+            4,
+            20
+          ],
+          [
+            9,
+            20
+          ]
+        ],
+        "false_rows": [
+          [
+            -1,
+            -5
+          ],
+          [
+            0,
+            0
+          ],
+          [
+            6,
+            5
+          ],
+          [
+            7,
+            0
+          ],
+          [
+            8,
+            1
+          ]
+        ],
+        "unknown_rows": [
+          [
+            5,
+            null
+          ]
+        ],
+        "interpretation": "Independently pinned finite integer source and three-valued truth for original SQL"
+      },
+      "typed_output_claim": {
+        "kind": "unbounded",
+        "name": "id",
+        "lower": null,
+        "lower_inclusive": null,
+        "upper": null,
+        "upper_inclusive": null,
+        "condition_exactness": "residual",
+        "residual_reason": "computed_expression",
+        "undeclared_laws": [],
+        "nullable": "depends_on_source_column_and_ORACLE_NULL_presence"
+      },
+      "canonical_proof_status": "bounded_original_oracle_inherited_or_explicit_engine_residual_review",
+      "vendor_runtime_portability": "unattested"
+    },
+    {
+      "id": "88-C179-020",
+      "source_id": "88-C177-S032",
+      "family": "float_timezone",
+      "variant": "scalar functions",
+      "sql": "SELECT id FROM orders WHERE ABS(amount) > 2",
+      "review_owner": "TASK-192",
+      "native_engine": "duckdb",
+      "native_engine_version": "1.10506.0",
+      "source_fixture": "docs/task-177-predicate-oracles.json",
+      "source_setup": "CREATE TABLE orders(id INTEGER, amount INTEGER); INSERT INTO orders VALUES (-1,-5),(0,0),(1,10),(2,10),(3,19),(4,20),(5,NULL),(6,5),(7,0),(8,1),(9,20); CREATE TABLE customers(id INTEGER, amount INTEGER); INSERT INTO customers VALUES (-1,-5),(1,10),(3,20),(3,20),(8,NULL),(10,25),(11,NULL);",
+      "source_relation": "orders",
+      "source_instance_basis": "physical_row_occurrence_not_sql_key",
+      "source_columns": [
+        "id INTEGER NULL",
+        "amount INTEGER NULL"
+      ],
+      "source_bag": [
+        [
+          -1,
+          -5
+        ],
+        [
+          0,
+          0
+        ],
+        [
+          1,
+          10
+        ],
+        [
+          2,
+          10
+        ],
+        [
+          3,
+          19
+        ],
+        [
+          4,
+          20
+        ],
+        [
+          5,
+          null
+        ],
+        [
+          6,
+          5
+        ],
+        [
+          7,
+          0
+        ],
+        [
+          8,
+          1
+        ],
+        [
+          9,
+          20
+        ]
+      ],
+      "exact_terminal_bag": [
+        [
+          -1
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          3
+        ],
+        [
+          4
+        ],
+        [
+          6
+        ],
+        [
+          9
+        ]
+      ],
+      "exact_terminal_rows_ordered": null,
+      "terminal_outcome": "native_DuckDB_original_integer_source_exact; separate BIGINT_min_exception_residual_or_error",
+      "negative_truth_evidence": {
+        "selected_ids": [
+          -1,
+          1,
+          2,
+          3,
+          4,
+          6,
+          9
+        ],
+        "rejected_false_ids": [
+          0,
+          7,
+          8
+        ],
+        "rejected_unknown_ids": [
+          5
+        ],
+        "selected_rows": [
+          [
+            -1,
+            -5
+          ],
+          [
+            1,
+            10
+          ],
+          [
+            2,
+            10
+          ],
+          [
+            3,
+            19
+          ],
+          [
+            4,
+            20
+          ],
+          [
+            6,
+            5
+          ],
+          [
+            9,
+            20
+          ]
+        ],
+        "false_rows": [
+          [
+            0,
+            0
+          ],
+          [
+            7,
+            0
+          ],
+          [
+            8,
+            1
+          ]
+        ],
+        "unknown_rows": [
+          [
+            5,
+            null
+          ]
+        ],
+        "interpretation": "Independently pinned finite integer source and three-valued truth for original SQL"
+      },
+      "typed_output_claim": {
+        "kind": "unbounded",
+        "name": "id",
+        "lower": null,
+        "lower_inclusive": null,
+        "upper": null,
+        "upper_inclusive": null,
+        "condition_exactness": "residual",
+        "residual_reason": "computed_expression",
+        "undeclared_laws": [],
+        "nullable": "depends_on_source_column_and_ORACLE_NULL_presence"
+      },
+      "canonical_proof_status": "bounded_original_oracle_inherited_or_explicit_engine_residual_review",
+      "vendor_runtime_portability": "unattested"
+    },
+    {
+      "id": "88-C179-021",
+      "source_id": "88-C177-S034",
+      "family": "float_timezone",
+      "variant": "DATE/TIME/TIMESTAMP/INTERVAL",
+      "sql": "SELECT id FROM orders WHERE created_at >= TIMESTAMP '2020-01-01 00:00:00' + INTERVAL '1' DAY",
+      "review_owner": "TASK-192",
+      "native_engine": "duckdb",
+      "native_engine_version": "1.10506.0",
+      "source_fixture": "docs/task-177-predicate-environment-oracles.json",
+      "source_setup": "SET TimeZone = 'UTC'; CREATE TABLE orders(id INT, created_at TIMESTAMP); INSERT INTO orders VALUES (1,'2020-01-01 00:00:00'),(1,'2020-01-02 00:00:00'),(2,'2020-01-02 12:00:00'),(3,'2020-03-08 01:30:00'),(4,'2020-03-08 03:30:00'),(5,NULL),(NULL,'2020-03-08 02:30:00');",
+      "source_relation": "orders",
+      "source_instance_basis": "physical_row_occurrence_not_sql_key",
+      "source_columns": [
+        "id INTEGER NULL",
+        "created_at TIMESTAMP NULL"
+      ],
+      "source_bag": [
+        [
+          1,
+          "2020-01-01 00:00:00"
+        ],
+        [
+          1,
+          "2020-01-02 00:00:00"
+        ],
+        [
+          2,
+          "2020-01-02 12:00:00"
+        ],
+        [
+          3,
+          "2020-03-08 01:30:00"
+        ],
+        [
+          4,
+          "2020-03-08 03:30:00"
+        ],
+        [
+          5,
+          null
+        ],
+        [
+          null,
+          "2020-03-08 02:30:00"
+        ]
+      ],
+      "exact_terminal_bag": [
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          3
+        ],
+        [
+          4
+        ],
+        [
+          null
+        ]
+      ],
+      "exact_terminal_rows_ordered": null,
+      "terminal_outcome": "exact_original_DuckDB_terminal_or_three_valued_truth_if_oracle_attested",
+      "negative_truth_evidence": {
+        "selected_source_ordinals": [
+          1,
+          2,
+          3,
+          4,
+          6
+        ],
+        "rejected_false_ordinals": [
+          0
+        ],
+        "rejected_unknown_ordinals": [
+          5
+        ],
+        "not_true_source_ordinals": [
+          0,
+          5
+        ],
+        "interpretation": "TRUE, FALSE, SQL UNKNOWN partition; source ordinals are not SQL id keys"
+      },
+      "typed_output_claim": {
+        "kind": "unbounded",
+        "name": "id",
+        "lower": null,
+        "lower_inclusive": null,
+        "upper": null,
+        "upper_inclusive": null,
+        "condition_exactness": "residual",
+        "residual_reason": "computed_expression",
+        "undeclared_laws": [],
+        "nullable": "depends_on_source_column_and_ORACLE_NULL_presence"
+      },
+      "canonical_proof_status": "bounded_original_oracle_inherited_or_explicit_engine_residual_review",
+      "vendor_runtime_portability": "unattested"
+    },
+    {
+      "id": "88-C179-022",
+      "source_id": "88-C177-S035",
+      "family": "float_timezone",
+      "variant": "timezone",
+      "sql": "SELECT id FROM orders WHERE created_at AT TIME ZONE 'UTC' > TIMESTAMP '2020-01-01 00:00:00'",
+      "review_owner": "TASK-192",
+      "native_engine": "duckdb",
+      "native_engine_version": "1.10506.0",
+      "source_fixture": "docs/task-177-predicate-environment-oracles.json",
+      "source_setup": "SET TimeZone = 'UTC'; CREATE TABLE orders(id INT, created_at TIMESTAMP); INSERT INTO orders VALUES (1,'2020-01-01 00:00:00'),(1,'2020-01-02 00:00:00'),(2,'2020-01-02 12:00:00'),(3,'2020-03-08 01:30:00'),(4,'2020-03-08 03:30:00'),(5,NULL),(NULL,'2020-03-08 02:30:00');",
+      "source_relation": "orders",
+      "source_instance_basis": "physical_row_occurrence_not_sql_key",
+      "source_columns": [
+        "id INTEGER NULL",
+        "created_at TIMESTAMP NULL"
+      ],
+      "source_bag": [
+        [
+          1,
+          "2020-01-01 00:00:00"
+        ],
+        [
+          1,
+          "2020-01-02 00:00:00"
+        ],
+        [
+          2,
+          "2020-01-02 12:00:00"
+        ],
+        [
+          3,
+          "2020-03-08 01:30:00"
+        ],
+        [
+          4,
+          "2020-03-08 03:30:00"
+        ],
+        [
+          5,
+          null
+        ],
+        [
+          null,
+          "2020-03-08 02:30:00"
+        ]
+      ],
+      "exact_terminal_bag": [
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          3
+        ],
+        [
+          4
+        ],
+        [
+          null
+        ]
+      ],
+      "exact_terminal_rows_ordered": null,
+      "terminal_outcome": "exact_original_DuckDB_terminal_or_three_valued_truth_if_oracle_attested",
+      "negative_truth_evidence": {
+        "selected_source_ordinals": [
+          1,
+          2,
+          3,
+          4,
+          6
+        ],
+        "rejected_false_ordinals": [
+          0
+        ],
+        "rejected_unknown_ordinals": [
+          5
+        ],
+        "not_true_source_ordinals": [
+          0,
+          5
+        ],
+        "interpretation": "TRUE, FALSE, SQL UNKNOWN partition; source ordinals are not SQL id keys"
+      },
+      "typed_output_claim": {
+        "kind": "unbounded",
+        "name": "id",
+        "lower": null,
+        "lower_inclusive": null,
+        "upper": null,
+        "upper_inclusive": null,
+        "condition_exactness": "residual",
+        "residual_reason": "computed_expression",
+        "undeclared_laws": [],
+        "nullable": "depends_on_source_column_and_ORACLE_NULL_presence"
+      },
+      "canonical_proof_status": "bounded_original_oracle_inherited_or_explicit_engine_residual_review",
+      "vendor_runtime_portability": "unattested"
+    },
+    {
+      "id": "88-C179-023",
+      "source_id": "88-C177-S037",
+      "family": "float_timezone",
+      "variant": "DST",
+      "sql": "SELECT id FROM orders WHERE created_at BETWEEN TIMESTAMP '2020-03-08 01:00:00' AND TIMESTAMP '2020-03-08 03:00:00'",
+      "review_owner": "TASK-192",
+      "native_engine": "duckdb",
+      "native_engine_version": "1.10506.0",
+      "source_fixture": "docs/task-177-predicate-environment-oracles.json",
+      "source_setup": "SET TimeZone = 'UTC'; CREATE TABLE orders(id INT, created_at TIMESTAMP); INSERT INTO orders VALUES (1,'2020-01-01 00:00:00'),(1,'2020-01-02 00:00:00'),(2,'2020-01-02 12:00:00'),(3,'2020-03-08 01:30:00'),(4,'2020-03-08 03:30:00'),(5,NULL),(NULL,'2020-03-08 02:30:00');",
+      "source_relation": "orders",
+      "source_instance_basis": "physical_row_occurrence_not_sql_key",
+      "source_columns": [
+        "id INTEGER NULL",
+        "created_at TIMESTAMP NULL"
+      ],
+      "source_bag": [
+        [
+          1,
+          "2020-01-01 00:00:00"
+        ],
+        [
+          1,
+          "2020-01-02 00:00:00"
+        ],
+        [
+          2,
+          "2020-01-02 12:00:00"
+        ],
+        [
+          3,
+          "2020-03-08 01:30:00"
+        ],
+        [
+          4,
+          "2020-03-08 03:30:00"
+        ],
+        [
+          5,
+          null
+        ],
+        [
+          null,
+          "2020-03-08 02:30:00"
+        ]
+      ],
+      "exact_terminal_bag": [
+        [
+          3
+        ],
+        [
+          null
+        ]
+      ],
+      "exact_terminal_rows_ordered": null,
+      "terminal_outcome": "exact_original_DuckDB_terminal_or_three_valued_truth_if_oracle_attested",
+      "negative_truth_evidence": {
+        "selected_source_ordinals": [
+          3,
+          6
+        ],
+        "rejected_false_ordinals": [
+          0,
+          1,
+          2,
+          4
+        ],
+        "rejected_unknown_ordinals": [
+          5
+        ],
+        "not_true_source_ordinals": [
+          0,
+          1,
+          2,
+          4,
+          5
+        ],
+        "interpretation": "TRUE, FALSE, SQL UNKNOWN partition; source ordinals are not SQL id keys"
+      },
+      "typed_output_claim": {
+        "kind": "unbounded",
+        "name": "id",
+        "lower": null,
+        "lower_inclusive": null,
+        "upper": null,
+        "upper_inclusive": null,
+        "condition_exactness": "conditional",
+        "residual_reason": null,
+        "undeclared_laws": [
+          "session_time_zone"
+        ],
+        "nullable": "depends_on_source_column_and_ORACLE_NULL_presence"
+      },
+      "canonical_proof_status": "bounded_original_oracle_inherited_or_explicit_engine_residual_review",
+      "vendor_runtime_portability": "unattested"
+    },
+    {
+      "id": "88-C179-024",
+      "source_id": "88-C177-S040",
+      "family": "float_timezone",
+      "variant": "NaN",
+      "sql": "SELECT id FROM orders WHERE amount = 'NaN'",
+      "review_owner": "TASK-192",
+      "native_engine": "duckdb",
+      "native_engine_version": "1.10506.0",
+      "source_fixture": "docs/task-177-final-native-deterministic.json",
+      "source_setup": "CREATE TABLE orders (id INTEGER, amount DOUBLE); INSERT INTO orders VALUES (1, CAST('NaN' AS DOUBLE)),(1, CAST('NaN' AS DOUBLE)),(2,0.0),(3,NULL),(4,1.0);",
+      "source_relation": "orders",
+      "source_instance_basis": "source#0..4; two id=1 NaNs are different physical rows",
+      "source_columns": [
+        "id INTEGER NULL",
+        "amount DOUBLE NULL"
+      ],
+      "source_bag": [
+        [
+          1,
+          "NaN"
+        ],
+        [
+          1,
+          "NaN"
+        ],
+        [
+          2,
+          "0.0"
+        ],
+        [
+          3,
+          null
+        ],
+        [
+          4,
+          "1.0"
+        ]
+      ],
+      "exact_terminal_bag": [
+        [
+          1
+        ],
+        [
+          1
+        ]
+      ],
+      "exact_terminal_rows_ordered": null,
+      "terminal_outcome": "exact_original_DuckDB_three_valued_partition_from_fixed_native_source",
+      "negative_truth_evidence": {
+        "selected_source_ordinals": [
+          0,
+          1
+        ],
+        "rejected_false_ordinals": [
+          2,
+          4
+        ],
+        "rejected_unknown_ordinals": [
+          3
+        ],
+        "not_true_source_ordinals": [
+          2,
+          3,
+          4
+        ],
+        "interpretation": "TRUE, FALSE, SQL UNKNOWN partition; source ordinals are not SQL id keys"
+      },
+      "typed_output_claim": {
+        "kind": "unbounded",
+        "name": "id",
+        "lower": null,
+        "lower_inclusive": null,
+        "upper": null,
+        "upper_inclusive": null,
+        "condition_exactness": "residual",
+        "residual_reason": "comparison_semantics",
+        "undeclared_laws": [
+          "binary_collation",
+          "no_char_padding"
+        ],
+        "nullable": "depends_on_source_column_and_ORACLE_NULL_presence"
+      },
+      "canonical_proof_status": "bounded_original_oracle_inherited_or_explicit_engine_residual_review",
+      "vendor_runtime_portability": "unattested"
+    },
+    {
+      "id": "88-C179-025",
+      "source_id": "88-C177-S041",
+      "family": "float_timezone",
+      "variant": "signed zero",
+      "sql": "SELECT id FROM orders WHERE amount = -0.0",
+      "review_owner": "TASK-192",
+      "native_engine": "duckdb",
+      "native_engine_version": "1.10506.0",
+      "source_fixture": "docs/task-177-predicate-environment-oracles.json",
+      "source_setup": "CREATE TABLE orders (id INT, amount DOUBLE); INSERT INTO orders VALUES (1,0.0),(2,-0.0),(3,1.0),(4,NULL);",
+      "source_relation": "orders",
+      "source_instance_basis": "source#0..3; native -0.0 text normalizes to 0.0",
+      "source_columns": [
+        "id INTEGER NULL",
+        "amount DOUBLE NULL"
+      ],
+      "source_bag": [
+        [
+          1,
+          0
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          3,
+          1
+        ],
+        [
+          4,
+          null
+        ]
+      ],
+      "exact_terminal_bag": [
+        [
+          1
+        ],
+        [
+          2
+        ]
+      ],
+      "exact_terminal_rows_ordered": null,
+      "terminal_outcome": "exact_original_DuckDB_terminal_or_three_valued_truth_if_oracle_attested",
+      "negative_truth_evidence": {
+        "selected_source_ordinals": [
+          0,
+          1
+        ],
+        "rejected_false_ordinals": [
+          2
+        ],
+        "rejected_unknown_ordinals": [
+          3
+        ],
+        "not_true_source_ordinals": [
+          2,
+          3
+        ],
+        "interpretation": "TRUE, FALSE, SQL UNKNOWN partition; source ordinals are not SQL id keys"
+      },
+      "typed_output_claim": {
+        "kind": "unbounded",
+        "name": "id",
+        "lower": null,
+        "lower_inclusive": null,
+        "upper": null,
+        "upper_inclusive": null,
+        "condition_exactness": "residual",
+        "residual_reason": "computed_expression",
+        "undeclared_laws": [],
+        "nullable": "depends_on_source_column_and_ORACLE_NULL_presence"
+      },
+      "canonical_proof_status": "bounded_original_oracle_inherited_or_explicit_engine_residual_review",
+      "vendor_runtime_portability": "unattested"
+    },
+    {
+      "id": "88-C179-026",
+      "source_id": "88-C177-S198",
+      "family": "dml_transaction",
+      "variant": "ON CONFLICT/ON DUPLICATE KEY",
+      "sql": "INSERT INTO orders (id) VALUES (1) ON CONFLICT (id) DO NOTHING",
+      "review_owner": "TASK-196",
+      "native_engine": "duckdb",
+      "native_engine_version": "1.10506.0",
+      "source_fixture": "docs/task-177-write-oracles.json",
+      "source_setup": "CREATE TABLE orders(id INTEGER PRIMARY KEY, amount INTEGER); INSERT INTO orders VALUES (1,10),(2,20),(3,NULL);",
+      "source_relation": "orders",
+      "source_instance_basis": "physical_row_occurrence_not_sql_key",
+      "source_columns": [
+        "id INTEGER NULL",
+        "amount INTEGER NULL"
+      ],
+      "source_bag": [
+        [
+          1,
+          10
+        ],
+        [
+          2,
+          20
+        ],
+        [
+          3,
+          null
+        ]
+      ],
+      "exact_terminal_bag": [
+        [
+          1,
+          10
+        ],
+        [
+          2,
+          20
+        ],
+        [
+          3,
+          null
+        ]
+      ],
+      "exact_terminal_rows_ordered": null,
+      "terminal_outcome": "source_complete_native_DuckDB_write_state; generic vendor constraints and conflicts unapproved",
+      "negative_truth_evidence": {
+        "immutable_unaffected_source_rows": true,
+        "duplicate_occurrence_preservation": true,
+        "negative_case": "source_rejected_rows_and_not_modified_targets_recovered_by_before_vs_after_bag"
+      },
+      "typed_output_claim": {
+        "kind": "write_state_exact_row_values_not_query_output",
+        "name": "orders(id, amount)",
+        "lower": null,
+        "lower_inclusive": null,
+        "upper": null,
+        "upper_inclusive": null,
+        "nullable": true,
+        "condition_exactness": "bounded_DuckDB_native_write_only"
+      },
+      "canonical_proof_status": "bounded_original_oracle_inherited_or_explicit_engine_residual_review",
+      "vendor_runtime_portability": "unattested",
+      "secondary_source_relation": null,
+      "secondary_source_bag": null
+    },
+    {
+      "id": "88-C179-027",
+      "source_id": "88-C177-S203",
+      "family": "dml_transaction",
+      "variant": "correlated predicates",
+      "sql": "UPDATE orders SET amount = 1 WHERE id IN (SELECT id FROM customers)",
+      "review_owner": "TASK-196",
+      "native_engine": "duckdb",
+      "native_engine_version": "1.10506.0",
+      "source_fixture": "docs/task-177-write-oracles.json",
+      "source_setup": "CREATE TABLE orders(id INTEGER, amount INTEGER); INSERT INTO orders VALUES (1,10),(2,20),(2,20),(3,NULL),(NULL,7); CREATE TABLE customers(id INTEGER, amount INTEGER); INSERT INTO customers VALUES (1,100),(4,40),(4,40);",
+      "source_relation": "orders",
+      "source_instance_basis": "physical_row_occurrence_not_sql_key",
+      "source_columns": [
+        "id INTEGER NULL",
+        "amount INTEGER NULL"
+      ],
+      "source_bag": [
+        [
+          1,
+          10
+        ],
+        [
+          2,
+          20
+        ],
+        [
+          2,
+          20
+        ],
+        [
+          3,
+          null
+        ],
+        [
+          null,
+          7
+        ]
+      ],
+      "exact_terminal_bag": [
+        [
+          1,
+          1
+        ],
+        [
+          2,
+          20
+        ],
+        [
+          2,
+          20
+        ],
+        [
+          3,
+          null
+        ],
+        [
+          null,
+          7
+        ]
+      ],
+      "exact_terminal_rows_ordered": null,
+      "terminal_outcome": "source_complete_native_DuckDB_write_state; generic vendor constraints and conflicts unapproved",
+      "negative_truth_evidence": {
+        "immutable_unaffected_source_rows": true,
+        "duplicate_occurrence_preservation": true,
+        "negative_case": "source_rejected_rows_and_not_modified_targets_recovered_by_before_vs_after_bag"
+      },
+      "typed_output_claim": {
+        "kind": "write_state_exact_row_values_not_query_output",
+        "name": "orders(id, amount)",
+        "lower": null,
+        "lower_inclusive": null,
+        "upper": null,
+        "upper_inclusive": null,
+        "nullable": true,
+        "condition_exactness": "unsupported_correlated_subquery_residual"
+      },
+      "canonical_proof_status": "bounded_original_oracle_inherited_or_explicit_engine_residual_review",
+      "vendor_runtime_portability": "unattested",
+      "secondary_source_relation": "customers",
+      "secondary_source_bag": [
+        [
+          1,
+          100
+        ],
+        [
+          4,
+          40
+        ],
+        [
+          4,
+          40
+        ]
+      ]
+    },
+    {
+      "id": "88-C179-028",
+      "source_id": "88-C177-S208",
+      "family": "dml_transaction",
+      "variant": "cascade effects",
+      "sql": "DELETE FROM orders WHERE id = 1",
+      "review_owner": "TASK-196",
+      "native_engine": "duckdb",
+      "native_engine_version": "1.10506.0",
+      "source_fixture": "docs/task-177-write-oracles.json",
+      "source_setup": "CREATE TABLE orders(id INTEGER, amount INTEGER); INSERT INTO orders VALUES (1,10),(2,20),(2,20),(3,NULL),(NULL,7); CREATE TABLE customers(id INTEGER, amount INTEGER); INSERT INTO customers VALUES (1,100),(4,40),(4,40);",
+      "source_relation": "orders",
+      "source_instance_basis": "physical_row_occurrence_not_sql_key",
+      "source_columns": [
+        "id INTEGER NULL",
+        "amount INTEGER NULL"
+      ],
+      "source_bag": [
+        [
+          1,
+          10
+        ],
+        [
+          2,
+          20
+        ],
+        [
+          2,
+          20
+        ],
+        [
+          3,
+          null
+        ],
+        [
+          null,
+          7
+        ]
+      ],
+      "exact_terminal_bag": [
+        [
+          2,
+          20
+        ],
+        [
+          2,
+          20
+        ],
+        [
+          3,
+          null
+        ],
+        [
+          null,
+          7
+        ]
+      ],
+      "exact_terminal_rows_ordered": null,
+      "terminal_outcome": "source_complete_native_DuckDB_write_state; generic vendor constraints and conflicts unapproved",
+      "negative_truth_evidence": {
+        "immutable_unaffected_source_rows": true,
+        "duplicate_occurrence_preservation": true,
+        "negative_case": "source_rejected_rows_and_not_modified_targets_recovered_by_before_vs_after_bag"
+      },
+      "typed_output_claim": {
+        "kind": "write_state_exact_row_values_not_query_output",
+        "name": "orders(id, amount)",
+        "lower": null,
+        "lower_inclusive": null,
+        "upper": null,
+        "upper_inclusive": null,
+        "nullable": true,
+        "condition_exactness": "bounded_DuckDB_native_write_only"
+      },
+      "canonical_proof_status": "bounded_original_oracle_inherited_or_explicit_engine_residual_review",
+      "vendor_runtime_portability": "unattested",
+      "secondary_source_relation": "customers",
+      "secondary_source_bag": [
+        [
+          1,
+          100
+        ],
+        [
+          4,
+          40
+        ],
+        [
+          4,
+          40
+        ]
+      ]
+    },
+    {
+      "id": "88-C179-029",
+      "source_id": "88-C177-S209",
+      "family": "dml_transaction",
+      "variant": "MERGE matched/unmatched/by source",
+      "sql": "MERGE INTO orders o USING customers c ON o.id = c.id WHEN MATCHED THEN UPDATE SET amount = c.amount WHEN NOT MATCHED THEN INSERT (id, amount) VALUES (c.id, c.amount)",
+      "review_owner": "TASK-196",
+      "native_engine": "duckdb",
+      "native_engine_version": "1.10506.0",
+      "source_fixture": "docs/task-177-write-oracles.json",
+      "source_setup": "CREATE TABLE orders(id INTEGER, amount INTEGER); INSERT INTO orders VALUES (1,10),(2,20),(2,20),(3,NULL),(NULL,7); CREATE TABLE customers(id INTEGER, amount INTEGER); INSERT INTO customers VALUES (1,100),(4,40),(4,40);",
+      "source_relation": "orders",
+      "source_instance_basis": "physical_row_occurrence_not_sql_key",
+      "source_columns": [
+        "id INTEGER NULL",
+        "amount INTEGER NULL"
+      ],
+      "source_bag": [
+        [
+          1,
+          10
+        ],
+        [
+          2,
+          20
+        ],
+        [
+          2,
+          20
+        ],
+        [
+          3,
+          null
+        ],
+        [
+          null,
+          7
+        ]
+      ],
+      "exact_terminal_bag": [
+        [
+          1,
+          100
+        ],
+        [
+          2,
+          20
+        ],
+        [
+          2,
+          20
+        ],
+        [
+          3,
+          null
+        ],
+        [
+          null,
+          7
+        ],
+        [
+          4,
+          40
+        ],
+        [
+          4,
+          40
+        ]
+      ],
+      "exact_terminal_rows_ordered": null,
+      "terminal_outcome": "source_complete_native_DuckDB_write_state; generic vendor constraints and conflicts unapproved",
+      "negative_truth_evidence": {
+        "immutable_unaffected_source_rows": true,
+        "duplicate_occurrence_preservation": true,
+        "negative_case": "source_rejected_rows_and_not_modified_targets_recovered_by_before_vs_after_bag"
+      },
+      "typed_output_claim": {
+        "kind": "write_state_exact_row_values_not_query_output",
+        "name": "orders(id, amount)",
+        "lower": null,
+        "lower_inclusive": null,
+        "upper": null,
+        "upper_inclusive": null,
+        "nullable": true,
+        "condition_exactness": "bounded_DuckDB_native_write_only"
+      },
+      "canonical_proof_status": "bounded_original_oracle_inherited_or_explicit_engine_residual_review",
+      "vendor_runtime_portability": "unattested",
+      "secondary_source_relation": "customers",
+      "secondary_source_bag": [
+        [
+          1,
+          100
+        ],
+        [
+          4,
+          40
+        ],
+        [
+          4,
+          40
+        ]
+      ]
+    },
+    {
+      "id": "88-C179-030",
+      "source_id": "88-C177-S210",
+      "family": "dml_transaction",
+      "variant": "ordered WHEN",
+      "sql": "MERGE INTO orders o USING customers c ON o.id = c.id WHEN MATCHED AND c.amount > 0 THEN DELETE WHEN MATCHED THEN UPDATE SET amount = c.amount",
+      "review_owner": "TASK-196",
+      "native_engine": "duckdb",
+      "native_engine_version": "1.10506.0",
+      "source_fixture": "docs/task-177-write-oracles.json",
+      "source_setup": "CREATE TABLE orders(id INTEGER, amount INTEGER); INSERT INTO orders VALUES (1,10),(2,20),(2,20),(3,NULL),(NULL,7); CREATE TABLE customers(id INTEGER, amount INTEGER); INSERT INTO customers VALUES (1,100),(4,40),(4,40);",
+      "source_relation": "orders",
+      "source_instance_basis": "physical_row_occurrence_not_sql_key",
+      "source_columns": [
+        "id INTEGER NULL",
+        "amount INTEGER NULL"
+      ],
+      "source_bag": [
+        [
+          1,
+          10
+        ],
+        [
+          2,
+          20
+        ],
+        [
+          2,
+          20
+        ],
+        [
+          3,
+          null
+        ],
+        [
+          null,
+          7
+        ]
+      ],
+      "exact_terminal_bag": [
+        [
+          2,
+          20
+        ],
+        [
+          2,
+          20
+        ],
+        [
+          3,
+          null
+        ],
+        [
+          null,
+          7
+        ]
+      ],
+      "exact_terminal_rows_ordered": null,
+      "terminal_outcome": "source_complete_native_DuckDB_write_state; generic vendor constraints and conflicts unapproved",
+      "negative_truth_evidence": {
+        "immutable_unaffected_source_rows": true,
+        "duplicate_occurrence_preservation": true,
+        "negative_case": "source_rejected_rows_and_not_modified_targets_recovered_by_before_vs_after_bag"
+      },
+      "typed_output_claim": {
+        "kind": "write_state_exact_row_values_not_query_output",
+        "name": "orders(id, amount)",
+        "lower": null,
+        "lower_inclusive": null,
+        "upper": null,
+        "upper_inclusive": null,
+        "nullable": true,
+        "condition_exactness": "bounded_DuckDB_native_write_only"
+      },
+      "canonical_proof_status": "bounded_original_oracle_inherited_or_explicit_engine_residual_review",
+      "vendor_runtime_portability": "unattested",
+      "secondary_source_relation": "customers",
+      "secondary_source_bag": [
+        [
+          1,
+          100
+        ],
+        [
+          4,
+          40
+        ],
+        [
+          4,
+          40
+        ]
+      ]
+    },
+    {
+      "id": "88-C179-031",
+      "source_id": "88-C177-S211",
+      "family": "dml_transaction",
+      "variant": "UPDATE/INSERT/DELETE branches",
+      "sql": "MERGE INTO orders o USING customers c ON o.id = c.id WHEN MATCHED THEN DELETE WHEN NOT MATCHED THEN INSERT (id) VALUES (c.id)",
+      "review_owner": "TASK-196",
+      "native_engine": "duckdb",
+      "native_engine_version": "1.10506.0",
+      "source_fixture": "docs/task-177-write-oracles.json",
+      "source_setup": "CREATE TABLE orders(id INTEGER, amount INTEGER); INSERT INTO orders VALUES (1,10),(2,20),(2,20),(3,NULL),(NULL,7); CREATE TABLE customers(id INTEGER, amount INTEGER); INSERT INTO customers VALUES (1,100),(4,40),(4,40);",
+      "source_relation": "orders",
+      "source_instance_basis": "physical_row_occurrence_not_sql_key",
+      "source_columns": [
+        "id INTEGER NULL",
+        "amount INTEGER NULL"
+      ],
+      "source_bag": [
+        [
+          1,
+          10
+        ],
+        [
+          2,
+          20
+        ],
+        [
+          2,
+          20
+        ],
+        [
+          3,
+          null
+        ],
+        [
+          null,
+          7
+        ]
+      ],
+      "exact_terminal_bag": [
+        [
+          2,
+          20
+        ],
+        [
+          2,
+          20
+        ],
+        [
+          3,
+          null
+        ],
+        [
+          null,
+          7
+        ],
+        [
+          4,
+          null
+        ],
+        [
+          4,
+          null
+        ]
+      ],
+      "exact_terminal_rows_ordered": null,
+      "terminal_outcome": "source_complete_native_DuckDB_write_state; generic vendor constraints and conflicts unapproved",
+      "negative_truth_evidence": {
+        "immutable_unaffected_source_rows": true,
+        "duplicate_occurrence_preservation": true,
+        "negative_case": "source_rejected_rows_and_not_modified_targets_recovered_by_before_vs_after_bag"
+      },
+      "typed_output_claim": {
+        "kind": "write_state_exact_row_values_not_query_output",
+        "name": "orders(id, amount)",
+        "lower": null,
+        "lower_inclusive": null,
+        "upper": null,
+        "upper_inclusive": null,
+        "nullable": true,
+        "condition_exactness": "bounded_DuckDB_native_write_only"
+      },
+      "canonical_proof_status": "bounded_original_oracle_inherited_or_explicit_engine_residual_review",
+      "vendor_runtime_portability": "unattested",
+      "secondary_source_relation": "customers",
+      "secondary_source_bag": [
+        [
+          1,
+          100
+        ],
+        [
+          4,
+          40
+        ],
+        [
+          4,
+          40
+        ]
+      ]
+    },
+    {
+      "id": "88-C179-032",
+      "source_id": "88-C177-S221",
+      "family": "dml_transaction",
+      "variant": "ordered statements",
+      "sql": "CREATE TABLE orders (id INT); INSERT INTO orders VALUES (1); SELECT id FROM orders",
+      "review_owner": "TASK-163",
+      "native_engine": "duckdb",
+      "native_engine_version": "1.10506.0",
+      "source_fixture": "docs/task-177-schema-lifecycle-oracles.json",
+      "source_setup": "",
+      "source_relation": "orders",
+      "source_instance_basis": "physical_row_occurrence_not_sql_key",
+      "source_columns": [
+        "id INTEGER NULL"
+      ],
+      "source_bag": [
+        [
+          0
+        ]
+      ],
+      "exact_terminal_bag": [
+        [
+          1
+        ]
+      ],
+      "exact_terminal_rows_ordered": null,
+      "terminal_outcome": "source_complete_original_native_DuckDB_transaction_script",
+      "negative_truth_evidence": {
+        "rollback_or_commit_signed_off_source_case": "88-C177-S221",
+        "unproved_vendor_isolation_laws": "Residual"
+      },
+      "typed_output_claim": {
+        "kind": "integer_query_or_mutation_state",
+        "name": "id",
+        "lower": null,
+        "lower_inclusive": null,
+        "upper": null,
+        "upper_inclusive": null,
+        "nullable": true,
+        "condition_exactness": "portable_control_not_vendor_transaction_law"
+      },
+      "canonical_proof_status": "bounded_original_oracle_inherited_or_explicit_engine_residual_review",
+      "vendor_runtime_portability": "unattested",
+      "source_snapshot_sql": "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = 'main' AND table_name IN ('orders', 'v', 'tmp')",
+      "terminal_query": "SELECT id FROM orders"
+    },
+    {
+      "id": "88-C179-033",
+      "source_id": "88-C177-S222",
+      "family": "dml_transaction",
+      "variant": "snapshot visibility",
+      "sql": "BEGIN; INSERT INTO orders VALUES (1); SELECT id FROM orders; COMMIT",
+      "review_owner": "TASK-163",
+      "native_engine": "duckdb",
+      "native_engine_version": "1.10506.0",
+      "source_fixture": "docs/task-177-schema-lifecycle-oracles.json",
+      "source_setup": "CREATE TABLE orders(id INTEGER); INSERT INTO orders VALUES (2),(NULL)",
+      "source_relation": "orders",
+      "source_instance_basis": "physical_row_occurrence_not_sql_key",
+      "source_columns": [
+        "id INTEGER NULL"
+      ],
+      "source_bag": [
+        [
+          2
+        ],
+        [
+          null
+        ]
+      ],
+      "exact_terminal_bag": [
+        [
+          2
+        ],
+        [
+          null
+        ],
+        [
+          1
+        ]
+      ],
+      "exact_terminal_rows_ordered": null,
+      "terminal_outcome": "source_complete_original_native_DuckDB_transaction_script",
+      "negative_truth_evidence": {
+        "rollback_or_commit_signed_off_source_case": "88-C177-S222",
+        "unproved_vendor_isolation_laws": "Residual"
+      },
+      "typed_output_claim": {
+        "kind": "integer_query_or_mutation_state",
+        "name": "id",
+        "lower": null,
+        "lower_inclusive": null,
+        "upper": null,
+        "upper_inclusive": null,
+        "nullable": true,
+        "condition_exactness": "portable_control_not_vendor_transaction_law"
+      },
+      "canonical_proof_status": "bounded_original_oracle_inherited_or_explicit_engine_residual_review",
+      "vendor_runtime_portability": "unattested",
+      "source_snapshot_sql": "SELECT id FROM orders",
+      "terminal_query": "SELECT id FROM orders"
+    },
+    {
+      "id": "88-C179-034",
+      "source_id": "88-C177-S223",
+      "family": "dml_transaction",
+      "variant": "dependency graph",
+      "sql": "CREATE TABLE orders (id INT); INSERT INTO orders VALUES (1); SELECT id FROM orders",
+      "review_owner": "TASK-163",
+      "native_engine": "duckdb",
+      "native_engine_version": "1.10506.0",
+      "source_fixture": "docs/task-177-schema-lifecycle-oracles.json",
+      "source_setup": "",
+      "source_relation": "orders",
+      "source_instance_basis": "physical_row_occurrence_not_sql_key",
+      "source_columns": [
+        "id INTEGER NULL"
+      ],
+      "source_bag": [
+        [
+          0
+        ]
+      ],
+      "exact_terminal_bag": [
+        [
+          1
+        ]
+      ],
+      "exact_terminal_rows_ordered": null,
+      "terminal_outcome": "source_complete_original_native_DuckDB_transaction_script",
+      "negative_truth_evidence": {
+        "rollback_or_commit_signed_off_source_case": "88-C177-S223",
+        "unproved_vendor_isolation_laws": "Residual"
+      },
+      "typed_output_claim": {
+        "kind": "integer_query_or_mutation_state",
+        "name": "id",
+        "lower": null,
+        "lower_inclusive": null,
+        "upper": null,
+        "upper_inclusive": null,
+        "nullable": true,
+        "condition_exactness": "portable_control_not_vendor_transaction_law"
+      },
+      "canonical_proof_status": "bounded_original_oracle_inherited_or_explicit_engine_residual_review",
+      "vendor_runtime_portability": "unattested",
+      "source_snapshot_sql": "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = 'main' AND table_name IN ('orders', 'v', 'tmp')",
+      "terminal_query": "SELECT id FROM orders"
+    },
+    {
+      "id": "88-C179-035",
+      "source_id": "88-C177-S224",
+      "family": "dml_transaction",
+      "variant": "rollback",
+      "sql": "BEGIN; UPDATE orders SET id = 2; ROLLBACK",
+      "review_owner": "TASK-163",
+      "native_engine": "duckdb",
+      "native_engine_version": "1.10506.0",
+      "source_fixture": "docs/task-177-schema-lifecycle-oracles.json",
+      "source_setup": "CREATE TABLE orders(id INTEGER); INSERT INTO orders VALUES (1),(1),(NULL)",
+      "source_relation": "orders",
+      "source_instance_basis": "physical_row_occurrence_not_sql_key",
+      "source_columns": [
+        "id INTEGER NULL"
+      ],
+      "source_bag": [
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          null
+        ]
+      ],
+      "exact_terminal_bag": [
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          null
+        ]
+      ],
+      "exact_terminal_rows_ordered": null,
+      "terminal_outcome": "source_complete_original_native_DuckDB_transaction_script",
+      "negative_truth_evidence": {
+        "rollback_or_commit_signed_off_source_case": "88-C177-S224",
+        "unproved_vendor_isolation_laws": "Residual"
+      },
+      "typed_output_claim": {
+        "kind": "integer_query_or_mutation_state",
+        "name": "id",
+        "lower": null,
+        "lower_inclusive": null,
+        "upper": null,
+        "upper_inclusive": null,
+        "nullable": true,
+        "condition_exactness": "portable_control_not_vendor_transaction_law"
+      },
+      "canonical_proof_status": "bounded_original_oracle_inherited_or_explicit_engine_residual_review",
+      "vendor_runtime_portability": "unattested",
+      "source_snapshot_sql": "SELECT id FROM orders",
+      "terminal_query": "SELECT id FROM orders"
+    },
+    {
+      "id": "88-C179-036",
+      "source_id": null,
+      "family": "identifier_case",
+      "variant": "quoted_identifier_case",
+      "sql": "SELECT \"resultvalue\" FROM \"mixedcase\" ORDER BY 1",
+      "review_owner": "TASK-179",
+      "native_engine": "duckdb",
+      "native_engine_version": "1.10506.0",
+      "source_fixture": "docs/task-179-acceptance-freeze.json",
+      "source_setup": "CREATE TABLE \"MixedCase\" (\"ResultValue\" INTEGER); INSERT INTO \"MixedCase\" VALUES (1),(2);",
+      "source_relation": "mixedcase",
+      "source_instance_basis": "physical_row_occurrence_not_sql_key",
+      "source_columns": [
+        "resultvalue INTEGER"
+      ],
+      "source_bag": [
+        [
+          1,
+          "1"
+        ],
+        [
+          2,
+          "2"
+        ]
+      ],
+      "exact_terminal_bag": [
+        [
+          1
+        ],
+        [
+          2
+        ]
+      ],
+      "exact_terminal_rows_ordered": null,
+      "terminal_outcome": "native_DuckDB_case_folded_reference_only",
+      "negative_truth_evidence": {
+        "case_collision_native_DuckDB_DDL_rejected": "tests/task_179_native_counterexamples.rs"
+      },
+      "typed_output_claim": {
+        "kind": "integer_unbounded",
+        "name": "resultvalue",
+        "lower": null,
+        "lower_inclusive": null,
+        "upper": null,
+        "upper_inclusive": null,
+        "nullable": false,
+        "condition_exactness": "DuckDB_only_identifier_case_fold"
+      },
+      "canonical_proof_status": "bounded_original_oracle_inherited_or_explicit_engine_residual_review",
+      "vendor_runtime_portability": "unattested",
+      "source_snapshot_sql": "SELECT \"ResultValue\", CAST(\"ResultValue\" AS VARCHAR) FROM \"MixedCase\" ORDER BY 1"
+    },
+    {
+      "id": "88-C179-037",
+      "source_id": null,
+      "family": "identifier_case",
+      "variant": "unquoted_identifier_case",
+      "sql": "SELECT resultvalue FROM mixedcase ORDER BY 1",
+      "review_owner": "TASK-179",
+      "native_engine": "duckdb",
+      "native_engine_version": "1.10506.0",
+      "source_fixture": "docs/task-179-acceptance-freeze.json",
+      "source_setup": "CREATE TABLE \"MixedCase\" (\"ResultValue\" INTEGER); INSERT INTO \"MixedCase\" VALUES (1),(2);",
+      "source_relation": "mixedcase",
+      "source_instance_basis": "physical_row_occurrence_not_sql_key",
+      "source_columns": [
+        "resultvalue INTEGER"
+      ],
+      "source_bag": [
+        [
+          1,
+          "1"
+        ],
+        [
+          2,
+          "2"
+        ]
+      ],
+      "exact_terminal_bag": [
+        [
+          1
+        ],
+        [
+          2
+        ]
+      ],
+      "exact_terminal_rows_ordered": null,
+      "terminal_outcome": "native_DuckDB_case_folded_reference_only",
+      "negative_truth_evidence": {
+        "case_collision_native_DuckDB_DDL_rejected": "tests/task_179_native_counterexamples.rs"
+      },
+      "typed_output_claim": {
+        "kind": "integer_unbounded",
+        "name": "resultvalue",
+        "lower": null,
+        "lower_inclusive": null,
+        "upper": null,
+        "upper_inclusive": null,
+        "nullable": false,
+        "condition_exactness": "DuckDB_only_identifier_case_fold"
+      },
+      "canonical_proof_status": "bounded_original_oracle_inherited_or_explicit_engine_residual_review",
+      "vendor_runtime_portability": "unattested",
+      "source_snapshot_sql": "SELECT \"ResultValue\", CAST(\"ResultValue\" AS VARCHAR) FROM \"MixedCase\" ORDER BY 1"
+    }
+  ]
+}
