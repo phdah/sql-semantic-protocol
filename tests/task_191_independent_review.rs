@@ -121,7 +121,10 @@ fn reviewed_parser_analyzer_and_native_cells_have_independent_owners_and_origina
             let original_id = text(row, "original_id");
             let original = source.get(original_id).expect("immutable original SQL");
             let dialect = text(row, "dialect");
-            assert_eq!(row["original_sql"], original["sql"], "{id}: source text drift");
+            assert_eq!(
+                row["original_sql"], original["sql"],
+                "{id}: source text drift"
+            );
             assert_eq!(row["feature_id"], original["feature_id"]);
             assert_eq!(row["variant"], original["variant"]);
             assert_eq!(row["semantic_owners"], original["semantic_owner"]);
@@ -138,22 +141,39 @@ fn reviewed_parser_analyzer_and_native_cells_have_independent_owners_and_origina
                 .iter()
                 .position(|entry| entry == dialect)
                 .expect("known public dialect");
-            let mask = matrix[original_id].as_str().expect("original observed mask");
+            let mask = matrix[original_id]
+                .as_str()
+                .expect("original observed mask");
             assert_eq!(mask.chars().nth(d), Some(expected_mask));
-            assert_eq!(row["original_sql_source"], "docs/task-177-parser-samples.json");
+            assert_eq!(
+                row["original_sql_source"],
+                "docs/task-177-parser-samples.json"
+            );
             assert!(ids.insert(id), "{id}: duplicate reviewed disposition");
             assert!(observed.insert(id), "{id}: cross-axis collision");
             match kind {
                 "parser" => {
-                    assert_eq!(row["original_parser_proof"], "Impossible_for_original_sql_with_sqlparser_0_58");
+                    assert_eq!(
+                        row["original_parser_proof"],
+                        "Impossible_for_original_sql_with_sqlparser_0_58"
+                    );
                     assert_eq!(row["value_domain"], "Unknown_no_statement_value_emitted");
-                    assert_eq!(row["release_decision"], "blocked_feature_remains_release_required");
+                    assert_eq!(
+                        row["release_decision"],
+                        "blocked_feature_remains_release_required"
+                    );
                 }
                 "unsupported" => {
                     assert_eq!(row["statement_semantics"], "Unsupported");
-                    assert_eq!(row["typed_output_policy"], "Unknown_no_strong_domain_proven");
+                    assert_eq!(
+                        row["typed_output_policy"],
+                        "Unknown_no_strong_domain_proven"
+                    );
                     assert_eq!(row["approved_as_supported_or_deferred"], false);
-                    assert_eq!(row["release_decision"], "blocked_unimplemented_mandatory_semantics");
+                    assert_eq!(
+                        row["release_decision"],
+                        "blocked_unimplemented_mandatory_semantics"
+                    );
                 }
                 _ => unreachable!("only two original public classes"),
             }
@@ -165,7 +185,10 @@ fn reviewed_parser_analyzer_and_native_cells_have_independent_owners_and_origina
     for (index, row) in native_rows.iter().enumerate() {
         let id = text(row, "original_id");
         let original = source.get(id).expect("immutable original SQL");
-        assert_eq!(row["original_id"], cases(&freeze, "native_unproven_original_cases")[index]["original_id"]);
+        assert_eq!(
+            row["original_id"],
+            cases(&freeze, "native_unproven_original_cases")[index]["original_id"]
+        );
         assert_eq!(row["original_sql"], original["sql"]);
         assert_eq!(row["semantic_owners"], original["semantic_owner"]);
         let frozen_case = cases(&native, "cases")
@@ -196,12 +219,8 @@ fn every_original_unsupported_diagnostic_is_source_bound_and_precisely_regressed
         let dialect = text(row, "dialect");
         let original = source.get(original_id).expect("immutable original");
         let parser = dialect_from_name(dialect).expect("registered dialect");
-        let protocol = analyze_sql(
-            text(original, "sql"),
-            dialect,
-            parser.as_ref(),
-        )
-        .unwrap_or_else(|error| panic!("{id}: expected public Unsupported, got {error}"));
+        let protocol = analyze_sql(text(original, "sql"), dialect, parser.as_ref())
+            .unwrap_or_else(|error| panic!("{id}: expected public Unsupported, got {error}"));
         let expected_category = text(row, "expected_unsupported_category");
         let expected_code = text(row, "expected_diagnostic_code");
         let unsupported: Vec<_> = protocol
@@ -212,7 +231,10 @@ fn every_original_unsupported_diagnostic_is_source_bound_and_precisely_regressed
                 _ => None,
             })
             .collect();
-        assert!(!unsupported.is_empty(), "{id}: missing explicit Unsupported");
+        assert!(
+            !unsupported.is_empty(),
+            "{id}: missing explicit Unsupported"
+        );
         assert!(
             unsupported.iter().any(|statement| {
                 statement.category() == expected_category
@@ -225,7 +247,10 @@ fn every_original_unsupported_diagnostic_is_source_bound_and_precisely_regressed
             }),
             "{id}: changed unsupported category/code; review semantic owner before updating evidence"
         );
-        assert!(observed.insert(id), "{id}: duplicated independent diagnostic review");
+        assert!(
+            observed.insert(id),
+            "{id}: duplicated independent diagnostic review"
+        );
     }
     assert_eq!(observed.len(), 116);
 }
