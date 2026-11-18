@@ -57,7 +57,26 @@
           10
         ]
       ],
-      "exact_terminal_bag": null,
+      "exact_terminal_bag": [
+        [
+          4
+        ],
+        [
+          1
+        ],
+        [
+          1
+        ],
+        [
+          null
+        ],
+        [
+          2
+        ],
+        [
+          3
+        ]
+      ],
       "exact_terminal_rows_ordered": [
         [
           4
