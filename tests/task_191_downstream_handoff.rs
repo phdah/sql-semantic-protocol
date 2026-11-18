@@ -60,6 +60,7 @@ fn every_reviewed_exception_reconciles_to_exact_original_source_and_existing_ada
         .map(|item| (label(item, "id"), item))
         .collect();
     let mut expected_ids = BTreeSet::new();
+    let mut expected_reviews = BTreeMap::new();
     for (name, field) in [
         ("parser", "parser_cells"),
         ("unsupported", "unsupported_cells"),
@@ -72,7 +73,11 @@ fn every_reviewed_exception_reconciles_to_exact_original_source_and_existing_ada
             } else {
                 format!("{name}/{}", label(item, "cell_id"))
             };
-            assert!(expected_ids.insert(key));
+            assert!(expected_ids.insert(key.clone()));
+            assert!(
+                expected_reviews.insert(key, (name, item)).is_none(),
+                "duplicate original review"
+            );
         }
     }
     assert_eq!(expected_ids.len(), 194);
@@ -83,6 +88,38 @@ fn every_reviewed_exception_reconciles_to_exact_original_source_and_existing_ada
         let key = label(cell, "review_id");
         let id = label(cell, "original_id");
         assert!(reviewed_ids.insert(key.to_owned()));
+        let &(kind, source_review) = expected_reviews
+            .get(key)
+            .expect("handoff must map to an exact reviewed cell");
+        assert_eq!(cell["owned_boundary"], kind, "{key}: wrong boundary owner");
+        assert_eq!(cell["original_id"], source_review["original_id"]);
+        assert_eq!(cell["dialect"], source_review["dialect"]);
+        assert_eq!(cell["original_sql"], source_review["original_sql"]);
+        assert_eq!(
+            cell["source_original_sql"],
+            source_review["original_sql_source"]
+        );
+        let (review_status, typed_claim, disposition) = match kind {
+            "parser" => (
+                "reviewed_original_parser_rejection_original_ast_impossible",
+                "Unknown_no_parsed_statement",
+                "conditional_original_grammar_boundary_unapproved_for_vendor_native",
+            ),
+            "unsupported" => (
+                "reviewed_exact_unsupported_diagnostic_no_semantic_output",
+                "Unknown_unsupported_statement",
+                "mandatory_unsupported_release_blocker",
+            ),
+            "native" => (
+                "reviewed_original_native_execution_error_or_conditional",
+                label(source_review, "safe_typed_value_domain"),
+                "conditional_or_negative_original_native_not_fixed_successful_terminal",
+            ),
+            _ => unreachable!("only three frozen boundary classes"),
+        };
+        assert_eq!(cell["per_cell_review"], review_status);
+        assert_eq!(cell["typed_claim"], typed_claim);
+        assert_eq!(cell["disposition"], disposition);
         assert_eq!(
             label(cell, "original_sql"),
             *original_sql.get(id).expect("stable original SQL fixture"),
