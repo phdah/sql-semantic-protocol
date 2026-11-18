@@ -179,7 +179,9 @@ fn two_task_owned_identifier_case_probes_execute_all_thirteen_public_dialects() 
     // The two synthetic cases are not original TASK-177 identities. Exercise
     // actual public analysis rather than assigning them inherited parser masks.
     let matrix = read(MATRIX);
-    let dialects = matrix["dialects"].as_array().expect("thirteen public parsers");
+    let dialects = matrix["dialects"]
+        .as_array()
+        .expect("thirteen public parsers");
     let mut total = 0;
     for case in matrix["cases"].as_array().expect("37 variants") {
         if case["family"] != "identifier_case" {
@@ -213,8 +215,7 @@ fn two_task_owned_identifier_case_probes_execute_all_thirteen_public_dialects() 
             total += 1;
         }
         assert_eq!(
-            mask,
-            "AAAAAAAAAAAAA",
+            mask, "AAAAAAAAAAAAA",
             "{}: task-owned parser dialect observation",
             case["id"]
         );

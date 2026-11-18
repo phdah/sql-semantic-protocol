@@ -40,11 +40,19 @@ fn all_481_acceptance_cells_have_exact_source_typed_outcome_and_conditional_vend
         coverage["task_179_vendor_session_laws"]["physical_source_outcomes"],
         "docs/task-179-source-and-outcome-evidence-v4.json"
     );
-    let cases = matrix["cases"].as_array().expect("37 original and identifier laws");
-    let physical = evidence["cases"].as_array().expect("complete typed source oracles");
-    let proofs = inherited["cases"].as_array().expect("reviewed original SQL owners");
+    let cases = matrix["cases"]
+        .as_array()
+        .expect("37 original and identifier laws");
+    let physical = evidence["cases"]
+        .as_array()
+        .expect("complete typed source oracles");
+    let proofs = inherited["cases"]
+        .as_array()
+        .expect("reviewed original SQL owners");
     let dialects = matrix["dialects"].as_array().expect("13 exposed dialects");
-    let decisions = final_review["decisions"].as_array().expect("all frozen dialect cells");
+    let decisions = final_review["decisions"]
+        .as_array()
+        .expect("all frozen dialect cells");
     assert_eq!(cases.len(), 37);
     assert_eq!(physical.len(), 37);
     assert_eq!(proofs.len(), 37);
@@ -61,7 +69,10 @@ fn all_481_acceptance_cells_have_exact_source_typed_outcome_and_conditional_vend
         let identity = review["cell_id"].as_str().expect("unique fixture");
         let name = dialect["dialect"].as_str().expect("dialect");
         let id = case["id"].as_str().expect("case");
-        assert!(distinct.insert(identity), "duplicated reviewed cell {identity}");
+        assert!(
+            distinct.insert(identity),
+            "duplicated reviewed cell {identity}"
+        );
         assert_eq!(identity, format!("{id}/{name}"));
         assert_eq!(review["case_id"], case["id"]);
         assert_eq!(review["original_id"], case["source_case_id"]);
@@ -71,30 +82,43 @@ fn all_481_acceptance_cells_have_exact_source_typed_outcome_and_conditional_vend
         assert_eq!(review["family"], case["family"]);
         assert_eq!(review["variant"], case["variant"]);
         assert_eq!(review["original_parser_status"], dialect["parser_status"]);
-        assert_eq!(review["canonical_analysis_status"], dialect["analyzer_status"]);
-        assert_eq!(review["source_review_owner"], inherited["source_semantic_owner"]);
+        assert_eq!(
+            review["canonical_analysis_status"],
+            dialect["analyzer_status"]
+        );
+        assert_eq!(
+            review["source_review_owner"],
+            inherited["source_semantic_owner"]
+        );
         assert_eq!(review["source_columns"], source["source_columns"]);
-        assert_eq!(review["source_population_identity"], source["source_instance_basis"]);
+        assert_eq!(
+            review["source_population_identity"],
+            source["source_instance_basis"]
+        );
         assert_eq!(review["output_domain_policy"], source["typed_output_claim"]);
-        assert_eq!(review["complete_terminal_disposition"], source["terminal_outcome"]);
-        assert_eq!(review["source_fact_adapter_status"], case["source_adapter_provenance"]);
+        assert_eq!(
+            review["complete_terminal_disposition"],
+            source["terminal_outcome"]
+        );
+        assert_eq!(
+            review["source_fact_adapter_status"],
+            case["source_adapter_provenance"]
+        );
         assert_eq!(review["native_external_vendor_attested"], false);
         assert_eq!(review["vendor_runtime_proof"], "Residual");
         assert_eq!(
             review["task179_review_acceptance"],
             "approved_bounded_source_semantics_and_explicit_conditional_runtime_residual"
         );
-        assert!(
-            review["vendor_missing_attestation"]["engine_version"]
-                .as_str()
-                .is_some_and(|text| !text.is_empty())
-        );
-        assert!(
-            review["vendor_missing_attestation"]["source"]
-                .as_str()
-                .is_some_and(|text| !text.is_empty())
-        );
-        let kind = review["parser_disposition"].as_str().expect("sound review decision");
+        assert!(review["vendor_missing_attestation"]["engine_version"]
+            .as_str()
+            .is_some_and(|text| !text.is_empty()));
+        assert!(review["vendor_missing_attestation"]["source"]
+            .as_str()
+            .is_some_and(|text| !text.is_empty()));
+        let kind = review["parser_disposition"]
+            .as_str()
+            .expect("sound review decision");
         *observed.entry(kind).or_default() += 1;
         let expected = match dialect["analyzer_status"].as_str().expect("public outcome") {
             "analyzed" if case["family"] == "identifier_case" => {
