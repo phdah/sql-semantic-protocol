@@ -29,13 +29,18 @@ fn every_original_executable_predicate_replays_true_and_not_true_on_same_source(
     let environment = read(ENV);
     let mut tested = 0;
     let mut pinned = 0;
-    for case in matrix["cases"].as_array().expect("37 SQL boundary variants") {
+    for case in matrix["cases"]
+        .as_array()
+        .expect("37 SQL boundary variants")
+    {
         let sql = case["sql"].as_str().expect("original SQL");
         let Some((_, predicate)) = sql.split_once(" WHERE ") else {
             continue;
         };
         let id = case["id"].as_str().expect("stable identity");
-        let relation = case["source_relation"].as_str().expect("original input relation");
+        let relation = case["source_relation"]
+            .as_str()
+            .expect("original input relation");
         let db = Connection::open_in_memory().expect("DuckDB");
         db.execute_batch(case["source_setup"].as_str().expect("physical source"))
             .unwrap_or_else(|error| panic!("{id}: native setup: {error}"));
@@ -59,7 +64,10 @@ fn every_original_executable_predicate_replays_true_and_not_true_on_same_source(
         );
         assert_eq!(
             all.len(),
-            case["source_bag"].as_array().expect("all native input rows").len(),
+            case["source_bag"]
+                .as_array()
+                .expect("all native input rows")
+                .len(),
             "{id}: source row count drift"
         );
         let truth = &case["negative_truth_evidence"];
@@ -79,40 +87,68 @@ fn every_original_executable_predicate_replays_true_and_not_true_on_same_source(
             pinned += 1;
         }
         if let Some(ids) = truth["selected_ids"].as_array() {
-            let reference = prior["cases"].as_array().expect("independent numeric truth")
-                .iter().find(|entry| entry["id"] == case["source_id"])
+            let reference = prior["cases"]
+                .as_array()
+                .expect("independent numeric truth")
+                .iter()
+                .find(|entry| entry["id"] == case["source_id"])
                 .expect("frozen numeric original");
-            assert_eq!(ids, reference["expected_selected_ids"].as_array().expect("native selected IDs"));
+            assert_eq!(
+                ids,
+                reference["expected_selected_ids"]
+                    .as_array()
+                    .expect("native selected IDs")
+            );
             let expected = ids
                 .iter()
                 .map(|value| value.as_i64().expect("integer key"))
                 .collect::<BTreeSet<_>>();
-            let actual = positive.iter()
-                .map(|ordinal| case["source_bag"][*ordinal as usize][0].as_i64().expect("source key"))
+            let actual = positive
+                .iter()
+                .map(|ordinal| {
+                    case["source_bag"][*ordinal as usize][0]
+                        .as_i64()
+                        .expect("source key")
+                })
                 .collect::<BTreeSet<_>>();
             assert_eq!(actual, expected, "{id}: pinned positive physical rows");
             pinned += 1;
         }
-        if let Some(env_case) = environment["customer_cases"].as_array().expect("string fixtures")
-            .iter().chain(environment["temporal_cases"].as_array().expect("timestamp fixtures"))
+        if let Some(env_case) = environment["customer_cases"]
+            .as_array()
+            .expect("string fixtures")
+            .iter()
+            .chain(
+                environment["temporal_cases"]
+                    .as_array()
+                    .expect("timestamp fixtures"),
+            )
             .find(|entry| entry["id"] == case["source_id"])
         {
-            let mut emitted = positive.iter()
+            let mut emitted = positive
+                .iter()
                 .map(|ordinal| vec![case["source_bag"][*ordinal as usize][0].clone()])
                 .collect::<Vec<_>>();
-            let mut reference = env_case["expected_terminal_bag"].as_array()
-                .expect("independent native terminal").clone();
+            let mut reference = env_case["expected_terminal_bag"]
+                .as_array()
+                .expect("independent native terminal")
+                .clone();
             let mut emitted = emitted.into_iter().map(Value::Array).collect::<Vec<_>>();
             emitted.sort_by_key(Value::to_string);
             reference.sort_by_key(Value::to_string);
             assert_eq!(
-                emitted,
-                reference,
+                emitted, reference,
                 "{id}: native selected source rows must match frozen full terminal bag"
             );
         }
         tested += 1;
     }
-    assert!(tested >= 18, "must replay all conditional original WHERE variants");
-    assert!(pinned >= 10, "3VL fixture must pin exact positive and rejected source identities");
+    assert!(
+        tested >= 18,
+        "must replay all conditional original WHERE variants"
+    );
+    assert!(
+        pinned >= 10,
+        "3VL fixture must pin exact positive and rejected source identities"
+    );
 }

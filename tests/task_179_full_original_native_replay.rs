@@ -4,9 +4,7 @@
 
 use duckdb::Connection;
 use serde_json::{json, Value};
-use sql_semantic_protocol::{
-    analyze_sql, dialect_from_name, ProtocolStatement, ValueDomain,
-};
+use sql_semantic_protocol::{analyze_sql, dialect_from_name, ProtocolStatement, ValueDomain};
 
 const FROZEN: &str = include_str!("../docs/task-179-source-and-outcome-evidence-v4.json");
 const MATRIX: &str = include_str!("../docs/task-179-variant-matrix-v2.json");
@@ -43,7 +41,10 @@ fn source_value(value: &Value, is_double: bool) -> Option<String> {
         return Some(raw.to_string());
     }
     if is_double {
-        return Some(format!("{:.1}", value.as_f64().expect("double source scalar")));
+        return Some(format!(
+            "{:.1}",
+            value.as_f64().expect("double source scalar")
+        ));
     }
     Some(value.to_string())
 }
@@ -60,7 +61,9 @@ fn normalize_double(text: String) -> String {
 
 fn typed_sources(db: &Connection, case: &Value) -> Vec<Value> {
     let relation = case["source_relation"].as_str().expect("physical relation");
-    let columns = case["source_columns"].as_array().expect("source type authority");
+    let columns = case["source_columns"]
+        .as_array()
+        .expect("source type authority");
     let source_sql = if let Some(sql) = case["source_snapshot_sql"].as_str() {
         sql.to_string()
     } else if columns.len() == 1 {
@@ -76,11 +79,9 @@ fn typed_sources(db: &Connection, case: &Value) -> Vec<Value> {
         };
         format!("SELECT id, CAST({name} AS VARCHAR) FROM {relation} ORDER BY rowid")
     };
-    let double = columns.iter().any(|column| {
-        column
-            .as_str()
-            .is_some_and(|text| text.contains("DOUBLE"))
-    });
+    let double = columns
+        .iter()
+        .any(|column| column.as_str().is_some_and(|text| text.contains("DOUBLE")));
     let expected = case["source_bag"].as_array().expect("complete source bags");
     if columns.len() == 1 {
         return ints(db, &source_sql, 1).expect("native one-column source");
@@ -96,21 +97,21 @@ fn typed_sources(db: &Connection, case: &Value) -> Vec<Value> {
         .expect("native source rows")
         .map(|row| {
             let (id, scalar) = row.expect("physical input row");
-            json!([id, scalar.map(|value| if double {
-                normalize_double(value)
-            } else {
-                value
-            })])
+            json!([
+                id,
+                scalar.map(|value| if double {
+                    normalize_double(value)
+                } else {
+                    value
+                })
+            ])
         })
         .collect::<Vec<_>>();
     let frozen = expected
         .iter()
         .map(|row| {
             let values = row.as_array().expect("two typed source columns");
-            json!([
-                values[0],
-                source_value(&values[1], double)
-            ])
+            json!([values[0], source_value(&values[1], double)])
         })
         .collect::<Vec<_>>();
     assert_eq!(
@@ -126,9 +127,14 @@ fn typed_sources(db: &Connection, case: &Value) -> Vec<Value> {
 fn complete_review_matrix_preserves_original_cases_typed_bounds_and_negative_oracles() {
     let frozen = load(FROZEN);
     let matrix = load(MATRIX);
-    let original = frozen["cases"].as_array().expect("original physical source cases");
+    let original = frozen["cases"]
+        .as_array()
+        .expect("original physical source cases");
     assert_eq!(frozen["schema_version"], 4);
-    assert_eq!(frozen["historical_preimplementation_freeze"], "docs/task-179-acceptance-freeze.json");
+    assert_eq!(
+        frozen["historical_preimplementation_freeze"],
+        "docs/task-179-acceptance-freeze.json"
+    );
     assert_eq!(frozen["case_count"], 37);
     assert_eq!(frozen["parser_cell_count"], 481);
     assert_eq!(original.len(), 37);
@@ -142,7 +148,10 @@ fn complete_review_matrix_preserves_original_cases_typed_bounds_and_negative_ora
         assert_eq!(case["source_id"], variant["source_case_id"]);
         assert_eq!(case["sql"], variant["sql"]);
         assert!(case["source_bag"].is_array(), "{id}: physical input absent");
-        assert!(case["source_columns"].is_array(), "{id}: source types absent");
+        assert!(
+            case["source_columns"].is_array(),
+            "{id}: source types absent"
+        );
         assert_eq!(case["vendor_runtime_portability"], "unattested");
         assert_eq!(case["native_engine_version"], "1.10506.0");
         let domain = &case["typed_output_claim"];
@@ -173,7 +182,10 @@ fn complete_review_matrix_preserves_original_cases_typed_bounds_and_negative_ora
 fn original_native_sql_replays_physical_bag_and_positive_negative_or_error_terminal() {
     let frozen = load(FROZEN);
     let mut replayed = 0_usize;
-    for case in frozen["cases"].as_array().expect("37 original oracle cases") {
+    for case in frozen["cases"]
+        .as_array()
+        .expect("37 original oracle cases")
+    {
         let id = case["id"].as_str().expect("source-owned variant");
         let db = Connection::open_in_memory().expect("native DuckDB");
         let setup = case["source_setup"].as_str().expect("fixed source setup");
@@ -182,10 +194,17 @@ fn original_native_sql_replays_physical_bag_and_positive_negative_or_error_termi
                 .unwrap_or_else(|error| panic!("{id}: native setup: {error}"));
         }
         if case["source_relation"].is_null() {
-            assert!(case["source_bag"].as_array().expect("empty scalar source").is_empty());
+            assert!(case["source_bag"]
+                .as_array()
+                .expect("empty scalar source")
+                .is_empty());
         } else if case["review_owner"] == "TASK-163" {
-            let sql = case["source_snapshot_sql"].as_str().expect("original before query");
-            let expected = case["source_bag"].as_array().expect("entire initial source bag");
+            let sql = case["source_snapshot_sql"]
+                .as_str()
+                .expect("original before query");
+            let expected = case["source_bag"]
+                .as_array()
+                .expect("entire initial source bag");
             assert_eq!(
                 ordered_bag(ints(&db, sql, 1).expect("transaction source query")),
                 ordered_bag(expected.clone()),
@@ -198,10 +217,12 @@ fn original_native_sql_replays_physical_bag_and_positive_negative_or_error_termi
                     "SELECT id, CAST(amount AS VARCHAR) FROM customers ORDER BY rowid";
                 let mut statement = db.prepare(customer_sql).expect("all source customers");
                 let rows = statement
-                    .query_map([], |row| Ok((
-                        row.get::<_, Option<i64>>(0)?,
-                        row.get::<_, Option<String>>(1)?,
-                    )))
+                    .query_map([], |row| {
+                        Ok((
+                            row.get::<_, Option<i64>>(0)?,
+                            row.get::<_, Option<String>>(1)?,
+                        ))
+                    })
                     .expect("customers source bag")
                     .map(|row| {
                         let (id, amount) = row.expect("customer row");
@@ -215,13 +236,20 @@ fn original_native_sql_replays_physical_bag_and_positive_negative_or_error_termi
                         json!([pair[0], source_value(&pair[1], false)])
                     })
                     .collect::<Vec<_>>();
-                assert_eq!(ordered_bag(rows), ordered_bag(expected), "{id}: all customer physical occurrences");
+                assert_eq!(
+                    ordered_bag(rows),
+                    ordered_bag(expected),
+                    "{id}: all customer physical occurrences"
+                );
             }
         }
         let sql = case["sql"].as_str().expect("exact original SQL");
         if case["source_id"] == "88-C177-S033" {
             let evaluation = ints(&db, sql, 1);
-            assert!(evaluation.is_err(), "{id}: native overflow cannot emit a successful scalar");
+            assert!(
+                evaluation.is_err(),
+                "{id}: native overflow cannot emit a successful scalar"
+            );
             assert_eq!(case["typed_output_claim"]["kind"], "unknown");
         } else if case["source_id"] == "88-C177-S162" {
             let rows = ints(&db, sql, 1).expect("DuckDB tied LIMIT");
@@ -238,21 +266,33 @@ fn original_native_sql_replays_physical_bag_and_positive_negative_or_error_termi
             let query = if case["review_owner"] == "TASK-196" {
                 "SELECT id, amount FROM orders"
             } else {
-                case["terminal_query"].as_str().expect("original transaction terminal SQL")
+                case["terminal_query"]
+                    .as_str()
+                    .expect("original transaction terminal SQL")
             };
-            let terminal = case["exact_terminal_bag"].as_array().expect("full final native bag");
-            let width = if case["review_owner"] == "TASK-196" { 2 } else { 1 };
+            let terminal = case["exact_terminal_bag"]
+                .as_array()
+                .expect("full final native bag");
+            let width = if case["review_owner"] == "TASK-196" {
+                2
+            } else {
+                1
+            };
             assert_eq!(
                 ordered_bag(ints(&db, query, width).expect("entire final native state")),
                 ordered_bag(terminal.clone()),
                 "{id}: entire native DML/transaction poststate"
             );
         } else {
-            let terminal = case["exact_terminal_bag"].as_array().expect("full native SELECT terminal");
+            let terminal = case["exact_terminal_bag"]
+                .as_array()
+                .expect("full native SELECT terminal");
             assert_eq!(
-                ordered_bag(ints(&db, sql, 1).unwrap_or_else(|error| {
-                    panic!("{id}: original native SELECT: {error}")
-                })),
+                ordered_bag(
+                    ints(&db, sql, 1).unwrap_or_else(|error| {
+                        panic!("{id}: original native SELECT: {error}")
+                    })
+                ),
                 ordered_bag(terminal.clone()),
                 "{id}: native source-complete terminal SQL bag"
             );
@@ -275,17 +315,34 @@ fn original_predicate_negative_truth_and_source_bags_match_independent_upstream_
         };
         let owner = case["review_owner"].as_str().expect("source owner");
         if owner == "TASK-196" {
-            let reference = writes["cases"].as_array().expect("16 write cases")
-                .iter().find(|row| row["id"] == id).expect("original write case");
-            assert_eq!(case["exact_terminal_bag"], reference["expected_terminal_bag"]);
+            let reference = writes["cases"]
+                .as_array()
+                .expect("16 write cases")
+                .iter()
+                .find(|row| row["id"] == id)
+                .expect("original write case");
+            assert_eq!(
+                case["exact_terminal_bag"],
+                reference["expected_terminal_bag"]
+            );
         } else if owner == "TASK-163" {
-            let reference = lifecycle["cases"].as_array().expect("original transaction cases")
-                .iter().find(|row| row["id"] == id).expect("transaction source");
+            let reference = lifecycle["cases"]
+                .as_array()
+                .expect("original transaction cases")
+                .iter()
+                .find(|row| row["id"] == id)
+                .expect("transaction source");
             assert_eq!(case["source_bag"], reference["expected_source_bag"]);
-            assert_eq!(case["exact_terminal_bag"], reference["expected_terminal_bag"]);
+            assert_eq!(
+                case["exact_terminal_bag"],
+                reference["expected_terminal_bag"]
+            );
         } else if owner == "TASK-192" {
-            if let Some(reference) = pred["cases"].as_array().expect("predicate oracles")
-                .iter().find(|row| row["id"] == id)
+            if let Some(reference) = pred["cases"]
+                .as_array()
+                .expect("predicate oracles")
+                .iter()
+                .find(|row| row["id"] == id)
             {
                 assert_eq!(case["source_bag"], pred["orders_source_rows"]);
                 assert_eq!(
@@ -296,13 +353,22 @@ fn original_predicate_negative_truth_and_source_bags_match_independent_upstream_
                     case["negative_truth_evidence"]["rejected_unknown_ids"],
                     reference["expected_unknown_ids"]
                 );
-                assert_eq!(case["exact_terminal_bag"], reference["expected_terminal_bag"]);
+                assert_eq!(
+                    case["exact_terminal_bag"],
+                    reference["expected_terminal_bag"]
+                );
             }
-            if let Some(reference) = environment["temporal_cases"].as_array()
-                .expect("temporal oracles").iter().find(|row| row["id"] == id)
+            if let Some(reference) = environment["temporal_cases"]
+                .as_array()
+                .expect("temporal oracles")
+                .iter()
+                .find(|row| row["id"] == id)
             {
                 assert_eq!(case["source_bag"], environment["temporal_source_bag"]);
-                assert_eq!(case["exact_terminal_bag"], reference["expected_terminal_bag"]);
+                assert_eq!(
+                    case["exact_terminal_bag"],
+                    reference["expected_terminal_bag"]
+                );
             }
         }
     }
@@ -329,10 +395,16 @@ fn successful_public_duckdb_analyses_keep_proof_strength_and_no_invented_value_b
         let Some(column) = query.output().columns().first() else {
             panic!("{}: silently lost typed projection", case["id"]);
         };
-        match case["typed_output_claim"]["kind"].as_str().expect("typed source law") {
+        match case["typed_output_claim"]["kind"]
+            .as_str()
+            .expect("typed source law")
+        {
             "unbounded" | "nullable_source_id_unbounded" | "integer_unbounded" => {
                 assert!(
-                    matches!(column.domain(), ValueDomain::Unbounded | ValueDomain::Unknown(_)),
+                    matches!(
+                        column.domain(),
+                        ValueDomain::Unbounded | ValueDomain::Unknown(_)
+                    ),
                     "{}: source-free SELECT invented finite value bounds: {:?}",
                     case["id"],
                     column.domain()
@@ -356,5 +428,8 @@ fn successful_public_duckdb_analyses_keep_proof_strength_and_no_invented_value_b
         };
         checked += 1;
     }
-    assert!(checked >= 20, "must exercise the complete source-free SELECT boundary");
+    assert!(
+        checked >= 20,
+        "must exercise the complete source-free SELECT boundary"
+    );
 }
