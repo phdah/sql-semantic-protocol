@@ -1719,7 +1719,8 @@
         "tests/task_177_parser_matrix.rs",
         "tests/task_191_boundary_disposition.rs"
       ],
-      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate."
+      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate.",
+      "expected_diagnostic_message": "the parsed SQL statement is not supported by semantic analysis"
     },
     {
       "cell_id": "88-C177-S180-bigquery",
@@ -1752,7 +1753,8 @@
         "tests/task_177_parser_matrix.rs",
         "tests/task_191_boundary_disposition.rs"
       ],
-      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate."
+      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate.",
+      "expected_diagnostic_message": "the parsed SQL statement is not supported by semantic analysis"
     },
     {
       "cell_id": "88-C177-S180-clickhouse",
@@ -1785,7 +1787,8 @@
         "tests/task_177_parser_matrix.rs",
         "tests/task_191_boundary_disposition.rs"
       ],
-      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate."
+      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate.",
+      "expected_diagnostic_message": "the parsed SQL statement is not supported by semantic analysis"
     },
     {
       "cell_id": "88-C177-S180-databricks",
@@ -1818,7 +1821,8 @@
         "tests/task_177_parser_matrix.rs",
         "tests/task_191_boundary_disposition.rs"
       ],
-      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate."
+      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate.",
+      "expected_diagnostic_message": "the parsed SQL statement is not supported by semantic analysis"
     },
     {
       "cell_id": "88-C177-S180-duckdb",
@@ -1851,7 +1855,8 @@
         "tests/task_177_parser_matrix.rs",
         "tests/task_191_boundary_disposition.rs"
       ],
-      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate."
+      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate.",
+      "expected_diagnostic_message": "the parsed SQL statement is not supported by semantic analysis"
     },
     {
       "cell_id": "88-C177-S180-generic",
@@ -1884,7 +1889,8 @@
         "tests/task_177_parser_matrix.rs",
         "tests/task_191_boundary_disposition.rs"
       ],
-      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate."
+      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate.",
+      "expected_diagnostic_message": "the parsed SQL statement is not supported by semantic analysis"
     },
     {
       "cell_id": "88-C177-S180-hive",
@@ -1917,7 +1923,8 @@
         "tests/task_177_parser_matrix.rs",
         "tests/task_191_boundary_disposition.rs"
       ],
-      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate."
+      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate.",
+      "expected_diagnostic_message": "the parsed SQL statement is not supported by semantic analysis"
     },
     {
       "cell_id": "88-C177-S180-mssql",
@@ -1950,7 +1957,8 @@
         "tests/task_177_parser_matrix.rs",
         "tests/task_191_boundary_disposition.rs"
       ],
-      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate."
+      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate.",
+      "expected_diagnostic_message": "the parsed SQL statement is not supported by semantic analysis"
     },
     {
       "cell_id": "88-C177-S180-mysql",
@@ -1983,7 +1991,8 @@
         "tests/task_177_parser_matrix.rs",
         "tests/task_191_boundary_disposition.rs"
       ],
-      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate."
+      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate.",
+      "expected_diagnostic_message": "the parsed SQL statement is not supported by semantic analysis"
     },
     {
       "cell_id": "88-C177-S180-postgresql",
@@ -2016,7 +2025,8 @@
         "tests/task_177_parser_matrix.rs",
         "tests/task_191_boundary_disposition.rs"
       ],
-      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate."
+      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate.",
+      "expected_diagnostic_message": "the parsed SQL statement is not supported by semantic analysis"
     },
     {
       "cell_id": "88-C177-S180-redshift",
@@ -2049,7 +2059,8 @@
         "tests/task_177_parser_matrix.rs",
         "tests/task_191_boundary_disposition.rs"
       ],
-      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate."
+      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate.",
+      "expected_diagnostic_message": "the parsed SQL statement is not supported by semantic analysis"
     },
     {
       "cell_id": "88-C177-S180-snowflake",
@@ -2082,7 +2093,8 @@
         "tests/task_177_parser_matrix.rs",
         "tests/task_191_boundary_disposition.rs"
       ],
-      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate."
+      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate.",
+      "expected_diagnostic_message": "the parsed SQL statement is not supported by semantic analysis"
     },
     {
       "cell_id": "88-C177-S180-sqlite",
@@ -2115,7 +2127,8 @@
         "tests/task_177_parser_matrix.rs",
         "tests/task_191_boundary_disposition.rs"
       ],
-      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate."
+      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate.",
+      "expected_diagnostic_message": "the parsed SQL statement is not supported by semantic analysis"
     },
     {
       "cell_id": "88-C177-S199-generic",
@@ -2149,7 +2162,8 @@
         "tests/task_177_parser_matrix.rs",
         "tests/task_191_boundary_disposition.rs"
       ],
-      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate."
+      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate.",
+      "expected_diagnostic_message": "INSERT IGNORE/REPLACE needs native constraint and error-handling laws (TASK-147)"
     },
     {
       "cell_id": "88-C177-S199-mysql",
@@ -2183,7 +2197,8 @@
         "tests/task_177_parser_matrix.rs",
         "tests/task_191_boundary_disposition.rs"
       ],
-      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate."
+      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate.",
+      "expected_diagnostic_message": "INSERT IGNORE/REPLACE needs native constraint and error-handling laws (TASK-147)"
     },
     {
       "cell_id": "88-C177-S199-sqlite",
@@ -2217,7 +2232,8 @@
         "tests/task_177_parser_matrix.rs",
         "tests/task_191_boundary_disposition.rs"
       ],
-      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate."
+      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate.",
+      "expected_diagnostic_message": "INSERT IGNORE/REPLACE needs native constraint and error-handling laws (TASK-147)"
     },
     {
       "cell_id": "88-C177-S200-ansi",
@@ -2251,7 +2267,8 @@
         "tests/task_177_parser_matrix.rs",
         "tests/task_191_boundary_disposition.rs"
       ],
-      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate."
+      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate.",
+      "expected_diagnostic_message": "INSERT OVERWRITE needs attested partition and replacement scope (TASK-147)"
     },
     {
       "cell_id": "88-C177-S200-bigquery",
@@ -2285,7 +2302,8 @@
         "tests/task_177_parser_matrix.rs",
         "tests/task_191_boundary_disposition.rs"
       ],
-      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate."
+      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate.",
+      "expected_diagnostic_message": "INSERT OVERWRITE needs attested partition and replacement scope (TASK-147)"
     },
     {
       "cell_id": "88-C177-S200-clickhouse",
@@ -2319,7 +2337,8 @@
         "tests/task_177_parser_matrix.rs",
         "tests/task_191_boundary_disposition.rs"
       ],
-      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate."
+      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate.",
+      "expected_diagnostic_message": "INSERT OVERWRITE needs attested partition and replacement scope (TASK-147)"
     },
     {
       "cell_id": "88-C177-S200-databricks",
@@ -2353,7 +2372,8 @@
         "tests/task_177_parser_matrix.rs",
         "tests/task_191_boundary_disposition.rs"
       ],
-      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate."
+      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate.",
+      "expected_diagnostic_message": "INSERT OVERWRITE needs attested partition and replacement scope (TASK-147)"
     },
     {
       "cell_id": "88-C177-S200-duckdb",
@@ -2387,7 +2407,8 @@
         "tests/task_177_parser_matrix.rs",
         "tests/task_191_boundary_disposition.rs"
       ],
-      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate."
+      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate.",
+      "expected_diagnostic_message": "INSERT OVERWRITE needs attested partition and replacement scope (TASK-147)"
     },
     {
       "cell_id": "88-C177-S200-generic",
@@ -2421,7 +2442,8 @@
         "tests/task_177_parser_matrix.rs",
         "tests/task_191_boundary_disposition.rs"
       ],
-      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate."
+      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate.",
+      "expected_diagnostic_message": "INSERT OVERWRITE needs attested partition and replacement scope (TASK-147)"
     },
     {
       "cell_id": "88-C177-S200-hive",
@@ -2455,7 +2477,8 @@
         "tests/task_177_parser_matrix.rs",
         "tests/task_191_boundary_disposition.rs"
       ],
-      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate."
+      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate.",
+      "expected_diagnostic_message": "INSERT OVERWRITE needs attested partition and replacement scope (TASK-147)"
     },
     {
       "cell_id": "88-C177-S200-mssql",
@@ -2489,7 +2512,8 @@
         "tests/task_177_parser_matrix.rs",
         "tests/task_191_boundary_disposition.rs"
       ],
-      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate."
+      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate.",
+      "expected_diagnostic_message": "INSERT OVERWRITE needs attested partition and replacement scope (TASK-147)"
     },
     {
       "cell_id": "88-C177-S200-mysql",
@@ -2523,7 +2547,8 @@
         "tests/task_177_parser_matrix.rs",
         "tests/task_191_boundary_disposition.rs"
       ],
-      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate."
+      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate.",
+      "expected_diagnostic_message": "INSERT OVERWRITE needs attested partition and replacement scope (TASK-147)"
     },
     {
       "cell_id": "88-C177-S200-postgresql",
@@ -2557,7 +2582,8 @@
         "tests/task_177_parser_matrix.rs",
         "tests/task_191_boundary_disposition.rs"
       ],
-      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate."
+      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate.",
+      "expected_diagnostic_message": "INSERT OVERWRITE needs attested partition and replacement scope (TASK-147)"
     },
     {
       "cell_id": "88-C177-S200-redshift",
@@ -2591,7 +2617,8 @@
         "tests/task_177_parser_matrix.rs",
         "tests/task_191_boundary_disposition.rs"
       ],
-      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate."
+      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate.",
+      "expected_diagnostic_message": "INSERT OVERWRITE needs attested partition and replacement scope (TASK-147)"
     },
     {
       "cell_id": "88-C177-S200-snowflake",
@@ -2625,7 +2652,8 @@
         "tests/task_177_parser_matrix.rs",
         "tests/task_191_boundary_disposition.rs"
       ],
-      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate."
+      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate.",
+      "expected_diagnostic_message": "INSERT OVERWRITE needs attested partition and replacement scope (TASK-147)"
     },
     {
       "cell_id": "88-C177-S200-sqlite",
@@ -2659,7 +2687,8 @@
         "tests/task_177_parser_matrix.rs",
         "tests/task_191_boundary_disposition.rs"
       ],
-      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate."
+      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate.",
+      "expected_diagnostic_message": "INSERT OVERWRITE needs attested partition and replacement scope (TASK-147)"
     },
     {
       "cell_id": "88-C177-S203-ansi",
@@ -2692,7 +2721,8 @@
         "tests/task_177_parser_matrix.rs",
         "tests/task_191_boundary_disposition.rs"
       ],
-      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate."
+      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate.",
+      "expected_diagnostic_message": "UPDATE subqueries require source-row and correlation semantics that cannot yet be proved"
     },
     {
       "cell_id": "88-C177-S203-bigquery",
@@ -2725,7 +2755,8 @@
         "tests/task_177_parser_matrix.rs",
         "tests/task_191_boundary_disposition.rs"
       ],
-      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate."
+      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate.",
+      "expected_diagnostic_message": "UPDATE subqueries require source-row and correlation semantics that cannot yet be proved"
     },
     {
       "cell_id": "88-C177-S203-clickhouse",
@@ -2758,7 +2789,8 @@
         "tests/task_177_parser_matrix.rs",
         "tests/task_191_boundary_disposition.rs"
       ],
-      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate."
+      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate.",
+      "expected_diagnostic_message": "UPDATE subqueries require source-row and correlation semantics that cannot yet be proved"
     },
     {
       "cell_id": "88-C177-S203-databricks",
@@ -2791,7 +2823,8 @@
         "tests/task_177_parser_matrix.rs",
         "tests/task_191_boundary_disposition.rs"
       ],
-      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate."
+      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate.",
+      "expected_diagnostic_message": "UPDATE subqueries require source-row and correlation semantics that cannot yet be proved"
     },
     {
       "cell_id": "88-C177-S203-duckdb",
@@ -2824,7 +2857,8 @@
         "tests/task_177_parser_matrix.rs",
         "tests/task_191_boundary_disposition.rs"
       ],
-      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate."
+      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate.",
+      "expected_diagnostic_message": "UPDATE subqueries require source-row and correlation semantics that cannot yet be proved"
     },
     {
       "cell_id": "88-C177-S203-generic",
@@ -2857,7 +2891,8 @@
         "tests/task_177_parser_matrix.rs",
         "tests/task_191_boundary_disposition.rs"
       ],
-      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate."
+      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate.",
+      "expected_diagnostic_message": "UPDATE subqueries require source-row and correlation semantics that cannot yet be proved"
     },
     {
       "cell_id": "88-C177-S203-hive",
@@ -2890,7 +2925,8 @@
         "tests/task_177_parser_matrix.rs",
         "tests/task_191_boundary_disposition.rs"
       ],
-      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate."
+      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate.",
+      "expected_diagnostic_message": "UPDATE subqueries require source-row and correlation semantics that cannot yet be proved"
     },
     {
       "cell_id": "88-C177-S203-mssql",
@@ -2923,7 +2959,8 @@
         "tests/task_177_parser_matrix.rs",
         "tests/task_191_boundary_disposition.rs"
       ],
-      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate."
+      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate.",
+      "expected_diagnostic_message": "UPDATE subqueries require source-row and correlation semantics that cannot yet be proved"
     },
     {
       "cell_id": "88-C177-S203-mysql",
@@ -2956,7 +2993,8 @@
         "tests/task_177_parser_matrix.rs",
         "tests/task_191_boundary_disposition.rs"
       ],
-      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate."
+      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate.",
+      "expected_diagnostic_message": "UPDATE subqueries require source-row and correlation semantics that cannot yet be proved"
     },
     {
       "cell_id": "88-C177-S203-postgresql",
@@ -2989,7 +3027,8 @@
         "tests/task_177_parser_matrix.rs",
         "tests/task_191_boundary_disposition.rs"
       ],
-      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate."
+      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate.",
+      "expected_diagnostic_message": "UPDATE subqueries require source-row and correlation semantics that cannot yet be proved"
     },
     {
       "cell_id": "88-C177-S203-redshift",
@@ -3022,7 +3061,8 @@
         "tests/task_177_parser_matrix.rs",
         "tests/task_191_boundary_disposition.rs"
       ],
-      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate."
+      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate.",
+      "expected_diagnostic_message": "UPDATE subqueries require source-row and correlation semantics that cannot yet be proved"
     },
     {
       "cell_id": "88-C177-S203-snowflake",
@@ -3055,7 +3095,8 @@
         "tests/task_177_parser_matrix.rs",
         "tests/task_191_boundary_disposition.rs"
       ],
-      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate."
+      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate.",
+      "expected_diagnostic_message": "UPDATE subqueries require source-row and correlation semantics that cannot yet be proved"
     },
     {
       "cell_id": "88-C177-S203-sqlite",
@@ -3088,7 +3129,8 @@
         "tests/task_177_parser_matrix.rs",
         "tests/task_191_boundary_disposition.rs"
       ],
-      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate."
+      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate.",
+      "expected_diagnostic_message": "UPDATE subqueries require source-row and correlation semantics that cannot yet be proved"
     },
     {
       "cell_id": "88-C177-S206-ansi",
@@ -3121,7 +3163,8 @@
         "tests/task_177_parser_matrix.rs",
         "tests/task_191_boundary_disposition.rs"
       ],
-      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate."
+      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate.",
+      "expected_diagnostic_message": "DELETE subqueries require source-row and correlation semantics that cannot yet be proved"
     },
     {
       "cell_id": "88-C177-S206-bigquery",
@@ -3154,7 +3197,8 @@
         "tests/task_177_parser_matrix.rs",
         "tests/task_191_boundary_disposition.rs"
       ],
-      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate."
+      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate.",
+      "expected_diagnostic_message": "DELETE subqueries require source-row and correlation semantics that cannot yet be proved"
     },
     {
       "cell_id": "88-C177-S206-clickhouse",
@@ -3187,7 +3231,8 @@
         "tests/task_177_parser_matrix.rs",
         "tests/task_191_boundary_disposition.rs"
       ],
-      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate."
+      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate.",
+      "expected_diagnostic_message": "DELETE subqueries require source-row and correlation semantics that cannot yet be proved"
     },
     {
       "cell_id": "88-C177-S206-databricks",
@@ -3220,7 +3265,8 @@
         "tests/task_177_parser_matrix.rs",
         "tests/task_191_boundary_disposition.rs"
       ],
-      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate."
+      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate.",
+      "expected_diagnostic_message": "DELETE subqueries require source-row and correlation semantics that cannot yet be proved"
     },
     {
       "cell_id": "88-C177-S206-duckdb",
@@ -3253,7 +3299,8 @@
         "tests/task_177_parser_matrix.rs",
         "tests/task_191_boundary_disposition.rs"
       ],
-      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate."
+      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate.",
+      "expected_diagnostic_message": "DELETE subqueries require source-row and correlation semantics that cannot yet be proved"
     },
     {
       "cell_id": "88-C177-S206-generic",
@@ -3286,7 +3333,8 @@
         "tests/task_177_parser_matrix.rs",
         "tests/task_191_boundary_disposition.rs"
       ],
-      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate."
+      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate.",
+      "expected_diagnostic_message": "DELETE subqueries require source-row and correlation semantics that cannot yet be proved"
     },
     {
       "cell_id": "88-C177-S206-hive",
@@ -3319,7 +3367,8 @@
         "tests/task_177_parser_matrix.rs",
         "tests/task_191_boundary_disposition.rs"
       ],
-      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate."
+      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate.",
+      "expected_diagnostic_message": "DELETE subqueries require source-row and correlation semantics that cannot yet be proved"
     },
     {
       "cell_id": "88-C177-S206-mssql",
@@ -3352,7 +3401,8 @@
         "tests/task_177_parser_matrix.rs",
         "tests/task_191_boundary_disposition.rs"
       ],
-      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate."
+      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate.",
+      "expected_diagnostic_message": "DELETE subqueries require source-row and correlation semantics that cannot yet be proved"
     },
     {
       "cell_id": "88-C177-S206-mysql",
@@ -3385,7 +3435,8 @@
         "tests/task_177_parser_matrix.rs",
         "tests/task_191_boundary_disposition.rs"
       ],
-      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate."
+      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate.",
+      "expected_diagnostic_message": "DELETE subqueries require source-row and correlation semantics that cannot yet be proved"
     },
     {
       "cell_id": "88-C177-S206-postgresql",
@@ -3418,7 +3469,8 @@
         "tests/task_177_parser_matrix.rs",
         "tests/task_191_boundary_disposition.rs"
       ],
-      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate."
+      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate.",
+      "expected_diagnostic_message": "DELETE subqueries require source-row and correlation semantics that cannot yet be proved"
     },
     {
       "cell_id": "88-C177-S206-redshift",
@@ -3451,7 +3503,8 @@
         "tests/task_177_parser_matrix.rs",
         "tests/task_191_boundary_disposition.rs"
       ],
-      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate."
+      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate.",
+      "expected_diagnostic_message": "DELETE subqueries require source-row and correlation semantics that cannot yet be proved"
     },
     {
       "cell_id": "88-C177-S206-snowflake",
@@ -3484,7 +3537,8 @@
         "tests/task_177_parser_matrix.rs",
         "tests/task_191_boundary_disposition.rs"
       ],
-      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate."
+      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate.",
+      "expected_diagnostic_message": "DELETE subqueries require source-row and correlation semantics that cannot yet be proved"
     },
     {
       "cell_id": "88-C177-S206-sqlite",
@@ -3517,7 +3571,8 @@
         "tests/task_177_parser_matrix.rs",
         "tests/task_191_boundary_disposition.rs"
       ],
-      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate."
+      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate.",
+      "expected_diagnostic_message": "DELETE subqueries require source-row and correlation semantics that cannot yet be proved"
     },
     {
       "cell_id": "88-C177-S220-ansi",
@@ -3551,7 +3606,8 @@
         "tests/task_177_parser_matrix.rs",
         "tests/task_191_boundary_disposition.rs"
       ],
-      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate."
+      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate.",
+      "expected_diagnostic_message": "ALTER TABLE contains an unproved column option, cast, rename or vendor law"
     },
     {
       "cell_id": "88-C177-S220-bigquery",
@@ -3585,7 +3641,8 @@
         "tests/task_177_parser_matrix.rs",
         "tests/task_191_boundary_disposition.rs"
       ],
-      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate."
+      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate.",
+      "expected_diagnostic_message": "ALTER TABLE contains an unproved column option, cast, rename or vendor law"
     },
     {
       "cell_id": "88-C177-S220-clickhouse",
@@ -3619,7 +3676,8 @@
         "tests/task_177_parser_matrix.rs",
         "tests/task_191_boundary_disposition.rs"
       ],
-      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate."
+      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate.",
+      "expected_diagnostic_message": "ALTER TABLE contains an unproved column option, cast, rename or vendor law"
     },
     {
       "cell_id": "88-C177-S220-databricks",
@@ -3653,7 +3711,8 @@
         "tests/task_177_parser_matrix.rs",
         "tests/task_191_boundary_disposition.rs"
       ],
-      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate."
+      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate.",
+      "expected_diagnostic_message": "ALTER TABLE contains an unproved column option, cast, rename or vendor law"
     },
     {
       "cell_id": "88-C177-S220-duckdb",
@@ -3687,7 +3746,8 @@
         "tests/task_177_parser_matrix.rs",
         "tests/task_191_boundary_disposition.rs"
       ],
-      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate."
+      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate.",
+      "expected_diagnostic_message": "ALTER TABLE contains an unproved column option, cast, rename or vendor law"
     },
     {
       "cell_id": "88-C177-S220-generic",
@@ -3721,7 +3781,8 @@
         "tests/task_177_parser_matrix.rs",
         "tests/task_191_boundary_disposition.rs"
       ],
-      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate."
+      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate.",
+      "expected_diagnostic_message": "ALTER TABLE contains an unproved column option, cast, rename or vendor law"
     },
     {
       "cell_id": "88-C177-S220-hive",
@@ -3755,7 +3816,8 @@
         "tests/task_177_parser_matrix.rs",
         "tests/task_191_boundary_disposition.rs"
       ],
-      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate."
+      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate.",
+      "expected_diagnostic_message": "ALTER TABLE contains an unproved column option, cast, rename or vendor law"
     },
     {
       "cell_id": "88-C177-S220-mssql",
@@ -3789,7 +3851,8 @@
         "tests/task_177_parser_matrix.rs",
         "tests/task_191_boundary_disposition.rs"
       ],
-      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate."
+      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate.",
+      "expected_diagnostic_message": "ALTER TABLE contains an unproved column option, cast, rename or vendor law"
     },
     {
       "cell_id": "88-C177-S220-mysql",
@@ -3823,7 +3886,8 @@
         "tests/task_177_parser_matrix.rs",
         "tests/task_191_boundary_disposition.rs"
       ],
-      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate."
+      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate.",
+      "expected_diagnostic_message": "ALTER TABLE contains an unproved column option, cast, rename or vendor law"
     },
     {
       "cell_id": "88-C177-S220-postgresql",
@@ -3857,7 +3921,8 @@
         "tests/task_177_parser_matrix.rs",
         "tests/task_191_boundary_disposition.rs"
       ],
-      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate."
+      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate.",
+      "expected_diagnostic_message": "ALTER TABLE contains an unproved column option, cast, rename or vendor law"
     },
     {
       "cell_id": "88-C177-S220-redshift",
@@ -3891,7 +3956,8 @@
         "tests/task_177_parser_matrix.rs",
         "tests/task_191_boundary_disposition.rs"
       ],
-      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate."
+      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate.",
+      "expected_diagnostic_message": "ALTER TABLE contains an unproved column option, cast, rename or vendor law"
     },
     {
       "cell_id": "88-C177-S220-snowflake",
@@ -3925,7 +3991,8 @@
         "tests/task_177_parser_matrix.rs",
         "tests/task_191_boundary_disposition.rs"
       ],
-      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate."
+      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate.",
+      "expected_diagnostic_message": "ALTER TABLE contains an unproved column option, cast, rename or vendor law"
     },
     {
       "cell_id": "88-C177-S220-sqlite",
@@ -3959,7 +4026,8 @@
         "tests/task_177_parser_matrix.rs",
         "tests/task_191_boundary_disposition.rs"
       ],
-      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate."
+      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate.",
+      "expected_diagnostic_message": "ALTER TABLE contains an unproved column option, cast, rename or vendor law"
     },
     {
       "cell_id": "88-C177-S222-ansi",
@@ -3992,7 +4060,8 @@
         "tests/task_177_parser_matrix.rs",
         "tests/task_191_boundary_disposition.rs"
       ],
-      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate."
+      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate.",
+      "expected_diagnostic_message": "the parsed SQL statement is not supported by semantic analysis"
     },
     {
       "cell_id": "88-C177-S222-clickhouse",
@@ -4025,7 +4094,8 @@
         "tests/task_177_parser_matrix.rs",
         "tests/task_191_boundary_disposition.rs"
       ],
-      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate."
+      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate.",
+      "expected_diagnostic_message": "the parsed SQL statement is not supported by semantic analysis"
     },
     {
       "cell_id": "88-C177-S222-databricks",
@@ -4058,7 +4128,8 @@
         "tests/task_177_parser_matrix.rs",
         "tests/task_191_boundary_disposition.rs"
       ],
-      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate."
+      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate.",
+      "expected_diagnostic_message": "the parsed SQL statement is not supported by semantic analysis"
     },
     {
       "cell_id": "88-C177-S222-duckdb",
@@ -4091,7 +4162,8 @@
         "tests/task_177_parser_matrix.rs",
         "tests/task_191_boundary_disposition.rs"
       ],
-      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate."
+      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate.",
+      "expected_diagnostic_message": "the parsed SQL statement is not supported by semantic analysis"
     },
     {
       "cell_id": "88-C177-S222-generic",
@@ -4124,7 +4196,8 @@
         "tests/task_177_parser_matrix.rs",
         "tests/task_191_boundary_disposition.rs"
       ],
-      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate."
+      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate.",
+      "expected_diagnostic_message": "the parsed SQL statement is not supported by semantic analysis"
     },
     {
       "cell_id": "88-C177-S222-hive",
@@ -4157,7 +4230,8 @@
         "tests/task_177_parser_matrix.rs",
         "tests/task_191_boundary_disposition.rs"
       ],
-      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate."
+      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate.",
+      "expected_diagnostic_message": "the parsed SQL statement is not supported by semantic analysis"
     },
     {
       "cell_id": "88-C177-S222-mssql",
@@ -4190,7 +4264,8 @@
         "tests/task_177_parser_matrix.rs",
         "tests/task_191_boundary_disposition.rs"
       ],
-      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate."
+      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate.",
+      "expected_diagnostic_message": "the parsed SQL statement is not supported by semantic analysis"
     },
     {
       "cell_id": "88-C177-S222-mysql",
@@ -4223,7 +4298,8 @@
         "tests/task_177_parser_matrix.rs",
         "tests/task_191_boundary_disposition.rs"
       ],
-      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate."
+      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate.",
+      "expected_diagnostic_message": "the parsed SQL statement is not supported by semantic analysis"
     },
     {
       "cell_id": "88-C177-S222-postgresql",
@@ -4256,7 +4332,8 @@
         "tests/task_177_parser_matrix.rs",
         "tests/task_191_boundary_disposition.rs"
       ],
-      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate."
+      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate.",
+      "expected_diagnostic_message": "the parsed SQL statement is not supported by semantic analysis"
     },
     {
       "cell_id": "88-C177-S222-redshift",
@@ -4289,7 +4366,8 @@
         "tests/task_177_parser_matrix.rs",
         "tests/task_191_boundary_disposition.rs"
       ],
-      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate."
+      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate.",
+      "expected_diagnostic_message": "the parsed SQL statement is not supported by semantic analysis"
     },
     {
       "cell_id": "88-C177-S222-sqlite",
@@ -4322,7 +4400,8 @@
         "tests/task_177_parser_matrix.rs",
         "tests/task_191_boundary_disposition.rs"
       ],
-      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate."
+      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate.",
+      "expected_diagnostic_message": "the parsed SQL statement is not supported by semantic analysis"
     },
     {
       "cell_id": "88-C177-S224-ansi",
@@ -4355,7 +4434,8 @@
         "tests/task_177_parser_matrix.rs",
         "tests/task_191_boundary_disposition.rs"
       ],
-      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate."
+      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate.",
+      "expected_diagnostic_message": "the parsed SQL statement is not supported by semantic analysis"
     },
     {
       "cell_id": "88-C177-S224-clickhouse",
@@ -4388,7 +4468,8 @@
         "tests/task_177_parser_matrix.rs",
         "tests/task_191_boundary_disposition.rs"
       ],
-      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate."
+      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate.",
+      "expected_diagnostic_message": "the parsed SQL statement is not supported by semantic analysis"
     },
     {
       "cell_id": "88-C177-S224-databricks",
@@ -4421,7 +4502,8 @@
         "tests/task_177_parser_matrix.rs",
         "tests/task_191_boundary_disposition.rs"
       ],
-      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate."
+      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate.",
+      "expected_diagnostic_message": "the parsed SQL statement is not supported by semantic analysis"
     },
     {
       "cell_id": "88-C177-S224-duckdb",
@@ -4454,7 +4536,8 @@
         "tests/task_177_parser_matrix.rs",
         "tests/task_191_boundary_disposition.rs"
       ],
-      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate."
+      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate.",
+      "expected_diagnostic_message": "the parsed SQL statement is not supported by semantic analysis"
     },
     {
       "cell_id": "88-C177-S224-generic",
@@ -4487,7 +4570,8 @@
         "tests/task_177_parser_matrix.rs",
         "tests/task_191_boundary_disposition.rs"
       ],
-      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate."
+      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate.",
+      "expected_diagnostic_message": "the parsed SQL statement is not supported by semantic analysis"
     },
     {
       "cell_id": "88-C177-S224-hive",
@@ -4520,7 +4604,8 @@
         "tests/task_177_parser_matrix.rs",
         "tests/task_191_boundary_disposition.rs"
       ],
-      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate."
+      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate.",
+      "expected_diagnostic_message": "the parsed SQL statement is not supported by semantic analysis"
     },
     {
       "cell_id": "88-C177-S224-mssql",
@@ -4553,7 +4638,8 @@
         "tests/task_177_parser_matrix.rs",
         "tests/task_191_boundary_disposition.rs"
       ],
-      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate."
+      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate.",
+      "expected_diagnostic_message": "the parsed SQL statement is not supported by semantic analysis"
     },
     {
       "cell_id": "88-C177-S224-mysql",
@@ -4586,7 +4672,8 @@
         "tests/task_177_parser_matrix.rs",
         "tests/task_191_boundary_disposition.rs"
       ],
-      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate."
+      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate.",
+      "expected_diagnostic_message": "the parsed SQL statement is not supported by semantic analysis"
     },
     {
       "cell_id": "88-C177-S224-postgresql",
@@ -4619,7 +4706,8 @@
         "tests/task_177_parser_matrix.rs",
         "tests/task_191_boundary_disposition.rs"
       ],
-      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate."
+      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate.",
+      "expected_diagnostic_message": "the parsed SQL statement is not supported by semantic analysis"
     },
     {
       "cell_id": "88-C177-S224-redshift",
@@ -4652,7 +4740,8 @@
         "tests/task_177_parser_matrix.rs",
         "tests/task_191_boundary_disposition.rs"
       ],
-      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate."
+      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate.",
+      "expected_diagnostic_message": "the parsed SQL statement is not supported by semantic analysis"
     },
     {
       "cell_id": "88-C177-S224-sqlite",
@@ -4685,7 +4774,8 @@
         "tests/task_177_parser_matrix.rs",
         "tests/task_191_boundary_disposition.rs"
       ],
-      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate."
+      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate.",
+      "expected_diagnostic_message": "the parsed SQL statement is not supported by semantic analysis"
     },
     {
       "cell_id": "88-C177-S241-ansi",
@@ -4719,7 +4809,8 @@
         "tests/task_177_parser_matrix.rs",
         "tests/task_191_boundary_disposition.rs"
       ],
-      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate."
+      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate.",
+      "expected_diagnostic_message": "the parsed SQL statement is not supported by semantic analysis"
     },
     {
       "cell_id": "88-C177-S241-bigquery",
@@ -4753,7 +4844,8 @@
         "tests/task_177_parser_matrix.rs",
         "tests/task_191_boundary_disposition.rs"
       ],
-      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate."
+      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate.",
+      "expected_diagnostic_message": "the parsed SQL statement is not supported by semantic analysis"
     },
     {
       "cell_id": "88-C177-S241-clickhouse",
@@ -4787,7 +4879,8 @@
         "tests/task_177_parser_matrix.rs",
         "tests/task_191_boundary_disposition.rs"
       ],
-      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate."
+      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate.",
+      "expected_diagnostic_message": "the parsed SQL statement is not supported by semantic analysis"
     },
     {
       "cell_id": "88-C177-S241-databricks",
@@ -4821,7 +4914,8 @@
         "tests/task_177_parser_matrix.rs",
         "tests/task_191_boundary_disposition.rs"
       ],
-      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate."
+      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate.",
+      "expected_diagnostic_message": "the parsed SQL statement is not supported by semantic analysis"
     },
     {
       "cell_id": "88-C177-S241-duckdb",
@@ -4855,7 +4949,8 @@
         "tests/task_177_parser_matrix.rs",
         "tests/task_191_boundary_disposition.rs"
       ],
-      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate."
+      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate.",
+      "expected_diagnostic_message": "the parsed SQL statement is not supported by semantic analysis"
     },
     {
       "cell_id": "88-C177-S241-generic",
@@ -4889,7 +4984,8 @@
         "tests/task_177_parser_matrix.rs",
         "tests/task_191_boundary_disposition.rs"
       ],
-      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate."
+      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate.",
+      "expected_diagnostic_message": "the parsed SQL statement is not supported by semantic analysis"
     },
     {
       "cell_id": "88-C177-S241-hive",
@@ -4923,7 +5019,8 @@
         "tests/task_177_parser_matrix.rs",
         "tests/task_191_boundary_disposition.rs"
       ],
-      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate."
+      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate.",
+      "expected_diagnostic_message": "the parsed SQL statement is not supported by semantic analysis"
     },
     {
       "cell_id": "88-C177-S241-mssql",
@@ -4957,7 +5054,8 @@
         "tests/task_177_parser_matrix.rs",
         "tests/task_191_boundary_disposition.rs"
       ],
-      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate."
+      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate.",
+      "expected_diagnostic_message": "the parsed SQL statement is not supported by semantic analysis"
     },
     {
       "cell_id": "88-C177-S241-mysql",
@@ -4991,7 +5089,8 @@
         "tests/task_177_parser_matrix.rs",
         "tests/task_191_boundary_disposition.rs"
       ],
-      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate."
+      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate.",
+      "expected_diagnostic_message": "the parsed SQL statement is not supported by semantic analysis"
     },
     {
       "cell_id": "88-C177-S241-postgresql",
@@ -5025,7 +5124,8 @@
         "tests/task_177_parser_matrix.rs",
         "tests/task_191_boundary_disposition.rs"
       ],
-      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate."
+      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate.",
+      "expected_diagnostic_message": "the parsed SQL statement is not supported by semantic analysis"
     },
     {
       "cell_id": "88-C177-S241-redshift",
@@ -5059,7 +5159,8 @@
         "tests/task_177_parser_matrix.rs",
         "tests/task_191_boundary_disposition.rs"
       ],
-      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate."
+      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate.",
+      "expected_diagnostic_message": "the parsed SQL statement is not supported by semantic analysis"
     },
     {
       "cell_id": "88-C177-S241-snowflake",
@@ -5093,7 +5194,8 @@
         "tests/task_177_parser_matrix.rs",
         "tests/task_191_boundary_disposition.rs"
       ],
-      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate."
+      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate.",
+      "expected_diagnostic_message": "the parsed SQL statement is not supported by semantic analysis"
     },
     {
       "cell_id": "88-C177-S241-sqlite",
@@ -5127,7 +5229,8 @@
         "tests/task_177_parser_matrix.rs",
         "tests/task_191_boundary_disposition.rs"
       ],
-      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate."
+      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate.",
+      "expected_diagnostic_message": "the parsed SQL statement is not supported by semantic analysis"
     },
     {
       "cell_id": "88-C177-S242-ansi",
@@ -5161,7 +5264,8 @@
         "tests/task_177_parser_matrix.rs",
         "tests/task_191_boundary_disposition.rs"
       ],
-      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate."
+      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate.",
+      "expected_diagnostic_message": "the parsed SQL statement is not supported by semantic analysis"
     },
     {
       "cell_id": "88-C177-S242-bigquery",
@@ -5195,7 +5299,8 @@
         "tests/task_177_parser_matrix.rs",
         "tests/task_191_boundary_disposition.rs"
       ],
-      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate."
+      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate.",
+      "expected_diagnostic_message": "the parsed SQL statement is not supported by semantic analysis"
     },
     {
       "cell_id": "88-C177-S242-clickhouse",
@@ -5229,7 +5334,8 @@
         "tests/task_177_parser_matrix.rs",
         "tests/task_191_boundary_disposition.rs"
       ],
-      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate."
+      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate.",
+      "expected_diagnostic_message": "the parsed SQL statement is not supported by semantic analysis"
     },
     {
       "cell_id": "88-C177-S242-databricks",
@@ -5263,7 +5369,8 @@
         "tests/task_177_parser_matrix.rs",
         "tests/task_191_boundary_disposition.rs"
       ],
-      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate."
+      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate.",
+      "expected_diagnostic_message": "the parsed SQL statement is not supported by semantic analysis"
     },
     {
       "cell_id": "88-C177-S242-duckdb",
@@ -5297,7 +5404,8 @@
         "tests/task_177_parser_matrix.rs",
         "tests/task_191_boundary_disposition.rs"
       ],
-      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate."
+      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate.",
+      "expected_diagnostic_message": "the parsed SQL statement is not supported by semantic analysis"
     },
     {
       "cell_id": "88-C177-S242-generic",
@@ -5331,7 +5439,8 @@
         "tests/task_177_parser_matrix.rs",
         "tests/task_191_boundary_disposition.rs"
       ],
-      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate."
+      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate.",
+      "expected_diagnostic_message": "the parsed SQL statement is not supported by semantic analysis"
     },
     {
       "cell_id": "88-C177-S242-hive",
@@ -5365,7 +5474,8 @@
         "tests/task_177_parser_matrix.rs",
         "tests/task_191_boundary_disposition.rs"
       ],
-      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate."
+      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate.",
+      "expected_diagnostic_message": "the parsed SQL statement is not supported by semantic analysis"
     },
     {
       "cell_id": "88-C177-S242-mssql",
@@ -5399,7 +5509,8 @@
         "tests/task_177_parser_matrix.rs",
         "tests/task_191_boundary_disposition.rs"
       ],
-      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate."
+      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate.",
+      "expected_diagnostic_message": "the parsed SQL statement is not supported by semantic analysis"
     },
     {
       "cell_id": "88-C177-S242-mysql",
@@ -5433,7 +5544,8 @@
         "tests/task_177_parser_matrix.rs",
         "tests/task_191_boundary_disposition.rs"
       ],
-      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate."
+      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate.",
+      "expected_diagnostic_message": "the parsed SQL statement is not supported by semantic analysis"
     },
     {
       "cell_id": "88-C177-S242-postgresql",
@@ -5467,7 +5579,8 @@
         "tests/task_177_parser_matrix.rs",
         "tests/task_191_boundary_disposition.rs"
       ],
-      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate."
+      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate.",
+      "expected_diagnostic_message": "the parsed SQL statement is not supported by semantic analysis"
     },
     {
       "cell_id": "88-C177-S242-redshift",
@@ -5501,7 +5614,8 @@
         "tests/task_177_parser_matrix.rs",
         "tests/task_191_boundary_disposition.rs"
       ],
-      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate."
+      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate.",
+      "expected_diagnostic_message": "the parsed SQL statement is not supported by semantic analysis"
     },
     {
       "cell_id": "88-C177-S242-snowflake",
@@ -5535,7 +5649,8 @@
         "tests/task_177_parser_matrix.rs",
         "tests/task_191_boundary_disposition.rs"
       ],
-      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate."
+      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate.",
+      "expected_diagnostic_message": "the parsed SQL statement is not supported by semantic analysis"
     },
     {
       "cell_id": "88-C177-S242-sqlite",
@@ -5569,7 +5684,8 @@
         "tests/task_177_parser_matrix.rs",
         "tests/task_191_boundary_disposition.rs"
       ],
-      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate."
+      "required_next_action": "TASK-180: ensure unresolved advertised mandatory capability remains blocking; implement fully before parent release gate.",
+      "expected_diagnostic_message": "the parsed SQL statement is not supported by semantic analysis"
     }
   ],
   "native_original_cases": [
