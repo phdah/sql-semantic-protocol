@@ -561,17 +561,23 @@
       ],
       "exact_terminal_bag": null,
       "exact_terminal_rows_ordered": null,
-      "terminal_outcome": "conditional_or_rejected_original_native_spelling",
+      "terminal_outcome": "peer_tie_order_is_unconstrained_and_requires_an_explicit_deterministic_tie_breaker",
       "negative_truth_evidence": {
-        "expected_rejected_candidate_bag": [],
-        "physical_source_instance_ids": [
+        "kind": "ordering_tie_residual",
+        "initial_source_rows": 6,
+        "limit": 2,
+        "guaranteed_rows": [
+          [
+            4,
+            -5
+          ]
+        ],
+        "unproved_second_peer_choice": [
           "orders#0",
           "orders#1",
-          "orders#2",
-          "orders#3",
-          "orders#4",
-          "orders#5"
-        ]
+          "orders#4"
+        ],
+        "only_positive_certified_first_source_row": 5
       },
       "typed_output_claim": {
         "kind": "nullable_source_id_unbounded",
@@ -929,9 +935,13 @@
           "A%"
         ]
       ],
-      "exact_terminal_bag": null,
+      "exact_terminal_bag": [
+        [
+          9
+        ]
+      ],
       "exact_terminal_rows_ordered": null,
-      "terminal_outcome": "exact_original_DuckDB_terminal_or_three_valued_truth_if_oracle_attested",
+      "terminal_outcome": "exact_original_DuckDB_three_valued_partition_from_fixed_native_source",
       "negative_truth_evidence": {
         "selected_source_ordinals": [
           9
@@ -1036,9 +1046,9 @@
           "A%"
         ]
       ],
-      "exact_terminal_bag": null,
+      "exact_terminal_bag": [],
       "exact_terminal_rows_ordered": null,
-      "terminal_outcome": "exact_original_DuckDB_terminal_or_three_valued_truth_if_oracle_attested",
+      "terminal_outcome": "exact_original_DuckDB_three_valued_partition_from_fixed_native_source",
       "negative_truth_evidence": {
         "selected_source_ordinals": [],
         "rejected_false_ordinals": [
@@ -1225,9 +1235,9 @@
           "A%"
         ]
       ],
-      "exact_terminal_bag": null,
+      "exact_terminal_bag": [],
       "exact_terminal_rows_ordered": null,
-      "terminal_outcome": "exact_original_DuckDB_terminal_or_three_valued_truth_if_oracle_attested",
+      "terminal_outcome": "exact_original_DuckDB_three_valued_partition_from_fixed_native_source",
       "negative_truth_evidence": {
         "selected_source_ordinals": [],
         "rejected_false_ordinals": [
@@ -1332,9 +1342,13 @@
           "A%"
         ]
       ],
-      "exact_terminal_bag": null,
+      "exact_terminal_bag": [
+        [
+          5
+        ]
+      ],
       "exact_terminal_rows_ordered": null,
-      "terminal_outcome": "exact_original_DuckDB_terminal_or_three_valued_truth_if_oracle_attested",
+      "terminal_outcome": "exact_original_DuckDB_three_valued_partition_from_fixed_native_source",
       "negative_truth_evidence": {
         "selected_source_ordinals": [
           5
@@ -1672,8 +1686,12 @@
       "source_bag": [],
       "exact_terminal_bag": null,
       "exact_terminal_rows_ordered": null,
-      "terminal_outcome": "native_DuckDB_overflow_error_no_successful_terminal",
-      "negative_truth_evidence": null,
+      "terminal_outcome": "native_DuckDB_arithmetic_overflow_error_no_successful_output",
+      "negative_truth_evidence": {
+        "kind": "execution_failure",
+        "expected_error_class": "overflow",
+        "no_successful_terminal": true
+      },
       "typed_output_claim": {
         "kind": "unknown",
         "name": "overflow_case",
@@ -2012,9 +2030,31 @@
           20
         ]
       ],
-      "exact_terminal_bag": null,
+      "exact_terminal_bag": [
+        [
+          -1
+        ],
+        [
+          1
+        ],
+        [
+          2
+        ],
+        [
+          3
+        ],
+        [
+          4
+        ],
+        [
+          6
+        ],
+        [
+          9
+        ]
+      ],
       "exact_terminal_rows_ordered": null,
-      "terminal_outcome": "native_DuckDB_overflow_error_on_BIGINT_min_source",
+      "terminal_outcome": "native_DuckDB_original_integer_source_exact; separate BIGINT_min_exception_residual_or_error",
       "negative_truth_evidence": {
         "selected_ids": [
           -1,
@@ -2438,9 +2478,16 @@
           "1.0"
         ]
       ],
-      "exact_terminal_bag": null,
+      "exact_terminal_bag": [
+        [
+          1
+        ],
+        [
+          1
+        ]
+      ],
       "exact_terminal_rows_ordered": null,
-      "terminal_outcome": "DuckDB_nan_implicit_string_cast_native_result; vendor_law_unapproved",
+      "terminal_outcome": "exact_original_DuckDB_three_valued_partition_from_fixed_native_source",
       "negative_truth_evidence": {
         "selected_source_ordinals": [
           0,
