@@ -94,10 +94,7 @@ fn every_reviewed_exception_reconciles_to_exact_original_source_and_existing_ada
         assert_eq!(cell["original_native_vendor_certified"], false);
         assert_eq!(cell["release_blocking"], true);
         assert_eq!(cell["vendor_runtime_attestation"], "not_attested");
-        assert_eq!(
-            cell["task178_handoff"],
-            "docs/task-178-scope-split.json"
-        );
+        assert_eq!(cell["task178_handoff"], "docs/task-178-scope-split.json");
 
         let expected_vendors = available_vendor.get(id).cloned().unwrap_or_default();
         let actual_vendors: BTreeSet<&str> = rows(cell, "task179_case_refs")
@@ -121,10 +118,7 @@ fn every_reviewed_exception_reconciles_to_exact_original_source_and_existing_ada
                     cell["task197_source_fact_file"],
                     "docs/task-197-source-fact-matrix.json"
                 );
-                assert_eq!(
-                    cell["task197_source_fact_set"],
-                    original["source_fact_set"]
-                );
+                assert_eq!(cell["task197_source_fact_set"], original["source_fact_set"]);
                 assert_eq!(
                     cell["task197_source_fact_scope"],
                     original["metadata_scope"]
@@ -136,17 +130,35 @@ fn every_reviewed_exception_reconciles_to_exact_original_source_and_existing_ada
             }
             None => {
                 assert!(cell["task197_source_fact_file"].is_null());
-                assert_eq!(cell["task197_source_fact_scope"], "no_matching_task197_source_fact_original");
+                assert_eq!(
+                    cell["task197_source_fact_scope"],
+                    "no_matching_task197_source_fact_original"
+                );
             }
         }
     }
     assert_eq!(expected_ids, reviewed_ids);
-    assert_eq!(handoff["task179_matched_original_cases"], vendor_matched.len());
-    assert_eq!(handoff["task197_matched_original_cases"], adapter_matched.len());
+    assert_eq!(
+        handoff["task179_matched_original_cases"],
+        vendor_matched.len()
+    );
+    assert_eq!(
+        handoff["task197_matched_original_cases"],
+        adapter_matched.len()
+    );
 
     let scope = &manifest["task_191_boundary_disposition_acceptance"];
-    assert_eq!(scope["reviewed_dispositions"], "docs/task-191-reviewed-dispositions-v2.json");
-    assert_eq!(scope["downstream_handoff"], "docs/task-191-downstream-handoff-v3.json");
+    assert_eq!(
+        scope["reviewed_dispositions"],
+        "docs/task-191-reviewed-dispositions-v2.json"
+    );
+    assert_eq!(
+        scope["downstream_handoff"],
+        "docs/task-191-downstream-handoff-v3.json"
+    );
     assert_eq!(scope["full_matrix_release_approved"], false);
-    assert_eq!(scope["all_release_blocking_original_features_implemented"], false);
+    assert_eq!(
+        scope["all_release_blocking_original_features_implemented"],
+        false
+    );
 }
