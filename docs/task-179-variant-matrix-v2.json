@@ -67,7 +67,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "bigquery",
@@ -76,7 +76,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "clickhouse",
@@ -85,7 +85,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "databricks",
@@ -94,7 +94,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "duckdb",
@@ -103,7 +103,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "generic",
@@ -112,7 +112,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "hive",
@@ -121,7 +121,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "mssql",
@@ -130,7 +130,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "mysql",
@@ -139,7 +139,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "postgresql",
@@ -148,7 +148,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "redshift",
@@ -157,7 +157,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "snowflake",
@@ -166,7 +166,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "sqlite",
@@ -175,7 +175,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         }
       ],
       "requirements": "source order with ties must be fixed; implicit NULL placement remains session conditional",
@@ -222,7 +222,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "bigquery",
@@ -231,7 +231,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "clickhouse",
@@ -240,7 +240,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "databricks",
@@ -249,7 +249,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "duckdb",
@@ -258,7 +258,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "generic",
@@ -267,7 +267,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "hive",
@@ -276,7 +276,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "mssql",
@@ -285,7 +285,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "mysql",
@@ -294,7 +294,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "postgresql",
@@ -303,7 +303,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "redshift",
@@ -312,7 +312,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "snowflake",
@@ -321,7 +321,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "sqlite",
@@ -330,7 +330,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         }
       ],
       "requirements": "source order with ties must be fixed; implicit NULL placement remains session conditional",
@@ -377,7 +377,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "bigquery",
@@ -386,7 +386,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "clickhouse",
@@ -395,7 +395,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "databricks",
@@ -404,7 +404,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "duckdb",
@@ -413,7 +413,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "generic",
@@ -422,7 +422,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "hive",
@@ -431,7 +431,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "mssql",
@@ -440,7 +440,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "mysql",
@@ -449,7 +449,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "postgresql",
@@ -458,7 +458,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "redshift",
@@ -467,7 +467,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "snowflake",
@@ -476,7 +476,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "sqlite",
@@ -485,7 +485,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         }
       ],
       "requirements": "source order with ties must be fixed; implicit NULL placement remains session conditional",
@@ -532,7 +532,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "bigquery",
@@ -541,7 +541,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "clickhouse",
@@ -550,7 +550,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "databricks",
@@ -559,7 +559,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "duckdb",
@@ -568,7 +568,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "generic",
@@ -577,7 +577,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "hive",
@@ -586,7 +586,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "mssql",
@@ -595,7 +595,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "mysql",
@@ -604,7 +604,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "postgresql",
@@ -613,7 +613,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "redshift",
@@ -622,7 +622,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "snowflake",
@@ -631,7 +631,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "sqlite",
@@ -640,7 +640,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         }
       ],
       "requirements": "source order with ties must be fixed; implicit NULL placement remains session conditional",
@@ -687,7 +687,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "bigquery",
@@ -696,7 +696,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "clickhouse",
@@ -705,7 +705,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "databricks",
@@ -714,7 +714,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "duckdb",
@@ -723,7 +723,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "generic",
@@ -732,7 +732,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "hive",
@@ -741,7 +741,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "mssql",
@@ -750,7 +750,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "mysql",
@@ -759,7 +759,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "postgresql",
@@ -768,7 +768,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "redshift",
@@ -777,7 +777,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "snowflake",
@@ -786,7 +786,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "sqlite",
@@ -795,7 +795,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         }
       ],
       "requirements": "source order with ties must be fixed; implicit NULL placement remains session conditional",
@@ -842,7 +842,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "bigquery",
@@ -851,7 +851,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "clickhouse",
@@ -860,7 +860,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "databricks",
@@ -869,7 +869,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "duckdb",
@@ -878,7 +878,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "generic",
@@ -887,7 +887,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "hive",
@@ -896,7 +896,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "mssql",
@@ -905,7 +905,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "mysql",
@@ -914,7 +914,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "postgresql",
@@ -923,7 +923,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "redshift",
@@ -932,7 +932,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "snowflake",
@@ -941,7 +941,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "sqlite",
@@ -950,7 +950,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         }
       ],
       "requirements": "source order with ties must be fixed; implicit NULL placement remains session conditional",
@@ -997,7 +997,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "bigquery",
@@ -1006,7 +1006,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "clickhouse",
@@ -1015,7 +1015,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "databricks",
@@ -1024,7 +1024,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "duckdb",
@@ -1033,7 +1033,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "generic",
@@ -1042,7 +1042,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "hive",
@@ -1051,7 +1051,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "mssql",
@@ -1060,7 +1060,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "mysql",
@@ -1069,7 +1069,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "postgresql",
@@ -1078,7 +1078,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "redshift",
@@ -1087,7 +1087,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "snowflake",
@@ -1096,7 +1096,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "sqlite",
@@ -1105,7 +1105,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         }
       ],
       "requirements": "binary/no-padding witness only after explicit declarations; locale, regex and case-folding remain conditional",
@@ -1152,7 +1152,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "bigquery",
@@ -1161,7 +1161,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "clickhouse",
@@ -1170,7 +1170,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "databricks",
@@ -1179,7 +1179,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "duckdb",
@@ -1188,7 +1188,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "generic",
@@ -1197,7 +1197,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "hive",
@@ -1206,7 +1206,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "mssql",
@@ -1215,7 +1215,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "mysql",
@@ -1224,7 +1224,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "postgresql",
@@ -1233,7 +1233,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "redshift",
@@ -1242,7 +1242,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "snowflake",
@@ -1251,7 +1251,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "sqlite",
@@ -1260,7 +1260,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         }
       ],
       "requirements": "binary/no-padding witness only after explicit declarations; locale, regex and case-folding remain conditional",
@@ -1307,7 +1307,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "bigquery",
@@ -1316,7 +1316,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "clickhouse",
@@ -1325,7 +1325,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "databricks",
@@ -1334,7 +1334,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "duckdb",
@@ -1343,7 +1343,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "generic",
@@ -1352,7 +1352,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "hive",
@@ -1361,7 +1361,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "mssql",
@@ -1370,7 +1370,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "mysql",
@@ -1379,7 +1379,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "postgresql",
@@ -1388,7 +1388,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "redshift",
@@ -1397,7 +1397,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "snowflake",
@@ -1406,7 +1406,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "sqlite",
@@ -1415,7 +1415,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         }
       ],
       "requirements": "binary/no-padding witness only after explicit declarations; locale, regex and case-folding remain conditional",
@@ -1462,7 +1462,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "bigquery",
@@ -1471,7 +1471,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "clickhouse",
@@ -1480,7 +1480,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "databricks",
@@ -1489,7 +1489,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "duckdb",
@@ -1498,7 +1498,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "generic",
@@ -1507,7 +1507,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "hive",
@@ -1516,7 +1516,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "mssql",
@@ -1525,7 +1525,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "mysql",
@@ -1534,7 +1534,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "postgresql",
@@ -1543,7 +1543,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "redshift",
@@ -1552,7 +1552,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "snowflake",
@@ -1561,7 +1561,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "sqlite",
@@ -1570,7 +1570,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         }
       ],
       "requirements": "binary/no-padding witness only after explicit declarations; locale, regex and case-folding remain conditional",
@@ -1617,7 +1617,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "bigquery",
@@ -1626,7 +1626,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "clickhouse",
@@ -1635,7 +1635,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "databricks",
@@ -1644,7 +1644,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "duckdb",
@@ -1653,7 +1653,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "generic",
@@ -1662,7 +1662,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "hive",
@@ -1671,7 +1671,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "mssql",
@@ -1680,7 +1680,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "mysql",
@@ -1689,7 +1689,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "postgresql",
@@ -1698,7 +1698,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "redshift",
@@ -1707,7 +1707,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "snowflake",
@@ -1716,7 +1716,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "sqlite",
@@ -1725,7 +1725,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         }
       ],
       "requirements": "binary/no-padding witness only after explicit declarations; locale, regex and case-folding remain conditional",
@@ -1772,7 +1772,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "bigquery",
@@ -1781,7 +1781,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "clickhouse",
@@ -1790,7 +1790,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "databricks",
@@ -1799,7 +1799,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "duckdb",
@@ -1808,7 +1808,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "generic",
@@ -1817,7 +1817,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "hive",
@@ -1826,7 +1826,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "mssql",
@@ -1835,7 +1835,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "mysql",
@@ -1844,7 +1844,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "postgresql",
@@ -1853,7 +1853,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "redshift",
@@ -1862,7 +1862,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "snowflake",
@@ -1871,7 +1871,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "sqlite",
@@ -1880,7 +1880,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         }
       ],
       "requirements": "binary/no-padding witness only after explicit declarations; locale, regex and case-folding remain conditional",
@@ -1927,7 +1927,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "bigquery",
@@ -1936,7 +1936,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "clickhouse",
@@ -1945,7 +1945,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "databricks",
@@ -1954,7 +1954,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "duckdb",
@@ -1963,7 +1963,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "generic",
@@ -1972,7 +1972,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "hive",
@@ -1981,7 +1981,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "mssql",
@@ -1990,7 +1990,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "mysql",
@@ -1999,7 +1999,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "postgresql",
@@ -2008,7 +2008,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "redshift",
@@ -2017,7 +2017,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "snowflake",
@@ -2026,7 +2026,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "sqlite",
@@ -2035,7 +2035,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         }
       ],
       "requirements": "binary/no-padding witness only after explicit declarations; locale, regex and case-folding remain conditional",
@@ -2082,7 +2082,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "bigquery",
@@ -2091,7 +2091,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "clickhouse",
@@ -2100,7 +2100,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "databricks",
@@ -2109,7 +2109,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "duckdb",
@@ -2118,7 +2118,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "generic",
@@ -2127,7 +2127,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "hive",
@@ -2136,7 +2136,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "mssql",
@@ -2145,7 +2145,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "mysql",
@@ -2154,7 +2154,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "postgresql",
@@ -2163,7 +2163,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "redshift",
@@ -2172,7 +2172,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "snowflake",
@@ -2181,7 +2181,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "sqlite",
@@ -2190,7 +2190,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         }
       ],
       "requirements": "binary/no-padding witness only after explicit declarations; locale, regex and case-folding remain conditional",
@@ -2237,7 +2237,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "bigquery",
@@ -2246,7 +2246,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "clickhouse",
@@ -2255,7 +2255,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "databricks",
@@ -2264,7 +2264,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "duckdb",
@@ -2273,7 +2273,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "generic",
@@ -2282,7 +2282,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "hive",
@@ -2291,7 +2291,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "mssql",
@@ -2300,7 +2300,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "mysql",
@@ -2309,7 +2309,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "postgresql",
@@ -2318,7 +2318,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "redshift",
@@ -2327,7 +2327,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "snowflake",
@@ -2336,7 +2336,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "sqlite",
@@ -2345,7 +2345,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         }
       ],
       "requirements": "binary/no-padding witness only after explicit declarations; locale, regex and case-folding remain conditional",
@@ -2392,7 +2392,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "bigquery",
@@ -2401,7 +2401,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "clickhouse",
@@ -2410,7 +2410,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "databricks",
@@ -2419,7 +2419,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "duckdb",
@@ -2428,7 +2428,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "generic",
@@ -2437,7 +2437,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "hive",
@@ -2446,7 +2446,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "mssql",
@@ -2455,7 +2455,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "mysql",
@@ -2464,7 +2464,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "postgresql",
@@ -2473,7 +2473,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "redshift",
@@ -2482,7 +2482,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "snowflake",
@@ -2491,7 +2491,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "sqlite",
@@ -2500,7 +2500,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         }
       ],
       "requirements": "typed conversion/overflow behavior must be supported by exact engine law or explicit residual",
@@ -2547,7 +2547,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "bigquery",
@@ -2556,7 +2556,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "clickhouse",
@@ -2565,7 +2565,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "databricks",
@@ -2574,7 +2574,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "duckdb",
@@ -2583,7 +2583,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "generic",
@@ -2592,7 +2592,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "hive",
@@ -2601,7 +2601,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "mssql",
@@ -2610,7 +2610,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "mysql",
@@ -2619,7 +2619,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "postgresql",
@@ -2628,7 +2628,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "redshift",
@@ -2637,7 +2637,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "snowflake",
@@ -2646,7 +2646,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "sqlite",
@@ -2655,7 +2655,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         }
       ],
       "requirements": "typed conversion/overflow behavior must be supported by exact engine law or explicit residual",
@@ -2700,7 +2700,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "bigquery",
@@ -2709,7 +2709,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "clickhouse",
@@ -2718,7 +2718,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "databricks",
@@ -2727,7 +2727,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "duckdb",
@@ -2736,7 +2736,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "generic",
@@ -2745,7 +2745,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "hive",
@@ -2754,7 +2754,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "mssql",
@@ -2763,7 +2763,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "mysql",
@@ -2772,7 +2772,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "postgresql",
@@ -2781,7 +2781,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "redshift",
@@ -2790,7 +2790,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "snowflake",
@@ -2799,7 +2799,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "sqlite",
@@ -2808,7 +2808,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         }
       ],
       "requirements": "typed conversion/overflow behavior must be supported by exact engine law or explicit residual",
@@ -2855,7 +2855,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "bigquery",
@@ -2864,7 +2864,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "clickhouse",
@@ -2873,7 +2873,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "databricks",
@@ -2882,7 +2882,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "duckdb",
@@ -2891,7 +2891,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "generic",
@@ -2900,7 +2900,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "hive",
@@ -2909,7 +2909,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "mssql",
@@ -2918,7 +2918,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "mysql",
@@ -2927,7 +2927,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "postgresql",
@@ -2936,7 +2936,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "redshift",
@@ -2945,7 +2945,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "snowflake",
@@ -2954,7 +2954,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "sqlite",
@@ -2963,7 +2963,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         }
       ],
       "requirements": "FLOAT NaN, signed zero, timezone/DST and widened integer arithmetic are engine/session laws",
@@ -3010,7 +3010,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "bigquery",
@@ -3019,7 +3019,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "clickhouse",
@@ -3028,7 +3028,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "databricks",
@@ -3037,7 +3037,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "duckdb",
@@ -3046,7 +3046,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "generic",
@@ -3055,7 +3055,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "hive",
@@ -3064,7 +3064,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "mssql",
@@ -3073,7 +3073,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "mysql",
@@ -3082,7 +3082,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "postgresql",
@@ -3091,7 +3091,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "redshift",
@@ -3100,7 +3100,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "snowflake",
@@ -3109,7 +3109,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "sqlite",
@@ -3118,7 +3118,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         }
       ],
       "requirements": "FLOAT NaN, signed zero, timezone/DST and widened integer arithmetic are engine/session laws",
@@ -3165,7 +3165,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "bigquery",
@@ -3174,7 +3174,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "clickhouse",
@@ -3183,7 +3183,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "databricks",
@@ -3192,7 +3192,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "duckdb",
@@ -3201,7 +3201,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "generic",
@@ -3210,7 +3210,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "hive",
@@ -3219,7 +3219,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "mssql",
@@ -3228,7 +3228,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "mysql",
@@ -3237,7 +3237,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "postgresql",
@@ -3246,7 +3246,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "redshift",
@@ -3255,7 +3255,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "snowflake",
@@ -3264,7 +3264,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "sqlite",
@@ -3273,7 +3273,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         }
       ],
       "requirements": "FLOAT NaN, signed zero, timezone/DST and widened integer arithmetic are engine/session laws",
@@ -3320,7 +3320,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "bigquery",
@@ -3329,7 +3329,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "clickhouse",
@@ -3338,7 +3338,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "databricks",
@@ -3347,7 +3347,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "duckdb",
@@ -3356,7 +3356,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "generic",
@@ -3365,7 +3365,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "hive",
@@ -3374,7 +3374,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "mssql",
@@ -3383,7 +3383,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "mysql",
@@ -3392,7 +3392,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "postgresql",
@@ -3401,7 +3401,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "redshift",
@@ -3410,7 +3410,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "snowflake",
@@ -3419,7 +3419,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "sqlite",
@@ -3428,7 +3428,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         }
       ],
       "requirements": "FLOAT NaN, signed zero, timezone/DST and widened integer arithmetic are engine/session laws",
@@ -3475,7 +3475,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "bigquery",
@@ -3484,7 +3484,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "clickhouse",
@@ -3493,7 +3493,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "databricks",
@@ -3502,7 +3502,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "duckdb",
@@ -3511,7 +3511,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "generic",
@@ -3520,7 +3520,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "hive",
@@ -3529,7 +3529,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "mssql",
@@ -3538,7 +3538,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "mysql",
@@ -3547,7 +3547,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "postgresql",
@@ -3556,7 +3556,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "redshift",
@@ -3565,7 +3565,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "snowflake",
@@ -3574,7 +3574,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "sqlite",
@@ -3583,7 +3583,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         }
       ],
       "requirements": "FLOAT NaN, signed zero, timezone/DST and widened integer arithmetic are engine/session laws",
@@ -3630,7 +3630,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "bigquery",
@@ -3639,7 +3639,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "clickhouse",
@@ -3648,7 +3648,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "databricks",
@@ -3657,7 +3657,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "duckdb",
@@ -3666,7 +3666,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "generic",
@@ -3675,7 +3675,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "hive",
@@ -3684,7 +3684,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "mssql",
@@ -3693,7 +3693,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "mysql",
@@ -3702,7 +3702,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "postgresql",
@@ -3711,7 +3711,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "redshift",
@@ -3720,7 +3720,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "snowflake",
@@ -3729,7 +3729,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "sqlite",
@@ -3738,7 +3738,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         }
       ],
       "requirements": "FLOAT NaN, signed zero, timezone/DST and widened integer arithmetic are engine/session laws",
@@ -3785,7 +3785,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "bigquery",
@@ -3794,7 +3794,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "clickhouse",
@@ -3803,7 +3803,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "databricks",
@@ -3812,7 +3812,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "duckdb",
@@ -3821,7 +3821,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "generic",
@@ -3830,7 +3830,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "hive",
@@ -3839,7 +3839,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "mssql",
@@ -3848,7 +3848,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "mysql",
@@ -3857,7 +3857,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "postgresql",
@@ -3866,7 +3866,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "redshift",
@@ -3875,7 +3875,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "snowflake",
@@ -3884,7 +3884,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "sqlite",
@@ -3893,7 +3893,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         }
       ],
       "requirements": "FLOAT NaN, signed zero, timezone/DST and widened integer arithmetic are engine/session laws",
@@ -3940,7 +3940,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "bigquery",
@@ -3949,7 +3949,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "clickhouse",
@@ -3958,7 +3958,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "databricks",
@@ -3967,7 +3967,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "duckdb",
@@ -3976,7 +3976,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "generic",
@@ -3985,7 +3985,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "hive",
@@ -3994,7 +3994,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "mssql",
@@ -4003,7 +4003,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "mysql",
@@ -4012,7 +4012,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "postgresql",
@@ -4021,7 +4021,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "redshift",
@@ -4030,7 +4030,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "snowflake",
@@ -4039,7 +4039,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "sqlite",
@@ -4048,7 +4048,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         }
       ],
       "requirements": "mutations preserve complete physical states; unexecuted isolation, MERGE multiplicity and DDL transaction rules unverified",
@@ -4095,7 +4095,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "bigquery",
@@ -4104,7 +4104,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "clickhouse",
@@ -4113,7 +4113,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "databricks",
@@ -4122,7 +4122,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "duckdb",
@@ -4131,7 +4131,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "generic",
@@ -4140,7 +4140,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "hive",
@@ -4149,7 +4149,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "mssql",
@@ -4158,7 +4158,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "mysql",
@@ -4167,7 +4167,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "postgresql",
@@ -4176,7 +4176,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "redshift",
@@ -4185,7 +4185,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "snowflake",
@@ -4194,7 +4194,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "sqlite",
@@ -4203,7 +4203,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         }
       ],
       "requirements": "mutations preserve complete physical states; unexecuted isolation, MERGE multiplicity and DDL transaction rules unverified",
@@ -4251,7 +4251,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "bigquery",
@@ -4260,7 +4260,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "clickhouse",
@@ -4269,7 +4269,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "databricks",
@@ -4278,7 +4278,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "duckdb",
@@ -4287,7 +4287,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "generic",
@@ -4296,7 +4296,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "hive",
@@ -4305,7 +4305,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "mssql",
@@ -4314,7 +4314,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "mysql",
@@ -4323,7 +4323,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "postgresql",
@@ -4332,7 +4332,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "redshift",
@@ -4341,7 +4341,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "snowflake",
@@ -4350,7 +4350,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "sqlite",
@@ -4359,7 +4359,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         }
       ],
       "requirements": "mutations preserve complete physical states; unexecuted isolation, MERGE multiplicity and DDL transaction rules unverified",
@@ -4406,7 +4406,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "bigquery",
@@ -4415,7 +4415,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "clickhouse",
@@ -4424,7 +4424,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "databricks",
@@ -4433,7 +4433,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "duckdb",
@@ -4442,7 +4442,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "generic",
@@ -4451,7 +4451,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "hive",
@@ -4460,7 +4460,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "mssql",
@@ -4469,7 +4469,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "mysql",
@@ -4478,7 +4478,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "postgresql",
@@ -4487,7 +4487,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "redshift",
@@ -4496,7 +4496,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "snowflake",
@@ -4505,7 +4505,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "sqlite",
@@ -4514,7 +4514,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         }
       ],
       "requirements": "mutations preserve complete physical states; unexecuted isolation, MERGE multiplicity and DDL transaction rules unverified",
@@ -4562,7 +4562,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "bigquery",
@@ -4571,7 +4571,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "clickhouse",
@@ -4580,7 +4580,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "databricks",
@@ -4589,7 +4589,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "duckdb",
@@ -4598,7 +4598,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "generic",
@@ -4607,7 +4607,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "hive",
@@ -4616,7 +4616,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "mssql",
@@ -4625,7 +4625,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "mysql",
@@ -4634,7 +4634,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "postgresql",
@@ -4643,7 +4643,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "redshift",
@@ -4652,7 +4652,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "snowflake",
@@ -4661,7 +4661,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "sqlite",
@@ -4670,7 +4670,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         }
       ],
       "requirements": "mutations preserve complete physical states; unexecuted isolation, MERGE multiplicity and DDL transaction rules unverified",
@@ -4718,7 +4718,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "bigquery",
@@ -4727,7 +4727,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "clickhouse",
@@ -4736,7 +4736,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "databricks",
@@ -4745,7 +4745,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "duckdb",
@@ -4754,7 +4754,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "generic",
@@ -4763,7 +4763,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "hive",
@@ -4772,7 +4772,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "mssql",
@@ -4781,7 +4781,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "mysql",
@@ -4790,7 +4790,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "postgresql",
@@ -4799,7 +4799,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "redshift",
@@ -4808,7 +4808,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "snowflake",
@@ -4817,7 +4817,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "sqlite",
@@ -4826,7 +4826,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         }
       ],
       "requirements": "mutations preserve complete physical states; unexecuted isolation, MERGE multiplicity and DDL transaction rules unverified",
@@ -4874,7 +4874,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "bigquery",
@@ -4883,7 +4883,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "clickhouse",
@@ -4892,7 +4892,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "databricks",
@@ -4901,7 +4901,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "duckdb",
@@ -4910,7 +4910,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "generic",
@@ -4919,7 +4919,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "hive",
@@ -4928,7 +4928,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "mssql",
@@ -4937,7 +4937,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "mysql",
@@ -4946,7 +4946,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "postgresql",
@@ -4955,7 +4955,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "redshift",
@@ -4964,7 +4964,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "snowflake",
@@ -4973,7 +4973,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "sqlite",
@@ -4982,7 +4982,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         }
       ],
       "requirements": "mutations preserve complete physical states; unexecuted isolation, MERGE multiplicity and DDL transaction rules unverified",
@@ -5027,7 +5027,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "bigquery",
@@ -5036,7 +5036,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "clickhouse",
@@ -5045,7 +5045,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "databricks",
@@ -5054,7 +5054,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "duckdb",
@@ -5063,7 +5063,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "generic",
@@ -5072,7 +5072,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "hive",
@@ -5081,7 +5081,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "mssql",
@@ -5090,7 +5090,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "mysql",
@@ -5099,7 +5099,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "postgresql",
@@ -5108,7 +5108,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "redshift",
@@ -5117,7 +5117,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "snowflake",
@@ -5126,7 +5126,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "sqlite",
@@ -5135,7 +5135,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         }
       ],
       "requirements": "mutations preserve complete physical states; unexecuted isolation, MERGE multiplicity and DDL transaction rules unverified",
@@ -5180,7 +5180,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "bigquery",
@@ -5189,7 +5189,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "clickhouse",
@@ -5198,7 +5198,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "databricks",
@@ -5207,7 +5207,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "duckdb",
@@ -5216,7 +5216,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "generic",
@@ -5225,7 +5225,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "hive",
@@ -5234,7 +5234,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "mssql",
@@ -5243,7 +5243,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "mysql",
@@ -5252,7 +5252,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "postgresql",
@@ -5261,7 +5261,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "redshift",
@@ -5270,7 +5270,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "snowflake",
@@ -5279,7 +5279,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "sqlite",
@@ -5288,7 +5288,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         }
       ],
       "requirements": "mutations preserve complete physical states; unexecuted isolation, MERGE multiplicity and DDL transaction rules unverified",
@@ -5333,7 +5333,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "bigquery",
@@ -5342,7 +5342,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "clickhouse",
@@ -5351,7 +5351,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "databricks",
@@ -5360,7 +5360,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "duckdb",
@@ -5369,7 +5369,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "generic",
@@ -5378,7 +5378,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "hive",
@@ -5387,7 +5387,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "mssql",
@@ -5396,7 +5396,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "mysql",
@@ -5405,7 +5405,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "postgresql",
@@ -5414,7 +5414,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "redshift",
@@ -5423,7 +5423,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "snowflake",
@@ -5432,7 +5432,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "sqlite",
@@ -5441,7 +5441,7 @@
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         }
       ],
       "requirements": "mutations preserve complete physical states; unexecuted isolation, MERGE multiplicity and DDL transaction rules unverified",
@@ -5476,125 +5476,125 @@
       "source_instance": "two fixed physical row ids",
       "adapter_disposition": "source types may match; case law is not an adapter evidence fact",
       "canonical_dialect_mask": null,
-      "parser_mask": null,
-      "analyzer_mask": null,
+      "parser_mask": "PPPPPPPPPPPPP",
+      "analyzer_mask": "AAAAAAAAAAAAA",
       "dialect_cells": [
         {
           "dialect": "ansi",
-          "parser_status": "requires_task_specific_parser_probe",
-          "analyzer_status": "requires_task_specific_analyzer_probe",
+          "parser_status": "parsed",
+          "analyzer_status": "analyzed",
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "bigquery",
-          "parser_status": "requires_task_specific_parser_probe",
-          "analyzer_status": "requires_task_specific_analyzer_probe",
+          "parser_status": "parsed",
+          "analyzer_status": "analyzed",
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "clickhouse",
-          "parser_status": "requires_task_specific_parser_probe",
-          "analyzer_status": "requires_task_specific_analyzer_probe",
+          "parser_status": "parsed",
+          "analyzer_status": "analyzed",
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "databricks",
-          "parser_status": "requires_task_specific_parser_probe",
-          "analyzer_status": "requires_task_specific_analyzer_probe",
+          "parser_status": "parsed",
+          "analyzer_status": "analyzed",
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "duckdb",
-          "parser_status": "requires_task_specific_parser_probe",
-          "analyzer_status": "requires_task_specific_analyzer_probe",
+          "parser_status": "parsed",
+          "analyzer_status": "analyzed",
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "generic",
-          "parser_status": "requires_task_specific_parser_probe",
-          "analyzer_status": "requires_task_specific_analyzer_probe",
+          "parser_status": "parsed",
+          "analyzer_status": "analyzed",
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "hive",
-          "parser_status": "requires_task_specific_parser_probe",
-          "analyzer_status": "requires_task_specific_analyzer_probe",
+          "parser_status": "parsed",
+          "analyzer_status": "analyzed",
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "mssql",
-          "parser_status": "requires_task_specific_parser_probe",
-          "analyzer_status": "requires_task_specific_analyzer_probe",
+          "parser_status": "parsed",
+          "analyzer_status": "analyzed",
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "mysql",
-          "parser_status": "requires_task_specific_parser_probe",
-          "analyzer_status": "requires_task_specific_analyzer_probe",
+          "parser_status": "parsed",
+          "analyzer_status": "analyzed",
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "postgresql",
-          "parser_status": "requires_task_specific_parser_probe",
-          "analyzer_status": "requires_task_specific_analyzer_probe",
+          "parser_status": "parsed",
+          "analyzer_status": "analyzed",
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "redshift",
-          "parser_status": "requires_task_specific_parser_probe",
-          "analyzer_status": "requires_task_specific_analyzer_probe",
+          "parser_status": "parsed",
+          "analyzer_status": "analyzed",
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "snowflake",
-          "parser_status": "requires_task_specific_parser_probe",
-          "analyzer_status": "requires_task_specific_analyzer_probe",
+          "parser_status": "parsed",
+          "analyzer_status": "analyzed",
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "sqlite",
-          "parser_status": "requires_task_specific_parser_probe",
-          "analyzer_status": "requires_task_specific_analyzer_probe",
+          "parser_status": "parsed",
+          "analyzer_status": "analyzed",
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         }
       ],
       "requirements": "quoted/unquoted identifier folding and case collision are vendor rules, not stable portable facts",
@@ -5629,125 +5629,125 @@
       "source_instance": "two fixed physical row ids",
       "adapter_disposition": "source types may match; case law is not an adapter evidence fact",
       "canonical_dialect_mask": null,
-      "parser_mask": null,
-      "analyzer_mask": null,
+      "parser_mask": "PPPPPPPPPPPPP",
+      "analyzer_mask": "AAAAAAAAAAAAA",
       "dialect_cells": [
         {
           "dialect": "ansi",
-          "parser_status": "requires_task_specific_parser_probe",
-          "analyzer_status": "requires_task_specific_analyzer_probe",
+          "parser_status": "parsed",
+          "analyzer_status": "analyzed",
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "bigquery",
-          "parser_status": "requires_task_specific_parser_probe",
-          "analyzer_status": "requires_task_specific_analyzer_probe",
+          "parser_status": "parsed",
+          "analyzer_status": "analyzed",
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "clickhouse",
-          "parser_status": "requires_task_specific_parser_probe",
-          "analyzer_status": "requires_task_specific_analyzer_probe",
+          "parser_status": "parsed",
+          "analyzer_status": "analyzed",
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "databricks",
-          "parser_status": "requires_task_specific_parser_probe",
-          "analyzer_status": "requires_task_specific_analyzer_probe",
+          "parser_status": "parsed",
+          "analyzer_status": "analyzed",
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "duckdb",
-          "parser_status": "requires_task_specific_parser_probe",
-          "analyzer_status": "requires_task_specific_analyzer_probe",
+          "parser_status": "parsed",
+          "analyzer_status": "analyzed",
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "generic",
-          "parser_status": "requires_task_specific_parser_probe",
-          "analyzer_status": "requires_task_specific_analyzer_probe",
+          "parser_status": "parsed",
+          "analyzer_status": "analyzed",
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "hive",
-          "parser_status": "requires_task_specific_parser_probe",
-          "analyzer_status": "requires_task_specific_analyzer_probe",
+          "parser_status": "parsed",
+          "analyzer_status": "analyzed",
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "mssql",
-          "parser_status": "requires_task_specific_parser_probe",
-          "analyzer_status": "requires_task_specific_analyzer_probe",
+          "parser_status": "parsed",
+          "analyzer_status": "analyzed",
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "mysql",
-          "parser_status": "requires_task_specific_parser_probe",
-          "analyzer_status": "requires_task_specific_analyzer_probe",
+          "parser_status": "parsed",
+          "analyzer_status": "analyzed",
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "postgresql",
-          "parser_status": "requires_task_specific_parser_probe",
-          "analyzer_status": "requires_task_specific_analyzer_probe",
+          "parser_status": "parsed",
+          "analyzer_status": "analyzed",
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "redshift",
-          "parser_status": "requires_task_specific_parser_probe",
-          "analyzer_status": "requires_task_specific_analyzer_probe",
+          "parser_status": "parsed",
+          "analyzer_status": "analyzed",
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "snowflake",
-          "parser_status": "requires_task_specific_parser_probe",
-          "analyzer_status": "requires_task_specific_analyzer_probe",
+          "parser_status": "parsed",
+          "analyzer_status": "analyzed",
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         },
         {
           "dialect": "sqlite",
-          "parser_status": "requires_task_specific_parser_probe",
-          "analyzer_status": "requires_task_specific_analyzer_probe",
+          "parser_status": "parsed",
+          "analyzer_status": "analyzed",
           "native_vendor": "unattested",
           "conditional_owner": "TASK-179",
           "release_disposition": "unapproved_vendor_law",
-          "review_status": "awaiting_independent_review"
+          "review_status": "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
         }
       ],
       "requirements": "quoted/unquoted identifier folding and case collision are vendor rules, not stable portable facts",

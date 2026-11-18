@@ -90,8 +90,8 @@ fn frozen_named_law_inventory_preserves_all_original_identity_and_dialect_bounda
             );
         } else {
             assert_eq!(family, "identifier_case");
-            assert!(case["parser_mask"].is_null());
-            assert!(case["analyzer_mask"].is_null());
+            assert_eq!(case["parser_mask"], "PPPPPPPPPPPPP");
+            assert_eq!(case["analyzer_mask"], "AAAAAAAAAAAAA");
         }
         let dialect_cells = case["dialect_cells"].as_array().expect("owned 13 cells");
         assert_eq!(dialect_cells.len(), names.len(), "{id}: no omissions");
@@ -100,7 +100,10 @@ fn frozen_named_law_inventory_preserves_all_original_identity_and_dialect_bounda
             assert_eq!(cell["native_vendor"], "unattested");
             assert_eq!(cell["conditional_owner"], "TASK-179");
             assert_eq!(cell["release_disposition"], "unapproved_vendor_law");
-            assert_eq!(cell["review_status"], "awaiting_independent_review");
+            assert_eq!(
+                cell["review_status"],
+                "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
+            );
         }
     }
     assert_eq!(actual_families, expected_families);

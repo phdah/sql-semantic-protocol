@@ -85,11 +85,12 @@ fn every_dialect_law_has_individually_owned_review_without_execution_promotion()
             "analysis_error" => assert_eq!(class, "analysis_error_boundary"),
             "analyzed" => assert_eq!(
                 class,
-                "bounded_portable_source_semantics_with_vendor_law_unattested"
+                if id == "88-C179-036" || id == "88-C179-037" {
+                    "task_owned_identifier_parser_analysis_verified"
+                } else {
+                    "bounded_portable_source_semantics_with_vendor_law_unattested"
+                }
             ),
-            "requires_task_specific_analyzer_probe" => {
-                assert_eq!(class, "synthetic_case_specific_vendor_probe")
-            }
             other => panic!("{id}/{name}: missing decision for {other}"),
         }
     }
@@ -103,7 +104,7 @@ fn every_dialect_law_has_individually_owned_review_without_execution_promotion()
             ),
             ("unsupported_canonical_statement", 35),
             ("parser_rejection", 4),
-            ("synthetic_case_specific_vendor_probe", 26),
+            ("task_owned_identifier_parser_analysis_verified", 26),
         ])
     );
 }
