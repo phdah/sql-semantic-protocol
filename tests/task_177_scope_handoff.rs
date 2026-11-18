@@ -46,12 +46,12 @@ fn bounded_done_is_distinct_from_parent_semantic_and_release_approval() {
             "{name}: scoped Done cannot certify TASK-88"
         );
     }
-    assert_eq!(follow_up["status"], "done_bounded_conditional_boundary_adjudication__parent_release_blocked");
-    assert_eq!(follow_up["freeze"], "docs/task-191-acceptance-freeze.json");
     assert_eq!(
-        follow_up["all_native_gaps_independently_adjudicated"],
-        true
+        follow_up["status"],
+        "done_bounded_conditional_boundary_adjudication__parent_release_blocked"
     );
+    assert_eq!(follow_up["freeze"], "docs/task-191-acceptance-freeze.json");
+    assert_eq!(follow_up["all_native_gaps_independently_adjudicated"], true);
     assert_eq!(follow_up["parser_rejected_cells"], 55);
     assert_eq!(follow_up["analyzer_unsupported_cells"], 116);
     assert_eq!(follow_up["unproven_original_native_cases"], 23);
