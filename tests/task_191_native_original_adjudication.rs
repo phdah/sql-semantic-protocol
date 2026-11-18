@@ -42,14 +42,17 @@ fn fresh_source() -> Connection {
     db
 }
 
-fn all_source_rows(db: &Connection) -> BTreeMap<String, Vec<(i64, Vec<Option<i64>>)>> {
+type SourceRow = (i64, Vec<Option<i64>>);
+type SourceBag = BTreeMap<String, Vec<SourceRow>>;
+
+fn all_source_rows(db: &Connection) -> SourceBag {
     let sources = read(SOURCES);
     let mut result = BTreeMap::new();
     for (name, width) in [("orders", 2usize), ("customers", 2), ("products", 1)] {
         let mut stmt = db
             .prepare(&format!("SELECT rowid, * FROM {name} ORDER BY rowid"))
             .expect("physical rowid and all source columns");
-        let rows: Vec<(i64, Vec<Option<i64>>)> = stmt
+        let rows: Vec<SourceRow> = stmt
             .query_map([], |row| {
                 let identity: i64 = row.get(0)?;
                 let values: Vec<Option<i64>> = (0..width)
