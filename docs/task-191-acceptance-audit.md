@@ -36,3 +36,15 @@ The axes are **not mutually exclusive by original SQL ID**, but parser and Unsup
 ## Matt Pocock skill workflow
 
 Applied `implement` with public-seam regression tests, original-ticket scope, and Conservative/Fail-Closed acceptance. The required `code-review` axes are repository standards and TASK-191 acceptance correctness. No release signoff is inferred from this implementation PR.
+
+## Reviewed v2/v3 independent exception disposition (2026-11-18)
+
+- [Reviewed v2 ledger](task-191-reviewed-dispositions-v2.json) contains all original 55 SQL/dialect parser errors, 116 full-public-API Unsupported statements and 23 original DuckDB nonterminal cases, each joined to unchanged original SQL, semantic owner, feature scope, typed conservative domain and decision. The initial v1 freeze remains immutable and **was not** retroactively expanded. Every original advertised feature has `scope=release_blocking`, so no mandatory unsupported behavior is misreported as accepted feature support.
+- [Task-owned independent review test](../tests/task_191_independent_review.rs) checks all 194 entries, parser masks and exact Unsupported diagnostic category/code/severity/area against the public API. Where SQL cannot parse, `Impossible` means only "this exact original spelling cannot be analyzed by sqlparser 0.58 in this dialect", **never** that the SQL semantics or vendor runtime are impossible.
+- [Independent 23-case DuckDB oracles](../tests/task_191_native_original_adjudication.rs) replay 15 negative/invalid original statements against full source populations with stable physical row identities and assert unchanged complete source poststates; five original stochastic samples are checked as occurrence subbags, nonterminating recursion uses only a finite explicit companion, RANDOM is bounded in [0,1), and original EXPLAIN is checked as variable-shape execution without a fixed plan claim. The original native exceptions are *not* reclassified as successful fixed terminal output bags.
+- [v3 downstream handoff](task-191-downstream-handoff-v3.json) individually connects all 194 decisions to TASK-178/TASK-179/TASK-197 and explicit TASK-180 release obligations. [The handoff test](../tests/task_191_downstream_handoff.rs) joins those records to the authoritative source-fact and vendor variant inventories. Direct/dbt/catalog/ODCS source-fact parity is not an engine execution claim.
+- This is a **review of conservative exception dispositions, not a feature-implementation waiver**. TASK-88/TASK-180/TASK-91 remain release-blocked on any unimplemented mandatory feature, missing typed semantic equivalence, or unexecuted vendor law.
+
+### Verification outstanding
+
+The review and execution claims above require successful tests on the *final* head. Final exact-head protocol CI, pinned sql-tdg consumer CI and a final two-axis review are required before this child can be marked Done. No signoff marker should be committed before those checks are verified.
