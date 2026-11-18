@@ -1,0 +1,3645 @@
+{
+  "schema_version": 1,
+  "version": 1,
+  "task_id": "TASK-191",
+  "parent": "TASK-88",
+  "status": "frozen_preimplementation_pending_independent_adjudication",
+  "fixture_ids": {
+    "positive": "88-C191-P",
+    "negative": "88-C191-N"
+  },
+  "authoritative_source_sql": "docs/task-177-parser-samples.json",
+  "authoritative_dialect_and_public_status": "docs/task-177-parser-snapshot.json",
+  "authoritative_original_native_status": "docs/task-177-physical-proof-ledger.json",
+  "referenced_registries": [
+    "docs/task-177-parser-boundaries.json",
+    "docs/task-177-analysis-boundaries.json",
+    "docs/task-177-remaining-original-cases.json"
+  ],
+  "original_sql_policy": "Resolve original_id to exact unmodified SQL in authoritative_source_sql; never replace a failed original with a successful alternate.",
+  "claim_policy": "P/R/U/A parser status is not exact semantics; original missing native proof is not certified by a companion; all external vendor/session laws remain unverified.",
+  "acceptance_ownership": {
+    "ac1": "freeze and join exact disjoint typed boundary axes 55/116/23",
+    "ac2": "review 55 original parse failures and independent alternative/native evidence or conditional limits",
+    "ac3": "review 116 explicit Unsupported outcomes, diagnostics and required semantic owners",
+    "ac4": "review 23 native nonterminals with original negative/conditional oracles and complete source state",
+    "ac5": "reconcile independent decisions, parent TASK-180 handoff and final-head CI"
+  },
+  "independent_review": "not_done",
+  "native_vendor_attestation": "not_certified",
+  "task_88_release_approved": false,
+  "counts": {
+    "parser_rejected_cells": 55,
+    "analyzer_unsupported_cells": 116,
+    "native_unproven_original_cases": 23,
+    "dialects": 13,
+    "parser_affected_original_cases": 12,
+    "unsupported_affected_original_cases": 10
+  },
+  "parser_rejected_cells": [
+    {
+      "cell_id": "88-C177-S084-ansi",
+      "original_id": "88-C177-S084",
+      "dialect": "ansi",
+      "expected_public_parser": "R",
+      "feature_id": "sets.alignment",
+      "variant": "CORRESPONDING",
+      "semantic_owner": [
+        "TASK-72"
+      ],
+      "reason": "sqlparser 0.58 does not parse this UNION CORRESPONDING syntax in the recorded dialects; BY NAME and positional forms require separate tested samples.",
+      "parser_disposition": "blocked_original_syntax",
+      "alternate_sql": null,
+      "alternate_native_execution": "not_attested",
+      "required_evidence": "If claiming an alternative, prove canonical typed SQL/adapter equivalence AND independent native execution; original remains rejected.",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S084-bigquery",
+      "original_id": "88-C177-S084",
+      "dialect": "bigquery",
+      "expected_public_parser": "R",
+      "feature_id": "sets.alignment",
+      "variant": "CORRESPONDING",
+      "semantic_owner": [
+        "TASK-72"
+      ],
+      "reason": "sqlparser 0.58 does not parse this UNION CORRESPONDING syntax in the recorded dialects; BY NAME and positional forms require separate tested samples.",
+      "parser_disposition": "blocked_original_syntax",
+      "alternate_sql": null,
+      "alternate_native_execution": "not_attested",
+      "required_evidence": "If claiming an alternative, prove canonical typed SQL/adapter equivalence AND independent native execution; original remains rejected.",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S084-clickhouse",
+      "original_id": "88-C177-S084",
+      "dialect": "clickhouse",
+      "expected_public_parser": "R",
+      "feature_id": "sets.alignment",
+      "variant": "CORRESPONDING",
+      "semantic_owner": [
+        "TASK-72"
+      ],
+      "reason": "sqlparser 0.58 does not parse this UNION CORRESPONDING syntax in the recorded dialects; BY NAME and positional forms require separate tested samples.",
+      "parser_disposition": "blocked_original_syntax",
+      "alternate_sql": null,
+      "alternate_native_execution": "not_attested",
+      "required_evidence": "If claiming an alternative, prove canonical typed SQL/adapter equivalence AND independent native execution; original remains rejected.",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S084-databricks",
+      "original_id": "88-C177-S084",
+      "dialect": "databricks",
+      "expected_public_parser": "R",
+      "feature_id": "sets.alignment",
+      "variant": "CORRESPONDING",
+      "semantic_owner": [
+        "TASK-72"
+      ],
+      "reason": "sqlparser 0.58 does not parse this UNION CORRESPONDING syntax in the recorded dialects; BY NAME and positional forms require separate tested samples.",
+      "parser_disposition": "blocked_original_syntax",
+      "alternate_sql": null,
+      "alternate_native_execution": "not_attested",
+      "required_evidence": "If claiming an alternative, prove canonical typed SQL/adapter equivalence AND independent native execution; original remains rejected.",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S084-duckdb",
+      "original_id": "88-C177-S084",
+      "dialect": "duckdb",
+      "expected_public_parser": "R",
+      "feature_id": "sets.alignment",
+      "variant": "CORRESPONDING",
+      "semantic_owner": [
+        "TASK-72"
+      ],
+      "reason": "sqlparser 0.58 does not parse this UNION CORRESPONDING syntax in the recorded dialects; BY NAME and positional forms require separate tested samples.",
+      "parser_disposition": "blocked_original_syntax",
+      "alternate_sql": null,
+      "alternate_native_execution": "not_attested",
+      "required_evidence": "If claiming an alternative, prove canonical typed SQL/adapter equivalence AND independent native execution; original remains rejected.",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S084-generic",
+      "original_id": "88-C177-S084",
+      "dialect": "generic",
+      "expected_public_parser": "R",
+      "feature_id": "sets.alignment",
+      "variant": "CORRESPONDING",
+      "semantic_owner": [
+        "TASK-72"
+      ],
+      "reason": "sqlparser 0.58 does not parse this UNION CORRESPONDING syntax in the recorded dialects; BY NAME and positional forms require separate tested samples.",
+      "parser_disposition": "blocked_original_syntax",
+      "alternate_sql": null,
+      "alternate_native_execution": "not_attested",
+      "required_evidence": "If claiming an alternative, prove canonical typed SQL/adapter equivalence AND independent native execution; original remains rejected.",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S084-hive",
+      "original_id": "88-C177-S084",
+      "dialect": "hive",
+      "expected_public_parser": "R",
+      "feature_id": "sets.alignment",
+      "variant": "CORRESPONDING",
+      "semantic_owner": [
+        "TASK-72"
+      ],
+      "reason": "sqlparser 0.58 does not parse this UNION CORRESPONDING syntax in the recorded dialects; BY NAME and positional forms require separate tested samples.",
+      "parser_disposition": "blocked_original_syntax",
+      "alternate_sql": null,
+      "alternate_native_execution": "not_attested",
+      "required_evidence": "If claiming an alternative, prove canonical typed SQL/adapter equivalence AND independent native execution; original remains rejected.",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S084-mssql",
+      "original_id": "88-C177-S084",
+      "dialect": "mssql",
+      "expected_public_parser": "R",
+      "feature_id": "sets.alignment",
+      "variant": "CORRESPONDING",
+      "semantic_owner": [
+        "TASK-72"
+      ],
+      "reason": "sqlparser 0.58 does not parse this UNION CORRESPONDING syntax in the recorded dialects; BY NAME and positional forms require separate tested samples.",
+      "parser_disposition": "blocked_original_syntax",
+      "alternate_sql": null,
+      "alternate_native_execution": "not_attested",
+      "required_evidence": "If claiming an alternative, prove canonical typed SQL/adapter equivalence AND independent native execution; original remains rejected.",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S084-mysql",
+      "original_id": "88-C177-S084",
+      "dialect": "mysql",
+      "expected_public_parser": "R",
+      "feature_id": "sets.alignment",
+      "variant": "CORRESPONDING",
+      "semantic_owner": [
+        "TASK-72"
+      ],
+      "reason": "sqlparser 0.58 does not parse this UNION CORRESPONDING syntax in the recorded dialects; BY NAME and positional forms require separate tested samples.",
+      "parser_disposition": "blocked_original_syntax",
+      "alternate_sql": null,
+      "alternate_native_execution": "not_attested",
+      "required_evidence": "If claiming an alternative, prove canonical typed SQL/adapter equivalence AND independent native execution; original remains rejected.",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S084-postgresql",
+      "original_id": "88-C177-S084",
+      "dialect": "postgresql",
+      "expected_public_parser": "R",
+      "feature_id": "sets.alignment",
+      "variant": "CORRESPONDING",
+      "semantic_owner": [
+        "TASK-72"
+      ],
+      "reason": "sqlparser 0.58 does not parse this UNION CORRESPONDING syntax in the recorded dialects; BY NAME and positional forms require separate tested samples.",
+      "parser_disposition": "blocked_original_syntax",
+      "alternate_sql": null,
+      "alternate_native_execution": "not_attested",
+      "required_evidence": "If claiming an alternative, prove canonical typed SQL/adapter equivalence AND independent native execution; original remains rejected.",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S084-redshift",
+      "original_id": "88-C177-S084",
+      "dialect": "redshift",
+      "expected_public_parser": "R",
+      "feature_id": "sets.alignment",
+      "variant": "CORRESPONDING",
+      "semantic_owner": [
+        "TASK-72"
+      ],
+      "reason": "sqlparser 0.58 does not parse this UNION CORRESPONDING syntax in the recorded dialects; BY NAME and positional forms require separate tested samples.",
+      "parser_disposition": "blocked_original_syntax",
+      "alternate_sql": null,
+      "alternate_native_execution": "not_attested",
+      "required_evidence": "If claiming an alternative, prove canonical typed SQL/adapter equivalence AND independent native execution; original remains rejected.",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S084-snowflake",
+      "original_id": "88-C177-S084",
+      "dialect": "snowflake",
+      "expected_public_parser": "R",
+      "feature_id": "sets.alignment",
+      "variant": "CORRESPONDING",
+      "semantic_owner": [
+        "TASK-72"
+      ],
+      "reason": "sqlparser 0.58 does not parse this UNION CORRESPONDING syntax in the recorded dialects; BY NAME and positional forms require separate tested samples.",
+      "parser_disposition": "blocked_original_syntax",
+      "alternate_sql": null,
+      "alternate_native_execution": "not_attested",
+      "required_evidence": "If claiming an alternative, prove canonical typed SQL/adapter equivalence AND independent native execution; original remains rejected.",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S084-sqlite",
+      "original_id": "88-C177-S084",
+      "dialect": "sqlite",
+      "expected_public_parser": "R",
+      "feature_id": "sets.alignment",
+      "variant": "CORRESPONDING",
+      "semantic_owner": [
+        "TASK-72"
+      ],
+      "reason": "sqlparser 0.58 does not parse this UNION CORRESPONDING syntax in the recorded dialects; BY NAME and positional forms require separate tested samples.",
+      "parser_disposition": "blocked_original_syntax",
+      "alternate_sql": null,
+      "alternate_native_execution": "not_attested",
+      "required_evidence": "If claiming an alternative, prove canonical typed SQL/adapter equivalence AND independent native execution; original remains rejected.",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S096-ansi",
+      "original_id": "88-C177-S096",
+      "dialect": "ansi",
+      "expected_public_parser": "R",
+      "feature_id": "grouping.advanced",
+      "variant": "FILTER",
+      "semantic_owner": [
+        "TASK-73"
+      ],
+      "reason": "Aggregate FILTER syntax is parser-dialect dependent; parsed cases are not evidence of native engine FILTER semantics.",
+      "parser_disposition": "blocked_original_syntax",
+      "alternate_sql": null,
+      "alternate_native_execution": "not_attested",
+      "required_evidence": "If claiming an alternative, prove canonical typed SQL/adapter equivalence AND independent native execution; original remains rejected.",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S096-bigquery",
+      "original_id": "88-C177-S096",
+      "dialect": "bigquery",
+      "expected_public_parser": "R",
+      "feature_id": "grouping.advanced",
+      "variant": "FILTER",
+      "semantic_owner": [
+        "TASK-73"
+      ],
+      "reason": "Aggregate FILTER syntax is parser-dialect dependent; parsed cases are not evidence of native engine FILTER semantics.",
+      "parser_disposition": "blocked_original_syntax",
+      "alternate_sql": null,
+      "alternate_native_execution": "not_attested",
+      "required_evidence": "If claiming an alternative, prove canonical typed SQL/adapter equivalence AND independent native execution; original remains rejected.",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S096-clickhouse",
+      "original_id": "88-C177-S096",
+      "dialect": "clickhouse",
+      "expected_public_parser": "R",
+      "feature_id": "grouping.advanced",
+      "variant": "FILTER",
+      "semantic_owner": [
+        "TASK-73"
+      ],
+      "reason": "Aggregate FILTER syntax is parser-dialect dependent; parsed cases are not evidence of native engine FILTER semantics.",
+      "parser_disposition": "blocked_original_syntax",
+      "alternate_sql": null,
+      "alternate_native_execution": "not_attested",
+      "required_evidence": "If claiming an alternative, prove canonical typed SQL/adapter equivalence AND independent native execution; original remains rejected.",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S096-mssql",
+      "original_id": "88-C177-S096",
+      "dialect": "mssql",
+      "expected_public_parser": "R",
+      "feature_id": "grouping.advanced",
+      "variant": "FILTER",
+      "semantic_owner": [
+        "TASK-73"
+      ],
+      "reason": "Aggregate FILTER syntax is parser-dialect dependent; parsed cases are not evidence of native engine FILTER semantics.",
+      "parser_disposition": "blocked_original_syntax",
+      "alternate_sql": null,
+      "alternate_native_execution": "not_attested",
+      "required_evidence": "If claiming an alternative, prove canonical typed SQL/adapter equivalence AND independent native execution; original remains rejected.",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S096-mysql",
+      "original_id": "88-C177-S096",
+      "dialect": "mysql",
+      "expected_public_parser": "R",
+      "feature_id": "grouping.advanced",
+      "variant": "FILTER",
+      "semantic_owner": [
+        "TASK-73"
+      ],
+      "reason": "Aggregate FILTER syntax is parser-dialect dependent; parsed cases are not evidence of native engine FILTER semantics.",
+      "parser_disposition": "blocked_original_syntax",
+      "alternate_sql": null,
+      "alternate_native_execution": "not_attested",
+      "required_evidence": "If claiming an alternative, prove canonical typed SQL/adapter equivalence AND independent native execution; original remains rejected.",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S096-redshift",
+      "original_id": "88-C177-S096",
+      "dialect": "redshift",
+      "expected_public_parser": "R",
+      "feature_id": "grouping.advanced",
+      "variant": "FILTER",
+      "semantic_owner": [
+        "TASK-73"
+      ],
+      "reason": "Aggregate FILTER syntax is parser-dialect dependent; parsed cases are not evidence of native engine FILTER semantics.",
+      "parser_disposition": "blocked_original_syntax",
+      "alternate_sql": null,
+      "alternate_native_execution": "not_attested",
+      "required_evidence": "If claiming an alternative, prove canonical typed SQL/adapter equivalence AND independent native execution; original remains rejected.",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S096-snowflake",
+      "original_id": "88-C177-S096",
+      "dialect": "snowflake",
+      "expected_public_parser": "R",
+      "feature_id": "grouping.advanced",
+      "variant": "FILTER",
+      "semantic_owner": [
+        "TASK-73"
+      ],
+      "reason": "Aggregate FILTER syntax is parser-dialect dependent; parsed cases are not evidence of native engine FILTER semantics.",
+      "parser_disposition": "blocked_original_syntax",
+      "alternate_sql": null,
+      "alternate_native_execution": "not_attested",
+      "required_evidence": "If claiming an alternative, prove canonical typed SQL/adapter equivalence AND independent native execution; original remains rejected.",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S102-ansi",
+      "original_id": "88-C177-S102",
+      "dialect": "ansi",
+      "expected_public_parser": "R",
+      "feature_id": "grouping.supergroups",
+      "variant": "GROUPING SETS",
+      "semantic_owner": [
+        "TASK-73"
+      ],
+      "reason": "GROUPING SETS grammar is parser-dialect dependent; alternative syntaxes and subtotal/null identity remain task-owner obligations.",
+      "parser_disposition": "blocked_original_syntax",
+      "alternate_sql": null,
+      "alternate_native_execution": "not_attested",
+      "required_evidence": "If claiming an alternative, prove canonical typed SQL/adapter equivalence AND independent native execution; original remains rejected.",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S102-hive",
+      "original_id": "88-C177-S102",
+      "dialect": "hive",
+      "expected_public_parser": "R",
+      "feature_id": "grouping.supergroups",
+      "variant": "GROUPING SETS",
+      "semantic_owner": [
+        "TASK-73"
+      ],
+      "reason": "GROUPING SETS grammar is parser-dialect dependent; alternative syntaxes and subtotal/null identity remain task-owner obligations.",
+      "parser_disposition": "blocked_original_syntax",
+      "alternate_sql": null,
+      "alternate_native_execution": "not_attested",
+      "required_evidence": "If claiming an alternative, prove canonical typed SQL/adapter equivalence AND independent native execution; original remains rejected.",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S102-mssql",
+      "original_id": "88-C177-S102",
+      "dialect": "mssql",
+      "expected_public_parser": "R",
+      "feature_id": "grouping.supergroups",
+      "variant": "GROUPING SETS",
+      "semantic_owner": [
+        "TASK-73"
+      ],
+      "reason": "GROUPING SETS grammar is parser-dialect dependent; alternative syntaxes and subtotal/null identity remain task-owner obligations.",
+      "parser_disposition": "blocked_original_syntax",
+      "alternate_sql": null,
+      "alternate_native_execution": "not_attested",
+      "required_evidence": "If claiming an alternative, prove canonical typed SQL/adapter equivalence AND independent native execution; original remains rejected.",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S102-mysql",
+      "original_id": "88-C177-S102",
+      "dialect": "mysql",
+      "expected_public_parser": "R",
+      "feature_id": "grouping.supergroups",
+      "variant": "GROUPING SETS",
+      "semantic_owner": [
+        "TASK-73"
+      ],
+      "reason": "GROUPING SETS grammar is parser-dialect dependent; alternative syntaxes and subtotal/null identity remain task-owner obligations.",
+      "parser_disposition": "blocked_original_syntax",
+      "alternate_sql": null,
+      "alternate_native_execution": "not_attested",
+      "required_evidence": "If claiming an alternative, prove canonical typed SQL/adapter equivalence AND independent native execution; original remains rejected.",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S102-redshift",
+      "original_id": "88-C177-S102",
+      "dialect": "redshift",
+      "expected_public_parser": "R",
+      "feature_id": "grouping.supergroups",
+      "variant": "GROUPING SETS",
+      "semantic_owner": [
+        "TASK-73"
+      ],
+      "reason": "GROUPING SETS grammar is parser-dialect dependent; alternative syntaxes and subtotal/null identity remain task-owner obligations.",
+      "parser_disposition": "blocked_original_syntax",
+      "alternate_sql": null,
+      "alternate_native_execution": "not_attested",
+      "required_evidence": "If claiming an alternative, prove canonical typed SQL/adapter equivalence AND independent native execution; original remains rejected.",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S102-sqlite",
+      "original_id": "88-C177-S102",
+      "dialect": "sqlite",
+      "expected_public_parser": "R",
+      "feature_id": "grouping.supergroups",
+      "variant": "GROUPING SETS",
+      "semantic_owner": [
+        "TASK-73"
+      ],
+      "reason": "GROUPING SETS grammar is parser-dialect dependent; alternative syntaxes and subtotal/null identity remain task-owner obligations.",
+      "parser_disposition": "blocked_original_syntax",
+      "alternate_sql": null,
+      "alternate_native_execution": "not_attested",
+      "required_evidence": "If claiming an alternative, prove canonical typed SQL/adapter equivalence AND independent native execution; original remains rejected.",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S120-snowflake",
+      "original_id": "88-C177-S120",
+      "dialect": "snowflake",
+      "expected_public_parser": "R",
+      "feature_id": "windows.frames",
+      "variant": "named windows",
+      "semantic_owner": [
+        "TASK-74"
+      ],
+      "reason": "Snowflake parser rejects this named WINDOW clause sample; an equivalent inline OVER variant needs independent classification.",
+      "parser_disposition": "blocked_original_syntax",
+      "alternate_sql": null,
+      "alternate_native_execution": "not_attested",
+      "required_evidence": "If claiming an alternative, prove canonical typed SQL/adapter equivalence AND independent native execution; original remains rejected.",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S168-mssql",
+      "original_id": "88-C177-S168",
+      "dialect": "mssql",
+      "expected_public_parser": "R",
+      "feature_id": "relations.advanced_sources",
+      "variant": "UNNEST",
+      "semantic_owner": [
+        "TASK-77"
+      ],
+      "reason": "UNNEST ARRAY syntax is parser-dialect dependent; SQL Server/SQLite table-function alternatives are not attested.",
+      "parser_disposition": "blocked_original_syntax",
+      "alternate_sql": null,
+      "alternate_native_execution": "not_attested",
+      "required_evidence": "If claiming an alternative, prove canonical typed SQL/adapter equivalence AND independent native execution; original remains rejected.",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S168-sqlite",
+      "original_id": "88-C177-S168",
+      "dialect": "sqlite",
+      "expected_public_parser": "R",
+      "feature_id": "relations.advanced_sources",
+      "variant": "UNNEST",
+      "semantic_owner": [
+        "TASK-77"
+      ],
+      "reason": "UNNEST ARRAY syntax is parser-dialect dependent; SQL Server/SQLite table-function alternatives are not attested.",
+      "parser_disposition": "blocked_original_syntax",
+      "alternate_sql": null,
+      "alternate_native_execution": "not_attested",
+      "required_evidence": "If claiming an alternative, prove canonical typed SQL/adapter equivalence AND independent native execution; original remains rejected.",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S178-mssql",
+      "original_id": "88-C177-S178",
+      "dialect": "mssql",
+      "expected_public_parser": "R",
+      "feature_id": "types.structural",
+      "variant": "array",
+      "semantic_owner": [
+        "TASK-79"
+      ],
+      "reason": "ARRAY constructor syntax is parser-dialect dependent; native list expression law is not proven.",
+      "parser_disposition": "blocked_original_syntax",
+      "alternate_sql": null,
+      "alternate_native_execution": "not_attested",
+      "required_evidence": "If claiming an alternative, prove canonical typed SQL/adapter equivalence AND independent native execution; original remains rejected.",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S178-sqlite",
+      "original_id": "88-C177-S178",
+      "dialect": "sqlite",
+      "expected_public_parser": "R",
+      "feature_id": "types.structural",
+      "variant": "array",
+      "semantic_owner": [
+        "TASK-79"
+      ],
+      "reason": "ARRAY constructor syntax is parser-dialect dependent; native list expression law is not proven.",
+      "parser_disposition": "blocked_original_syntax",
+      "alternate_sql": null,
+      "alternate_native_execution": "not_attested",
+      "required_evidence": "If claiming an alternative, prove canonical typed SQL/adapter equivalence AND independent native execution; original remains rejected.",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S179-bigquery",
+      "original_id": "88-C177-S179",
+      "dialect": "bigquery",
+      "expected_public_parser": "R",
+      "feature_id": "types.structural",
+      "variant": "struct",
+      "semantic_owner": [
+        "TASK-79"
+      ],
+      "reason": "STRUCT CAST syntax is parser-dialect dependent; syntax such as BigQuery STRUCT constructors is not inferred.",
+      "parser_disposition": "blocked_original_syntax",
+      "alternate_sql": null,
+      "alternate_native_execution": "not_attested",
+      "required_evidence": "If claiming an alternative, prove canonical typed SQL/adapter equivalence AND independent native execution; original remains rejected.",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S179-generic",
+      "original_id": "88-C177-S179",
+      "dialect": "generic",
+      "expected_public_parser": "R",
+      "feature_id": "types.structural",
+      "variant": "struct",
+      "semantic_owner": [
+        "TASK-79"
+      ],
+      "reason": "STRUCT CAST syntax is parser-dialect dependent; syntax such as BigQuery STRUCT constructors is not inferred.",
+      "parser_disposition": "blocked_original_syntax",
+      "alternate_sql": null,
+      "alternate_native_execution": "not_attested",
+      "required_evidence": "If claiming an alternative, prove canonical typed SQL/adapter equivalence AND independent native execution; original remains rejected.",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S189-postgresql",
+      "original_id": "88-C177-S189",
+      "dialect": "postgresql",
+      "expected_public_parser": "R",
+      "feature_id": "schema.constraints",
+      "variant": "generated columns",
+      "semantic_owner": [
+        "TASK-79",
+        "TASK-87"
+      ],
+      "reason": "PostgreSQL generated column requires a different grammar such as explicit storage annotation; current shape is rejected by sqlparser.",
+      "parser_disposition": "blocked_original_syntax",
+      "alternate_sql": null,
+      "alternate_native_execution": "not_attested",
+      "required_evidence": "If claiming an alternative, prove canonical typed SQL/adapter equivalence AND independent native execution; original remains rejected.",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S199-ansi",
+      "original_id": "88-C177-S199",
+      "dialect": "ansi",
+      "expected_public_parser": "R",
+      "feature_id": "dml.insert_conflicts",
+      "variant": "REPLACE INTO",
+      "semantic_owner": [
+        "TASK-80",
+        "TASK-82"
+      ],
+      "reason": "REPLACE INTO syntax is nonportable; conflict-handling alternatives are not equivalent without constraint and write-effect proof.",
+      "parser_disposition": "blocked_original_syntax",
+      "alternate_sql": null,
+      "alternate_native_execution": "not_attested",
+      "required_evidence": "If claiming an alternative, prove canonical typed SQL/adapter equivalence AND independent native execution; original remains rejected.",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S199-bigquery",
+      "original_id": "88-C177-S199",
+      "dialect": "bigquery",
+      "expected_public_parser": "R",
+      "feature_id": "dml.insert_conflicts",
+      "variant": "REPLACE INTO",
+      "semantic_owner": [
+        "TASK-80",
+        "TASK-82"
+      ],
+      "reason": "REPLACE INTO syntax is nonportable; conflict-handling alternatives are not equivalent without constraint and write-effect proof.",
+      "parser_disposition": "blocked_original_syntax",
+      "alternate_sql": null,
+      "alternate_native_execution": "not_attested",
+      "required_evidence": "If claiming an alternative, prove canonical typed SQL/adapter equivalence AND independent native execution; original remains rejected.",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S199-clickhouse",
+      "original_id": "88-C177-S199",
+      "dialect": "clickhouse",
+      "expected_public_parser": "R",
+      "feature_id": "dml.insert_conflicts",
+      "variant": "REPLACE INTO",
+      "semantic_owner": [
+        "TASK-80",
+        "TASK-82"
+      ],
+      "reason": "REPLACE INTO syntax is nonportable; conflict-handling alternatives are not equivalent without constraint and write-effect proof.",
+      "parser_disposition": "blocked_original_syntax",
+      "alternate_sql": null,
+      "alternate_native_execution": "not_attested",
+      "required_evidence": "If claiming an alternative, prove canonical typed SQL/adapter equivalence AND independent native execution; original remains rejected.",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S199-databricks",
+      "original_id": "88-C177-S199",
+      "dialect": "databricks",
+      "expected_public_parser": "R",
+      "feature_id": "dml.insert_conflicts",
+      "variant": "REPLACE INTO",
+      "semantic_owner": [
+        "TASK-80",
+        "TASK-82"
+      ],
+      "reason": "REPLACE INTO syntax is nonportable; conflict-handling alternatives are not equivalent without constraint and write-effect proof.",
+      "parser_disposition": "blocked_original_syntax",
+      "alternate_sql": null,
+      "alternate_native_execution": "not_attested",
+      "required_evidence": "If claiming an alternative, prove canonical typed SQL/adapter equivalence AND independent native execution; original remains rejected.",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S199-duckdb",
+      "original_id": "88-C177-S199",
+      "dialect": "duckdb",
+      "expected_public_parser": "R",
+      "feature_id": "dml.insert_conflicts",
+      "variant": "REPLACE INTO",
+      "semantic_owner": [
+        "TASK-80",
+        "TASK-82"
+      ],
+      "reason": "REPLACE INTO syntax is nonportable; conflict-handling alternatives are not equivalent without constraint and write-effect proof.",
+      "parser_disposition": "blocked_original_syntax",
+      "alternate_sql": null,
+      "alternate_native_execution": "not_attested",
+      "required_evidence": "If claiming an alternative, prove canonical typed SQL/adapter equivalence AND independent native execution; original remains rejected.",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S199-hive",
+      "original_id": "88-C177-S199",
+      "dialect": "hive",
+      "expected_public_parser": "R",
+      "feature_id": "dml.insert_conflicts",
+      "variant": "REPLACE INTO",
+      "semantic_owner": [
+        "TASK-80",
+        "TASK-82"
+      ],
+      "reason": "REPLACE INTO syntax is nonportable; conflict-handling alternatives are not equivalent without constraint and write-effect proof.",
+      "parser_disposition": "blocked_original_syntax",
+      "alternate_sql": null,
+      "alternate_native_execution": "not_attested",
+      "required_evidence": "If claiming an alternative, prove canonical typed SQL/adapter equivalence AND independent native execution; original remains rejected.",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S199-mssql",
+      "original_id": "88-C177-S199",
+      "dialect": "mssql",
+      "expected_public_parser": "R",
+      "feature_id": "dml.insert_conflicts",
+      "variant": "REPLACE INTO",
+      "semantic_owner": [
+        "TASK-80",
+        "TASK-82"
+      ],
+      "reason": "REPLACE INTO syntax is nonportable; conflict-handling alternatives are not equivalent without constraint and write-effect proof.",
+      "parser_disposition": "blocked_original_syntax",
+      "alternate_sql": null,
+      "alternate_native_execution": "not_attested",
+      "required_evidence": "If claiming an alternative, prove canonical typed SQL/adapter equivalence AND independent native execution; original remains rejected.",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S199-postgresql",
+      "original_id": "88-C177-S199",
+      "dialect": "postgresql",
+      "expected_public_parser": "R",
+      "feature_id": "dml.insert_conflicts",
+      "variant": "REPLACE INTO",
+      "semantic_owner": [
+        "TASK-80",
+        "TASK-82"
+      ],
+      "reason": "REPLACE INTO syntax is nonportable; conflict-handling alternatives are not equivalent without constraint and write-effect proof.",
+      "parser_disposition": "blocked_original_syntax",
+      "alternate_sql": null,
+      "alternate_native_execution": "not_attested",
+      "required_evidence": "If claiming an alternative, prove canonical typed SQL/adapter equivalence AND independent native execution; original remains rejected.",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S199-redshift",
+      "original_id": "88-C177-S199",
+      "dialect": "redshift",
+      "expected_public_parser": "R",
+      "feature_id": "dml.insert_conflicts",
+      "variant": "REPLACE INTO",
+      "semantic_owner": [
+        "TASK-80",
+        "TASK-82"
+      ],
+      "reason": "REPLACE INTO syntax is nonportable; conflict-handling alternatives are not equivalent without constraint and write-effect proof.",
+      "parser_disposition": "blocked_original_syntax",
+      "alternate_sql": null,
+      "alternate_native_execution": "not_attested",
+      "required_evidence": "If claiming an alternative, prove canonical typed SQL/adapter equivalence AND independent native execution; original remains rejected.",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S199-snowflake",
+      "original_id": "88-C177-S199",
+      "dialect": "snowflake",
+      "expected_public_parser": "R",
+      "feature_id": "dml.insert_conflicts",
+      "variant": "REPLACE INTO",
+      "semantic_owner": [
+        "TASK-80",
+        "TASK-82"
+      ],
+      "reason": "REPLACE INTO syntax is nonportable; conflict-handling alternatives are not equivalent without constraint and write-effect proof.",
+      "parser_disposition": "blocked_original_syntax",
+      "alternate_sql": null,
+      "alternate_native_execution": "not_attested",
+      "required_evidence": "If claiming an alternative, prove canonical typed SQL/adapter equivalence AND independent native execution; original remains rejected.",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S222-bigquery",
+      "original_id": "88-C177-S222",
+      "dialect": "bigquery",
+      "expected_public_parser": "R",
+      "feature_id": "transactions.ordered_effects",
+      "variant": "snapshot visibility",
+      "semantic_owner": [
+        "TASK-84"
+      ],
+      "reason": "Transaction BEGIN/COMMIT syntax is parser-dialect dependent; vendor session and snapshot visibility require independent native evidence.",
+      "parser_disposition": "blocked_original_syntax",
+      "alternate_sql": null,
+      "alternate_native_execution": "not_attested",
+      "required_evidence": "If claiming an alternative, prove canonical typed SQL/adapter equivalence AND independent native execution; original remains rejected.",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S222-snowflake",
+      "original_id": "88-C177-S222",
+      "dialect": "snowflake",
+      "expected_public_parser": "R",
+      "feature_id": "transactions.ordered_effects",
+      "variant": "snapshot visibility",
+      "semantic_owner": [
+        "TASK-84"
+      ],
+      "reason": "Transaction BEGIN/COMMIT syntax is parser-dialect dependent; vendor session and snapshot visibility require independent native evidence.",
+      "parser_disposition": "blocked_original_syntax",
+      "alternate_sql": null,
+      "alternate_native_execution": "not_attested",
+      "required_evidence": "If claiming an alternative, prove canonical typed SQL/adapter equivalence AND independent native execution; original remains rejected.",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S224-bigquery",
+      "original_id": "88-C177-S224",
+      "dialect": "bigquery",
+      "expected_public_parser": "R",
+      "feature_id": "transactions.ordered_effects",
+      "variant": "rollback",
+      "semantic_owner": [
+        "TASK-84"
+      ],
+      "reason": "Transaction BEGIN/ROLLBACK syntax is parser-dialect dependent; rollback/session visibility cannot be inferred from parser behavior.",
+      "parser_disposition": "blocked_original_syntax",
+      "alternate_sql": null,
+      "alternate_native_execution": "not_attested",
+      "required_evidence": "If claiming an alternative, prove canonical typed SQL/adapter equivalence AND independent native execution; original remains rejected.",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S224-snowflake",
+      "original_id": "88-C177-S224",
+      "dialect": "snowflake",
+      "expected_public_parser": "R",
+      "feature_id": "transactions.ordered_effects",
+      "variant": "rollback",
+      "semantic_owner": [
+        "TASK-84"
+      ],
+      "reason": "Transaction BEGIN/ROLLBACK syntax is parser-dialect dependent; rollback/session visibility cannot be inferred from parser behavior.",
+      "parser_disposition": "blocked_original_syntax",
+      "alternate_sql": null,
+      "alternate_native_execution": "not_attested",
+      "required_evidence": "If claiming an alternative, prove canonical typed SQL/adapter equivalence AND independent native execution; original remains rejected.",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S230-ansi",
+      "original_id": "88-C177-S230",
+      "dialect": "ansi",
+      "expected_public_parser": "R",
+      "feature_id": "outcomes.distribution",
+      "variant": "null frequency",
+      "semantic_owner": [
+        "TASK-85"
+      ],
+      "reason": "Aggregate FILTER NULL-count syntax is parser-dialect dependent; CASE-based alternatives require separately verified semantics.",
+      "parser_disposition": "blocked_original_syntax",
+      "alternate_sql": null,
+      "alternate_native_execution": "not_attested",
+      "required_evidence": "If claiming an alternative, prove canonical typed SQL/adapter equivalence AND independent native execution; original remains rejected.",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S230-bigquery",
+      "original_id": "88-C177-S230",
+      "dialect": "bigquery",
+      "expected_public_parser": "R",
+      "feature_id": "outcomes.distribution",
+      "variant": "null frequency",
+      "semantic_owner": [
+        "TASK-85"
+      ],
+      "reason": "Aggregate FILTER NULL-count syntax is parser-dialect dependent; CASE-based alternatives require separately verified semantics.",
+      "parser_disposition": "blocked_original_syntax",
+      "alternate_sql": null,
+      "alternate_native_execution": "not_attested",
+      "required_evidence": "If claiming an alternative, prove canonical typed SQL/adapter equivalence AND independent native execution; original remains rejected.",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S230-clickhouse",
+      "original_id": "88-C177-S230",
+      "dialect": "clickhouse",
+      "expected_public_parser": "R",
+      "feature_id": "outcomes.distribution",
+      "variant": "null frequency",
+      "semantic_owner": [
+        "TASK-85"
+      ],
+      "reason": "Aggregate FILTER NULL-count syntax is parser-dialect dependent; CASE-based alternatives require separately verified semantics.",
+      "parser_disposition": "blocked_original_syntax",
+      "alternate_sql": null,
+      "alternate_native_execution": "not_attested",
+      "required_evidence": "If claiming an alternative, prove canonical typed SQL/adapter equivalence AND independent native execution; original remains rejected.",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S230-mssql",
+      "original_id": "88-C177-S230",
+      "dialect": "mssql",
+      "expected_public_parser": "R",
+      "feature_id": "outcomes.distribution",
+      "variant": "null frequency",
+      "semantic_owner": [
+        "TASK-85"
+      ],
+      "reason": "Aggregate FILTER NULL-count syntax is parser-dialect dependent; CASE-based alternatives require separately verified semantics.",
+      "parser_disposition": "blocked_original_syntax",
+      "alternate_sql": null,
+      "alternate_native_execution": "not_attested",
+      "required_evidence": "If claiming an alternative, prove canonical typed SQL/adapter equivalence AND independent native execution; original remains rejected.",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S230-mysql",
+      "original_id": "88-C177-S230",
+      "dialect": "mysql",
+      "expected_public_parser": "R",
+      "feature_id": "outcomes.distribution",
+      "variant": "null frequency",
+      "semantic_owner": [
+        "TASK-85"
+      ],
+      "reason": "Aggregate FILTER NULL-count syntax is parser-dialect dependent; CASE-based alternatives require separately verified semantics.",
+      "parser_disposition": "blocked_original_syntax",
+      "alternate_sql": null,
+      "alternate_native_execution": "not_attested",
+      "required_evidence": "If claiming an alternative, prove canonical typed SQL/adapter equivalence AND independent native execution; original remains rejected.",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S230-redshift",
+      "original_id": "88-C177-S230",
+      "dialect": "redshift",
+      "expected_public_parser": "R",
+      "feature_id": "outcomes.distribution",
+      "variant": "null frequency",
+      "semantic_owner": [
+        "TASK-85"
+      ],
+      "reason": "Aggregate FILTER NULL-count syntax is parser-dialect dependent; CASE-based alternatives require separately verified semantics.",
+      "parser_disposition": "blocked_original_syntax",
+      "alternate_sql": null,
+      "alternate_native_execution": "not_attested",
+      "required_evidence": "If claiming an alternative, prove canonical typed SQL/adapter equivalence AND independent native execution; original remains rejected.",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S230-snowflake",
+      "original_id": "88-C177-S230",
+      "dialect": "snowflake",
+      "expected_public_parser": "R",
+      "feature_id": "outcomes.distribution",
+      "variant": "null frequency",
+      "semantic_owner": [
+        "TASK-85"
+      ],
+      "reason": "Aggregate FILTER NULL-count syntax is parser-dialect dependent; CASE-based alternatives require separately verified semantics.",
+      "parser_disposition": "blocked_original_syntax",
+      "alternate_sql": null,
+      "alternate_native_execution": "not_attested",
+      "required_evidence": "If claiming an alternative, prove canonical typed SQL/adapter equivalence AND independent native execution; original remains rejected.",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    }
+  ],
+  "analyzer_unsupported_cells": [
+    {
+      "cell_id": "88-C177-S180-ansi",
+      "original_id": "88-C177-S180",
+      "dialect": "ansi",
+      "expected_public_analyzer": "U",
+      "feature_id": "types.structural",
+      "variant": "enum",
+      "semantic_owner": [
+        "TASK-79"
+      ],
+      "reason": "CREATE TYPE ENUM parses but is emitted as explicit UnsupportedStatement; no derived type/schema effect is attested.",
+      "safe_protocol_outcome": "explicit_unsupported_not_exact",
+      "source_bound_diagnostic": "requires_public_api_regression_check",
+      "review_disposition": "blocking_unimplemented_or_unproved",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S180-bigquery",
+      "original_id": "88-C177-S180",
+      "dialect": "bigquery",
+      "expected_public_analyzer": "U",
+      "feature_id": "types.structural",
+      "variant": "enum",
+      "semantic_owner": [
+        "TASK-79"
+      ],
+      "reason": "CREATE TYPE ENUM parses but is emitted as explicit UnsupportedStatement; no derived type/schema effect is attested.",
+      "safe_protocol_outcome": "explicit_unsupported_not_exact",
+      "source_bound_diagnostic": "requires_public_api_regression_check",
+      "review_disposition": "blocking_unimplemented_or_unproved",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S180-clickhouse",
+      "original_id": "88-C177-S180",
+      "dialect": "clickhouse",
+      "expected_public_analyzer": "U",
+      "feature_id": "types.structural",
+      "variant": "enum",
+      "semantic_owner": [
+        "TASK-79"
+      ],
+      "reason": "CREATE TYPE ENUM parses but is emitted as explicit UnsupportedStatement; no derived type/schema effect is attested.",
+      "safe_protocol_outcome": "explicit_unsupported_not_exact",
+      "source_bound_diagnostic": "requires_public_api_regression_check",
+      "review_disposition": "blocking_unimplemented_or_unproved",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S180-databricks",
+      "original_id": "88-C177-S180",
+      "dialect": "databricks",
+      "expected_public_analyzer": "U",
+      "feature_id": "types.structural",
+      "variant": "enum",
+      "semantic_owner": [
+        "TASK-79"
+      ],
+      "reason": "CREATE TYPE ENUM parses but is emitted as explicit UnsupportedStatement; no derived type/schema effect is attested.",
+      "safe_protocol_outcome": "explicit_unsupported_not_exact",
+      "source_bound_diagnostic": "requires_public_api_regression_check",
+      "review_disposition": "blocking_unimplemented_or_unproved",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S180-duckdb",
+      "original_id": "88-C177-S180",
+      "dialect": "duckdb",
+      "expected_public_analyzer": "U",
+      "feature_id": "types.structural",
+      "variant": "enum",
+      "semantic_owner": [
+        "TASK-79"
+      ],
+      "reason": "CREATE TYPE ENUM parses but is emitted as explicit UnsupportedStatement; no derived type/schema effect is attested.",
+      "safe_protocol_outcome": "explicit_unsupported_not_exact",
+      "source_bound_diagnostic": "requires_public_api_regression_check",
+      "review_disposition": "blocking_unimplemented_or_unproved",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S180-generic",
+      "original_id": "88-C177-S180",
+      "dialect": "generic",
+      "expected_public_analyzer": "U",
+      "feature_id": "types.structural",
+      "variant": "enum",
+      "semantic_owner": [
+        "TASK-79"
+      ],
+      "reason": "CREATE TYPE ENUM parses but is emitted as explicit UnsupportedStatement; no derived type/schema effect is attested.",
+      "safe_protocol_outcome": "explicit_unsupported_not_exact",
+      "source_bound_diagnostic": "requires_public_api_regression_check",
+      "review_disposition": "blocking_unimplemented_or_unproved",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S180-hive",
+      "original_id": "88-C177-S180",
+      "dialect": "hive",
+      "expected_public_analyzer": "U",
+      "feature_id": "types.structural",
+      "variant": "enum",
+      "semantic_owner": [
+        "TASK-79"
+      ],
+      "reason": "CREATE TYPE ENUM parses but is emitted as explicit UnsupportedStatement; no derived type/schema effect is attested.",
+      "safe_protocol_outcome": "explicit_unsupported_not_exact",
+      "source_bound_diagnostic": "requires_public_api_regression_check",
+      "review_disposition": "blocking_unimplemented_or_unproved",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S180-mssql",
+      "original_id": "88-C177-S180",
+      "dialect": "mssql",
+      "expected_public_analyzer": "U",
+      "feature_id": "types.structural",
+      "variant": "enum",
+      "semantic_owner": [
+        "TASK-79"
+      ],
+      "reason": "CREATE TYPE ENUM parses but is emitted as explicit UnsupportedStatement; no derived type/schema effect is attested.",
+      "safe_protocol_outcome": "explicit_unsupported_not_exact",
+      "source_bound_diagnostic": "requires_public_api_regression_check",
+      "review_disposition": "blocking_unimplemented_or_unproved",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S180-mysql",
+      "original_id": "88-C177-S180",
+      "dialect": "mysql",
+      "expected_public_analyzer": "U",
+      "feature_id": "types.structural",
+      "variant": "enum",
+      "semantic_owner": [
+        "TASK-79"
+      ],
+      "reason": "CREATE TYPE ENUM parses but is emitted as explicit UnsupportedStatement; no derived type/schema effect is attested.",
+      "safe_protocol_outcome": "explicit_unsupported_not_exact",
+      "source_bound_diagnostic": "requires_public_api_regression_check",
+      "review_disposition": "blocking_unimplemented_or_unproved",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S180-postgresql",
+      "original_id": "88-C177-S180",
+      "dialect": "postgresql",
+      "expected_public_analyzer": "U",
+      "feature_id": "types.structural",
+      "variant": "enum",
+      "semantic_owner": [
+        "TASK-79"
+      ],
+      "reason": "CREATE TYPE ENUM parses but is emitted as explicit UnsupportedStatement; no derived type/schema effect is attested.",
+      "safe_protocol_outcome": "explicit_unsupported_not_exact",
+      "source_bound_diagnostic": "requires_public_api_regression_check",
+      "review_disposition": "blocking_unimplemented_or_unproved",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S180-redshift",
+      "original_id": "88-C177-S180",
+      "dialect": "redshift",
+      "expected_public_analyzer": "U",
+      "feature_id": "types.structural",
+      "variant": "enum",
+      "semantic_owner": [
+        "TASK-79"
+      ],
+      "reason": "CREATE TYPE ENUM parses but is emitted as explicit UnsupportedStatement; no derived type/schema effect is attested.",
+      "safe_protocol_outcome": "explicit_unsupported_not_exact",
+      "source_bound_diagnostic": "requires_public_api_regression_check",
+      "review_disposition": "blocking_unimplemented_or_unproved",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S180-snowflake",
+      "original_id": "88-C177-S180",
+      "dialect": "snowflake",
+      "expected_public_analyzer": "U",
+      "feature_id": "types.structural",
+      "variant": "enum",
+      "semantic_owner": [
+        "TASK-79"
+      ],
+      "reason": "CREATE TYPE ENUM parses but is emitted as explicit UnsupportedStatement; no derived type/schema effect is attested.",
+      "safe_protocol_outcome": "explicit_unsupported_not_exact",
+      "source_bound_diagnostic": "requires_public_api_regression_check",
+      "review_disposition": "blocking_unimplemented_or_unproved",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S180-sqlite",
+      "original_id": "88-C177-S180",
+      "dialect": "sqlite",
+      "expected_public_analyzer": "U",
+      "feature_id": "types.structural",
+      "variant": "enum",
+      "semantic_owner": [
+        "TASK-79"
+      ],
+      "reason": "CREATE TYPE ENUM parses but is emitted as explicit UnsupportedStatement; no derived type/schema effect is attested.",
+      "safe_protocol_outcome": "explicit_unsupported_not_exact",
+      "source_bound_diagnostic": "requires_public_api_regression_check",
+      "review_disposition": "blocking_unimplemented_or_unproved",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S199-generic",
+      "original_id": "88-C177-S199",
+      "dialect": "generic",
+      "expected_public_analyzer": "U",
+      "feature_id": "dml.insert_conflicts",
+      "variant": "REPLACE INTO",
+      "semantic_owner": [
+        "TASK-80",
+        "TASK-82"
+      ],
+      "reason": "REPLACE INTO parses in these dialects but no canonical conflict/replacement write effect is certified.",
+      "safe_protocol_outcome": "explicit_unsupported_not_exact",
+      "source_bound_diagnostic": "requires_public_api_regression_check",
+      "review_disposition": "blocking_unimplemented_or_unproved",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S199-mysql",
+      "original_id": "88-C177-S199",
+      "dialect": "mysql",
+      "expected_public_analyzer": "U",
+      "feature_id": "dml.insert_conflicts",
+      "variant": "REPLACE INTO",
+      "semantic_owner": [
+        "TASK-80",
+        "TASK-82"
+      ],
+      "reason": "REPLACE INTO parses in these dialects but no canonical conflict/replacement write effect is certified.",
+      "safe_protocol_outcome": "explicit_unsupported_not_exact",
+      "source_bound_diagnostic": "requires_public_api_regression_check",
+      "review_disposition": "blocking_unimplemented_or_unproved",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S199-sqlite",
+      "original_id": "88-C177-S199",
+      "dialect": "sqlite",
+      "expected_public_analyzer": "U",
+      "feature_id": "dml.insert_conflicts",
+      "variant": "REPLACE INTO",
+      "semantic_owner": [
+        "TASK-80",
+        "TASK-82"
+      ],
+      "reason": "REPLACE INTO parses in these dialects but no canonical conflict/replacement write effect is certified.",
+      "safe_protocol_outcome": "explicit_unsupported_not_exact",
+      "source_bound_diagnostic": "requires_public_api_regression_check",
+      "review_disposition": "blocking_unimplemented_or_unproved",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S200-ansi",
+      "original_id": "88-C177-S200",
+      "dialect": "ansi",
+      "expected_public_analyzer": "U",
+      "feature_id": "dml.insert_conflicts",
+      "variant": "INSERT OVERWRITE",
+      "semantic_owner": [
+        "TASK-80",
+        "TASK-82"
+      ],
+      "reason": "INSERT OVERWRITE parses but the canonical overwrite target/state effect remains unsupported in the public analyzer.",
+      "safe_protocol_outcome": "explicit_unsupported_not_exact",
+      "source_bound_diagnostic": "requires_public_api_regression_check",
+      "review_disposition": "blocking_unimplemented_or_unproved",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S200-bigquery",
+      "original_id": "88-C177-S200",
+      "dialect": "bigquery",
+      "expected_public_analyzer": "U",
+      "feature_id": "dml.insert_conflicts",
+      "variant": "INSERT OVERWRITE",
+      "semantic_owner": [
+        "TASK-80",
+        "TASK-82"
+      ],
+      "reason": "INSERT OVERWRITE parses but the canonical overwrite target/state effect remains unsupported in the public analyzer.",
+      "safe_protocol_outcome": "explicit_unsupported_not_exact",
+      "source_bound_diagnostic": "requires_public_api_regression_check",
+      "review_disposition": "blocking_unimplemented_or_unproved",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S200-clickhouse",
+      "original_id": "88-C177-S200",
+      "dialect": "clickhouse",
+      "expected_public_analyzer": "U",
+      "feature_id": "dml.insert_conflicts",
+      "variant": "INSERT OVERWRITE",
+      "semantic_owner": [
+        "TASK-80",
+        "TASK-82"
+      ],
+      "reason": "INSERT OVERWRITE parses but the canonical overwrite target/state effect remains unsupported in the public analyzer.",
+      "safe_protocol_outcome": "explicit_unsupported_not_exact",
+      "source_bound_diagnostic": "requires_public_api_regression_check",
+      "review_disposition": "blocking_unimplemented_or_unproved",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S200-databricks",
+      "original_id": "88-C177-S200",
+      "dialect": "databricks",
+      "expected_public_analyzer": "U",
+      "feature_id": "dml.insert_conflicts",
+      "variant": "INSERT OVERWRITE",
+      "semantic_owner": [
+        "TASK-80",
+        "TASK-82"
+      ],
+      "reason": "INSERT OVERWRITE parses but the canonical overwrite target/state effect remains unsupported in the public analyzer.",
+      "safe_protocol_outcome": "explicit_unsupported_not_exact",
+      "source_bound_diagnostic": "requires_public_api_regression_check",
+      "review_disposition": "blocking_unimplemented_or_unproved",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S200-duckdb",
+      "original_id": "88-C177-S200",
+      "dialect": "duckdb",
+      "expected_public_analyzer": "U",
+      "feature_id": "dml.insert_conflicts",
+      "variant": "INSERT OVERWRITE",
+      "semantic_owner": [
+        "TASK-80",
+        "TASK-82"
+      ],
+      "reason": "INSERT OVERWRITE parses but the canonical overwrite target/state effect remains unsupported in the public analyzer.",
+      "safe_protocol_outcome": "explicit_unsupported_not_exact",
+      "source_bound_diagnostic": "requires_public_api_regression_check",
+      "review_disposition": "blocking_unimplemented_or_unproved",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S200-generic",
+      "original_id": "88-C177-S200",
+      "dialect": "generic",
+      "expected_public_analyzer": "U",
+      "feature_id": "dml.insert_conflicts",
+      "variant": "INSERT OVERWRITE",
+      "semantic_owner": [
+        "TASK-80",
+        "TASK-82"
+      ],
+      "reason": "INSERT OVERWRITE parses but the canonical overwrite target/state effect remains unsupported in the public analyzer.",
+      "safe_protocol_outcome": "explicit_unsupported_not_exact",
+      "source_bound_diagnostic": "requires_public_api_regression_check",
+      "review_disposition": "blocking_unimplemented_or_unproved",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S200-hive",
+      "original_id": "88-C177-S200",
+      "dialect": "hive",
+      "expected_public_analyzer": "U",
+      "feature_id": "dml.insert_conflicts",
+      "variant": "INSERT OVERWRITE",
+      "semantic_owner": [
+        "TASK-80",
+        "TASK-82"
+      ],
+      "reason": "INSERT OVERWRITE parses but the canonical overwrite target/state effect remains unsupported in the public analyzer.",
+      "safe_protocol_outcome": "explicit_unsupported_not_exact",
+      "source_bound_diagnostic": "requires_public_api_regression_check",
+      "review_disposition": "blocking_unimplemented_or_unproved",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S200-mssql",
+      "original_id": "88-C177-S200",
+      "dialect": "mssql",
+      "expected_public_analyzer": "U",
+      "feature_id": "dml.insert_conflicts",
+      "variant": "INSERT OVERWRITE",
+      "semantic_owner": [
+        "TASK-80",
+        "TASK-82"
+      ],
+      "reason": "INSERT OVERWRITE parses but the canonical overwrite target/state effect remains unsupported in the public analyzer.",
+      "safe_protocol_outcome": "explicit_unsupported_not_exact",
+      "source_bound_diagnostic": "requires_public_api_regression_check",
+      "review_disposition": "blocking_unimplemented_or_unproved",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S200-mysql",
+      "original_id": "88-C177-S200",
+      "dialect": "mysql",
+      "expected_public_analyzer": "U",
+      "feature_id": "dml.insert_conflicts",
+      "variant": "INSERT OVERWRITE",
+      "semantic_owner": [
+        "TASK-80",
+        "TASK-82"
+      ],
+      "reason": "INSERT OVERWRITE parses but the canonical overwrite target/state effect remains unsupported in the public analyzer.",
+      "safe_protocol_outcome": "explicit_unsupported_not_exact",
+      "source_bound_diagnostic": "requires_public_api_regression_check",
+      "review_disposition": "blocking_unimplemented_or_unproved",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S200-postgresql",
+      "original_id": "88-C177-S200",
+      "dialect": "postgresql",
+      "expected_public_analyzer": "U",
+      "feature_id": "dml.insert_conflicts",
+      "variant": "INSERT OVERWRITE",
+      "semantic_owner": [
+        "TASK-80",
+        "TASK-82"
+      ],
+      "reason": "INSERT OVERWRITE parses but the canonical overwrite target/state effect remains unsupported in the public analyzer.",
+      "safe_protocol_outcome": "explicit_unsupported_not_exact",
+      "source_bound_diagnostic": "requires_public_api_regression_check",
+      "review_disposition": "blocking_unimplemented_or_unproved",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S200-redshift",
+      "original_id": "88-C177-S200",
+      "dialect": "redshift",
+      "expected_public_analyzer": "U",
+      "feature_id": "dml.insert_conflicts",
+      "variant": "INSERT OVERWRITE",
+      "semantic_owner": [
+        "TASK-80",
+        "TASK-82"
+      ],
+      "reason": "INSERT OVERWRITE parses but the canonical overwrite target/state effect remains unsupported in the public analyzer.",
+      "safe_protocol_outcome": "explicit_unsupported_not_exact",
+      "source_bound_diagnostic": "requires_public_api_regression_check",
+      "review_disposition": "blocking_unimplemented_or_unproved",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S200-snowflake",
+      "original_id": "88-C177-S200",
+      "dialect": "snowflake",
+      "expected_public_analyzer": "U",
+      "feature_id": "dml.insert_conflicts",
+      "variant": "INSERT OVERWRITE",
+      "semantic_owner": [
+        "TASK-80",
+        "TASK-82"
+      ],
+      "reason": "INSERT OVERWRITE parses but the canonical overwrite target/state effect remains unsupported in the public analyzer.",
+      "safe_protocol_outcome": "explicit_unsupported_not_exact",
+      "source_bound_diagnostic": "requires_public_api_regression_check",
+      "review_disposition": "blocking_unimplemented_or_unproved",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S200-sqlite",
+      "original_id": "88-C177-S200",
+      "dialect": "sqlite",
+      "expected_public_analyzer": "U",
+      "feature_id": "dml.insert_conflicts",
+      "variant": "INSERT OVERWRITE",
+      "semantic_owner": [
+        "TASK-80",
+        "TASK-82"
+      ],
+      "reason": "INSERT OVERWRITE parses but the canonical overwrite target/state effect remains unsupported in the public analyzer.",
+      "safe_protocol_outcome": "explicit_unsupported_not_exact",
+      "source_bound_diagnostic": "requires_public_api_regression_check",
+      "review_disposition": "blocking_unimplemented_or_unproved",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S203-ansi",
+      "original_id": "88-C177-S203",
+      "dialect": "ansi",
+      "expected_public_analyzer": "U",
+      "feature_id": "dml.update",
+      "variant": "correlated predicates",
+      "semantic_owner": [
+        "TASK-81"
+      ],
+      "reason": "UPDATE with nested IN predicate parses but this specific write/predicate combination is explicitly unsupported.",
+      "safe_protocol_outcome": "explicit_unsupported_not_exact",
+      "source_bound_diagnostic": "requires_public_api_regression_check",
+      "review_disposition": "blocking_unimplemented_or_unproved",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S203-bigquery",
+      "original_id": "88-C177-S203",
+      "dialect": "bigquery",
+      "expected_public_analyzer": "U",
+      "feature_id": "dml.update",
+      "variant": "correlated predicates",
+      "semantic_owner": [
+        "TASK-81"
+      ],
+      "reason": "UPDATE with nested IN predicate parses but this specific write/predicate combination is explicitly unsupported.",
+      "safe_protocol_outcome": "explicit_unsupported_not_exact",
+      "source_bound_diagnostic": "requires_public_api_regression_check",
+      "review_disposition": "blocking_unimplemented_or_unproved",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S203-clickhouse",
+      "original_id": "88-C177-S203",
+      "dialect": "clickhouse",
+      "expected_public_analyzer": "U",
+      "feature_id": "dml.update",
+      "variant": "correlated predicates",
+      "semantic_owner": [
+        "TASK-81"
+      ],
+      "reason": "UPDATE with nested IN predicate parses but this specific write/predicate combination is explicitly unsupported.",
+      "safe_protocol_outcome": "explicit_unsupported_not_exact",
+      "source_bound_diagnostic": "requires_public_api_regression_check",
+      "review_disposition": "blocking_unimplemented_or_unproved",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S203-databricks",
+      "original_id": "88-C177-S203",
+      "dialect": "databricks",
+      "expected_public_analyzer": "U",
+      "feature_id": "dml.update",
+      "variant": "correlated predicates",
+      "semantic_owner": [
+        "TASK-81"
+      ],
+      "reason": "UPDATE with nested IN predicate parses but this specific write/predicate combination is explicitly unsupported.",
+      "safe_protocol_outcome": "explicit_unsupported_not_exact",
+      "source_bound_diagnostic": "requires_public_api_regression_check",
+      "review_disposition": "blocking_unimplemented_or_unproved",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S203-duckdb",
+      "original_id": "88-C177-S203",
+      "dialect": "duckdb",
+      "expected_public_analyzer": "U",
+      "feature_id": "dml.update",
+      "variant": "correlated predicates",
+      "semantic_owner": [
+        "TASK-81"
+      ],
+      "reason": "UPDATE with nested IN predicate parses but this specific write/predicate combination is explicitly unsupported.",
+      "safe_protocol_outcome": "explicit_unsupported_not_exact",
+      "source_bound_diagnostic": "requires_public_api_regression_check",
+      "review_disposition": "blocking_unimplemented_or_unproved",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S203-generic",
+      "original_id": "88-C177-S203",
+      "dialect": "generic",
+      "expected_public_analyzer": "U",
+      "feature_id": "dml.update",
+      "variant": "correlated predicates",
+      "semantic_owner": [
+        "TASK-81"
+      ],
+      "reason": "UPDATE with nested IN predicate parses but this specific write/predicate combination is explicitly unsupported.",
+      "safe_protocol_outcome": "explicit_unsupported_not_exact",
+      "source_bound_diagnostic": "requires_public_api_regression_check",
+      "review_disposition": "blocking_unimplemented_or_unproved",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S203-hive",
+      "original_id": "88-C177-S203",
+      "dialect": "hive",
+      "expected_public_analyzer": "U",
+      "feature_id": "dml.update",
+      "variant": "correlated predicates",
+      "semantic_owner": [
+        "TASK-81"
+      ],
+      "reason": "UPDATE with nested IN predicate parses but this specific write/predicate combination is explicitly unsupported.",
+      "safe_protocol_outcome": "explicit_unsupported_not_exact",
+      "source_bound_diagnostic": "requires_public_api_regression_check",
+      "review_disposition": "blocking_unimplemented_or_unproved",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S203-mssql",
+      "original_id": "88-C177-S203",
+      "dialect": "mssql",
+      "expected_public_analyzer": "U",
+      "feature_id": "dml.update",
+      "variant": "correlated predicates",
+      "semantic_owner": [
+        "TASK-81"
+      ],
+      "reason": "UPDATE with nested IN predicate parses but this specific write/predicate combination is explicitly unsupported.",
+      "safe_protocol_outcome": "explicit_unsupported_not_exact",
+      "source_bound_diagnostic": "requires_public_api_regression_check",
+      "review_disposition": "blocking_unimplemented_or_unproved",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S203-mysql",
+      "original_id": "88-C177-S203",
+      "dialect": "mysql",
+      "expected_public_analyzer": "U",
+      "feature_id": "dml.update",
+      "variant": "correlated predicates",
+      "semantic_owner": [
+        "TASK-81"
+      ],
+      "reason": "UPDATE with nested IN predicate parses but this specific write/predicate combination is explicitly unsupported.",
+      "safe_protocol_outcome": "explicit_unsupported_not_exact",
+      "source_bound_diagnostic": "requires_public_api_regression_check",
+      "review_disposition": "blocking_unimplemented_or_unproved",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S203-postgresql",
+      "original_id": "88-C177-S203",
+      "dialect": "postgresql",
+      "expected_public_analyzer": "U",
+      "feature_id": "dml.update",
+      "variant": "correlated predicates",
+      "semantic_owner": [
+        "TASK-81"
+      ],
+      "reason": "UPDATE with nested IN predicate parses but this specific write/predicate combination is explicitly unsupported.",
+      "safe_protocol_outcome": "explicit_unsupported_not_exact",
+      "source_bound_diagnostic": "requires_public_api_regression_check",
+      "review_disposition": "blocking_unimplemented_or_unproved",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S203-redshift",
+      "original_id": "88-C177-S203",
+      "dialect": "redshift",
+      "expected_public_analyzer": "U",
+      "feature_id": "dml.update",
+      "variant": "correlated predicates",
+      "semantic_owner": [
+        "TASK-81"
+      ],
+      "reason": "UPDATE with nested IN predicate parses but this specific write/predicate combination is explicitly unsupported.",
+      "safe_protocol_outcome": "explicit_unsupported_not_exact",
+      "source_bound_diagnostic": "requires_public_api_regression_check",
+      "review_disposition": "blocking_unimplemented_or_unproved",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S203-snowflake",
+      "original_id": "88-C177-S203",
+      "dialect": "snowflake",
+      "expected_public_analyzer": "U",
+      "feature_id": "dml.update",
+      "variant": "correlated predicates",
+      "semantic_owner": [
+        "TASK-81"
+      ],
+      "reason": "UPDATE with nested IN predicate parses but this specific write/predicate combination is explicitly unsupported.",
+      "safe_protocol_outcome": "explicit_unsupported_not_exact",
+      "source_bound_diagnostic": "requires_public_api_regression_check",
+      "review_disposition": "blocking_unimplemented_or_unproved",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S203-sqlite",
+      "original_id": "88-C177-S203",
+      "dialect": "sqlite",
+      "expected_public_analyzer": "U",
+      "feature_id": "dml.update",
+      "variant": "correlated predicates",
+      "semantic_owner": [
+        "TASK-81"
+      ],
+      "reason": "UPDATE with nested IN predicate parses but this specific write/predicate combination is explicitly unsupported.",
+      "safe_protocol_outcome": "explicit_unsupported_not_exact",
+      "source_bound_diagnostic": "requires_public_api_regression_check",
+      "review_disposition": "blocking_unimplemented_or_unproved",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S206-ansi",
+      "original_id": "88-C177-S206",
+      "dialect": "ansi",
+      "expected_public_analyzer": "U",
+      "feature_id": "dml.delete",
+      "variant": "subquery",
+      "semantic_owner": [
+        "TASK-81"
+      ],
+      "reason": "DELETE with nested IN predicate parses but this specific write/predicate combination is explicitly unsupported.",
+      "safe_protocol_outcome": "explicit_unsupported_not_exact",
+      "source_bound_diagnostic": "requires_public_api_regression_check",
+      "review_disposition": "blocking_unimplemented_or_unproved",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S206-bigquery",
+      "original_id": "88-C177-S206",
+      "dialect": "bigquery",
+      "expected_public_analyzer": "U",
+      "feature_id": "dml.delete",
+      "variant": "subquery",
+      "semantic_owner": [
+        "TASK-81"
+      ],
+      "reason": "DELETE with nested IN predicate parses but this specific write/predicate combination is explicitly unsupported.",
+      "safe_protocol_outcome": "explicit_unsupported_not_exact",
+      "source_bound_diagnostic": "requires_public_api_regression_check",
+      "review_disposition": "blocking_unimplemented_or_unproved",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S206-clickhouse",
+      "original_id": "88-C177-S206",
+      "dialect": "clickhouse",
+      "expected_public_analyzer": "U",
+      "feature_id": "dml.delete",
+      "variant": "subquery",
+      "semantic_owner": [
+        "TASK-81"
+      ],
+      "reason": "DELETE with nested IN predicate parses but this specific write/predicate combination is explicitly unsupported.",
+      "safe_protocol_outcome": "explicit_unsupported_not_exact",
+      "source_bound_diagnostic": "requires_public_api_regression_check",
+      "review_disposition": "blocking_unimplemented_or_unproved",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S206-databricks",
+      "original_id": "88-C177-S206",
+      "dialect": "databricks",
+      "expected_public_analyzer": "U",
+      "feature_id": "dml.delete",
+      "variant": "subquery",
+      "semantic_owner": [
+        "TASK-81"
+      ],
+      "reason": "DELETE with nested IN predicate parses but this specific write/predicate combination is explicitly unsupported.",
+      "safe_protocol_outcome": "explicit_unsupported_not_exact",
+      "source_bound_diagnostic": "requires_public_api_regression_check",
+      "review_disposition": "blocking_unimplemented_or_unproved",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S206-duckdb",
+      "original_id": "88-C177-S206",
+      "dialect": "duckdb",
+      "expected_public_analyzer": "U",
+      "feature_id": "dml.delete",
+      "variant": "subquery",
+      "semantic_owner": [
+        "TASK-81"
+      ],
+      "reason": "DELETE with nested IN predicate parses but this specific write/predicate combination is explicitly unsupported.",
+      "safe_protocol_outcome": "explicit_unsupported_not_exact",
+      "source_bound_diagnostic": "requires_public_api_regression_check",
+      "review_disposition": "blocking_unimplemented_or_unproved",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S206-generic",
+      "original_id": "88-C177-S206",
+      "dialect": "generic",
+      "expected_public_analyzer": "U",
+      "feature_id": "dml.delete",
+      "variant": "subquery",
+      "semantic_owner": [
+        "TASK-81"
+      ],
+      "reason": "DELETE with nested IN predicate parses but this specific write/predicate combination is explicitly unsupported.",
+      "safe_protocol_outcome": "explicit_unsupported_not_exact",
+      "source_bound_diagnostic": "requires_public_api_regression_check",
+      "review_disposition": "blocking_unimplemented_or_unproved",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S206-hive",
+      "original_id": "88-C177-S206",
+      "dialect": "hive",
+      "expected_public_analyzer": "U",
+      "feature_id": "dml.delete",
+      "variant": "subquery",
+      "semantic_owner": [
+        "TASK-81"
+      ],
+      "reason": "DELETE with nested IN predicate parses but this specific write/predicate combination is explicitly unsupported.",
+      "safe_protocol_outcome": "explicit_unsupported_not_exact",
+      "source_bound_diagnostic": "requires_public_api_regression_check",
+      "review_disposition": "blocking_unimplemented_or_unproved",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S206-mssql",
+      "original_id": "88-C177-S206",
+      "dialect": "mssql",
+      "expected_public_analyzer": "U",
+      "feature_id": "dml.delete",
+      "variant": "subquery",
+      "semantic_owner": [
+        "TASK-81"
+      ],
+      "reason": "DELETE with nested IN predicate parses but this specific write/predicate combination is explicitly unsupported.",
+      "safe_protocol_outcome": "explicit_unsupported_not_exact",
+      "source_bound_diagnostic": "requires_public_api_regression_check",
+      "review_disposition": "blocking_unimplemented_or_unproved",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S206-mysql",
+      "original_id": "88-C177-S206",
+      "dialect": "mysql",
+      "expected_public_analyzer": "U",
+      "feature_id": "dml.delete",
+      "variant": "subquery",
+      "semantic_owner": [
+        "TASK-81"
+      ],
+      "reason": "DELETE with nested IN predicate parses but this specific write/predicate combination is explicitly unsupported.",
+      "safe_protocol_outcome": "explicit_unsupported_not_exact",
+      "source_bound_diagnostic": "requires_public_api_regression_check",
+      "review_disposition": "blocking_unimplemented_or_unproved",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S206-postgresql",
+      "original_id": "88-C177-S206",
+      "dialect": "postgresql",
+      "expected_public_analyzer": "U",
+      "feature_id": "dml.delete",
+      "variant": "subquery",
+      "semantic_owner": [
+        "TASK-81"
+      ],
+      "reason": "DELETE with nested IN predicate parses but this specific write/predicate combination is explicitly unsupported.",
+      "safe_protocol_outcome": "explicit_unsupported_not_exact",
+      "source_bound_diagnostic": "requires_public_api_regression_check",
+      "review_disposition": "blocking_unimplemented_or_unproved",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S206-redshift",
+      "original_id": "88-C177-S206",
+      "dialect": "redshift",
+      "expected_public_analyzer": "U",
+      "feature_id": "dml.delete",
+      "variant": "subquery",
+      "semantic_owner": [
+        "TASK-81"
+      ],
+      "reason": "DELETE with nested IN predicate parses but this specific write/predicate combination is explicitly unsupported.",
+      "safe_protocol_outcome": "explicit_unsupported_not_exact",
+      "source_bound_diagnostic": "requires_public_api_regression_check",
+      "review_disposition": "blocking_unimplemented_or_unproved",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S206-snowflake",
+      "original_id": "88-C177-S206",
+      "dialect": "snowflake",
+      "expected_public_analyzer": "U",
+      "feature_id": "dml.delete",
+      "variant": "subquery",
+      "semantic_owner": [
+        "TASK-81"
+      ],
+      "reason": "DELETE with nested IN predicate parses but this specific write/predicate combination is explicitly unsupported.",
+      "safe_protocol_outcome": "explicit_unsupported_not_exact",
+      "source_bound_diagnostic": "requires_public_api_regression_check",
+      "review_disposition": "blocking_unimplemented_or_unproved",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S206-sqlite",
+      "original_id": "88-C177-S206",
+      "dialect": "sqlite",
+      "expected_public_analyzer": "U",
+      "feature_id": "dml.delete",
+      "variant": "subquery",
+      "semantic_owner": [
+        "TASK-81"
+      ],
+      "reason": "DELETE with nested IN predicate parses but this specific write/predicate combination is explicitly unsupported.",
+      "safe_protocol_outcome": "explicit_unsupported_not_exact",
+      "source_bound_diagnostic": "requires_public_api_regression_check",
+      "review_disposition": "blocking_unimplemented_or_unproved",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S220-ansi",
+      "original_id": "88-C177-S220",
+      "dialect": "ansi",
+      "expected_public_analyzer": "U",
+      "feature_id": "ddl.schema_lifecycle",
+      "variant": "defaults/constraints",
+      "semantic_owner": [
+        "TASK-83",
+        "TASK-79"
+      ],
+      "reason": "ALTER column SET DEFAULT parses but the standalone canonical DDL transition is explicitly unsupported in this path.",
+      "safe_protocol_outcome": "explicit_unsupported_not_exact",
+      "source_bound_diagnostic": "requires_public_api_regression_check",
+      "review_disposition": "blocking_unimplemented_or_unproved",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S220-bigquery",
+      "original_id": "88-C177-S220",
+      "dialect": "bigquery",
+      "expected_public_analyzer": "U",
+      "feature_id": "ddl.schema_lifecycle",
+      "variant": "defaults/constraints",
+      "semantic_owner": [
+        "TASK-83",
+        "TASK-79"
+      ],
+      "reason": "ALTER column SET DEFAULT parses but the standalone canonical DDL transition is explicitly unsupported in this path.",
+      "safe_protocol_outcome": "explicit_unsupported_not_exact",
+      "source_bound_diagnostic": "requires_public_api_regression_check",
+      "review_disposition": "blocking_unimplemented_or_unproved",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S220-clickhouse",
+      "original_id": "88-C177-S220",
+      "dialect": "clickhouse",
+      "expected_public_analyzer": "U",
+      "feature_id": "ddl.schema_lifecycle",
+      "variant": "defaults/constraints",
+      "semantic_owner": [
+        "TASK-83",
+        "TASK-79"
+      ],
+      "reason": "ALTER column SET DEFAULT parses but the standalone canonical DDL transition is explicitly unsupported in this path.",
+      "safe_protocol_outcome": "explicit_unsupported_not_exact",
+      "source_bound_diagnostic": "requires_public_api_regression_check",
+      "review_disposition": "blocking_unimplemented_or_unproved",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S220-databricks",
+      "original_id": "88-C177-S220",
+      "dialect": "databricks",
+      "expected_public_analyzer": "U",
+      "feature_id": "ddl.schema_lifecycle",
+      "variant": "defaults/constraints",
+      "semantic_owner": [
+        "TASK-83",
+        "TASK-79"
+      ],
+      "reason": "ALTER column SET DEFAULT parses but the standalone canonical DDL transition is explicitly unsupported in this path.",
+      "safe_protocol_outcome": "explicit_unsupported_not_exact",
+      "source_bound_diagnostic": "requires_public_api_regression_check",
+      "review_disposition": "blocking_unimplemented_or_unproved",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S220-duckdb",
+      "original_id": "88-C177-S220",
+      "dialect": "duckdb",
+      "expected_public_analyzer": "U",
+      "feature_id": "ddl.schema_lifecycle",
+      "variant": "defaults/constraints",
+      "semantic_owner": [
+        "TASK-83",
+        "TASK-79"
+      ],
+      "reason": "ALTER column SET DEFAULT parses but the standalone canonical DDL transition is explicitly unsupported in this path.",
+      "safe_protocol_outcome": "explicit_unsupported_not_exact",
+      "source_bound_diagnostic": "requires_public_api_regression_check",
+      "review_disposition": "blocking_unimplemented_or_unproved",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S220-generic",
+      "original_id": "88-C177-S220",
+      "dialect": "generic",
+      "expected_public_analyzer": "U",
+      "feature_id": "ddl.schema_lifecycle",
+      "variant": "defaults/constraints",
+      "semantic_owner": [
+        "TASK-83",
+        "TASK-79"
+      ],
+      "reason": "ALTER column SET DEFAULT parses but the standalone canonical DDL transition is explicitly unsupported in this path.",
+      "safe_protocol_outcome": "explicit_unsupported_not_exact",
+      "source_bound_diagnostic": "requires_public_api_regression_check",
+      "review_disposition": "blocking_unimplemented_or_unproved",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S220-hive",
+      "original_id": "88-C177-S220",
+      "dialect": "hive",
+      "expected_public_analyzer": "U",
+      "feature_id": "ddl.schema_lifecycle",
+      "variant": "defaults/constraints",
+      "semantic_owner": [
+        "TASK-83",
+        "TASK-79"
+      ],
+      "reason": "ALTER column SET DEFAULT parses but the standalone canonical DDL transition is explicitly unsupported in this path.",
+      "safe_protocol_outcome": "explicit_unsupported_not_exact",
+      "source_bound_diagnostic": "requires_public_api_regression_check",
+      "review_disposition": "blocking_unimplemented_or_unproved",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S220-mssql",
+      "original_id": "88-C177-S220",
+      "dialect": "mssql",
+      "expected_public_analyzer": "U",
+      "feature_id": "ddl.schema_lifecycle",
+      "variant": "defaults/constraints",
+      "semantic_owner": [
+        "TASK-83",
+        "TASK-79"
+      ],
+      "reason": "ALTER column SET DEFAULT parses but the standalone canonical DDL transition is explicitly unsupported in this path.",
+      "safe_protocol_outcome": "explicit_unsupported_not_exact",
+      "source_bound_diagnostic": "requires_public_api_regression_check",
+      "review_disposition": "blocking_unimplemented_or_unproved",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S220-mysql",
+      "original_id": "88-C177-S220",
+      "dialect": "mysql",
+      "expected_public_analyzer": "U",
+      "feature_id": "ddl.schema_lifecycle",
+      "variant": "defaults/constraints",
+      "semantic_owner": [
+        "TASK-83",
+        "TASK-79"
+      ],
+      "reason": "ALTER column SET DEFAULT parses but the standalone canonical DDL transition is explicitly unsupported in this path.",
+      "safe_protocol_outcome": "explicit_unsupported_not_exact",
+      "source_bound_diagnostic": "requires_public_api_regression_check",
+      "review_disposition": "blocking_unimplemented_or_unproved",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S220-postgresql",
+      "original_id": "88-C177-S220",
+      "dialect": "postgresql",
+      "expected_public_analyzer": "U",
+      "feature_id": "ddl.schema_lifecycle",
+      "variant": "defaults/constraints",
+      "semantic_owner": [
+        "TASK-83",
+        "TASK-79"
+      ],
+      "reason": "ALTER column SET DEFAULT parses but the standalone canonical DDL transition is explicitly unsupported in this path.",
+      "safe_protocol_outcome": "explicit_unsupported_not_exact",
+      "source_bound_diagnostic": "requires_public_api_regression_check",
+      "review_disposition": "blocking_unimplemented_or_unproved",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S220-redshift",
+      "original_id": "88-C177-S220",
+      "dialect": "redshift",
+      "expected_public_analyzer": "U",
+      "feature_id": "ddl.schema_lifecycle",
+      "variant": "defaults/constraints",
+      "semantic_owner": [
+        "TASK-83",
+        "TASK-79"
+      ],
+      "reason": "ALTER column SET DEFAULT parses but the standalone canonical DDL transition is explicitly unsupported in this path.",
+      "safe_protocol_outcome": "explicit_unsupported_not_exact",
+      "source_bound_diagnostic": "requires_public_api_regression_check",
+      "review_disposition": "blocking_unimplemented_or_unproved",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S220-snowflake",
+      "original_id": "88-C177-S220",
+      "dialect": "snowflake",
+      "expected_public_analyzer": "U",
+      "feature_id": "ddl.schema_lifecycle",
+      "variant": "defaults/constraints",
+      "semantic_owner": [
+        "TASK-83",
+        "TASK-79"
+      ],
+      "reason": "ALTER column SET DEFAULT parses but the standalone canonical DDL transition is explicitly unsupported in this path.",
+      "safe_protocol_outcome": "explicit_unsupported_not_exact",
+      "source_bound_diagnostic": "requires_public_api_regression_check",
+      "review_disposition": "blocking_unimplemented_or_unproved",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S220-sqlite",
+      "original_id": "88-C177-S220",
+      "dialect": "sqlite",
+      "expected_public_analyzer": "U",
+      "feature_id": "ddl.schema_lifecycle",
+      "variant": "defaults/constraints",
+      "semantic_owner": [
+        "TASK-83",
+        "TASK-79"
+      ],
+      "reason": "ALTER column SET DEFAULT parses but the standalone canonical DDL transition is explicitly unsupported in this path.",
+      "safe_protocol_outcome": "explicit_unsupported_not_exact",
+      "source_bound_diagnostic": "requires_public_api_regression_check",
+      "review_disposition": "blocking_unimplemented_or_unproved",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S222-ansi",
+      "original_id": "88-C177-S222",
+      "dialect": "ansi",
+      "expected_public_analyzer": "U",
+      "feature_id": "transactions.ordered_effects",
+      "variant": "snapshot visibility",
+      "semantic_owner": [
+        "TASK-84"
+      ],
+      "reason": "BEGIN/INSERT/SELECT/COMMIT parses yet analysis emits an unsupported transaction-control path; vendor/session evidence is not implied.",
+      "safe_protocol_outcome": "explicit_unsupported_not_exact",
+      "source_bound_diagnostic": "requires_public_api_regression_check",
+      "review_disposition": "blocking_unimplemented_or_unproved",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S222-clickhouse",
+      "original_id": "88-C177-S222",
+      "dialect": "clickhouse",
+      "expected_public_analyzer": "U",
+      "feature_id": "transactions.ordered_effects",
+      "variant": "snapshot visibility",
+      "semantic_owner": [
+        "TASK-84"
+      ],
+      "reason": "BEGIN/INSERT/SELECT/COMMIT parses yet analysis emits an unsupported transaction-control path; vendor/session evidence is not implied.",
+      "safe_protocol_outcome": "explicit_unsupported_not_exact",
+      "source_bound_diagnostic": "requires_public_api_regression_check",
+      "review_disposition": "blocking_unimplemented_or_unproved",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S222-databricks",
+      "original_id": "88-C177-S222",
+      "dialect": "databricks",
+      "expected_public_analyzer": "U",
+      "feature_id": "transactions.ordered_effects",
+      "variant": "snapshot visibility",
+      "semantic_owner": [
+        "TASK-84"
+      ],
+      "reason": "BEGIN/INSERT/SELECT/COMMIT parses yet analysis emits an unsupported transaction-control path; vendor/session evidence is not implied.",
+      "safe_protocol_outcome": "explicit_unsupported_not_exact",
+      "source_bound_diagnostic": "requires_public_api_regression_check",
+      "review_disposition": "blocking_unimplemented_or_unproved",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S222-duckdb",
+      "original_id": "88-C177-S222",
+      "dialect": "duckdb",
+      "expected_public_analyzer": "U",
+      "feature_id": "transactions.ordered_effects",
+      "variant": "snapshot visibility",
+      "semantic_owner": [
+        "TASK-84"
+      ],
+      "reason": "BEGIN/INSERT/SELECT/COMMIT parses yet analysis emits an unsupported transaction-control path; vendor/session evidence is not implied.",
+      "safe_protocol_outcome": "explicit_unsupported_not_exact",
+      "source_bound_diagnostic": "requires_public_api_regression_check",
+      "review_disposition": "blocking_unimplemented_or_unproved",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S222-generic",
+      "original_id": "88-C177-S222",
+      "dialect": "generic",
+      "expected_public_analyzer": "U",
+      "feature_id": "transactions.ordered_effects",
+      "variant": "snapshot visibility",
+      "semantic_owner": [
+        "TASK-84"
+      ],
+      "reason": "BEGIN/INSERT/SELECT/COMMIT parses yet analysis emits an unsupported transaction-control path; vendor/session evidence is not implied.",
+      "safe_protocol_outcome": "explicit_unsupported_not_exact",
+      "source_bound_diagnostic": "requires_public_api_regression_check",
+      "review_disposition": "blocking_unimplemented_or_unproved",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S222-hive",
+      "original_id": "88-C177-S222",
+      "dialect": "hive",
+      "expected_public_analyzer": "U",
+      "feature_id": "transactions.ordered_effects",
+      "variant": "snapshot visibility",
+      "semantic_owner": [
+        "TASK-84"
+      ],
+      "reason": "BEGIN/INSERT/SELECT/COMMIT parses yet analysis emits an unsupported transaction-control path; vendor/session evidence is not implied.",
+      "safe_protocol_outcome": "explicit_unsupported_not_exact",
+      "source_bound_diagnostic": "requires_public_api_regression_check",
+      "review_disposition": "blocking_unimplemented_or_unproved",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S222-mssql",
+      "original_id": "88-C177-S222",
+      "dialect": "mssql",
+      "expected_public_analyzer": "U",
+      "feature_id": "transactions.ordered_effects",
+      "variant": "snapshot visibility",
+      "semantic_owner": [
+        "TASK-84"
+      ],
+      "reason": "BEGIN/INSERT/SELECT/COMMIT parses yet analysis emits an unsupported transaction-control path; vendor/session evidence is not implied.",
+      "safe_protocol_outcome": "explicit_unsupported_not_exact",
+      "source_bound_diagnostic": "requires_public_api_regression_check",
+      "review_disposition": "blocking_unimplemented_or_unproved",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S222-mysql",
+      "original_id": "88-C177-S222",
+      "dialect": "mysql",
+      "expected_public_analyzer": "U",
+      "feature_id": "transactions.ordered_effects",
+      "variant": "snapshot visibility",
+      "semantic_owner": [
+        "TASK-84"
+      ],
+      "reason": "BEGIN/INSERT/SELECT/COMMIT parses yet analysis emits an unsupported transaction-control path; vendor/session evidence is not implied.",
+      "safe_protocol_outcome": "explicit_unsupported_not_exact",
+      "source_bound_diagnostic": "requires_public_api_regression_check",
+      "review_disposition": "blocking_unimplemented_or_unproved",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S222-postgresql",
+      "original_id": "88-C177-S222",
+      "dialect": "postgresql",
+      "expected_public_analyzer": "U",
+      "feature_id": "transactions.ordered_effects",
+      "variant": "snapshot visibility",
+      "semantic_owner": [
+        "TASK-84"
+      ],
+      "reason": "BEGIN/INSERT/SELECT/COMMIT parses yet analysis emits an unsupported transaction-control path; vendor/session evidence is not implied.",
+      "safe_protocol_outcome": "explicit_unsupported_not_exact",
+      "source_bound_diagnostic": "requires_public_api_regression_check",
+      "review_disposition": "blocking_unimplemented_or_unproved",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S222-redshift",
+      "original_id": "88-C177-S222",
+      "dialect": "redshift",
+      "expected_public_analyzer": "U",
+      "feature_id": "transactions.ordered_effects",
+      "variant": "snapshot visibility",
+      "semantic_owner": [
+        "TASK-84"
+      ],
+      "reason": "BEGIN/INSERT/SELECT/COMMIT parses yet analysis emits an unsupported transaction-control path; vendor/session evidence is not implied.",
+      "safe_protocol_outcome": "explicit_unsupported_not_exact",
+      "source_bound_diagnostic": "requires_public_api_regression_check",
+      "review_disposition": "blocking_unimplemented_or_unproved",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S222-sqlite",
+      "original_id": "88-C177-S222",
+      "dialect": "sqlite",
+      "expected_public_analyzer": "U",
+      "feature_id": "transactions.ordered_effects",
+      "variant": "snapshot visibility",
+      "semantic_owner": [
+        "TASK-84"
+      ],
+      "reason": "BEGIN/INSERT/SELECT/COMMIT parses yet analysis emits an unsupported transaction-control path; vendor/session evidence is not implied.",
+      "safe_protocol_outcome": "explicit_unsupported_not_exact",
+      "source_bound_diagnostic": "requires_public_api_regression_check",
+      "review_disposition": "blocking_unimplemented_or_unproved",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S224-ansi",
+      "original_id": "88-C177-S224",
+      "dialect": "ansi",
+      "expected_public_analyzer": "U",
+      "feature_id": "transactions.ordered_effects",
+      "variant": "rollback",
+      "semantic_owner": [
+        "TASK-84"
+      ],
+      "reason": "BEGIN/UPDATE/ROLLBACK parses yet analysis emits an unsupported transaction-control path; rollback must be checked via the dedicated stateful API.",
+      "safe_protocol_outcome": "explicit_unsupported_not_exact",
+      "source_bound_diagnostic": "requires_public_api_regression_check",
+      "review_disposition": "blocking_unimplemented_or_unproved",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S224-clickhouse",
+      "original_id": "88-C177-S224",
+      "dialect": "clickhouse",
+      "expected_public_analyzer": "U",
+      "feature_id": "transactions.ordered_effects",
+      "variant": "rollback",
+      "semantic_owner": [
+        "TASK-84"
+      ],
+      "reason": "BEGIN/UPDATE/ROLLBACK parses yet analysis emits an unsupported transaction-control path; rollback must be checked via the dedicated stateful API.",
+      "safe_protocol_outcome": "explicit_unsupported_not_exact",
+      "source_bound_diagnostic": "requires_public_api_regression_check",
+      "review_disposition": "blocking_unimplemented_or_unproved",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S224-databricks",
+      "original_id": "88-C177-S224",
+      "dialect": "databricks",
+      "expected_public_analyzer": "U",
+      "feature_id": "transactions.ordered_effects",
+      "variant": "rollback",
+      "semantic_owner": [
+        "TASK-84"
+      ],
+      "reason": "BEGIN/UPDATE/ROLLBACK parses yet analysis emits an unsupported transaction-control path; rollback must be checked via the dedicated stateful API.",
+      "safe_protocol_outcome": "explicit_unsupported_not_exact",
+      "source_bound_diagnostic": "requires_public_api_regression_check",
+      "review_disposition": "blocking_unimplemented_or_unproved",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S224-duckdb",
+      "original_id": "88-C177-S224",
+      "dialect": "duckdb",
+      "expected_public_analyzer": "U",
+      "feature_id": "transactions.ordered_effects",
+      "variant": "rollback",
+      "semantic_owner": [
+        "TASK-84"
+      ],
+      "reason": "BEGIN/UPDATE/ROLLBACK parses yet analysis emits an unsupported transaction-control path; rollback must be checked via the dedicated stateful API.",
+      "safe_protocol_outcome": "explicit_unsupported_not_exact",
+      "source_bound_diagnostic": "requires_public_api_regression_check",
+      "review_disposition": "blocking_unimplemented_or_unproved",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S224-generic",
+      "original_id": "88-C177-S224",
+      "dialect": "generic",
+      "expected_public_analyzer": "U",
+      "feature_id": "transactions.ordered_effects",
+      "variant": "rollback",
+      "semantic_owner": [
+        "TASK-84"
+      ],
+      "reason": "BEGIN/UPDATE/ROLLBACK parses yet analysis emits an unsupported transaction-control path; rollback must be checked via the dedicated stateful API.",
+      "safe_protocol_outcome": "explicit_unsupported_not_exact",
+      "source_bound_diagnostic": "requires_public_api_regression_check",
+      "review_disposition": "blocking_unimplemented_or_unproved",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S224-hive",
+      "original_id": "88-C177-S224",
+      "dialect": "hive",
+      "expected_public_analyzer": "U",
+      "feature_id": "transactions.ordered_effects",
+      "variant": "rollback",
+      "semantic_owner": [
+        "TASK-84"
+      ],
+      "reason": "BEGIN/UPDATE/ROLLBACK parses yet analysis emits an unsupported transaction-control path; rollback must be checked via the dedicated stateful API.",
+      "safe_protocol_outcome": "explicit_unsupported_not_exact",
+      "source_bound_diagnostic": "requires_public_api_regression_check",
+      "review_disposition": "blocking_unimplemented_or_unproved",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S224-mssql",
+      "original_id": "88-C177-S224",
+      "dialect": "mssql",
+      "expected_public_analyzer": "U",
+      "feature_id": "transactions.ordered_effects",
+      "variant": "rollback",
+      "semantic_owner": [
+        "TASK-84"
+      ],
+      "reason": "BEGIN/UPDATE/ROLLBACK parses yet analysis emits an unsupported transaction-control path; rollback must be checked via the dedicated stateful API.",
+      "safe_protocol_outcome": "explicit_unsupported_not_exact",
+      "source_bound_diagnostic": "requires_public_api_regression_check",
+      "review_disposition": "blocking_unimplemented_or_unproved",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S224-mysql",
+      "original_id": "88-C177-S224",
+      "dialect": "mysql",
+      "expected_public_analyzer": "U",
+      "feature_id": "transactions.ordered_effects",
+      "variant": "rollback",
+      "semantic_owner": [
+        "TASK-84"
+      ],
+      "reason": "BEGIN/UPDATE/ROLLBACK parses yet analysis emits an unsupported transaction-control path; rollback must be checked via the dedicated stateful API.",
+      "safe_protocol_outcome": "explicit_unsupported_not_exact",
+      "source_bound_diagnostic": "requires_public_api_regression_check",
+      "review_disposition": "blocking_unimplemented_or_unproved",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S224-postgresql",
+      "original_id": "88-C177-S224",
+      "dialect": "postgresql",
+      "expected_public_analyzer": "U",
+      "feature_id": "transactions.ordered_effects",
+      "variant": "rollback",
+      "semantic_owner": [
+        "TASK-84"
+      ],
+      "reason": "BEGIN/UPDATE/ROLLBACK parses yet analysis emits an unsupported transaction-control path; rollback must be checked via the dedicated stateful API.",
+      "safe_protocol_outcome": "explicit_unsupported_not_exact",
+      "source_bound_diagnostic": "requires_public_api_regression_check",
+      "review_disposition": "blocking_unimplemented_or_unproved",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S224-redshift",
+      "original_id": "88-C177-S224",
+      "dialect": "redshift",
+      "expected_public_analyzer": "U",
+      "feature_id": "transactions.ordered_effects",
+      "variant": "rollback",
+      "semantic_owner": [
+        "TASK-84"
+      ],
+      "reason": "BEGIN/UPDATE/ROLLBACK parses yet analysis emits an unsupported transaction-control path; rollback must be checked via the dedicated stateful API.",
+      "safe_protocol_outcome": "explicit_unsupported_not_exact",
+      "source_bound_diagnostic": "requires_public_api_regression_check",
+      "review_disposition": "blocking_unimplemented_or_unproved",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S224-sqlite",
+      "original_id": "88-C177-S224",
+      "dialect": "sqlite",
+      "expected_public_analyzer": "U",
+      "feature_id": "transactions.ordered_effects",
+      "variant": "rollback",
+      "semantic_owner": [
+        "TASK-84"
+      ],
+      "reason": "BEGIN/UPDATE/ROLLBACK parses yet analysis emits an unsupported transaction-control path; rollback must be checked via the dedicated stateful API.",
+      "safe_protocol_outcome": "explicit_unsupported_not_exact",
+      "source_bound_diagnostic": "requires_public_api_regression_check",
+      "review_disposition": "blocking_unimplemented_or_unproved",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S241-ansi",
+      "original_id": "88-C177-S241",
+      "dialect": "ansi",
+      "expected_public_analyzer": "U",
+      "feature_id": "execution.dialect_equivalence",
+      "variant": "session state",
+      "semantic_owner": [
+        "TASK-88",
+        "TASK-89"
+      ],
+      "reason": "SET TIME ZONE parses but session state effects and time-zone laws are explicitly unsupported.",
+      "safe_protocol_outcome": "explicit_unsupported_not_exact",
+      "source_bound_diagnostic": "requires_public_api_regression_check",
+      "review_disposition": "blocking_unimplemented_or_unproved",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S241-bigquery",
+      "original_id": "88-C177-S241",
+      "dialect": "bigquery",
+      "expected_public_analyzer": "U",
+      "feature_id": "execution.dialect_equivalence",
+      "variant": "session state",
+      "semantic_owner": [
+        "TASK-88",
+        "TASK-89"
+      ],
+      "reason": "SET TIME ZONE parses but session state effects and time-zone laws are explicitly unsupported.",
+      "safe_protocol_outcome": "explicit_unsupported_not_exact",
+      "source_bound_diagnostic": "requires_public_api_regression_check",
+      "review_disposition": "blocking_unimplemented_or_unproved",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S241-clickhouse",
+      "original_id": "88-C177-S241",
+      "dialect": "clickhouse",
+      "expected_public_analyzer": "U",
+      "feature_id": "execution.dialect_equivalence",
+      "variant": "session state",
+      "semantic_owner": [
+        "TASK-88",
+        "TASK-89"
+      ],
+      "reason": "SET TIME ZONE parses but session state effects and time-zone laws are explicitly unsupported.",
+      "safe_protocol_outcome": "explicit_unsupported_not_exact",
+      "source_bound_diagnostic": "requires_public_api_regression_check",
+      "review_disposition": "blocking_unimplemented_or_unproved",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S241-databricks",
+      "original_id": "88-C177-S241",
+      "dialect": "databricks",
+      "expected_public_analyzer": "U",
+      "feature_id": "execution.dialect_equivalence",
+      "variant": "session state",
+      "semantic_owner": [
+        "TASK-88",
+        "TASK-89"
+      ],
+      "reason": "SET TIME ZONE parses but session state effects and time-zone laws are explicitly unsupported.",
+      "safe_protocol_outcome": "explicit_unsupported_not_exact",
+      "source_bound_diagnostic": "requires_public_api_regression_check",
+      "review_disposition": "blocking_unimplemented_or_unproved",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S241-duckdb",
+      "original_id": "88-C177-S241",
+      "dialect": "duckdb",
+      "expected_public_analyzer": "U",
+      "feature_id": "execution.dialect_equivalence",
+      "variant": "session state",
+      "semantic_owner": [
+        "TASK-88",
+        "TASK-89"
+      ],
+      "reason": "SET TIME ZONE parses but session state effects and time-zone laws are explicitly unsupported.",
+      "safe_protocol_outcome": "explicit_unsupported_not_exact",
+      "source_bound_diagnostic": "requires_public_api_regression_check",
+      "review_disposition": "blocking_unimplemented_or_unproved",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S241-generic",
+      "original_id": "88-C177-S241",
+      "dialect": "generic",
+      "expected_public_analyzer": "U",
+      "feature_id": "execution.dialect_equivalence",
+      "variant": "session state",
+      "semantic_owner": [
+        "TASK-88",
+        "TASK-89"
+      ],
+      "reason": "SET TIME ZONE parses but session state effects and time-zone laws are explicitly unsupported.",
+      "safe_protocol_outcome": "explicit_unsupported_not_exact",
+      "source_bound_diagnostic": "requires_public_api_regression_check",
+      "review_disposition": "blocking_unimplemented_or_unproved",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S241-hive",
+      "original_id": "88-C177-S241",
+      "dialect": "hive",
+      "expected_public_analyzer": "U",
+      "feature_id": "execution.dialect_equivalence",
+      "variant": "session state",
+      "semantic_owner": [
+        "TASK-88",
+        "TASK-89"
+      ],
+      "reason": "SET TIME ZONE parses but session state effects and time-zone laws are explicitly unsupported.",
+      "safe_protocol_outcome": "explicit_unsupported_not_exact",
+      "source_bound_diagnostic": "requires_public_api_regression_check",
+      "review_disposition": "blocking_unimplemented_or_unproved",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S241-mssql",
+      "original_id": "88-C177-S241",
+      "dialect": "mssql",
+      "expected_public_analyzer": "U",
+      "feature_id": "execution.dialect_equivalence",
+      "variant": "session state",
+      "semantic_owner": [
+        "TASK-88",
+        "TASK-89"
+      ],
+      "reason": "SET TIME ZONE parses but session state effects and time-zone laws are explicitly unsupported.",
+      "safe_protocol_outcome": "explicit_unsupported_not_exact",
+      "source_bound_diagnostic": "requires_public_api_regression_check",
+      "review_disposition": "blocking_unimplemented_or_unproved",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S241-mysql",
+      "original_id": "88-C177-S241",
+      "dialect": "mysql",
+      "expected_public_analyzer": "U",
+      "feature_id": "execution.dialect_equivalence",
+      "variant": "session state",
+      "semantic_owner": [
+        "TASK-88",
+        "TASK-89"
+      ],
+      "reason": "SET TIME ZONE parses but session state effects and time-zone laws are explicitly unsupported.",
+      "safe_protocol_outcome": "explicit_unsupported_not_exact",
+      "source_bound_diagnostic": "requires_public_api_regression_check",
+      "review_disposition": "blocking_unimplemented_or_unproved",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S241-postgresql",
+      "original_id": "88-C177-S241",
+      "dialect": "postgresql",
+      "expected_public_analyzer": "U",
+      "feature_id": "execution.dialect_equivalence",
+      "variant": "session state",
+      "semantic_owner": [
+        "TASK-88",
+        "TASK-89"
+      ],
+      "reason": "SET TIME ZONE parses but session state effects and time-zone laws are explicitly unsupported.",
+      "safe_protocol_outcome": "explicit_unsupported_not_exact",
+      "source_bound_diagnostic": "requires_public_api_regression_check",
+      "review_disposition": "blocking_unimplemented_or_unproved",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S241-redshift",
+      "original_id": "88-C177-S241",
+      "dialect": "redshift",
+      "expected_public_analyzer": "U",
+      "feature_id": "execution.dialect_equivalence",
+      "variant": "session state",
+      "semantic_owner": [
+        "TASK-88",
+        "TASK-89"
+      ],
+      "reason": "SET TIME ZONE parses but session state effects and time-zone laws are explicitly unsupported.",
+      "safe_protocol_outcome": "explicit_unsupported_not_exact",
+      "source_bound_diagnostic": "requires_public_api_regression_check",
+      "review_disposition": "blocking_unimplemented_or_unproved",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S241-snowflake",
+      "original_id": "88-C177-S241",
+      "dialect": "snowflake",
+      "expected_public_analyzer": "U",
+      "feature_id": "execution.dialect_equivalence",
+      "variant": "session state",
+      "semantic_owner": [
+        "TASK-88",
+        "TASK-89"
+      ],
+      "reason": "SET TIME ZONE parses but session state effects and time-zone laws are explicitly unsupported.",
+      "safe_protocol_outcome": "explicit_unsupported_not_exact",
+      "source_bound_diagnostic": "requires_public_api_regression_check",
+      "review_disposition": "blocking_unimplemented_or_unproved",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S241-sqlite",
+      "original_id": "88-C177-S241",
+      "dialect": "sqlite",
+      "expected_public_analyzer": "U",
+      "feature_id": "execution.dialect_equivalence",
+      "variant": "session state",
+      "semantic_owner": [
+        "TASK-88",
+        "TASK-89"
+      ],
+      "reason": "SET TIME ZONE parses but session state effects and time-zone laws are explicitly unsupported.",
+      "safe_protocol_outcome": "explicit_unsupported_not_exact",
+      "source_bound_diagnostic": "requires_public_api_regression_check",
+      "review_disposition": "blocking_unimplemented_or_unproved",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S242-ansi",
+      "original_id": "88-C177-S242",
+      "dialect": "ansi",
+      "expected_public_analyzer": "U",
+      "feature_id": "execution.dialect_equivalence",
+      "variant": "runtime plan",
+      "semantic_owner": [
+        "TASK-88",
+        "TASK-89"
+      ],
+      "reason": "EXPLAIN parses but runtime query plans are not part of the canonical SQL outcome model.",
+      "safe_protocol_outcome": "explicit_unsupported_not_exact",
+      "source_bound_diagnostic": "requires_public_api_regression_check",
+      "review_disposition": "blocking_unimplemented_or_unproved",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S242-bigquery",
+      "original_id": "88-C177-S242",
+      "dialect": "bigquery",
+      "expected_public_analyzer": "U",
+      "feature_id": "execution.dialect_equivalence",
+      "variant": "runtime plan",
+      "semantic_owner": [
+        "TASK-88",
+        "TASK-89"
+      ],
+      "reason": "EXPLAIN parses but runtime query plans are not part of the canonical SQL outcome model.",
+      "safe_protocol_outcome": "explicit_unsupported_not_exact",
+      "source_bound_diagnostic": "requires_public_api_regression_check",
+      "review_disposition": "blocking_unimplemented_or_unproved",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S242-clickhouse",
+      "original_id": "88-C177-S242",
+      "dialect": "clickhouse",
+      "expected_public_analyzer": "U",
+      "feature_id": "execution.dialect_equivalence",
+      "variant": "runtime plan",
+      "semantic_owner": [
+        "TASK-88",
+        "TASK-89"
+      ],
+      "reason": "EXPLAIN parses but runtime query plans are not part of the canonical SQL outcome model.",
+      "safe_protocol_outcome": "explicit_unsupported_not_exact",
+      "source_bound_diagnostic": "requires_public_api_regression_check",
+      "review_disposition": "blocking_unimplemented_or_unproved",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S242-databricks",
+      "original_id": "88-C177-S242",
+      "dialect": "databricks",
+      "expected_public_analyzer": "U",
+      "feature_id": "execution.dialect_equivalence",
+      "variant": "runtime plan",
+      "semantic_owner": [
+        "TASK-88",
+        "TASK-89"
+      ],
+      "reason": "EXPLAIN parses but runtime query plans are not part of the canonical SQL outcome model.",
+      "safe_protocol_outcome": "explicit_unsupported_not_exact",
+      "source_bound_diagnostic": "requires_public_api_regression_check",
+      "review_disposition": "blocking_unimplemented_or_unproved",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S242-duckdb",
+      "original_id": "88-C177-S242",
+      "dialect": "duckdb",
+      "expected_public_analyzer": "U",
+      "feature_id": "execution.dialect_equivalence",
+      "variant": "runtime plan",
+      "semantic_owner": [
+        "TASK-88",
+        "TASK-89"
+      ],
+      "reason": "EXPLAIN parses but runtime query plans are not part of the canonical SQL outcome model.",
+      "safe_protocol_outcome": "explicit_unsupported_not_exact",
+      "source_bound_diagnostic": "requires_public_api_regression_check",
+      "review_disposition": "blocking_unimplemented_or_unproved",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S242-generic",
+      "original_id": "88-C177-S242",
+      "dialect": "generic",
+      "expected_public_analyzer": "U",
+      "feature_id": "execution.dialect_equivalence",
+      "variant": "runtime plan",
+      "semantic_owner": [
+        "TASK-88",
+        "TASK-89"
+      ],
+      "reason": "EXPLAIN parses but runtime query plans are not part of the canonical SQL outcome model.",
+      "safe_protocol_outcome": "explicit_unsupported_not_exact",
+      "source_bound_diagnostic": "requires_public_api_regression_check",
+      "review_disposition": "blocking_unimplemented_or_unproved",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S242-hive",
+      "original_id": "88-C177-S242",
+      "dialect": "hive",
+      "expected_public_analyzer": "U",
+      "feature_id": "execution.dialect_equivalence",
+      "variant": "runtime plan",
+      "semantic_owner": [
+        "TASK-88",
+        "TASK-89"
+      ],
+      "reason": "EXPLAIN parses but runtime query plans are not part of the canonical SQL outcome model.",
+      "safe_protocol_outcome": "explicit_unsupported_not_exact",
+      "source_bound_diagnostic": "requires_public_api_regression_check",
+      "review_disposition": "blocking_unimplemented_or_unproved",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S242-mssql",
+      "original_id": "88-C177-S242",
+      "dialect": "mssql",
+      "expected_public_analyzer": "U",
+      "feature_id": "execution.dialect_equivalence",
+      "variant": "runtime plan",
+      "semantic_owner": [
+        "TASK-88",
+        "TASK-89"
+      ],
+      "reason": "EXPLAIN parses but runtime query plans are not part of the canonical SQL outcome model.",
+      "safe_protocol_outcome": "explicit_unsupported_not_exact",
+      "source_bound_diagnostic": "requires_public_api_regression_check",
+      "review_disposition": "blocking_unimplemented_or_unproved",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S242-mysql",
+      "original_id": "88-C177-S242",
+      "dialect": "mysql",
+      "expected_public_analyzer": "U",
+      "feature_id": "execution.dialect_equivalence",
+      "variant": "runtime plan",
+      "semantic_owner": [
+        "TASK-88",
+        "TASK-89"
+      ],
+      "reason": "EXPLAIN parses but runtime query plans are not part of the canonical SQL outcome model.",
+      "safe_protocol_outcome": "explicit_unsupported_not_exact",
+      "source_bound_diagnostic": "requires_public_api_regression_check",
+      "review_disposition": "blocking_unimplemented_or_unproved",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S242-postgresql",
+      "original_id": "88-C177-S242",
+      "dialect": "postgresql",
+      "expected_public_analyzer": "U",
+      "feature_id": "execution.dialect_equivalence",
+      "variant": "runtime plan",
+      "semantic_owner": [
+        "TASK-88",
+        "TASK-89"
+      ],
+      "reason": "EXPLAIN parses but runtime query plans are not part of the canonical SQL outcome model.",
+      "safe_protocol_outcome": "explicit_unsupported_not_exact",
+      "source_bound_diagnostic": "requires_public_api_regression_check",
+      "review_disposition": "blocking_unimplemented_or_unproved",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S242-redshift",
+      "original_id": "88-C177-S242",
+      "dialect": "redshift",
+      "expected_public_analyzer": "U",
+      "feature_id": "execution.dialect_equivalence",
+      "variant": "runtime plan",
+      "semantic_owner": [
+        "TASK-88",
+        "TASK-89"
+      ],
+      "reason": "EXPLAIN parses but runtime query plans are not part of the canonical SQL outcome model.",
+      "safe_protocol_outcome": "explicit_unsupported_not_exact",
+      "source_bound_diagnostic": "requires_public_api_regression_check",
+      "review_disposition": "blocking_unimplemented_or_unproved",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S242-snowflake",
+      "original_id": "88-C177-S242",
+      "dialect": "snowflake",
+      "expected_public_analyzer": "U",
+      "feature_id": "execution.dialect_equivalence",
+      "variant": "runtime plan",
+      "semantic_owner": [
+        "TASK-88",
+        "TASK-89"
+      ],
+      "reason": "EXPLAIN parses but runtime query plans are not part of the canonical SQL outcome model.",
+      "safe_protocol_outcome": "explicit_unsupported_not_exact",
+      "source_bound_diagnostic": "requires_public_api_regression_check",
+      "review_disposition": "blocking_unimplemented_or_unproved",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    },
+    {
+      "cell_id": "88-C177-S242-sqlite",
+      "original_id": "88-C177-S242",
+      "dialect": "sqlite",
+      "expected_public_analyzer": "U",
+      "feature_id": "execution.dialect_equivalence",
+      "variant": "runtime plan",
+      "semantic_owner": [
+        "TASK-88",
+        "TASK-89"
+      ],
+      "reason": "EXPLAIN parses but runtime query plans are not part of the canonical SQL outcome model.",
+      "safe_protocol_outcome": "explicit_unsupported_not_exact",
+      "source_bound_diagnostic": "requires_public_api_regression_check",
+      "review_disposition": "blocking_unimplemented_or_unproved",
+      "reviewer_status": "not_reviewed",
+      "external_engine_session": "not_certified"
+    }
+  ],
+  "native_unproven_original_cases": [
+    {
+      "original_id": "88-C177-S033",
+      "feature_id": "predicates.computed",
+      "variant": "overflow",
+      "semantic_owner": [
+        "TASK-70",
+        "TASK-101",
+        "TASK-102"
+      ],
+      "proof_obligation": "explicit_native_rejection_or_conditional_syntax",
+      "exact_original_sql_native_terminal": "not_proven",
+      "executable_evidence_references": [
+        "docs/task-177-native-boundary-probes.json",
+        "tests/task_177_native_boundary_probes.rs",
+        "tests/task_178_native_boundary_adjudications.rs"
+      ],
+      "source_and_terminal_oracle": "no_fixed_successful_original_terminal",
+      "selected_and_not_true": "not_certified_by_original_native_terminal",
+      "typed_domain": "not_certified_for_original_execution",
+      "conditional_disposition": "original_negative_or_conditional_native_boundary",
+      "release_decision": "blocked_pending_independent_review",
+      "external_vendor_session": "not_certified"
+    },
+    {
+      "original_id": "88-C177-S054",
+      "feature_id": "joins.semi_anti",
+      "variant": "SEMI",
+      "semantic_owner": [
+        "TASK-71"
+      ],
+      "proof_obligation": "explicit_native_rejection_or_conditional_syntax",
+      "exact_original_sql_native_terminal": "not_proven",
+      "executable_evidence_references": [
+        "docs/task-177-native-boundary-probes.json",
+        "tests/task_177_native_boundary_probes.rs",
+        "tests/task_178_native_boundary_adjudications.rs"
+      ],
+      "source_and_terminal_oracle": "no_fixed_successful_original_terminal",
+      "selected_and_not_true": "not_certified_by_original_native_terminal",
+      "typed_domain": "not_certified_for_original_execution",
+      "conditional_disposition": "original_negative_or_conditional_native_boundary",
+      "release_decision": "blocked_pending_independent_review",
+      "external_vendor_session": "not_certified"
+    },
+    {
+      "original_id": "88-C177-S055",
+      "feature_id": "joins.semi_anti",
+      "variant": "ANTI",
+      "semantic_owner": [
+        "TASK-71"
+      ],
+      "proof_obligation": "explicit_native_rejection_or_conditional_syntax",
+      "exact_original_sql_native_terminal": "not_proven",
+      "executable_evidence_references": [
+        "docs/task-177-native-boundary-probes.json",
+        "tests/task_177_native_boundary_probes.rs",
+        "tests/task_178_native_boundary_adjudications.rs"
+      ],
+      "source_and_terminal_oracle": "no_fixed_successful_original_terminal",
+      "selected_and_not_true": "not_certified_by_original_native_terminal",
+      "typed_domain": "not_certified_for_original_execution",
+      "conditional_disposition": "original_negative_or_conditional_native_boundary",
+      "release_decision": "blocked_pending_independent_review",
+      "external_vendor_session": "not_certified"
+    },
+    {
+      "original_id": "88-C177-S084",
+      "feature_id": "sets.alignment",
+      "variant": "CORRESPONDING",
+      "semantic_owner": [
+        "TASK-72"
+      ],
+      "proof_obligation": "explicit_native_rejection_or_conditional_syntax",
+      "exact_original_sql_native_terminal": "not_proven",
+      "executable_evidence_references": [
+        "docs/task-177-native-boundary-probes.json",
+        "tests/task_177_native_boundary_probes.rs",
+        "tests/task_178_native_boundary_adjudications.rs"
+      ],
+      "source_and_terminal_oracle": "no_fixed_successful_original_terminal",
+      "selected_and_not_true": "not_certified_by_original_native_terminal",
+      "typed_domain": "not_certified_for_original_execution",
+      "conditional_disposition": "original_negative_or_conditional_native_boundary",
+      "release_decision": "blocked_pending_independent_review",
+      "external_vendor_session": "not_certified"
+    },
+    {
+      "original_id": "88-C177-S086",
+      "feature_id": "sets.alignment",
+      "variant": "incompatible arity",
+      "semantic_owner": [
+        "TASK-72"
+      ],
+      "proof_obligation": "explicit_native_rejection_or_conditional_syntax",
+      "exact_original_sql_native_terminal": "not_proven",
+      "executable_evidence_references": [
+        "docs/task-177-native-boundary-probes.json",
+        "tests/task_177_native_boundary_probes.rs",
+        "tests/task_178_native_boundary_adjudications.rs"
+      ],
+      "source_and_terminal_oracle": "no_fixed_successful_original_terminal",
+      "selected_and_not_true": "not_certified_by_original_native_terminal",
+      "typed_domain": "not_certified_for_original_execution",
+      "conditional_disposition": "original_negative_or_conditional_native_boundary",
+      "release_decision": "blocked_pending_independent_review",
+      "external_vendor_session": "not_certified"
+    },
+    {
+      "original_id": "88-C177-S140",
+      "feature_id": "subqueries.scalar_quantified",
+      "variant": "cardinality >1",
+      "semantic_owner": [
+        "TASK-75"
+      ],
+      "proof_obligation": "explicit_native_rejection_or_conditional_syntax",
+      "exact_original_sql_native_terminal": "not_proven",
+      "executable_evidence_references": [
+        "docs/task-177-native-boundary-probes.json",
+        "tests/task_177_native_boundary_probes.rs",
+        "tests/task_178_native_boundary_adjudications.rs"
+      ],
+      "source_and_terminal_oracle": "no_fixed_successful_original_terminal",
+      "selected_and_not_true": "not_certified_by_original_native_terminal",
+      "typed_domain": "not_certified_for_original_execution",
+      "conditional_disposition": "original_negative_or_conditional_native_boundary",
+      "release_decision": "blocked_pending_independent_review",
+      "external_vendor_session": "not_certified"
+    },
+    {
+      "original_id": "88-C177-S147",
+      "feature_id": "scopes.recursive_cte",
+      "variant": "cycles",
+      "semantic_owner": [
+        "TASK-78"
+      ],
+      "proof_obligation": "recursive_nontermination",
+      "exact_original_sql_native_terminal": "not_proven",
+      "executable_evidence_references": [
+        "docs/task-177-native-boundary-probes.json",
+        "tests/task_177_native_boundary_probes.rs"
+      ],
+      "source_and_terminal_oracle": "no_fixed_successful_original_terminal",
+      "selected_and_not_true": "not_certified_by_original_native_terminal",
+      "typed_domain": "not_certified_for_original_execution",
+      "conditional_disposition": "bounded_companion_only_original_must_not_execute",
+      "release_decision": "blocked_pending_independent_review",
+      "external_vendor_session": "not_certified"
+    },
+    {
+      "original_id": "88-C177-S160",
+      "feature_id": "ordering.pagination",
+      "variant": "FETCH FIRST/WITH TIES",
+      "semantic_owner": [
+        "TASK-76"
+      ],
+      "proof_obligation": "explicit_native_rejection_or_conditional_syntax",
+      "exact_original_sql_native_terminal": "not_proven",
+      "executable_evidence_references": [
+        "docs/task-177-native-boundary-probes.json",
+        "tests/task_177_native_boundary_probes.rs",
+        "tests/task_178_native_boundary_adjudications.rs"
+      ],
+      "source_and_terminal_oracle": "no_fixed_successful_original_terminal",
+      "selected_and_not_true": "not_certified_by_original_native_terminal",
+      "typed_domain": "not_certified_for_original_execution",
+      "conditional_disposition": "original_negative_or_conditional_native_boundary",
+      "release_decision": "blocked_pending_independent_review",
+      "external_vendor_session": "not_certified"
+    },
+    {
+      "original_id": "88-C177-S161",
+      "feature_id": "ordering.pagination",
+      "variant": "TOP",
+      "semantic_owner": [
+        "TASK-76"
+      ],
+      "proof_obligation": "explicit_native_rejection_or_conditional_syntax",
+      "exact_original_sql_native_terminal": "not_proven",
+      "executable_evidence_references": [
+        "docs/task-177-native-boundary-probes.json",
+        "tests/task_177_native_boundary_probes.rs",
+        "tests/task_178_native_boundary_adjudications.rs"
+      ],
+      "source_and_terminal_oracle": "no_fixed_successful_original_terminal",
+      "selected_and_not_true": "not_certified_by_original_native_terminal",
+      "typed_domain": "not_certified_for_original_execution",
+      "conditional_disposition": "original_negative_or_conditional_native_boundary",
+      "release_decision": "blocked_pending_independent_review",
+      "external_vendor_session": "not_certified"
+    },
+    {
+      "original_id": "88-C177-S163",
+      "feature_id": "ordering.sampling",
+      "variant": "TABLESAMPLE",
+      "semantic_owner": [
+        "TASK-76"
+      ],
+      "proof_obligation": "engine_sample_nondeterminism",
+      "exact_original_sql_native_terminal": "not_proven",
+      "executable_evidence_references": [
+        "docs/task-177-native-boundary-probes.json",
+        "tests/task_177_native_boundary_probes.rs"
+      ],
+      "source_and_terminal_oracle": "no_fixed_successful_original_terminal",
+      "selected_and_not_true": "not_certified_by_original_native_terminal",
+      "typed_domain": "not_certified_for_original_execution",
+      "conditional_disposition": "native_sample_is_subbag_no_fixed_terminal",
+      "release_decision": "blocked_pending_independent_review",
+      "external_vendor_session": "not_certified"
+    },
+    {
+      "original_id": "88-C177-S164",
+      "feature_id": "ordering.sampling",
+      "variant": "BERNOULLI",
+      "semantic_owner": [
+        "TASK-76"
+      ],
+      "proof_obligation": "engine_sample_nondeterminism",
+      "exact_original_sql_native_terminal": "not_proven",
+      "executable_evidence_references": [
+        "docs/task-177-native-boundary-probes.json",
+        "tests/task_177_native_boundary_probes.rs"
+      ],
+      "source_and_terminal_oracle": "no_fixed_successful_original_terminal",
+      "selected_and_not_true": "not_certified_by_original_native_terminal",
+      "typed_domain": "not_certified_for_original_execution",
+      "conditional_disposition": "native_sample_is_subbag_no_fixed_terminal",
+      "release_decision": "blocked_pending_independent_review",
+      "external_vendor_session": "not_certified"
+    },
+    {
+      "original_id": "88-C177-S165",
+      "feature_id": "ordering.sampling",
+      "variant": "SYSTEM",
+      "semantic_owner": [
+        "TASK-76"
+      ],
+      "proof_obligation": "engine_sample_nondeterminism",
+      "exact_original_sql_native_terminal": "not_proven",
+      "executable_evidence_references": [
+        "docs/task-177-native-boundary-probes.json",
+        "tests/task_177_native_boundary_probes.rs"
+      ],
+      "source_and_terminal_oracle": "no_fixed_successful_original_terminal",
+      "selected_and_not_true": "not_certified_by_original_native_terminal",
+      "typed_domain": "not_certified_for_original_execution",
+      "conditional_disposition": "native_sample_is_subbag_no_fixed_terminal",
+      "release_decision": "blocked_pending_independent_review",
+      "external_vendor_session": "not_certified"
+    },
+    {
+      "original_id": "88-C177-S166",
+      "feature_id": "ordering.sampling",
+      "variant": "seeds",
+      "semantic_owner": [
+        "TASK-76"
+      ],
+      "proof_obligation": "engine_sample_nondeterminism",
+      "exact_original_sql_native_terminal": "not_proven",
+      "executable_evidence_references": [
+        "docs/task-177-native-boundary-probes.json",
+        "tests/task_177_native_boundary_probes.rs"
+      ],
+      "source_and_terminal_oracle": "no_fixed_successful_original_terminal",
+      "selected_and_not_true": "not_certified_by_original_native_terminal",
+      "typed_domain": "not_certified_for_original_execution",
+      "conditional_disposition": "native_sample_is_subbag_no_fixed_terminal",
+      "release_decision": "blocked_pending_independent_review",
+      "external_vendor_session": "not_certified"
+    },
+    {
+      "original_id": "88-C177-S167",
+      "feature_id": "ordering.sampling",
+      "variant": "engine randomness",
+      "semantic_owner": [
+        "TASK-76"
+      ],
+      "proof_obligation": "engine_sample_nondeterminism",
+      "exact_original_sql_native_terminal": "not_proven",
+      "executable_evidence_references": [
+        "docs/task-177-native-boundary-probes.json",
+        "tests/task_177_native_boundary_probes.rs"
+      ],
+      "source_and_terminal_oracle": "no_fixed_successful_original_terminal",
+      "selected_and_not_true": "not_certified_by_original_native_terminal",
+      "typed_domain": "not_certified_for_original_execution",
+      "conditional_disposition": "native_sample_is_subbag_no_fixed_terminal",
+      "release_decision": "blocked_pending_independent_review",
+      "external_vendor_session": "not_certified"
+    },
+    {
+      "original_id": "88-C177-S173",
+      "feature_id": "relations.advanced_sources",
+      "variant": "cross apply",
+      "semantic_owner": [
+        "TASK-77"
+      ],
+      "proof_obligation": "explicit_native_rejection_or_conditional_syntax",
+      "exact_original_sql_native_terminal": "not_proven",
+      "executable_evidence_references": [
+        "docs/task-177-native-boundary-probes.json",
+        "tests/task_177_native_boundary_probes.rs",
+        "tests/task_178_native_boundary_adjudications.rs"
+      ],
+      "source_and_terminal_oracle": "no_fixed_successful_original_terminal",
+      "selected_and_not_true": "not_certified_by_original_native_terminal",
+      "typed_domain": "not_certified_for_original_execution",
+      "conditional_disposition": "original_negative_or_conditional_native_boundary",
+      "release_decision": "blocked_pending_independent_review",
+      "external_vendor_session": "not_certified"
+    },
+    {
+      "original_id": "88-C177-S176",
+      "feature_id": "types.structural",
+      "variant": "binary",
+      "semantic_owner": [
+        "TASK-79"
+      ],
+      "proof_obligation": "explicit_native_rejection_or_conditional_syntax",
+      "exact_original_sql_native_terminal": "not_proven",
+      "executable_evidence_references": [
+        "docs/task-177-native-boundary-probes.json",
+        "tests/task_177_native_boundary_probes.rs",
+        "tests/task_178_native_boundary_adjudications.rs"
+      ],
+      "source_and_terminal_oracle": "no_fixed_successful_original_terminal",
+      "selected_and_not_true": "not_certified_by_original_native_terminal",
+      "typed_domain": "not_certified_for_original_execution",
+      "conditional_disposition": "original_negative_or_conditional_native_boundary",
+      "release_decision": "blocked_pending_independent_review",
+      "external_vendor_session": "not_certified"
+    },
+    {
+      "original_id": "88-C177-S182",
+      "feature_id": "types.structural",
+      "variant": "custom",
+      "semantic_owner": [
+        "TASK-79"
+      ],
+      "proof_obligation": "explicit_native_rejection_or_conditional_syntax",
+      "exact_original_sql_native_terminal": "not_proven",
+      "executable_evidence_references": [
+        "docs/task-177-native-boundary-probes.json",
+        "tests/task_177_native_boundary_probes.rs",
+        "tests/task_178_native_boundary_adjudications.rs"
+      ],
+      "source_and_terminal_oracle": "no_fixed_successful_original_terminal",
+      "selected_and_not_true": "not_certified_by_original_native_terminal",
+      "typed_domain": "not_certified_for_original_execution",
+      "conditional_disposition": "original_negative_or_conditional_native_boundary",
+      "release_decision": "blocked_pending_independent_review",
+      "external_vendor_session": "not_certified"
+    },
+    {
+      "original_id": "88-C177-S199",
+      "feature_id": "dml.insert_conflicts",
+      "variant": "REPLACE INTO",
+      "semantic_owner": [
+        "TASK-80",
+        "TASK-82"
+      ],
+      "proof_obligation": "explicit_native_rejection_or_conditional_syntax",
+      "exact_original_sql_native_terminal": "not_proven",
+      "executable_evidence_references": [
+        "docs/task-177-native-boundary-probes.json",
+        "tests/task_177_native_boundary_probes.rs",
+        "tests/task_178_native_boundary_adjudications.rs"
+      ],
+      "source_and_terminal_oracle": "no_fixed_successful_original_terminal",
+      "selected_and_not_true": "not_certified_by_original_native_terminal",
+      "typed_domain": "not_certified_for_original_execution",
+      "conditional_disposition": "original_negative_or_conditional_native_boundary",
+      "release_decision": "blocked_pending_independent_review",
+      "external_vendor_session": "not_certified"
+    },
+    {
+      "original_id": "88-C177-S200",
+      "feature_id": "dml.insert_conflicts",
+      "variant": "INSERT OVERWRITE",
+      "semantic_owner": [
+        "TASK-80",
+        "TASK-82"
+      ],
+      "proof_obligation": "explicit_native_rejection_or_conditional_syntax",
+      "exact_original_sql_native_terminal": "not_proven",
+      "executable_evidence_references": [
+        "docs/task-177-native-boundary-probes.json",
+        "tests/task_177_native_boundary_probes.rs",
+        "tests/task_178_native_boundary_adjudications.rs"
+      ],
+      "source_and_terminal_oracle": "no_fixed_successful_original_terminal",
+      "selected_and_not_true": "not_certified_by_original_native_terminal",
+      "typed_domain": "not_certified_for_original_execution",
+      "conditional_disposition": "original_negative_or_conditional_native_boundary",
+      "release_decision": "blocked_pending_independent_review",
+      "external_vendor_session": "not_certified"
+    },
+    {
+      "original_id": "88-C177-S242",
+      "feature_id": "execution.dialect_equivalence",
+      "variant": "runtime plan",
+      "semantic_owner": [
+        "TASK-88",
+        "TASK-89"
+      ],
+      "proof_obligation": "native_execution_candidate",
+      "exact_original_sql_native_terminal": "not_proven",
+      "executable_evidence_references": [
+        "tests/task_177_native_boundary_probes.rs"
+      ],
+      "source_and_terminal_oracle": "no_fixed_successful_original_terminal",
+      "selected_and_not_true": "not_certified_by_original_native_terminal",
+      "typed_domain": "not_certified_for_original_execution",
+      "conditional_disposition": "explain_plan_engine_dependent_no_exact_bag",
+      "release_decision": "blocked_pending_independent_review",
+      "external_vendor_session": "not_certified"
+    },
+    {
+      "original_id": "88-C177-S248",
+      "feature_id": "execution.unsupported_opaque",
+      "variant": "arbitrary UDF",
+      "semantic_owner": [
+        "TASK-66",
+        "TASK-88",
+        "TASK-91"
+      ],
+      "proof_obligation": "explicit_native_rejection_or_conditional_syntax",
+      "exact_original_sql_native_terminal": "not_proven",
+      "executable_evidence_references": [
+        "docs/task-177-native-boundary-probes.json",
+        "tests/task_177_native_boundary_probes.rs",
+        "tests/task_178_native_boundary_adjudications.rs"
+      ],
+      "source_and_terminal_oracle": "no_fixed_successful_original_terminal",
+      "selected_and_not_true": "not_certified_by_original_native_terminal",
+      "typed_domain": "not_certified_for_original_execution",
+      "conditional_disposition": "original_negative_or_conditional_native_boundary",
+      "release_decision": "blocked_pending_independent_review",
+      "external_vendor_session": "not_certified"
+    },
+    {
+      "original_id": "88-C177-S249",
+      "feature_id": "execution.unsupported_opaque",
+      "variant": "external I/O",
+      "semantic_owner": [
+        "TASK-66",
+        "TASK-88",
+        "TASK-91"
+      ],
+      "proof_obligation": "explicit_native_rejection_or_conditional_syntax",
+      "exact_original_sql_native_terminal": "not_proven",
+      "executable_evidence_references": [
+        "docs/task-177-native-boundary-probes.json",
+        "tests/task_177_native_boundary_probes.rs",
+        "tests/task_178_native_boundary_adjudications.rs"
+      ],
+      "source_and_terminal_oracle": "no_fixed_successful_original_terminal",
+      "selected_and_not_true": "not_certified_by_original_native_terminal",
+      "typed_domain": "not_certified_for_original_execution",
+      "conditional_disposition": "original_negative_or_conditional_native_boundary",
+      "release_decision": "blocked_pending_independent_review",
+      "external_vendor_session": "not_certified"
+    },
+    {
+      "original_id": "88-C177-S250",
+      "feature_id": "execution.unsupported_opaque",
+      "variant": "nondeterminism",
+      "semantic_owner": [
+        "TASK-66",
+        "TASK-88",
+        "TASK-91"
+      ],
+      "proof_obligation": "runtime_nondeterminism",
+      "exact_original_sql_native_terminal": "not_proven",
+      "executable_evidence_references": [
+        "docs/task-177-native-boundary-probes.json",
+        "tests/task_177_native_boundary_probes.rs"
+      ],
+      "source_and_terminal_oracle": "no_fixed_successful_original_terminal",
+      "selected_and_not_true": "not_certified_by_original_native_terminal",
+      "typed_domain": "not_certified_for_original_execution",
+      "conditional_disposition": "random_value_no_fixed_terminal",
+      "release_decision": "blocked_pending_independent_review",
+      "external_vendor_session": "not_certified"
+    }
+  ],
+  "positive_negative_oracles": {
+    "positive": "Original S054/S055 are DuckDB-rejected; an independently frozen EXISTS positive companion is separately tested, never relabeled original.",
+    "negative": "An independently frozen NOT EXISTS rejected-partner control uses the same complete nullable/duplicate source bag.",
+    "source_setup": "CREATE TABLE orders(row_id INTEGER, id INTEGER, amount INTEGER); INSERT INTO orders VALUES (1,1,10),(2,1,11),(3,2,20),(4,NULL,30),(5,3,NULL); CREATE TABLE customers(row_id INTEGER,id INTEGER); INSERT INTO customers VALUES (6,1),(7,1),(8,NULL),(9,4);",
+    "original_positive_id": "88-C177-S054",
+    "original_negative_id": "88-C177-S055",
+    "expected_ordered_orders": [
+      [
+        1,
+        1,
+        10
+      ],
+      [
+        2,
+        1,
+        11
+      ],
+      [
+        3,
+        2,
+        20
+      ],
+      [
+        4,
+        null,
+        30
+      ],
+      [
+        5,
+        3,
+        null
+      ]
+    ],
+    "expected_ordered_customers": [
+      [
+        6,
+        1
+      ],
+      [
+        7,
+        1
+      ],
+      [
+        8,
+        null
+      ],
+      [
+        9,
+        4
+      ]
+    ],
+    "positive_sql": "SELECT l.row_id, l.id FROM orders l WHERE EXISTS (SELECT 1 FROM customers r WHERE l.id = r.id) ORDER BY l.row_id",
+    "positive_terminal": [
+      [
+        1,
+        1
+      ],
+      [
+        2,
+        1
+      ]
+    ],
+    "rejected_partner_sql": "SELECT l.row_id, l.id FROM orders l WHERE NOT EXISTS (SELECT 1 FROM customers r WHERE l.id = r.id) ORDER BY l.row_id",
+    "rejected_partner_terminal": [
+      [
+        3,
+        2
+      ],
+      [
+        4,
+        null
+      ],
+      [
+        5,
+        3
+      ]
+    ],
+    "native_status": "companions_only_no_original_sql_vendor_claim",
+    "source_schema_types": {
+      "orders": "row_id INTEGER NOT NULL, id nullable INTEGER, amount nullable INTEGER",
+      "customers": "row_id INTEGER NOT NULL, id nullable INTEGER"
+    },
+    "expected_domain": {
+      "selected_id": "integer_equal_1_nonnull",
+      "rejected_id": "nullable_integer_subset_2_3_or_null"
+    }
+  }
+}
