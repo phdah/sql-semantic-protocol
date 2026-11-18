@@ -86,7 +86,10 @@ fn typed_sources(db: &Connection, case: &Value) -> Vec<Value> {
     // A single declared source column can still have a two-column snapshot
     // (the identifier-case probes include a text rendering of that column).
     // Check the complete frozen row shape instead of silently discarding it.
-    if expected.iter().all(|row| row.as_array().is_some_and(|values| values.len() == 1)) {
+    if expected
+        .iter()
+        .all(|row| row.as_array().is_some_and(|values| values.len() == 1))
+    {
         let observed = ints(db, &source_sql, 1).expect("native one-column source");
         assert_eq!(
             ordered_bag(observed.clone()),
