@@ -1609,6 +1609,10 @@
         {
           "id": 191,
           "title": "Adjudicate TASK-177 parser and native boundaries",
+          "acceptance_signoff": "verified_bounded_child_pending_merge",
+          "signoff_audit": "docs/task-191-independent-review-v4.json",
+          "delivery_pr": "https://github.com/phdah/sql-semantic-protocol/pull/205",
+          "dependency_gate": "TASK-180 stays blocked until TASK-191 Done and PR #205 merged to main; parent TASK-88 release matrix remains unsigned",
           "variants": "55 parser rejection cells; 116 analyzer Unsupported cells; 23 original SQL native missing/conditional samples",
           "oracle": "Every named exception has source-backed parser/analyzer/native evidence, an independent reviewed disposition or a blocking mandatory semantic implementation owner",
           "boundary": "No syntax companion or DuckDB-only oracle implies vendor support; unresolved mandatory exactness blocks TASK-180 and TASK-88",
