@@ -170,3 +170,51 @@ fn all_original_task179_parser_and_analysis_cells_match_the_frozen_public_bounda
     }
     assert_eq!(observations, 35 * 13);
 }
+
+#[test]
+fn two_task_owned_identifier_case_probes_execute_all_thirteen_public_dialects() {
+    // The two synthetic cases are not original TASK-177 identities. Exercise
+    // actual public analysis rather than assigning them inherited parser masks.
+    let matrix = read(MATRIX);
+    let dialects = matrix["dialects"].as_array().expect("thirteen public parsers");
+    let mut total = 0;
+    for case in matrix["cases"].as_array().expect("37 variants") {
+        if case["family"] != "identifier_case" {
+            continue;
+        }
+        let sql = case["sql"].as_str().expect("original task-owned SQL");
+        let mut mask = String::new();
+        for name in dialects {
+            let name = name.as_str().expect("parser identity");
+            let parser = dialect_from_name(name).expect("supported parser");
+            let status = match analyze_sql(sql, name, parser.as_ref()) {
+                Err(Error::Parse(_)) => 'R',
+                Err(Error::Analysis(_)) => 'E',
+                Err(error) => panic!("{name}: unexpected parser boundary: {error}"),
+                Ok(protocol)
+                    if protocol.statements().iter().any(|statement| {
+                        matches!(statement, ProtocolStatement::Unsupported(_))
+                    }) =>
+                {
+                    'U'
+                }
+                Ok(protocol) => {
+                    let [ProtocolStatement::Query(query)] = protocol.statements() else {
+                        panic!("{name}: missing canonical SELECT projection");
+                    };
+                    assert_eq!(query.output().columns().len(), 1);
+                    'A'
+                }
+            };
+            mask.push(status);
+            total += 1;
+        }
+        assert_eq!(
+            mask,
+            "AAAAAAAAAAAAA",
+            "{}: task-owned parser dialect observation",
+            case["id"]
+        );
+    }
+    assert_eq!(total, 26);
+}
