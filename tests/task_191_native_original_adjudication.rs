@@ -34,7 +34,9 @@ fn fresh_source() -> Connection {
     let db = Connection::open_in_memory().expect("pinned DuckDB");
     let sources = read(SOURCES);
     db.execute_batch(
-        sources["source_setup"].as_str().expect("fixed DDL and inserts"),
+        sources["source_setup"]
+            .as_str()
+            .expect("fixed DDL and inserts"),
     )
     .expect("complete source population");
     db
@@ -64,9 +66,16 @@ fn all_source_rows(db: &Connection) -> BTreeMap<String, Vec<(i64, Vec<Option<i64
             serde_json::from_value(sources["source_bags"][name].clone())
                 .expect("independent complete source bag");
         expected.sort();
-        assert_eq!(actual, expected, "{name}: complete source bag must match fixture");
+        assert_eq!(
+            actual, expected,
+            "{name}: complete source bag must match fixture"
+        );
         let unique: BTreeSet<i64> = rows.iter().map(|(identity, _)| *identity).collect();
-        assert_eq!(unique.len(), rows.len(), "{name}: stable physical row instance");
+        assert_eq!(
+            unique.len(),
+            rows.len(),
+            "{name}: stable physical row instance"
+        );
         result.insert(name.to_string(), rows);
     }
     result
@@ -85,7 +94,9 @@ fn exhaust_original(db: &Connection, sql: &str) -> duckdb::Result<()> {
 }
 
 fn source_ids(db: &Connection) -> Vec<Option<i64>> {
-    let mut stmt = db.prepare("SELECT id FROM orders").expect("original source");
+    let mut stmt = db
+        .prepare("SELECT id FROM orders")
+        .expect("original source");
     stmt.query_map([], |row| row.get::<_, Option<i64>>(0))
         .expect("integer source column")
         .map(|r| r.expect("source identity value"))
@@ -191,12 +202,17 @@ fn infinite_recursion_has_only_a_bounded_companion_oracle() {
         .iter()
         .find(|r| r["proof_obligation"] == "recursive_nontermination")
         .expect("one unbounded recursive original");
-    let sql = original(&originals, record["original_id"].as_str().expect("original ID"));
+    let sql = original(
+        &originals,
+        record["original_id"].as_str().expect("original ID"),
+    );
     assert!(sql.contains("WITH RECURSIVE"));
     assert!(!sql.contains("WHERE n <"), "original must remain unbounded");
     let db = fresh_source();
     let before = all_source_rows(&db);
-    let control = boundaries["bounded_companion"].as_str().expect("explicit terminating SQL");
+    let control = boundaries["bounded_companion"]
+        .as_str()
+        .expect("explicit terminating SQL");
     let mut stmt = db.prepare(control).expect("bounded alternative");
     let rows: Vec<Option<i64>> = stmt
         .query_map([], |r| r.get(0))
@@ -248,7 +264,10 @@ fn random_and_explain_originals_keep_runtime_and_plan_uncertainty_explicit() {
         .expect("plan metadata rows")
         .map(|value| value.expect("plan label"))
         .collect();
-    assert!(!plan_rows.is_empty(), "EXPLAIN must execute in pinned DuckDB");
+    assert!(
+        !plan_rows.is_empty(),
+        "EXPLAIN must execute in pinned DuckDB"
+    );
     assert_eq!(explain["original_fixed_terminal_certified"], false);
     assert_eq!(all_source_rows(&db), before);
 }
