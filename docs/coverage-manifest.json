@@ -15806,7 +15806,16 @@
   "task_191_boundary_disposition_acceptance": {
     "owner": "TASK-191",
     "parent": "TASK-88",
-    "status": "to_do_release_blocking",
+    "status": "in_progress_frozen_release_blocking",
+    "freeze": "docs/task-191-acceptance-freeze.json",
+    "freeze_version": 1,
+    "fixture_ids": ["88-C191-P", "88-C191-N"],
+    "public_and_duckdb_oracle_test": "tests/task_191_boundary_disposition.rs",
+    "acceptance_audit": "docs/task-191-acceptance-audit.md",
+    "original_sql_native_equivalence_certified": false,
+    "all_parser_and_unsupported_cells_independently_adjudicated": false,
+    "all_native_gaps_independently_adjudicated": false,
+    "final_head_ci_verified": false,
     "source_task": "TASK-177",
     "dependencies": [
       "TASK-179"
