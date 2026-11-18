@@ -158,7 +158,7 @@ fn reviewed_parser_analyzer_and_native_cells_have_independent_owners_and_origina
                 _ => unreachable!("only two original public classes"),
             }
         }
-        assert_eq!(ids, *expected_set);
+        assert_eq!(&ids, expected_set);
     }
 
     let mut reviewed_native = BTreeSet::new();
