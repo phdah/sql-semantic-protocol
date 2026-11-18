@@ -83,8 +83,18 @@ fn typed_sources(db: &Connection, case: &Value) -> Vec<Value> {
         .iter()
         .any(|column| column.as_str().is_some_and(|text| text.contains("DOUBLE")));
     let expected = case["source_bag"].as_array().expect("complete source bags");
-    if columns.len() == 1 {
-        return ints(db, &source_sql, 1).expect("native one-column source");
+    // A single declared source column can still have a two-column snapshot
+    // (the identifier-case probes include a text rendering of that column).
+    // Check the complete frozen row shape instead of silently discarding it.
+    if expected.iter().all(|row| row.as_array().is_some_and(|values| values.len() == 1)) {
+        let observed = ints(db, &source_sql, 1).expect("native one-column source");
+        assert_eq!(
+            ordered_bag(observed.clone()),
+            ordered_bag(expected.clone()),
+            "{}: complete native one-column source bag",
+            case["id"]
+        );
+        return observed;
     }
     let mut stmt = db.prepare(&source_sql).expect("native full typed input");
     let observed = stmt
