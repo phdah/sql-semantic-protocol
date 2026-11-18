@@ -82,7 +82,7 @@ fn every_reviewed_exception_reconciles_to_exact_original_source_and_existing_ada
     for cell in rows(&handoff, "reviewed_decisions") {
         let key = label(cell, "review_id");
         let id = label(cell, "original_id");
-        assert!(reviewed_ids.insert(key));
+        assert!(reviewed_ids.insert(key.to_owned()));
         assert_eq!(
             label(cell, "original_sql"),
             *original_sql.get(id).expect("stable original SQL fixture"),
