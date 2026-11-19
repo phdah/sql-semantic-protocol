@@ -20,6 +20,7 @@ const SET_BAGS: &str = include_str!("../docs/task-194-independent-bag-review.jso
 const WINDOW: &str = include_str!("../docs/task-195-acceptance-freeze.json");
 const EXCEPTIONS: &str = include_str!("../docs/task-191-independent-review-v4.json");
 const MANIFEST: &str = include_str!("../docs/coverage-manifest.json");
+const SIGNOFF: &str = include_str!("../docs/task-180-final-signoff-evidence.json");
 const TASK: &str = include_str!(
     "../.backlog/tasks/task-180 - independently-certify-complete-dialect-matrix-and-gate-ci.md"
 );
@@ -35,6 +36,7 @@ fn all_2119_original_dialect_obligations_have_an_independent_review_and_explicit
     let adapter = read(ADAPTER);
     let exceptions = read(EXCEPTIONS);
     let manifest = read(MANIFEST);
+    let signoff = read(SIGNOFF);
 
     assert_eq!(freeze["schema_version"], 1);
     assert_eq!(freeze["task_id"], "TASK-180");
@@ -47,7 +49,7 @@ fn all_2119_original_dialect_obligations_have_an_independent_review_and_explicit
     assert_eq!(freeze["dialects"], adapter["dialects"]);
     assert_eq!(
         freeze["release_policy"]["all_mandatory_cells_finally_verified"],
-        false
+        signoff["all_required_independent_reviews_approved"]
     );
     assert_eq!(freeze["release_policy"]["parent_88_signed_off"], false);
     assert_eq!(freeze["release_policy"]["task_91_release_approved"], false);
@@ -181,10 +183,14 @@ fn all_2119_original_dialect_obligations_have_an_independent_review_and_explicit
     );
     assert_eq!(
         manifest["task_180_complete_dialect_gate"]["complete_matrix_release_approved"],
-        false
+        signoff["task180_signed_off"]
     );
-    assert!(TASK.contains("status: In Progress"));
-    assert!(!TASK.contains("status: Done"));
+    if signoff["task180_signed_off"] == true {
+        assert!(TASK.contains("status: Done"));
+    } else {
+        assert!(TASK.contains("status: In Progress"));
+        assert!(!TASK.contains("status: Done"));
+    }
 }
 
 fn rows(db: &Connection, sql: &str, width: usize) -> Vec<Vec<Option<i64>>> {
@@ -701,4 +707,118 @@ fn all_28_deterministic_native_group_window_and_ordered_bags_are_replayed() {
         }
     }
     assert_eq!((integer_bags, floating_bags, conditional_cases), (25, 3, 8));
+}
+
+#[test]
+fn acceptance_cannot_be_marked_done_without_per_cell_independent_evidence() {
+    let signoff = read(SIGNOFF);
+    let freeze = read(FREEZE);
+    let manifest = read(MANIFEST);
+    assert_eq!(signoff["schema_version"], 1);
+    assert_eq!(signoff["task_id"], "TASK-180");
+    assert_eq!(signoff["required_original_cases"], 163);
+    assert_eq!(signoff["required_dialect_cells"], 2119);
+
+    let expected: BTreeSet<String> = freeze["cases"]
+        .as_array()
+        .expect("complete original variants")
+        .iter()
+        .flat_map(|case| case["cells"].as_array().expect("all dialect cells"))
+        .map(|cell| {
+            cell["id"]
+                .as_str()
+                .expect("original case/dialect identity")
+                .to_owned()
+        })
+        .collect();
+    assert_eq!(expected.len(), 2119);
+
+    let approvals = signoff["approved_cells"]
+        .as_array()
+        .expect("individual independently reviewed cells");
+    let mut observed = BTreeSet::new();
+    for review in approvals {
+        let id = review["id"].as_str().expect("reviewed source case/dialect");
+        assert!(expected.contains(id), "{id}: an extra review cannot replace a required cell");
+        assert!(observed.insert(id.to_owned()), "{id}: duplicate release review");
+        for field in [
+            "reviewer",
+            "reviewed_commit",
+            "native_source_and_terminal_oracle",
+            "typed_domain_and_null_bounds",
+            "negative_or_impossible_direction",
+            "sql_dbt_odcs_evidence",
+            "vendor_session_disposition",
+        ] {
+            assert!(
+                review[field]
+                    .as_str()
+                    .is_some_and(|value| !value.trim().is_empty()),
+                "{id}: independent review is missing {field}"
+            );
+        }
+        assert!(
+            matches!(
+                review["proof_status"].as_str(),
+                Some("Exact" | "Impossible" | "reviewed_conditional_residual")
+            ),
+            "{id}: every final classification needs an explicit physical proof status"
+        );
+        assert!(
+            !review["native_execution_attested"].as_bool().unwrap_or(false)
+                || review["native_execution_evidence"]
+                    .as_str()
+                    .is_some_and(|evidence| !evidence.trim().is_empty()),
+            "{id}: vendor runtime cannot be certified without execution"
+        );
+    }
+
+    let done = signoff["task180_signed_off"]
+        .as_bool()
+        .expect("explicit independent acceptance decision");
+    let manifest_done = manifest["task_180_complete_dialect_gate"]["complete_matrix_release_approved"]
+        .as_bool()
+        .expect("explicit canonical release gate");
+    assert_eq!(done, manifest_done);
+    assert_eq!(
+        signoff["all_required_independent_reviews_approved"],
+        done,
+        "task signoff needs a complete independent cell review"
+    );
+    if done {
+        assert_eq!(observed, expected, "every mandatory cell needs independent approval");
+        for field in ["independent_reviewer", "reviewed_code_commit"] {
+            assert!(signoff[field].as_str().is_some_and(|s| !s.is_empty()));
+        }
+        let verify = &signoff["verification"];
+        for field in [
+            "protocol_exact_head_ci",
+            "pinned_sql_tdg_consumer_ci",
+            "pinned_consumer_commit",
+        ] {
+            assert!(verify[field].as_str().is_some_and(|s| !s.is_empty()));
+        }
+        assert_eq!(verify["protocol_ci_jobs_passed"], 9);
+        assert_eq!(verify["dbt_e2e_verified"], true);
+        assert_eq!(verify["active_schema_golden_verified"], true);
+        assert_eq!(
+            signoff["vendor_boundary_review"]["reviewed_conditions"],
+            481,
+            "every reviewed vendor/session cell needs a final release disposition"
+        );
+        assert!(signoff["vendor_boundary_review"]["independent_owner"]
+            .as_str()
+            .is_some_and(|s| !s.is_empty()));
+        assert_eq!(
+            signoff["vendor_boundary_review"]["approved_dispositions"]
+                .as_array()
+                .expect("individual vendor-law dispositions")
+                .len(),
+            481
+        );
+        assert!(TASK.contains("status: Done"));
+    } else {
+        assert!(observed.len() < expected.len(), "all cells already have evidence but no signoff");
+        assert!(!TASK.contains("status: Done"), "task cannot close without all approvals");
+    }
 }
