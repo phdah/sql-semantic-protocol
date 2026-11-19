@@ -55,10 +55,9 @@ fn all_2119_original_public_sql_dialect_cells_are_executed_with_reviewed_boundar
                 Err(Error::Parse(_)) => 'R',
                 Err(error) => panic!("{cell_id}: unreviewed error: {error}"),
                 Ok(protocol)
-                    if protocol
-                        .statements()
-                        .iter()
-                        .any(|statement| matches!(statement, ProtocolStatement::Unsupported(_))) =>
+                    if protocol.statements().iter().any(|statement| {
+                        matches!(statement, ProtocolStatement::Unsupported(_))
+                    }) =>
                 {
                     'U'
                 }
@@ -90,7 +89,11 @@ fn all_2119_original_public_sql_dialect_cells_are_executed_with_reviewed_boundar
             *actual_counts.entry(actual).or_insert(0_usize) += 1;
         }
     }
-    assert_eq!(seen.len(), 2119, "every mandatory SQL/dialect cell is exercised");
+    assert_eq!(
+        seen.len(),
+        2119,
+        "every mandatory SQL/dialect cell is exercised"
+    );
     assert_eq!(actual_counts.get(&'C'), Some(&2036));
     assert_eq!(actual_counts.get(&'D'), Some(&1));
     assert_eq!(actual_counts.get(&'U'), Some(&55));
