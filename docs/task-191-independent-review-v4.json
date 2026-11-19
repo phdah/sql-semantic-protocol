@@ -1,0 +1,60 @@
+{
+  "schema_version": 4,
+  "task_id": "TASK-191",
+  "parent": "TASK-88",
+  "signoff_date": "2026-11-18",
+  "reviewer": "GPT-6 assistant independent second-pass against original SQL, public parser/analyzer, DuckDB native and source-fact owners; no separate human/vendor certification",
+  "scope": "child_original_exception_adjudication_only",
+  "historical_preimplementation_freeze": "docs/task-191-acceptance-freeze.json",
+  "reviewed_dispositions": "docs/task-191-reviewed-dispositions-v2.json",
+  "independent_downstream_handoff": "docs/task-191-downstream-handoff-v3.json",
+  "reviewed_parser_cells": 55,
+  "reviewed_public_unsupported_cells": 116,
+  "reviewed_native_original_cases": 23,
+  "total_review_obligations": 194,
+  "source_fixture_count": 251,
+  "reviewed_parser_dialects": 13,
+  "native_case_categories": {
+    "duckdb_errors_or_rejections": 15,
+    "stochastic_sampling": 5,
+    "bounded_recursion_control_only": 1,
+    "runtime_random_no_fixed_terminal": 1,
+    "optimizer_sensitive_explain": 1
+  },
+  "native_non_duckdb_attested": false,
+  "original_unproved_native_terminal_upgraded_to_success": false,
+  "unsupported_mandatory_feature_approved_as_deferred": false,
+  "all_mandatory_original_capabilities_implemented": false,
+  "source_parity_only_not_vendor_execution": true,
+  "standard_review": {
+    "separation": "public sqlparser/analyzer assertions are distinct from native DuckDB source/terminal oracles, SQL/dbt/ODCS metadata and explicit vendor residuals",
+    "code": "no unsafe, dependency addition, lint exception or public protocol schema change; deterministic original source evidence",
+    "findings": "no blocker in reviewed task-scoped tests on CI-passing implementation SHA"
+  },
+  "spec_review": {
+    "ac1": "exact frozen 55/116/23 identities and source-bound typed review",
+    "ac2": "all 55 exact parser rejects reviewed with named conditions and no original-vendor promotion",
+    "ac3": "all 116 Unsupported exact diagnostics and mandatory release-blocking missing implementation owners preserved",
+    "ac4": "15+5+1+1+1 original native controls with full source preservation and correctly unfixed terminal claims",
+    "ac5": "194 independent decisions linked to TASK-178/TASK-179/TASK-197, parent TASK-180 and exact-head CI/consumer gate"
+  },
+  "implementation_head": "44f8f497af57e3f26e82ec5e6c2002111730f24b",
+  "implementation_protocol_ci": "https://github.com/phdah/sql-semantic-protocol/actions/runs/44405445326",
+  "implementation_protocol_ci_passed_jobs": 9,
+  "consumer_pr": "https://github.com/phdah/sql-tdg/pull/57",
+  "consumer_pin": "44f8f497af57e3f26e82ec5e6c2002111730f24b",
+  "consumer_ci": "https://github.com/phdah/sql-tdg/actions/runs/44405560913",
+  "consumer_ci_passed_jobs": 5,
+  "signoff_commit_gate": "Run full protocol CI on this metadata-and-task Done commit before merging; consumer was verified against the exact implementation semantics SHA and must be repinned for final-head gate if required.",
+  "acceptance_criteria": {
+    "ac1": "signed_off_bounded_complete_immutable_original_inventory",
+    "ac2": "signed_off_original_parser_boundary_55_reviewed_release_blocking",
+    "ac3": "signed_off_source_bound_exact_diagnostics_116_no_mandatory_waiver",
+    "ac4": "signed_off_all_23_native_error_bounded_stochastic_oracles_no_fake_terminal",
+    "ac5": "signed_off_194_cross_source_handoff_independent_review_and_exact_implementation_head_CI"
+  },
+  "child_task191_signed_off": true,
+  "parent_task88_signed_off": false,
+  "child_task180_unblocked_by_merge": false,
+  "release_task91_approved": false
+}
