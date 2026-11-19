@@ -109,11 +109,23 @@ fn original_dialect_exceptions_have_a_complete_actionable_gap_ledger() {
     assert_eq!(gaps["schema_version"], 1);
     assert_eq!(gaps["task_id"], "TASK-180");
     assert_eq!(gaps["original_native_review"]["exception_count"], 23);
-    assert_eq!(gaps["independent_bounded_adapter_review"]["certified"], 1861);
-    assert_eq!(gaps["independent_bounded_adapter_review"]["conditional"], 152);
-    assert_eq!(gaps["independent_bounded_adapter_review"]["unrepresentable"], 106);
+    assert_eq!(
+        gaps["independent_bounded_adapter_review"]["certified"],
+        1861
+    );
+    assert_eq!(
+        gaps["independent_bounded_adapter_review"]["conditional"],
+        152
+    );
+    assert_eq!(
+        gaps["independent_bounded_adapter_review"]["unrepresentable"],
+        106
+    );
     assert_eq!(gaps["vendor_session_laws"]["reviewed_cells"], 481);
-    assert_eq!(gaps["vendor_session_laws"]["external_native_vendor_attested"], false);
+    assert_eq!(
+        gaps["vendor_session_laws"]["external_native_vendor_attested"],
+        false
+    );
     assert_eq!(gaps["policy"]["task180_done"], false);
 
     let normalized: BTreeSet<String> = reconciliation["resolved_grouping_cells"]
@@ -146,22 +158,35 @@ fn original_dialect_exceptions_have_a_complete_actionable_gap_ledger() {
             )
         })
         .collect();
-    assert_eq!(expected.len(), 105, "one ledger entry for every unusual original cell");
+    assert_eq!(
+        expected.len(),
+        105,
+        "one ledger entry for every unusual original cell"
+    );
 
     let mut seen = BTreeSet::new();
     let mut resolved = 0;
     let mut still_divergent = 0;
-    for case in gaps["original_exception_cases"].as_array().expect("original families") {
+    for case in gaps["original_exception_cases"]
+        .as_array()
+        .expect("original families")
+    {
         for cell in case["cells"].as_array().expect("named exception cells") {
             let key = cell["id"].as_str().expect("stable original ID/dialect");
             assert!(seen.insert(key.to_string()), "{key}: duplicate exception");
             assert_eq!(
                 cell["original_class"],
-                expected.get(key).expect("exact original non-C observation").as_str()
+                expected
+                    .get(key)
+                    .expect("exact original non-C observation")
+                    .as_str()
             );
             if normalized.contains(key) {
                 resolved += 1;
-                assert_eq!(cell["required_gate"], "historical_canonical_drift_normalized");
+                assert_eq!(
+                    cell["required_gate"],
+                    "historical_canonical_drift_normalized"
+                );
                 assert_eq!(
                     cell["expected_release_state"],
                     "portable_candidate_pending_final_review"
