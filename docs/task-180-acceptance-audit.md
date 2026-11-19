@@ -66,3 +66,9 @@ TASK-180's original SQL suite now covers all **163** source variants with either
 Executable files: `tests/task_180_independent_dialect_gate.rs`, `tests/task_180_scalar_native.rs`, `tests/task_180_original_write_states.rs`, and `tests/task_180_live_canonical.rs`.
 
 `docs/task-180-final-signoff-evidence.json` must contain an independently reviewed record for every one of the 2,119 cells, all 481 vendor/session dispositions, final-head source and pinned-consumer CI and schema/golden checks before TASK-180 may become Done. The test gate rejects a state transition lacking that evidence. Native fixture reproducibility alone is not task-wide semantic approval.
+
+## Vendor/session live classification and acceptance safety
+
+`tests/task_180_live_canonical.rs` also executes all **37 TASK-179 original vendor/session SQL laws × 13 project dialects = 481 cells**. The frozen and runtime-classified matrix has 442 parsed/analyzed, 35 parsed/explicitly unsupported, and 4 parser-rejected cells. Every frozen vendor-native status remains `unattested` and original release disposition remains `unapproved_vendor_law`.
+
+The independent completion gate now requires **2,119 distinct original cell approvals and 481 distinct reviewed vendor-law dispositions** with original identities, reviewer, physical and typed evidence, specific source/adapter conditions, and actual native engine evidence whenever claimed. It also requires exact-head protocol CI, pinned sql-tdg CI, dbt E2E and schema/golden review. All original AC #1..#5 remain unchecked pending that substantive evidence; green reproducibility tests cannot auto-approve a mandatory semantic or vendor law.
