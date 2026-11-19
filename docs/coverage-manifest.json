@@ -59,7 +59,18 @@
     "vendor_live_parsed_analyzed": 442,
     "vendor_live_explicit_unsupported": 35,
     "vendor_live_parser_rejected": 4,
-    "vendor_independent_release_review_pending": true
+    "vendor_independent_release_review_pending": false,
+    "acceptance_freeze_independently_verified": true,
+    "task180_ac1_complete": true,
+    "vendor_residual_decision_ledger": "docs/task-180-vendor-residual-decisions.json",
+    "vendor_individual_residual_dispositions": 481,
+    "vendor_native_runtime_attested": 0,
+    "typed_original_s220_implementation": "src/analysis/alter_columns.rs",
+    "typed_original_s220_test": "tests/task_180_alter_set_default.rs",
+    "typed_original_s220_parser_dialects": 13,
+    "typed_original_s220_raw_unsupported_preserved": true,
+    "public_api_variant_added": "ColumnAlterStep::SetDefault",
+    "final_acceptance_release_blocked": true
   },
   "task_179_vendor_session_laws": {
     "owner": "TASK-179",
