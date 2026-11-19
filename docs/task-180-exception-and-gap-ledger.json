@@ -1,0 +1,1002 @@
+{
+  "schema_version": 1,
+  "task_id": "TASK-180",
+  "scope": "163 original SQL cases across 13 parser dialects",
+  "generated_from": "docs/task-180-acceptance-freeze.json",
+  "historical_canonical_counts": {
+    "original_C": 2014,
+    "original_D": 23,
+    "original_U": 55,
+    "original_R": 27,
+    "drift_resolved": 22,
+    "unresolved_D": 1
+  },
+  "source_exception_count": {
+    "parser_rejections": 55,
+    "explicit_unsupported": 116,
+    "native_original_without_fixed_output": 23,
+    "unique_parser_cases": 12,
+    "unique_unsupported_cases": 10,
+    "dialects": 13
+  },
+  "independent_bounded_adapter_review": {
+    "certified": 1861,
+    "conditional": 152,
+    "unrepresentable": 106,
+    "source": "tests/task_197_review_signoff.rs",
+    "scope": "source-capable adapter facts, not native vendor execution"
+  },
+  "original_native_review": {
+    "exception_count": 23,
+    "source": "docs/task-191-reviewed-dispositions-v2.json",
+    "release_certified": false
+  },
+  "vendor_session_laws": {
+    "reviewed_variants": 37,
+    "reviewed_cells": 481,
+    "source": "docs/task-179-variant-matrix-v2.json",
+    "external_native_vendor_attested": false
+  },
+  "explicit_missing_evidence": {
+    "full_mandatory_cell_independent_proof": "not_signed_off",
+    "all_nonparser_SQL_DML_DDL_support": "incomplete_or_conditional",
+    "whole_source_and_terminal_execution_for_all_mandatory_cases": "upstream_family_evidence_exists; TASK-180 independent exhaustive review unfinished",
+    "complete_sql_dbt_odcs_parity_review": "TASK-197 bounded adapter review complete; TASK-180 release review outstanding",
+    "native_vendor_session_attestation": "not_attested",
+    "exact_final_branch_ci": "requires_verification_after_last_commit",
+    "pinned_sql_tdg_consumer_ci": "not_run_on_current_candidate",
+    "maintainer_approved_release_conditions": "not_recorded"
+  },
+  "original_exception_cases": [
+    {
+      "id": "88-C177-S084",
+      "sql": "SELECT id, amount FROM orders UNION CORRESPONDING SELECT amount, id FROM customers",
+      "owner": "TASK-194",
+      "original_unusual_cell_count": 13,
+      "cells": [
+        {
+          "id": "88-C177-S084/ansi",
+          "dialect": "ansi",
+          "original_class": "R",
+          "reviewed_bounded_disposition": "unapproved_parser_only_rejection_handoff_TASK_191",
+          "required_gate": "parser_boundary_requires_capability_or_reviewed_conditional",
+          "expected_release_state": "unapproved_pending_independent_evidence"
+        },
+        {
+          "id": "88-C177-S084/bigquery",
+          "dialect": "bigquery",
+          "original_class": "R",
+          "reviewed_bounded_disposition": "unapproved_parser_only_rejection_handoff_TASK_191",
+          "required_gate": "parser_boundary_requires_capability_or_reviewed_conditional",
+          "expected_release_state": "unapproved_pending_independent_evidence"
+        },
+        {
+          "id": "88-C177-S084/clickhouse",
+          "dialect": "clickhouse",
+          "original_class": "R",
+          "reviewed_bounded_disposition": "unapproved_parser_only_rejection_handoff_TASK_191",
+          "required_gate": "parser_boundary_requires_capability_or_reviewed_conditional",
+          "expected_release_state": "unapproved_pending_independent_evidence"
+        },
+        {
+          "id": "88-C177-S084/databricks",
+          "dialect": "databricks",
+          "original_class": "R",
+          "reviewed_bounded_disposition": "unapproved_parser_only_rejection_handoff_TASK_191",
+          "required_gate": "parser_boundary_requires_capability_or_reviewed_conditional",
+          "expected_release_state": "unapproved_pending_independent_evidence"
+        },
+        {
+          "id": "88-C177-S084/duckdb",
+          "dialect": "duckdb",
+          "original_class": "R",
+          "reviewed_bounded_disposition": "unapproved_parser_only_rejection_handoff_TASK_191",
+          "required_gate": "parser_boundary_requires_capability_or_reviewed_conditional",
+          "expected_release_state": "unapproved_pending_independent_evidence"
+        },
+        {
+          "id": "88-C177-S084/generic",
+          "dialect": "generic",
+          "original_class": "R",
+          "reviewed_bounded_disposition": "unapproved_parser_only_rejection_handoff_TASK_191",
+          "required_gate": "parser_boundary_requires_capability_or_reviewed_conditional",
+          "expected_release_state": "unapproved_pending_independent_evidence"
+        },
+        {
+          "id": "88-C177-S084/hive",
+          "dialect": "hive",
+          "original_class": "R",
+          "reviewed_bounded_disposition": "unapproved_parser_only_rejection_handoff_TASK_191",
+          "required_gate": "parser_boundary_requires_capability_or_reviewed_conditional",
+          "expected_release_state": "unapproved_pending_independent_evidence"
+        },
+        {
+          "id": "88-C177-S084/mssql",
+          "dialect": "mssql",
+          "original_class": "R",
+          "reviewed_bounded_disposition": "unapproved_parser_only_rejection_handoff_TASK_191",
+          "required_gate": "parser_boundary_requires_capability_or_reviewed_conditional",
+          "expected_release_state": "unapproved_pending_independent_evidence"
+        },
+        {
+          "id": "88-C177-S084/mysql",
+          "dialect": "mysql",
+          "original_class": "R",
+          "reviewed_bounded_disposition": "unapproved_parser_only_rejection_handoff_TASK_191",
+          "required_gate": "parser_boundary_requires_capability_or_reviewed_conditional",
+          "expected_release_state": "unapproved_pending_independent_evidence"
+        },
+        {
+          "id": "88-C177-S084/postgresql",
+          "dialect": "postgresql",
+          "original_class": "R",
+          "reviewed_bounded_disposition": "unapproved_parser_only_rejection_handoff_TASK_191",
+          "required_gate": "parser_boundary_requires_capability_or_reviewed_conditional",
+          "expected_release_state": "unapproved_pending_independent_evidence"
+        },
+        {
+          "id": "88-C177-S084/redshift",
+          "dialect": "redshift",
+          "original_class": "R",
+          "reviewed_bounded_disposition": "unapproved_parser_only_rejection_handoff_TASK_191",
+          "required_gate": "parser_boundary_requires_capability_or_reviewed_conditional",
+          "expected_release_state": "unapproved_pending_independent_evidence"
+        },
+        {
+          "id": "88-C177-S084/snowflake",
+          "dialect": "snowflake",
+          "original_class": "R",
+          "reviewed_bounded_disposition": "unapproved_parser_only_rejection_handoff_TASK_191",
+          "required_gate": "parser_boundary_requires_capability_or_reviewed_conditional",
+          "expected_release_state": "unapproved_pending_independent_evidence"
+        },
+        {
+          "id": "88-C177-S084/sqlite",
+          "dialect": "sqlite",
+          "original_class": "R",
+          "reviewed_bounded_disposition": "unapproved_parser_only_rejection_handoff_TASK_191",
+          "required_gate": "parser_boundary_requires_capability_or_reviewed_conditional",
+          "expected_release_state": "unapproved_pending_independent_evidence"
+        }
+      ]
+    },
+    {
+      "id": "88-C177-S100",
+      "sql": "SELECT id, COUNT(*) FROM orders GROUP BY ROLLUP(id)",
+      "owner": "TASK-195",
+      "original_unusual_cell_count": 7,
+      "cells": [
+        {
+          "id": "88-C177-S100/bigquery",
+          "dialect": "bigquery",
+          "original_class": "D",
+          "reviewed_bounded_disposition": "reviewed_canonical_drift_not_claimed_equivalent_handoff_TASK_191",
+          "required_gate": "historical_canonical_drift_normalized",
+          "expected_release_state": "portable_candidate_pending_final_review"
+        },
+        {
+          "id": "88-C177-S100/clickhouse",
+          "dialect": "clickhouse",
+          "original_class": "D",
+          "reviewed_bounded_disposition": "reviewed_canonical_drift_not_claimed_equivalent_handoff_TASK_191",
+          "required_gate": "historical_canonical_drift_normalized",
+          "expected_release_state": "portable_candidate_pending_final_review"
+        },
+        {
+          "id": "88-C177-S100/databricks",
+          "dialect": "databricks",
+          "original_class": "D",
+          "reviewed_bounded_disposition": "reviewed_canonical_drift_not_claimed_equivalent_handoff_TASK_191",
+          "required_gate": "historical_canonical_drift_normalized",
+          "expected_release_state": "portable_candidate_pending_final_review"
+        },
+        {
+          "id": "88-C177-S100/duckdb",
+          "dialect": "duckdb",
+          "original_class": "D",
+          "reviewed_bounded_disposition": "reviewed_canonical_drift_not_claimed_equivalent_handoff_TASK_191",
+          "required_gate": "historical_canonical_drift_normalized",
+          "expected_release_state": "portable_candidate_pending_final_review"
+        },
+        {
+          "id": "88-C177-S100/generic",
+          "dialect": "generic",
+          "original_class": "D",
+          "reviewed_bounded_disposition": "reviewed_canonical_drift_not_claimed_equivalent_handoff_TASK_191",
+          "required_gate": "historical_canonical_drift_normalized",
+          "expected_release_state": "portable_candidate_pending_final_review"
+        },
+        {
+          "id": "88-C177-S100/postgresql",
+          "dialect": "postgresql",
+          "original_class": "D",
+          "reviewed_bounded_disposition": "reviewed_canonical_drift_not_claimed_equivalent_handoff_TASK_191",
+          "required_gate": "historical_canonical_drift_normalized",
+          "expected_release_state": "portable_candidate_pending_final_review"
+        },
+        {
+          "id": "88-C177-S100/snowflake",
+          "dialect": "snowflake",
+          "original_class": "D",
+          "reviewed_bounded_disposition": "reviewed_canonical_drift_not_claimed_equivalent_handoff_TASK_191",
+          "required_gate": "historical_canonical_drift_normalized",
+          "expected_release_state": "portable_candidate_pending_final_review"
+        }
+      ]
+    },
+    {
+      "id": "88-C177-S101",
+      "sql": "SELECT id, COUNT(*) FROM orders GROUP BY CUBE(id)",
+      "owner": "TASK-195",
+      "original_unusual_cell_count": 7,
+      "cells": [
+        {
+          "id": "88-C177-S101/bigquery",
+          "dialect": "bigquery",
+          "original_class": "D",
+          "reviewed_bounded_disposition": "reviewed_canonical_drift_not_claimed_equivalent_handoff_TASK_191",
+          "required_gate": "historical_canonical_drift_normalized",
+          "expected_release_state": "portable_candidate_pending_final_review"
+        },
+        {
+          "id": "88-C177-S101/clickhouse",
+          "dialect": "clickhouse",
+          "original_class": "D",
+          "reviewed_bounded_disposition": "reviewed_canonical_drift_not_claimed_equivalent_handoff_TASK_191",
+          "required_gate": "historical_canonical_drift_normalized",
+          "expected_release_state": "portable_candidate_pending_final_review"
+        },
+        {
+          "id": "88-C177-S101/databricks",
+          "dialect": "databricks",
+          "original_class": "D",
+          "reviewed_bounded_disposition": "reviewed_canonical_drift_not_claimed_equivalent_handoff_TASK_191",
+          "required_gate": "historical_canonical_drift_normalized",
+          "expected_release_state": "portable_candidate_pending_final_review"
+        },
+        {
+          "id": "88-C177-S101/duckdb",
+          "dialect": "duckdb",
+          "original_class": "D",
+          "reviewed_bounded_disposition": "reviewed_canonical_drift_not_claimed_equivalent_handoff_TASK_191",
+          "required_gate": "historical_canonical_drift_normalized",
+          "expected_release_state": "portable_candidate_pending_final_review"
+        },
+        {
+          "id": "88-C177-S101/generic",
+          "dialect": "generic",
+          "original_class": "D",
+          "reviewed_bounded_disposition": "reviewed_canonical_drift_not_claimed_equivalent_handoff_TASK_191",
+          "required_gate": "historical_canonical_drift_normalized",
+          "expected_release_state": "portable_candidate_pending_final_review"
+        },
+        {
+          "id": "88-C177-S101/postgresql",
+          "dialect": "postgresql",
+          "original_class": "D",
+          "reviewed_bounded_disposition": "reviewed_canonical_drift_not_claimed_equivalent_handoff_TASK_191",
+          "required_gate": "historical_canonical_drift_normalized",
+          "expected_release_state": "portable_candidate_pending_final_review"
+        },
+        {
+          "id": "88-C177-S101/snowflake",
+          "dialect": "snowflake",
+          "original_class": "D",
+          "reviewed_bounded_disposition": "reviewed_canonical_drift_not_claimed_equivalent_handoff_TASK_191",
+          "required_gate": "historical_canonical_drift_normalized",
+          "expected_release_state": "portable_candidate_pending_final_review"
+        }
+      ]
+    },
+    {
+      "id": "88-C177-S104",
+      "sql": "SELECT GROUPING(id), COUNT(*) FROM orders GROUP BY ROLLUP(id)",
+      "owner": "TASK-195",
+      "original_unusual_cell_count": 7,
+      "cells": [
+        {
+          "id": "88-C177-S104/bigquery",
+          "dialect": "bigquery",
+          "original_class": "D",
+          "reviewed_bounded_disposition": "reviewed_canonical_drift_not_claimed_equivalent_handoff_TASK_191",
+          "required_gate": "historical_canonical_drift_normalized",
+          "expected_release_state": "portable_candidate_pending_final_review"
+        },
+        {
+          "id": "88-C177-S104/clickhouse",
+          "dialect": "clickhouse",
+          "original_class": "D",
+          "reviewed_bounded_disposition": "reviewed_canonical_drift_not_claimed_equivalent_handoff_TASK_191",
+          "required_gate": "historical_canonical_drift_normalized",
+          "expected_release_state": "portable_candidate_pending_final_review"
+        },
+        {
+          "id": "88-C177-S104/databricks",
+          "dialect": "databricks",
+          "original_class": "D",
+          "reviewed_bounded_disposition": "reviewed_canonical_drift_not_claimed_equivalent_handoff_TASK_191",
+          "required_gate": "historical_canonical_drift_normalized",
+          "expected_release_state": "portable_candidate_pending_final_review"
+        },
+        {
+          "id": "88-C177-S104/duckdb",
+          "dialect": "duckdb",
+          "original_class": "D",
+          "reviewed_bounded_disposition": "reviewed_canonical_drift_not_claimed_equivalent_handoff_TASK_191",
+          "required_gate": "historical_canonical_drift_normalized",
+          "expected_release_state": "portable_candidate_pending_final_review"
+        },
+        {
+          "id": "88-C177-S104/generic",
+          "dialect": "generic",
+          "original_class": "D",
+          "reviewed_bounded_disposition": "reviewed_canonical_drift_not_claimed_equivalent_handoff_TASK_191",
+          "required_gate": "historical_canonical_drift_normalized",
+          "expected_release_state": "portable_candidate_pending_final_review"
+        },
+        {
+          "id": "88-C177-S104/postgresql",
+          "dialect": "postgresql",
+          "original_class": "D",
+          "reviewed_bounded_disposition": "reviewed_canonical_drift_not_claimed_equivalent_handoff_TASK_191",
+          "required_gate": "historical_canonical_drift_normalized",
+          "expected_release_state": "portable_candidate_pending_final_review"
+        },
+        {
+          "id": "88-C177-S104/snowflake",
+          "dialect": "snowflake",
+          "original_class": "D",
+          "reviewed_bounded_disposition": "reviewed_canonical_drift_not_claimed_equivalent_handoff_TASK_191",
+          "required_gate": "historical_canonical_drift_normalized",
+          "expected_release_state": "portable_candidate_pending_final_review"
+        }
+      ]
+    },
+    {
+      "id": "88-C177-S120",
+      "sql": "SELECT SUM(amount) OVER w FROM orders WINDOW w AS (ORDER BY id ROWS UNBOUNDED PRECEDING)",
+      "owner": "TASK-195",
+      "original_unusual_cell_count": 1,
+      "cells": [
+        {
+          "id": "88-C177-S120/snowflake",
+          "dialect": "snowflake",
+          "original_class": "R",
+          "reviewed_bounded_disposition": "reviewed_parser_rejection_handoff_TASK_191",
+          "required_gate": "parser_boundary_requires_capability_or_reviewed_conditional",
+          "expected_release_state": "unapproved_pending_independent_evidence"
+        }
+      ]
+    },
+    {
+      "id": "88-C177-S152",
+      "sql": "SELECT o.id FROM orders o JOIN LATERAL (SELECT o.id) l ON TRUE",
+      "owner": "TASK-193",
+      "original_unusual_cell_count": 1,
+      "cells": [
+        {
+          "id": "88-C177-S152/mssql",
+          "dialect": "mssql",
+          "original_class": "D",
+          "reviewed_bounded_disposition": "explicit_unapproved_ast_drift_task_179_task_191",
+          "required_gate": "canonical_divergence_unapproved",
+          "expected_release_state": "unapproved_pending_independent_evidence"
+        }
+      ]
+    },
+    {
+      "id": "88-C177-S179",
+      "sql": "SELECT CAST(ROW(1, 'a') AS STRUCT(a INT, b VARCHAR)) AS v",
+      "owner": "TASK-192",
+      "original_unusual_cell_count": 3,
+      "cells": [
+        {
+          "id": "88-C177-S179/bigquery",
+          "dialect": "bigquery",
+          "original_class": "R",
+          "reviewed_bounded_disposition": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "required_gate": "parser_boundary_requires_capability_or_reviewed_conditional",
+          "expected_release_state": "unapproved_pending_independent_evidence"
+        },
+        {
+          "id": "88-C177-S179/duckdb",
+          "dialect": "duckdb",
+          "original_class": "D",
+          "reviewed_bounded_disposition": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "required_gate": "historical_canonical_drift_normalized",
+          "expected_release_state": "portable_candidate_pending_final_review"
+        },
+        {
+          "id": "88-C177-S179/generic",
+          "dialect": "generic",
+          "original_class": "R",
+          "reviewed_bounded_disposition": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "required_gate": "parser_boundary_requires_capability_or_reviewed_conditional",
+          "expected_release_state": "unapproved_pending_independent_evidence"
+        }
+      ]
+    },
+    {
+      "id": "88-C177-S189",
+      "sql": "CREATE TABLE orders (id INT, amount INT GENERATED ALWAYS AS (id + 1))",
+      "owner": "TASK-196",
+      "original_unusual_cell_count": 1,
+      "cells": [
+        {
+          "id": "88-C177-S189/postgresql",
+          "dialect": "postgresql",
+          "original_class": "R",
+          "reviewed_bounded_disposition": "unapproved_boundary_with_named_follow_up",
+          "required_gate": "parser_boundary_requires_capability_or_reviewed_conditional",
+          "expected_release_state": "unapproved_pending_independent_evidence"
+        }
+      ]
+    },
+    {
+      "id": "88-C177-S199",
+      "sql": "REPLACE INTO orders (id) VALUES (1)",
+      "owner": "TASK-196",
+      "original_unusual_cell_count": 13,
+      "cells": [
+        {
+          "id": "88-C177-S199/ansi",
+          "dialect": "ansi",
+          "original_class": "R",
+          "reviewed_bounded_disposition": "unapproved_boundary_with_named_follow_up",
+          "required_gate": "parser_boundary_requires_capability_or_reviewed_conditional",
+          "expected_release_state": "unapproved_pending_independent_evidence"
+        },
+        {
+          "id": "88-C177-S199/bigquery",
+          "dialect": "bigquery",
+          "original_class": "R",
+          "reviewed_bounded_disposition": "unapproved_boundary_with_named_follow_up",
+          "required_gate": "parser_boundary_requires_capability_or_reviewed_conditional",
+          "expected_release_state": "unapproved_pending_independent_evidence"
+        },
+        {
+          "id": "88-C177-S199/clickhouse",
+          "dialect": "clickhouse",
+          "original_class": "R",
+          "reviewed_bounded_disposition": "unapproved_boundary_with_named_follow_up",
+          "required_gate": "parser_boundary_requires_capability_or_reviewed_conditional",
+          "expected_release_state": "unapproved_pending_independent_evidence"
+        },
+        {
+          "id": "88-C177-S199/databricks",
+          "dialect": "databricks",
+          "original_class": "R",
+          "reviewed_bounded_disposition": "unapproved_boundary_with_named_follow_up",
+          "required_gate": "parser_boundary_requires_capability_or_reviewed_conditional",
+          "expected_release_state": "unapproved_pending_independent_evidence"
+        },
+        {
+          "id": "88-C177-S199/duckdb",
+          "dialect": "duckdb",
+          "original_class": "R",
+          "reviewed_bounded_disposition": "unapproved_boundary_with_named_follow_up",
+          "required_gate": "parser_boundary_requires_capability_or_reviewed_conditional",
+          "expected_release_state": "unapproved_pending_independent_evidence"
+        },
+        {
+          "id": "88-C177-S199/generic",
+          "dialect": "generic",
+          "original_class": "U",
+          "reviewed_bounded_disposition": "unapproved_boundary_with_named_follow_up",
+          "required_gate": "original_untyped_write_or_DDL_missing_portable_semantics",
+          "expected_release_state": "unapproved_pending_independent_evidence"
+        },
+        {
+          "id": "88-C177-S199/hive",
+          "dialect": "hive",
+          "original_class": "R",
+          "reviewed_bounded_disposition": "unapproved_boundary_with_named_follow_up",
+          "required_gate": "parser_boundary_requires_capability_or_reviewed_conditional",
+          "expected_release_state": "unapproved_pending_independent_evidence"
+        },
+        {
+          "id": "88-C177-S199/mssql",
+          "dialect": "mssql",
+          "original_class": "R",
+          "reviewed_bounded_disposition": "unapproved_boundary_with_named_follow_up",
+          "required_gate": "parser_boundary_requires_capability_or_reviewed_conditional",
+          "expected_release_state": "unapproved_pending_independent_evidence"
+        },
+        {
+          "id": "88-C177-S199/mysql",
+          "dialect": "mysql",
+          "original_class": "U",
+          "reviewed_bounded_disposition": "unapproved_boundary_with_named_follow_up",
+          "required_gate": "original_untyped_write_or_DDL_missing_portable_semantics",
+          "expected_release_state": "unapproved_pending_independent_evidence"
+        },
+        {
+          "id": "88-C177-S199/postgresql",
+          "dialect": "postgresql",
+          "original_class": "R",
+          "reviewed_bounded_disposition": "unapproved_boundary_with_named_follow_up",
+          "required_gate": "parser_boundary_requires_capability_or_reviewed_conditional",
+          "expected_release_state": "unapproved_pending_independent_evidence"
+        },
+        {
+          "id": "88-C177-S199/redshift",
+          "dialect": "redshift",
+          "original_class": "R",
+          "reviewed_bounded_disposition": "unapproved_boundary_with_named_follow_up",
+          "required_gate": "parser_boundary_requires_capability_or_reviewed_conditional",
+          "expected_release_state": "unapproved_pending_independent_evidence"
+        },
+        {
+          "id": "88-C177-S199/snowflake",
+          "dialect": "snowflake",
+          "original_class": "R",
+          "reviewed_bounded_disposition": "unapproved_boundary_with_named_follow_up",
+          "required_gate": "parser_boundary_requires_capability_or_reviewed_conditional",
+          "expected_release_state": "unapproved_pending_independent_evidence"
+        },
+        {
+          "id": "88-C177-S199/sqlite",
+          "dialect": "sqlite",
+          "original_class": "U",
+          "reviewed_bounded_disposition": "unapproved_boundary_with_named_follow_up",
+          "required_gate": "original_untyped_write_or_DDL_missing_portable_semantics",
+          "expected_release_state": "unapproved_pending_independent_evidence"
+        }
+      ]
+    },
+    {
+      "id": "88-C177-S200",
+      "sql": "INSERT OVERWRITE TABLE orders SELECT * FROM customers",
+      "owner": "TASK-196",
+      "original_unusual_cell_count": 13,
+      "cells": [
+        {
+          "id": "88-C177-S200/ansi",
+          "dialect": "ansi",
+          "original_class": "U",
+          "reviewed_bounded_disposition": "unapproved_boundary_with_named_follow_up",
+          "required_gate": "original_untyped_write_or_DDL_missing_portable_semantics",
+          "expected_release_state": "unapproved_pending_independent_evidence"
+        },
+        {
+          "id": "88-C177-S200/bigquery",
+          "dialect": "bigquery",
+          "original_class": "U",
+          "reviewed_bounded_disposition": "unapproved_boundary_with_named_follow_up",
+          "required_gate": "original_untyped_write_or_DDL_missing_portable_semantics",
+          "expected_release_state": "unapproved_pending_independent_evidence"
+        },
+        {
+          "id": "88-C177-S200/clickhouse",
+          "dialect": "clickhouse",
+          "original_class": "U",
+          "reviewed_bounded_disposition": "unapproved_boundary_with_named_follow_up",
+          "required_gate": "original_untyped_write_or_DDL_missing_portable_semantics",
+          "expected_release_state": "unapproved_pending_independent_evidence"
+        },
+        {
+          "id": "88-C177-S200/databricks",
+          "dialect": "databricks",
+          "original_class": "U",
+          "reviewed_bounded_disposition": "unapproved_boundary_with_named_follow_up",
+          "required_gate": "original_untyped_write_or_DDL_missing_portable_semantics",
+          "expected_release_state": "unapproved_pending_independent_evidence"
+        },
+        {
+          "id": "88-C177-S200/duckdb",
+          "dialect": "duckdb",
+          "original_class": "U",
+          "reviewed_bounded_disposition": "unapproved_boundary_with_named_follow_up",
+          "required_gate": "original_untyped_write_or_DDL_missing_portable_semantics",
+          "expected_release_state": "unapproved_pending_independent_evidence"
+        },
+        {
+          "id": "88-C177-S200/generic",
+          "dialect": "generic",
+          "original_class": "U",
+          "reviewed_bounded_disposition": "unapproved_boundary_with_named_follow_up",
+          "required_gate": "original_untyped_write_or_DDL_missing_portable_semantics",
+          "expected_release_state": "unapproved_pending_independent_evidence"
+        },
+        {
+          "id": "88-C177-S200/hive",
+          "dialect": "hive",
+          "original_class": "U",
+          "reviewed_bounded_disposition": "unapproved_boundary_with_named_follow_up",
+          "required_gate": "original_untyped_write_or_DDL_missing_portable_semantics",
+          "expected_release_state": "unapproved_pending_independent_evidence"
+        },
+        {
+          "id": "88-C177-S200/mssql",
+          "dialect": "mssql",
+          "original_class": "U",
+          "reviewed_bounded_disposition": "unapproved_boundary_with_named_follow_up",
+          "required_gate": "original_untyped_write_or_DDL_missing_portable_semantics",
+          "expected_release_state": "unapproved_pending_independent_evidence"
+        },
+        {
+          "id": "88-C177-S200/mysql",
+          "dialect": "mysql",
+          "original_class": "U",
+          "reviewed_bounded_disposition": "unapproved_boundary_with_named_follow_up",
+          "required_gate": "original_untyped_write_or_DDL_missing_portable_semantics",
+          "expected_release_state": "unapproved_pending_independent_evidence"
+        },
+        {
+          "id": "88-C177-S200/postgresql",
+          "dialect": "postgresql",
+          "original_class": "U",
+          "reviewed_bounded_disposition": "unapproved_boundary_with_named_follow_up",
+          "required_gate": "original_untyped_write_or_DDL_missing_portable_semantics",
+          "expected_release_state": "unapproved_pending_independent_evidence"
+        },
+        {
+          "id": "88-C177-S200/redshift",
+          "dialect": "redshift",
+          "original_class": "U",
+          "reviewed_bounded_disposition": "unapproved_boundary_with_named_follow_up",
+          "required_gate": "original_untyped_write_or_DDL_missing_portable_semantics",
+          "expected_release_state": "unapproved_pending_independent_evidence"
+        },
+        {
+          "id": "88-C177-S200/snowflake",
+          "dialect": "snowflake",
+          "original_class": "U",
+          "reviewed_bounded_disposition": "unapproved_boundary_with_named_follow_up",
+          "required_gate": "original_untyped_write_or_DDL_missing_portable_semantics",
+          "expected_release_state": "unapproved_pending_independent_evidence"
+        },
+        {
+          "id": "88-C177-S200/sqlite",
+          "dialect": "sqlite",
+          "original_class": "U",
+          "reviewed_bounded_disposition": "unapproved_boundary_with_named_follow_up",
+          "required_gate": "original_untyped_write_or_DDL_missing_portable_semantics",
+          "expected_release_state": "unapproved_pending_independent_evidence"
+        }
+      ]
+    },
+    {
+      "id": "88-C177-S203",
+      "sql": "UPDATE orders SET amount = 1 WHERE id IN (SELECT id FROM customers)",
+      "owner": "TASK-196",
+      "original_unusual_cell_count": 13,
+      "cells": [
+        {
+          "id": "88-C177-S203/ansi",
+          "dialect": "ansi",
+          "original_class": "U",
+          "reviewed_bounded_disposition": "unapproved_boundary_with_named_follow_up",
+          "required_gate": "original_untyped_write_or_DDL_missing_portable_semantics",
+          "expected_release_state": "unapproved_pending_independent_evidence"
+        },
+        {
+          "id": "88-C177-S203/bigquery",
+          "dialect": "bigquery",
+          "original_class": "U",
+          "reviewed_bounded_disposition": "unapproved_boundary_with_named_follow_up",
+          "required_gate": "original_untyped_write_or_DDL_missing_portable_semantics",
+          "expected_release_state": "unapproved_pending_independent_evidence"
+        },
+        {
+          "id": "88-C177-S203/clickhouse",
+          "dialect": "clickhouse",
+          "original_class": "U",
+          "reviewed_bounded_disposition": "unapproved_boundary_with_named_follow_up",
+          "required_gate": "original_untyped_write_or_DDL_missing_portable_semantics",
+          "expected_release_state": "unapproved_pending_independent_evidence"
+        },
+        {
+          "id": "88-C177-S203/databricks",
+          "dialect": "databricks",
+          "original_class": "U",
+          "reviewed_bounded_disposition": "unapproved_boundary_with_named_follow_up",
+          "required_gate": "original_untyped_write_or_DDL_missing_portable_semantics",
+          "expected_release_state": "unapproved_pending_independent_evidence"
+        },
+        {
+          "id": "88-C177-S203/duckdb",
+          "dialect": "duckdb",
+          "original_class": "U",
+          "reviewed_bounded_disposition": "unapproved_boundary_with_named_follow_up",
+          "required_gate": "original_untyped_write_or_DDL_missing_portable_semantics",
+          "expected_release_state": "unapproved_pending_independent_evidence"
+        },
+        {
+          "id": "88-C177-S203/generic",
+          "dialect": "generic",
+          "original_class": "U",
+          "reviewed_bounded_disposition": "unapproved_boundary_with_named_follow_up",
+          "required_gate": "original_untyped_write_or_DDL_missing_portable_semantics",
+          "expected_release_state": "unapproved_pending_independent_evidence"
+        },
+        {
+          "id": "88-C177-S203/hive",
+          "dialect": "hive",
+          "original_class": "U",
+          "reviewed_bounded_disposition": "unapproved_boundary_with_named_follow_up",
+          "required_gate": "original_untyped_write_or_DDL_missing_portable_semantics",
+          "expected_release_state": "unapproved_pending_independent_evidence"
+        },
+        {
+          "id": "88-C177-S203/mssql",
+          "dialect": "mssql",
+          "original_class": "U",
+          "reviewed_bounded_disposition": "unapproved_boundary_with_named_follow_up",
+          "required_gate": "original_untyped_write_or_DDL_missing_portable_semantics",
+          "expected_release_state": "unapproved_pending_independent_evidence"
+        },
+        {
+          "id": "88-C177-S203/mysql",
+          "dialect": "mysql",
+          "original_class": "U",
+          "reviewed_bounded_disposition": "unapproved_boundary_with_named_follow_up",
+          "required_gate": "original_untyped_write_or_DDL_missing_portable_semantics",
+          "expected_release_state": "unapproved_pending_independent_evidence"
+        },
+        {
+          "id": "88-C177-S203/postgresql",
+          "dialect": "postgresql",
+          "original_class": "U",
+          "reviewed_bounded_disposition": "unapproved_boundary_with_named_follow_up",
+          "required_gate": "original_untyped_write_or_DDL_missing_portable_semantics",
+          "expected_release_state": "unapproved_pending_independent_evidence"
+        },
+        {
+          "id": "88-C177-S203/redshift",
+          "dialect": "redshift",
+          "original_class": "U",
+          "reviewed_bounded_disposition": "unapproved_boundary_with_named_follow_up",
+          "required_gate": "original_untyped_write_or_DDL_missing_portable_semantics",
+          "expected_release_state": "unapproved_pending_independent_evidence"
+        },
+        {
+          "id": "88-C177-S203/snowflake",
+          "dialect": "snowflake",
+          "original_class": "U",
+          "reviewed_bounded_disposition": "unapproved_boundary_with_named_follow_up",
+          "required_gate": "original_untyped_write_or_DDL_missing_portable_semantics",
+          "expected_release_state": "unapproved_pending_independent_evidence"
+        },
+        {
+          "id": "88-C177-S203/sqlite",
+          "dialect": "sqlite",
+          "original_class": "U",
+          "reviewed_bounded_disposition": "unapproved_boundary_with_named_follow_up",
+          "required_gate": "original_untyped_write_or_DDL_missing_portable_semantics",
+          "expected_release_state": "unapproved_pending_independent_evidence"
+        }
+      ]
+    },
+    {
+      "id": "88-C177-S206",
+      "sql": "DELETE FROM orders WHERE id IN (SELECT id FROM customers)",
+      "owner": "TASK-196",
+      "original_unusual_cell_count": 13,
+      "cells": [
+        {
+          "id": "88-C177-S206/ansi",
+          "dialect": "ansi",
+          "original_class": "U",
+          "reviewed_bounded_disposition": "unapproved_boundary_with_named_follow_up",
+          "required_gate": "original_untyped_write_or_DDL_missing_portable_semantics",
+          "expected_release_state": "unapproved_pending_independent_evidence"
+        },
+        {
+          "id": "88-C177-S206/bigquery",
+          "dialect": "bigquery",
+          "original_class": "U",
+          "reviewed_bounded_disposition": "unapproved_boundary_with_named_follow_up",
+          "required_gate": "original_untyped_write_or_DDL_missing_portable_semantics",
+          "expected_release_state": "unapproved_pending_independent_evidence"
+        },
+        {
+          "id": "88-C177-S206/clickhouse",
+          "dialect": "clickhouse",
+          "original_class": "U",
+          "reviewed_bounded_disposition": "unapproved_boundary_with_named_follow_up",
+          "required_gate": "original_untyped_write_or_DDL_missing_portable_semantics",
+          "expected_release_state": "unapproved_pending_independent_evidence"
+        },
+        {
+          "id": "88-C177-S206/databricks",
+          "dialect": "databricks",
+          "original_class": "U",
+          "reviewed_bounded_disposition": "unapproved_boundary_with_named_follow_up",
+          "required_gate": "original_untyped_write_or_DDL_missing_portable_semantics",
+          "expected_release_state": "unapproved_pending_independent_evidence"
+        },
+        {
+          "id": "88-C177-S206/duckdb",
+          "dialect": "duckdb",
+          "original_class": "U",
+          "reviewed_bounded_disposition": "unapproved_boundary_with_named_follow_up",
+          "required_gate": "original_untyped_write_or_DDL_missing_portable_semantics",
+          "expected_release_state": "unapproved_pending_independent_evidence"
+        },
+        {
+          "id": "88-C177-S206/generic",
+          "dialect": "generic",
+          "original_class": "U",
+          "reviewed_bounded_disposition": "unapproved_boundary_with_named_follow_up",
+          "required_gate": "original_untyped_write_or_DDL_missing_portable_semantics",
+          "expected_release_state": "unapproved_pending_independent_evidence"
+        },
+        {
+          "id": "88-C177-S206/hive",
+          "dialect": "hive",
+          "original_class": "U",
+          "reviewed_bounded_disposition": "unapproved_boundary_with_named_follow_up",
+          "required_gate": "original_untyped_write_or_DDL_missing_portable_semantics",
+          "expected_release_state": "unapproved_pending_independent_evidence"
+        },
+        {
+          "id": "88-C177-S206/mssql",
+          "dialect": "mssql",
+          "original_class": "U",
+          "reviewed_bounded_disposition": "unapproved_boundary_with_named_follow_up",
+          "required_gate": "original_untyped_write_or_DDL_missing_portable_semantics",
+          "expected_release_state": "unapproved_pending_independent_evidence"
+        },
+        {
+          "id": "88-C177-S206/mysql",
+          "dialect": "mysql",
+          "original_class": "U",
+          "reviewed_bounded_disposition": "unapproved_boundary_with_named_follow_up",
+          "required_gate": "original_untyped_write_or_DDL_missing_portable_semantics",
+          "expected_release_state": "unapproved_pending_independent_evidence"
+        },
+        {
+          "id": "88-C177-S206/postgresql",
+          "dialect": "postgresql",
+          "original_class": "U",
+          "reviewed_bounded_disposition": "unapproved_boundary_with_named_follow_up",
+          "required_gate": "original_untyped_write_or_DDL_missing_portable_semantics",
+          "expected_release_state": "unapproved_pending_independent_evidence"
+        },
+        {
+          "id": "88-C177-S206/redshift",
+          "dialect": "redshift",
+          "original_class": "U",
+          "reviewed_bounded_disposition": "unapproved_boundary_with_named_follow_up",
+          "required_gate": "original_untyped_write_or_DDL_missing_portable_semantics",
+          "expected_release_state": "unapproved_pending_independent_evidence"
+        },
+        {
+          "id": "88-C177-S206/snowflake",
+          "dialect": "snowflake",
+          "original_class": "U",
+          "reviewed_bounded_disposition": "unapproved_boundary_with_named_follow_up",
+          "required_gate": "original_untyped_write_or_DDL_missing_portable_semantics",
+          "expected_release_state": "unapproved_pending_independent_evidence"
+        },
+        {
+          "id": "88-C177-S206/sqlite",
+          "dialect": "sqlite",
+          "original_class": "U",
+          "reviewed_bounded_disposition": "unapproved_boundary_with_named_follow_up",
+          "required_gate": "original_untyped_write_or_DDL_missing_portable_semantics",
+          "expected_release_state": "unapproved_pending_independent_evidence"
+        }
+      ]
+    },
+    {
+      "id": "88-C177-S220",
+      "sql": "ALTER TABLE orders ALTER COLUMN amount SET DEFAULT 0",
+      "owner": "TASK-196",
+      "original_unusual_cell_count": 13,
+      "cells": [
+        {
+          "id": "88-C177-S220/ansi",
+          "dialect": "ansi",
+          "original_class": "U",
+          "reviewed_bounded_disposition": "unapproved_boundary_with_named_follow_up",
+          "required_gate": "original_untyped_write_or_DDL_missing_portable_semantics",
+          "expected_release_state": "unapproved_pending_independent_evidence"
+        },
+        {
+          "id": "88-C177-S220/bigquery",
+          "dialect": "bigquery",
+          "original_class": "U",
+          "reviewed_bounded_disposition": "unapproved_boundary_with_named_follow_up",
+          "required_gate": "original_untyped_write_or_DDL_missing_portable_semantics",
+          "expected_release_state": "unapproved_pending_independent_evidence"
+        },
+        {
+          "id": "88-C177-S220/clickhouse",
+          "dialect": "clickhouse",
+          "original_class": "U",
+          "reviewed_bounded_disposition": "unapproved_boundary_with_named_follow_up",
+          "required_gate": "original_untyped_write_or_DDL_missing_portable_semantics",
+          "expected_release_state": "unapproved_pending_independent_evidence"
+        },
+        {
+          "id": "88-C177-S220/databricks",
+          "dialect": "databricks",
+          "original_class": "U",
+          "reviewed_bounded_disposition": "unapproved_boundary_with_named_follow_up",
+          "required_gate": "original_untyped_write_or_DDL_missing_portable_semantics",
+          "expected_release_state": "unapproved_pending_independent_evidence"
+        },
+        {
+          "id": "88-C177-S220/duckdb",
+          "dialect": "duckdb",
+          "original_class": "U",
+          "reviewed_bounded_disposition": "unapproved_boundary_with_named_follow_up",
+          "required_gate": "original_untyped_write_or_DDL_missing_portable_semantics",
+          "expected_release_state": "unapproved_pending_independent_evidence"
+        },
+        {
+          "id": "88-C177-S220/generic",
+          "dialect": "generic",
+          "original_class": "U",
+          "reviewed_bounded_disposition": "unapproved_boundary_with_named_follow_up",
+          "required_gate": "original_untyped_write_or_DDL_missing_portable_semantics",
+          "expected_release_state": "unapproved_pending_independent_evidence"
+        },
+        {
+          "id": "88-C177-S220/hive",
+          "dialect": "hive",
+          "original_class": "U",
+          "reviewed_bounded_disposition": "unapproved_boundary_with_named_follow_up",
+          "required_gate": "original_untyped_write_or_DDL_missing_portable_semantics",
+          "expected_release_state": "unapproved_pending_independent_evidence"
+        },
+        {
+          "id": "88-C177-S220/mssql",
+          "dialect": "mssql",
+          "original_class": "U",
+          "reviewed_bounded_disposition": "unapproved_boundary_with_named_follow_up",
+          "required_gate": "original_untyped_write_or_DDL_missing_portable_semantics",
+          "expected_release_state": "unapproved_pending_independent_evidence"
+        },
+        {
+          "id": "88-C177-S220/mysql",
+          "dialect": "mysql",
+          "original_class": "U",
+          "reviewed_bounded_disposition": "unapproved_boundary_with_named_follow_up",
+          "required_gate": "original_untyped_write_or_DDL_missing_portable_semantics",
+          "expected_release_state": "unapproved_pending_independent_evidence"
+        },
+        {
+          "id": "88-C177-S220/postgresql",
+          "dialect": "postgresql",
+          "original_class": "U",
+          "reviewed_bounded_disposition": "unapproved_boundary_with_named_follow_up",
+          "required_gate": "original_untyped_write_or_DDL_missing_portable_semantics",
+          "expected_release_state": "unapproved_pending_independent_evidence"
+        },
+        {
+          "id": "88-C177-S220/redshift",
+          "dialect": "redshift",
+          "original_class": "U",
+          "reviewed_bounded_disposition": "unapproved_boundary_with_named_follow_up",
+          "required_gate": "original_untyped_write_or_DDL_missing_portable_semantics",
+          "expected_release_state": "unapproved_pending_independent_evidence"
+        },
+        {
+          "id": "88-C177-S220/snowflake",
+          "dialect": "snowflake",
+          "original_class": "U",
+          "reviewed_bounded_disposition": "unapproved_boundary_with_named_follow_up",
+          "required_gate": "original_untyped_write_or_DDL_missing_portable_semantics",
+          "expected_release_state": "unapproved_pending_independent_evidence"
+        },
+        {
+          "id": "88-C177-S220/sqlite",
+          "dialect": "sqlite",
+          "original_class": "U",
+          "reviewed_bounded_disposition": "unapproved_boundary_with_named_follow_up",
+          "required_gate": "original_untyped_write_or_DDL_missing_portable_semantics",
+          "expected_release_state": "unapproved_pending_independent_evidence"
+        }
+      ]
+    }
+  ],
+  "policy": {
+    "all_exception_cells_fully_signed_off": false,
+    "task180_done": false,
+    "task88_done": false,
+    "task91_release_approved": false
+  }
+}
