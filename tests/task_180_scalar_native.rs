@@ -12,6 +12,7 @@ const SCALARS: &str = include_str!("../docs/task-192-native-partitions.json");
 const ENV: &str = include_str!("../docs/task-177-predicate-environment-oracles.json");
 const FINAL: &str = include_str!("../docs/task-177-final-native-deterministic.json");
 const ORDERING: &str = include_str!("../docs/task-177-native-expansion.json");
+const STRINGS: &str = include_str!("../docs/task-192-acceptance-freeze.json");
 
 fn parse(raw: &str) -> Value {
     serde_json::from_str(raw).expect("frozen original source/oracle evidence")
@@ -218,4 +219,102 @@ fn three_non_predicate_originals_keep_native_error_ordering_and_struct_boundarie
     assert_eq!(row.get::<_, i64>(0).expect("field a"), fields["a"].as_i64().expect("int"));
     assert_eq!(row.get::<_, String>(1).expect("field b"), fields["b"].as_str().expect("text"));
     assert!(rows.next().expect("native source exhausted").is_none());
+}
+
+#[test]
+fn four_original_like_and_ilike_cases_keep_true_false_unknown_and_duplicate_values() {
+    let matrix = parse(MATRIX);
+    let reviewed = parse(STRINGS);
+    let literals = &reviewed["task_owned_string_pattern_duckdb_oracles"];
+    let db = Connection::open_in_memory().expect("native isolated text source");
+    db.execute_batch(literals["source_setup"].as_str().expect("7 source rows"))
+        .expect("complete original text inputs");
+    assert_eq!(
+        sorted_nullable(&db, "SELECT id FROM customers"),
+        vec![Some(1), Some(2), Some(3), Some(4), Some(5), Some(6), Some(7)]
+    );
+
+    let mut visited = BTreeSet::new();
+    let mut dialect_cases = 0;
+    for case in literals["cases"].as_array().expect("4 original pattern oracles") {
+        let id = case["id"].as_str().expect("original SQL ID");
+        assert!(visited.insert(id), "{id}: duplicate predicate review");
+        let original = matrix["cases"]
+            .as_array()
+            .expect("all 163 original SQL variants")
+            .iter()
+            .find(|entry| entry["id"] == id)
+            .expect("original predicate case");
+        assert_eq!(original["owner"], "TASK-192");
+        let sql = original["sql"].as_str().expect("unmodified source SQL");
+        let predicate = case["predicate"].as_str().expect("literal original predicate");
+        assert_eq!(sql, format!("SELECT id FROM customers WHERE {predicate}"));
+
+        let get_ids = |field: &str| -> Vec<i64> {
+            serde_json::from_value(case[field].clone()).expect("frozen source occurrence IDs")
+        };
+        let true_ids = get_ids("selected_ids");
+        let false_ids = get_ids("false_ids");
+        let unknown_ids = get_ids("unknown_ids");
+        let all = {
+            let mut ids = true_ids.clone();
+            ids.extend(false_ids.iter());
+            ids.extend(unknown_ids.iter());
+            ids.sort();
+            ids
+        };
+        assert_eq!(all, (1..=7).collect::<Vec<_>>(), "{id}: full nullable text source");
+        for (truth, expected) in [
+            ("IS TRUE", true_ids.clone()),
+            ("IS FALSE", false_ids.clone()),
+            ("IS UNKNOWN", unknown_ids.clone()),
+        ] {
+            assert_eq!(
+                sorted_ids(
+                    &db,
+                    &format!("SELECT id FROM customers WHERE ({predicate}) {truth}")
+                ),
+                expected,
+                "{id}: original source true/false/unknown text bag"
+            );
+        }
+        let mut rejected = false_ids;
+        rejected.extend(unknown_ids);
+        rejected.sort();
+        assert_eq!(
+            sorted_ids(
+                &db,
+                &format!("SELECT id FROM customers WHERE ({predicate}) IS NOT TRUE")
+            ),
+            rejected,
+            "{id}: NOT TRUE cannot be reduced to FALSE alone"
+        );
+        assert_eq!(
+            sorted_ids(&db, sql),
+            true_ids,
+            "{id}: full original terminal physical ID bag"
+        );
+
+        for cell in original["cells"].as_array().expect("13 dialects") {
+            let name = cell["dialect"].as_str().expect("parser");
+            let parser = sql_semantic_protocol::dialect_from_name(name)
+                .expect("exposed parser dialect");
+            match sql_semantic_protocol::analyze_sql(sql, name, parser.as_ref()) {
+                Ok(protocol) => {
+                    let [sql_semantic_protocol::ProtocolStatement::Query(query)] =
+                        protocol.statements()
+                    else {
+                        panic!("{id}/{name}: original source SQL silently dropped");
+                    };
+                    assert_eq!(query.output().columns().len(), 1);
+                }
+                Err(sql_semantic_protocol::Error::Parse(_))
+                    if cell["original_canonical_class"] == "R" => {}
+                Err(error) => panic!("{id}/{name}: unreviewed parser boundary: {error}"),
+            }
+            dialect_cases += 1;
+        }
+    }
+    assert_eq!(visited.len(), 4);
+    assert_eq!(dialect_cases, 52);
 }
