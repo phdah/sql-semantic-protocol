@@ -213,6 +213,28 @@ pub fn physical_alter_column_snapshot(
                     }
                 }
             }
+            PhysicalColumnAlterStep::SetDefault { column, default } => {
+                let Some(existing) = columns.iter().find(|item| item.name() == column) else {
+                    if columns
+                        .iter()
+                        .any(|item| item.name().eq_ignore_ascii_case(column))
+                    {
+                        return PhysicalColumnAlterProof::Residual {
+                            reason: "SET DEFAULT requires attested identifier case-folding law".to_string(),
+                            before_schema: schema.clone(),
+                            attempted_schema: None,
+                        };
+                    }
+                    return PhysicalColumnAlterProof::Impossible {
+                        reason: format!("SET DEFAULT column '{column}' does not exist"),
+                    };
+                };
+                // A scalar default is applied only to future INSERT operations.
+                // Do not rewrite existing NULLs or duplicate physical rows.
+                if let Err(error) = validate_column_value(default, existing) {
+                    return classify_failure(error, schema);
+                }
+            }
             PhysicalColumnAlterStep::SetType { column } => {
                 let Some(index) = columns.iter().position(|item| item.name() == column.name())
                 else {
