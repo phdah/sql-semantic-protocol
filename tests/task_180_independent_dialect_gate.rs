@@ -249,7 +249,7 @@ fn sound_numeric_domain(domain: &ValueDomain, value: Option<i64>) -> bool {
 }
 
 fn check_exact_bound(
-    actual: Option<&sql_semantic_protocol::IntervalBound>,
+    actual: Option<&sql_semantic_protocol::Bound>,
     expected: &Value,
     id: &str,
 ) {
