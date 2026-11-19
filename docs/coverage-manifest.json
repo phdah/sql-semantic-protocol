@@ -74,7 +74,13 @@
     "task180_ac4_bounded_parser_adapter_and_residual_signoff": true,
     "source_applicable_adapter_paths": 2013,
     "adapter_parity_test": "tests/task_197_exhaustive_adapter_parity.rs",
-    "vendor_boundaries_approved_explicit_residual_only": 481
+    "vendor_boundaries_approved_explicit_residual_only": 481,
+    "task180_ac3_executable_duckdb_differential_complete": true,
+    "typed_original_s203_s206_duckdb_native_and_protocol_test": "tests/task_180_original_write_states.rs::original_typed_update_and_delete_match_native_complete_bags_and_all_13_dialect_physical_writes",
+    "original_s220_typed_native_and_protocol_test": "tests/task_180_alter_set_default.rs",
+    "original_native_bounded_positive_negative_review_complete": true,
+    "strongest_sound_release_cells_still_pending": true,
+    "schema_set_default_wire_schema": "schema/protocol.schema.json"
   },
   "task_179_vendor_session_laws": {
     "owner": "TASK-179",
