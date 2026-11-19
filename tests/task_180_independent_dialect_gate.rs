@@ -710,6 +710,134 @@ fn all_28_deterministic_native_group_window_and_ordered_bags_are_replayed() {
     assert_eq!((integer_bags, floating_bags, conditional_cases), (25, 3, 8));
 }
 
+// A final approval must reference the actual frozen source, owner and dialect.
+ // Free-text evidence descriptions alone are not an independent review.
+fn reviewed_cell_matches_frozen_source(review: &Value, case: &Value, cell: &Value) -> bool {
+    let provenance_matches = [
+        ("id", &cell["id"]),
+        ("dialect", &cell["dialect"]),
+        ("source_case_id", &case["id"]),
+        ("original_sql", &case["sql"]),
+        ("feature_id", &case["feature_id"]),
+        ("semantic_owner", &case["owner"]),
+        ("owner_review_ref", &case["owner_review_ref"]),
+        ("adapter_review_ref", &case["adapter_review_ref"]),
+        ("original_canonical_class", &cell["original_canonical_class"]),
+    ]
+    .iter()
+    .all(|(field, expected)| &review[*field] == *expected);
+    let class = cell["original_canonical_class"].as_str();
+    let status = review["proof_status"].as_str();
+    let exceptional_proof = review["exception_resolution_ref"]
+        .as_str()
+        .is_some_and(|reference| !reference.trim().is_empty());
+
+    provenance_matches
+        // Rejected SQL cannot acquire an Exact physical claim just by filling
+        // free-text signoff fields.
+        && !(class == Some("R") && status == Some("Exact"))
+        // Historical Unsupported or dialect-drift observations require a
+        // specific independent resolution when promoted beyond Residual.
+        && (class == Some("C")
+            || status == Some("reviewed_conditional_residual")
+            || exceptional_proof)
+}
+
+#[test]
+fn independently_reviewed_cell_provenance_cannot_be_substituted_or_upgraded() {
+    let freeze = read(FREEZE);
+    let cases = freeze["cases"].as_array().expect("frozen original SQL");
+    let case = &cases[0];
+    let cell = &case["cells"][0];
+    assert_eq!(cell["original_canonical_class"], "C");
+    let mut review = serde_json::json!({
+        "id": cell["id"],
+        "dialect": cell["dialect"],
+        "source_case_id": case["id"],
+        "original_sql": case["sql"],
+        "feature_id": case["feature_id"],
+        "semantic_owner": case["owner"],
+        "owner_review_ref": case["owner_review_ref"],
+        "adapter_review_ref": case["adapter_review_ref"],
+        "original_canonical_class": cell["original_canonical_class"],
+        "proof_status": "Exact",
+    });
+    assert!(reviewed_cell_matches_frozen_source(&review, case, cell));
+
+    for field in [
+        "id",
+        "dialect",
+        "source_case_id",
+        "original_sql",
+        "feature_id",
+        "semantic_owner",
+        "owner_review_ref",
+        "adapter_review_ref",
+        "original_canonical_class",
+    ] {
+        let original = review[field].clone();
+        review[field] = serde_json::json!("substituted evidence");
+        assert!(
+            !reviewed_cell_matches_frozen_source(&review, case, cell),
+            "{field}: a different SQL/case/owner must not pass signoff"
+        );
+        review[field] = original;
+    }
+
+    let rejected = cases
+        .iter()
+        .flat_map(|case| case["cells"].as_array().expect("13 parser cells").iter().map(move |cell| (case, cell)))
+        .find(|(_, cell)| cell["original_canonical_class"] == "R")
+        .expect("original parser rejection");
+    let (rejected_case, rejected_cell) = rejected;
+    for field in [
+        ("id", &rejected_cell["id"]),
+        ("dialect", &rejected_cell["dialect"]),
+        ("source_case_id", &rejected_case["id"]),
+        ("original_sql", &rejected_case["sql"]),
+        ("feature_id", &rejected_case["feature_id"]),
+        ("semantic_owner", &rejected_case["owner"]),
+        ("owner_review_ref", &rejected_case["owner_review_ref"]),
+        ("adapter_review_ref", &rejected_case["adapter_review_ref"]),
+        ("original_canonical_class", &rejected_cell["original_canonical_class"]),
+    ] {
+        review[field.0] = field.1.clone();
+    }
+    review["exception_resolution_ref"] = serde_json::json!("docs/some-independent-review.json");
+    assert!(
+        !reviewed_cell_matches_frozen_source(&review, rejected_case, rejected_cell),
+        "a parser-rejected original cannot be independently signed Exact"
+    );
+    review["proof_status"] = serde_json::json!("reviewed_conditional_residual");
+    assert!(reviewed_cell_matches_frozen_source(&review, rejected_case, rejected_cell));
+
+    let unsupported = cases
+        .iter()
+        .flat_map(|case| case["cells"].as_array().expect("13 parser cells").iter().map(move |cell| (case, cell)))
+        .find(|(_, cell)| cell["original_canonical_class"] == "U")
+        .expect("original analyzer Unsupported");
+    let (unsupported_case, unsupported_cell) = unsupported;
+    for (field, value) in [
+        ("id", &unsupported_cell["id"]),
+        ("dialect", &unsupported_cell["dialect"]),
+        ("source_case_id", &unsupported_case["id"]),
+        ("original_sql", &unsupported_case["sql"]),
+        ("feature_id", &unsupported_case["feature_id"]),
+        ("semantic_owner", &unsupported_case["owner"]),
+        ("owner_review_ref", &unsupported_case["owner_review_ref"]),
+        ("adapter_review_ref", &unsupported_case["adapter_review_ref"]),
+        ("original_canonical_class", &unsupported_cell["original_canonical_class"]),
+    ] {
+        review[field] = value.clone();
+    }
+    review["proof_status"] = serde_json::json!("Exact");
+    review["exception_resolution_ref"] = serde_json::Value::Null;
+    assert!(
+        !reviewed_cell_matches_frozen_source(&review, unsupported_case, unsupported_cell),
+        "unsupported original SQL needs a separately attested semantic resolution"
+    );
+}
+
 #[test]
 fn acceptance_cannot_be_marked_done_without_per_cell_independent_evidence() {
     let signoff = read(SIGNOFF);
@@ -743,6 +871,23 @@ fn acceptance_cannot_be_marked_done_without_per_cell_independent_evidence() {
         assert!(
             expected.contains(id),
             "{id}: an extra review cannot replace a required cell"
+        );
+        let (source_case, source_cell) = freeze["cases"]
+            .as_array()
+            .expect("original SQL cases")
+            .iter()
+            .find_map(|case| {
+                case["cells"]
+                    .as_array()
+                    .expect("original dialect cells")
+                    .iter()
+                    .find(|cell| cell["id"] == id)
+                    .map(|cell| (case, cell))
+            })
+            .expect("every approval belongs to the frozen matrix");
+        assert!(
+            reviewed_cell_matches_frozen_source(review, source_case, source_cell),
+            "{id}: signoff cannot borrow another SQL, dialect, owner or historical parser class; unproved exceptions remain Residual"
         );
         assert!(
             observed.insert(id.to_owned()),
