@@ -711,7 +711,7 @@ fn all_28_deterministic_native_group_window_and_ordered_bags_are_replayed() {
 }
 
 // A final approval must reference the actual frozen source, owner and dialect.
- // Free-text evidence descriptions alone are not an independent review.
+// Free-text evidence descriptions alone are not an independent review.
 fn reviewed_cell_matches_frozen_source(review: &Value, case: &Value, cell: &Value) -> bool {
     let provenance_matches = [
         ("id", &cell["id"]),
@@ -722,7 +722,10 @@ fn reviewed_cell_matches_frozen_source(review: &Value, case: &Value, cell: &Valu
         ("semantic_owner", &case["owner"]),
         ("owner_review_ref", &case["owner_review_ref"]),
         ("adapter_review_ref", &case["adapter_review_ref"]),
-        ("original_canonical_class", &cell["original_canonical_class"]),
+        (
+            "original_canonical_class",
+            &cell["original_canonical_class"],
+        ),
     ]
     .iter()
     .all(|(field, expected)| &review[*field] == *expected);
@@ -786,7 +789,13 @@ fn independently_reviewed_cell_provenance_cannot_be_substituted_or_upgraded() {
 
     let rejected = cases
         .iter()
-        .flat_map(|case| case["cells"].as_array().expect("13 parser cells").iter().map(move |cell| (case, cell)))
+        .flat_map(|case| {
+            case["cells"]
+                .as_array()
+                .expect("13 parser cells")
+                .iter()
+                .map(move |cell| (case, cell))
+        })
         .find(|(_, cell)| cell["original_canonical_class"] == "R")
         .expect("original parser rejection");
     let (rejected_case, rejected_cell) = rejected;
@@ -799,7 +808,10 @@ fn independently_reviewed_cell_provenance_cannot_be_substituted_or_upgraded() {
         ("semantic_owner", &rejected_case["owner"]),
         ("owner_review_ref", &rejected_case["owner_review_ref"]),
         ("adapter_review_ref", &rejected_case["adapter_review_ref"]),
-        ("original_canonical_class", &rejected_cell["original_canonical_class"]),
+        (
+            "original_canonical_class",
+            &rejected_cell["original_canonical_class"],
+        ),
     ] {
         review[field.0] = field.1.clone();
     }
@@ -809,11 +821,21 @@ fn independently_reviewed_cell_provenance_cannot_be_substituted_or_upgraded() {
         "a parser-rejected original cannot be independently signed Exact"
     );
     review["proof_status"] = serde_json::json!("reviewed_conditional_residual");
-    assert!(reviewed_cell_matches_frozen_source(&review, rejected_case, rejected_cell));
+    assert!(reviewed_cell_matches_frozen_source(
+        &review,
+        rejected_case,
+        rejected_cell
+    ));
 
     let unsupported = cases
         .iter()
-        .flat_map(|case| case["cells"].as_array().expect("13 parser cells").iter().map(move |cell| (case, cell)))
+        .flat_map(|case| {
+            case["cells"]
+                .as_array()
+                .expect("13 parser cells")
+                .iter()
+                .map(move |cell| (case, cell))
+        })
         .find(|(_, cell)| cell["original_canonical_class"] == "U")
         .expect("original analyzer Unsupported");
     let (unsupported_case, unsupported_cell) = unsupported;
@@ -825,8 +847,14 @@ fn independently_reviewed_cell_provenance_cannot_be_substituted_or_upgraded() {
         ("feature_id", &unsupported_case["feature_id"]),
         ("semantic_owner", &unsupported_case["owner"]),
         ("owner_review_ref", &unsupported_case["owner_review_ref"]),
-        ("adapter_review_ref", &unsupported_case["adapter_review_ref"]),
-        ("original_canonical_class", &unsupported_cell["original_canonical_class"]),
+        (
+            "adapter_review_ref",
+            &unsupported_case["adapter_review_ref"],
+        ),
+        (
+            "original_canonical_class",
+            &unsupported_cell["original_canonical_class"],
+        ),
     ] {
         review[field] = value.clone();
     }
