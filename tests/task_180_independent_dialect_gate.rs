@@ -14,6 +14,9 @@ const FREEZE: &str = include_str!("../docs/task-180-acceptance-freeze.json");
 const ORIGINAL: &str = include_str!("../docs/task-178-full-variant-inventory.json");
 const ADAPTER: &str = include_str!("../docs/task-197-acceptance-ledger-v2.json");
 const PREDICATES: &str = include_str!("../docs/task-177-predicate-oracles.json");
+const JOINS: &str = include_str!("../docs/task-193-acceptance-freeze.json");
+const SETS: &str = include_str!("../docs/task-194-acceptance-freeze.json");
+const SET_BAGS: &str = include_str!("../docs/task-194-independent-bag-review.json");
 const EXCEPTIONS: &str = include_str!("../docs/task-191-independent-review-v4.json");
 const MANIFEST: &str = include_str!("../docs/coverage-manifest.json");
 const TASK: &str = include_str!(
@@ -447,4 +450,157 @@ fn native_complete_source_bags_truth_partitions_and_typed_domains_are_executed_f
         sound_terminal_values > 1000,
         "verify full output occurrences, not a count-only oracle"
     );
+}
+
+fn verify_native_public_output(
+    sql: &str,
+    expected: &[Vec<Option<i64>>],
+    width: usize,
+    id: &str,
+) {
+    let parser = dialect_from_name("duckdb").expect("native dialect parser");
+    let protocol = analyze_sql(sql, "duckdb", parser.as_ref())
+        .unwrap_or_else(|error| panic!("{id}: public original SQL rejected: {error}"));
+    let [ProtocolStatement::Query(query)] = protocol.statements() else {
+        panic!("{id}: an original supported query became silently unsupported");
+    };
+    assert_eq!(
+        query.output().columns().len(),
+        width,
+        "{id}: original terminal column arity"
+    );
+    for row in expected {
+        for (column, value) in query.output().columns().iter().zip(row) {
+            assert!(
+                sound_numeric_domain(column.domain(), *value),
+                "{id}: public output domain excludes actual native {value:?} for {}",
+                column.name()
+            );
+        }
+    }
+}
+
+#[test]
+fn all_24_original_join_source_populations_have_exact_native_terminal_bags() {
+    let freeze = read(JOINS);
+    let db = Connection::open_in_memory().expect("native DuckDB");
+    db.execute_batch(freeze["source_setup"].as_str().expect("closed source SQL"))
+        .expect("native source population");
+    assert_eq!(
+        rows(&db, "SELECT id, amount FROM orders", 2),
+        expected_bag(&freeze["complete_source_bags"], "orders"),
+        "source rows include physical duplicates and NULL"
+    );
+    assert_eq!(
+        rows(&db, "SELECT id, amount FROM customers", 2),
+        expected_bag(&freeze["complete_source_bags"], "customers"),
+        "join partners include physical duplicate keys"
+    );
+
+    let mut visited = BTreeSet::new();
+    for case in freeze["cases"].as_array().expect("24 original join cases") {
+        let id = case["id"].as_str().expect("stable SQL ID");
+        assert!(visited.insert(id), "{id}: duplicate join oracle");
+        let original = case["sql"].as_str().expect("original SQL");
+        let executable = case["native_duckdb_sql"].as_str().expect("reviewed native SQL");
+        if case["original_duckdb_syntax_boundary"]
+            .as_str()
+            .is_some_and(|value| value.contains("rejected_by_duckdb_parser"))
+        {
+            assert!(
+                db.prepare(original).is_err(),
+                "{id}: original vendor syntax must not be silently certified as DuckDB"
+            );
+        }
+        let count = case["expected_columns"].as_u64().expect("terminal arity") as usize;
+        let oracle = expected_bag(case, "expected_terminal_bag");
+        assert_eq!(
+            rows(&db, executable, count),
+            oracle,
+            "{id}: complete join output, NULL extension and duplicate multiplicities"
+        );
+        verify_native_public_output(original, &oracle, count, id);
+    }
+    assert_eq!(visited.len(), 24);
+}
+
+#[test]
+fn all_20_native_set_bags_and_rejected_candidate_occurrences_are_replayed() {
+    let freeze = read(SETS);
+    let independent = read(SET_BAGS);
+    let db = Connection::open_in_memory().expect("native DuckDB");
+    db.execute_batch(freeze["source_setup"].as_str().expect("source population SQL"))
+        .expect("complete source populations");
+    assert_eq!(
+        rows(&db, "SELECT id, amount FROM orders", 2),
+        expected_bag(&freeze["complete_source_bags"], "orders")
+    );
+    assert_eq!(
+        rows(&db, "SELECT id, amount FROM customers", 2),
+        expected_bag(&freeze["complete_source_bags"], "customers")
+    );
+
+    let mut executable = 0;
+    let mut original_boundaries = 0;
+    for case in freeze["cases"].as_array().expect("22 original set variants") {
+        let id = case["id"].as_str().expect("stable original set ID");
+        let source = independent["cases"]
+            .as_array()
+            .expect("separately reviewed source and candidate bags")
+            .iter()
+            .find(|item| item["case_id"] == id)
+            .expect("source and output ledger entry");
+        let Some(native_sql) = case["native_duckdb_sql"].as_str() else {
+            assert!(
+                matches!(id, "88-C177-S084" | "88-C177-S086"),
+                "{id}: unreviewed native syntax exclusion"
+            );
+            assert!(case["expected_failure"].as_str().is_some());
+            original_boundaries += 1;
+            continue;
+        };
+        let width = case["expected_output_columns"]
+            .as_u64()
+            .expect("native output width") as usize;
+        let expected = expected_bag(case, "expected_terminal_bag");
+        assert_eq!(
+            rows(&db, native_sql, width),
+            expected,
+            "{id}: source-accurate output tuple multiset"
+        );
+        assert_eq!(
+            expected,
+            expected_bag(source, "independent_terminal_bag"),
+            "{id}: native output must match the separate independent review"
+        );
+        let candidate_sql = source["candidate_sql"]
+            .as_str()
+            .expect("candidate source population SQL");
+        let candidates = expected_bag(source, "independent_source_candidate_bag");
+        assert_eq!(
+            rows(&db, candidate_sql, width),
+            candidates,
+            "{id}: complete source candidate multiset"
+        );
+        let mut partition = expected.clone();
+        partition.extend(expected_bag(
+            source,
+            "independent_non_emitted_candidate_bag",
+        ));
+        partition.sort();
+        assert_eq!(
+            partition,
+            candidates,
+            "{id}: every unmatched/rejected source candidate is accounted for"
+        );
+        verify_native_public_output(
+            case["sql"].as_str().expect("original SQL"),
+            &expected,
+            width,
+            id,
+        );
+        executable += 1;
+    }
+    assert_eq!(executable, 20);
+    assert_eq!(original_boundaries, 2);
 }
