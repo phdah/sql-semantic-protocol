@@ -72,5 +72,7 @@ Expanded verification in this PR: all 25 independently frozen predicate/source t
 
 The source-backed original native/equivalent and explicitly bounded conditional evidence now covers all 163 named SQL variants in the TASK-180 tests. The independent release ledger remains unapproved for 2,119 dialect cells, 481 vendor/session review decisions and exact-head consumer evidence.
 
+The final gate also re-executes all 481 frozen TASK-179 vendor/dialect paths and requires distinct per-cell reviewed conditional/runtime dispositions before signing off. External native vendors remain unattested.
+
 This is **not final acceptance**: the original unsupported/conditional and missing native/vendor claims must be resolved or explicitly reviewed under the release policy. All five task AC remain unchecked pending exact-head CI, full independent typed semantic/physical matrix signoff, adapter/vendor review and pinned consumer evidence. TASK-88 and TASK-91 remain blocked. See `docs/task-180-acceptance-audit.md`.
 <!-- SECTION:NOTES:END -->
