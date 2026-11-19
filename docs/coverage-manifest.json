@@ -8,18 +8,41 @@
     "case_count": 163,
     "dialect_count": 13,
     "cell_count": 2119,
-    "original_canonical_classes": {"C": 2014, "D": 23, "U": 55, "R": 27},
+    "original_canonical_classes": {
+      "C": 2014,
+      "D": 23,
+      "U": 55,
+      "R": 27
+    },
     "positive_fixture_id": "88-C180-P",
     "negative_fixture_id": "88-C180-N",
     "independent_matrix_gate": "tests/task_180_independent_dialect_gate.rs",
-    "independent_evidence_owners": ["TASK-192", "TASK-193", "TASK-194", "TASK-195", "TASK-196", "TASK-197", "TASK-179", "TASK-191"],
+    "independent_evidence_owners": [
+      "TASK-192",
+      "TASK-193",
+      "TASK-194",
+      "TASK-195",
+      "TASK-196",
+      "TASK-197",
+      "TASK-179",
+      "TASK-191"
+    ],
     "audit": "docs/task-180-acceptance-audit.md",
     "all_mandatory_cells_signed_off": false,
     "unreviewed_conditional_cells": "explicit_release_blocker",
     "native_vendor_execution_attested": false,
     "complete_matrix_release_approved": false,
     "parent_task88_signed_off": false,
-    "task91_release_approved": false
+    "task91_release_approved": false,
+    "current_public_matrix_test": "tests/task_180_live_canonical.rs",
+    "exact_exception_gap_ledger": "docs/task-180-exception-and-gap-ledger.json",
+    "exception_ledger_test": "tests/task_180_live_canonical.rs::original_dialect_exceptions_have_a_complete_actionable_gap_ledger",
+    "original_native_predicate_case_count": 25,
+    "original_native_predicate_dialect_cells": 325,
+    "native_predicate_full_bag_oracle": "tests/task_180_independent_dialect_gate.rs::native_complete_source_bags_truth_partitions_and_typed_domains_are_executed_for_all_25",
+    "historical_drift_normalized_cells": 22,
+    "unapproved_canonical_drift_cells": 1,
+    "full_current_matrix_executed_by_ci": true
   },
   "task_179_vendor_session_laws": {
     "owner": "TASK-179",
@@ -15850,7 +15873,10 @@
     "original_native_exception_test": "tests/task_191_native_original_adjudication.rs",
     "independent_public_review_test": "tests/task_191_independent_review.rs",
     "independent_downstream_review_test": "tests/task_191_downstream_handoff.rs",
-    "fixture_ids": ["88-C191-P", "88-C191-N"],
+    "fixture_ids": [
+      "88-C191-P",
+      "88-C191-N"
+    ],
     "public_and_duckdb_oracle_test": "tests/task_191_boundary_disposition.rs",
     "acceptance_audit": "docs/task-191-acceptance-audit.md",
     "original_sql_native_equivalence_certified": false,
