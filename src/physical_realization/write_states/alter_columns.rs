@@ -220,7 +220,8 @@ pub fn physical_alter_column_snapshot(
                         .any(|item| item.name().eq_ignore_ascii_case(column))
                     {
                         return PhysicalColumnAlterProof::Residual {
-                            reason: "SET DEFAULT requires attested identifier case-folding law".to_string(),
+                            reason: "SET DEFAULT requires attested identifier case-folding law"
+                                .to_string(),
                             before_schema: schema.clone(),
                             attempted_schema: None,
                         };
