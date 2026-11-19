@@ -42,7 +42,19 @@
     "native_predicate_full_bag_oracle": "tests/task_180_independent_dialect_gate.rs::native_complete_source_bags_truth_partitions_and_typed_domains_are_executed_for_all_25",
     "historical_drift_normalized_cells": 22,
     "unapproved_canonical_drift_cells": 1,
-    "full_current_matrix_executed_by_ci": true
+    "full_current_matrix_executed_by_ci": true,
+    "original_scalar_native_test": "tests/task_180_scalar_native.rs",
+    "original_write_native_test": "tests/task_180_original_write_states.rs",
+    "native_join_case_count": 24,
+    "native_set_executable_case_count": 20,
+    "native_window_deterministic_case_count": 28,
+    "native_dml_ddl_executable_case_count": 34,
+    "original_scalar_case_count": 43,
+    "original_native_evaluated_count": 149,
+    "original_native_conditional_count": 14,
+    "final_signoff_evidence": "docs/task-180-final-signoff-evidence.json",
+    "fail_closed_release_guard_test": "tests/task_180_independent_dialect_gate.rs::acceptance_cannot_be_marked_done_without_per_cell_independent_evidence",
+    "independent_final_review_pending": true
   },
   "task_179_vendor_session_laws": {
     "owner": "TASK-179",
