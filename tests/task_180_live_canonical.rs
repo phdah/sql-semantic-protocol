@@ -11,6 +11,8 @@ const FREEZE: &str = include_str!("../docs/task-180-acceptance-freeze.json");
 const RECONCILIATION: &str = include_str!("../docs/task-178-canonical-reconciliation.json");
 const GAP_LEDGER: &str = include_str!("../docs/task-180-exception-and-gap-ledger.json");
 const VENDOR_MATRIX: &str = include_str!("../docs/task-179-variant-matrix-v2.json");
+const VENDOR_REVIEW: &str = include_str!("../docs/task-180-vendor-residual-decisions.json");
+const FINAL_SIGNOFF: &str = include_str!("../docs/task-180-final-signoff-evidence.json");
 
 fn read(source: &str) -> Value {
     serde_json::from_str(source).expect("versioned SQL and dialect evidence")
@@ -277,4 +279,82 @@ fn all_481_original_vendor_session_law_cells_have_live_fail_closed_boundaries() 
     }
     assert_eq!(seen.len(), 481);
     assert_eq!(observed, [442, 35, 4]);
+}
+
+#[test]
+fn vendor_source_review_approves_explicit_residual_only_after_reconciling_all_481_laws() {
+    let source = read(VENDOR_MATRIX);
+    let reviewed = read(VENDOR_REVIEW);
+    let signoff = read(FINAL_SIGNOFF);
+    assert_eq!(reviewed["task_id"], "TASK-180");
+    assert_eq!(reviewed["source"], "docs/task-179-variant-matrix-v2.json");
+    assert_eq!(reviewed["counts"]["variants"], 37);
+    assert_eq!(reviewed["counts"]["cells"], 481);
+    assert_eq!(reviewed["counts"]["parsed/analyzed"], 442);
+    assert_eq!(reviewed["counts"]["parsed/unsupported"], 35);
+    assert_eq!(reviewed["counts"]["rejected/parser_rejected"], 4);
+    assert_eq!(reviewed["native_vendor_execution_attested"], false);
+    assert_eq!(reviewed["external_execution_unverified_cells"], 481);
+    assert_eq!(reviewed["blocks_portable_exact_vendor_claims"], true);
+
+    let mut decisions = BTreeSet::new();
+    let mut signoff_decisions = BTreeSet::new();
+    for approved in signoff["vendor_boundary_review"]["approved_dispositions"]
+        .as_array()
+        .expect("individually reviewed conditional source laws")
+    {
+        let id = approved["id"].as_str().expect("reviewed original law/dialect");
+        assert!(signoff_decisions.insert(id.to_string()), "{id}: duplicate review");
+        assert_eq!(approved["release_disposition"], "approved_explicit_residual");
+        assert_eq!(approved["native_execution_attested"], false);
+        assert!(approved["required_native_evidence"]
+            .as_str()
+            .is_some_and(|value| value.starts_with("Execute original SQL in ")));
+    }
+    assert_eq!(signoff_decisions.len(), 481);
+    assert_eq!(signoff["vendor_boundary_review"]["reviewed_conditions"], 481);
+    assert_eq!(signoff["vendor_boundary_review"]["unapproved_native_claims"], 0);
+    for case in source["cases"]
+        .as_array()
+        .expect("37 source vendor SQLs")
+    {
+        let id = case["id"].as_str().expect("original vendor law");
+        let sql = case["sql"].as_str().expect("original source SQL");
+        for cell in case["dialect_cells"]
+            .as_array()
+            .expect("13 original dialect cells")
+        {
+            let dialect = cell["dialect"].as_str().expect("dialect");
+            let key = format!("{id}/{dialect}");
+            let entry = reviewed["dispositions"]
+                .as_array()
+                .expect("481 independent review decisions")
+                .iter()
+                .find(|record| record["id"] == key)
+                .unwrap_or_else(|| panic!("{key}: missing independent vendor review"));
+            assert!(decisions.insert(key.clone()), "{key}: duplicate source cell");
+            assert_eq!(entry["original_sql"], sql);
+            assert_eq!(entry["feature_id"], case["feature_id"]);
+            assert_eq!(entry["named_engine_or_parser"], dialect);
+            assert_eq!(entry["parser_status"], cell["parser_status"]);
+            assert_eq!(entry["analyzer_status"], cell["analyzer_status"]);
+            assert_eq!(entry["owner"], "TASK-179");
+            assert_eq!(entry["source_case_id"], case["source_case_id"]);
+            assert_eq!(entry["bounded_source_evidence"], case["physical_evidence_source"]);
+            assert_eq!(entry["source_terminal_disposition"], case["physical_source_terminal_disposition"]);
+            assert_eq!(entry["prior_unapproved_disposition"], "unapproved_vendor_law");
+            assert_eq!(entry["release_disposition"], "approved_explicit_residual");
+            assert_eq!(entry["native_execution_attested"], false);
+            assert!(entry["native_evidence_url"].is_null());
+            assert!(entry["required_native_evidence"]
+                .as_str()
+                .is_some_and(|required| required.contains(dialect) && required.contains("complete source and terminal row bags")));
+            assert!(signoff_decisions.contains(&key));
+        }
+    }
+    assert_eq!(decisions, signoff_decisions);
+    assert_eq!(decisions.len(), 481);
+    assert_eq!(signoff["task180_signed_off"], false);
+    assert_eq!(signoff["parent88_signed_off"], false);
+    assert_eq!(signoff["release91_approved"], false);
 }
