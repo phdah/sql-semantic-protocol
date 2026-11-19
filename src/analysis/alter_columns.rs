@@ -64,6 +64,7 @@ pub(super) fn analyze_alter_columns(
     name: &ObjectName,
     operations: &[AlterTableOperation],
     dialect_name: &str,
+    metadata: &AnalysisMetadata<'_>,
 ) -> ProtocolStatement {
     use crate::protocol::ColumnAlterStep;
     if operations.is_empty() {
@@ -112,6 +113,18 @@ pub(super) fn analyze_alter_columns(
             )
             .ok()
             .map(|column| ColumnAlterStep::SetType { column }),
+            AlterTableOperation::AlterColumn {
+                column_name,
+                op: AlterColumnOperation::SetDefault { value },
+            } if metadata
+                .schema_column(&ColumnRef::new(
+                    Some(name.to_string()),
+                    column_name.to_string(),
+                ))
+                .is_some() => scalar_default(value).map(|default| ColumnAlterStep::SetDefault {
+                column: column_name.to_string(),
+                default,
+            }),
             _ => None,
         };
         let Some(step) = step else {
