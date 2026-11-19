@@ -41,14 +41,24 @@ fn all_2119_original_dialect_obligations_have_an_independent_review_and_explicit
     assert_eq!(freeze["negative_fixture_id"], "88-C180-N");
     assert_eq!(freeze["dialects"], original["dialects"]);
     assert_eq!(freeze["dialects"], adapter["dialects"]);
-    assert_eq!(freeze["release_policy"]["all_mandatory_cells_finally_verified"], false);
+    assert_eq!(
+        freeze["release_policy"]["all_mandatory_cells_finally_verified"],
+        false
+    );
     assert_eq!(freeze["release_policy"]["parent_88_signed_off"], false);
     assert_eq!(freeze["release_policy"]["task_91_release_approved"], false);
 
-    let cases = freeze["cases"].as_array().expect("task-owned 163-case freeze");
+    let cases = freeze["cases"]
+        .as_array()
+        .expect("task-owned 163-case freeze");
     let source_cases = original["cases"].as_array().expect("original 163 SQLs");
-    let adapter_cases = adapter["cases"].as_array().expect("reviewed adapter matrix");
-    assert_eq!((cases.len(), source_cases.len(), adapter_cases.len()), (163, 163, 163));
+    let adapter_cases = adapter["cases"]
+        .as_array()
+        .expect("reviewed adapter matrix");
+    assert_eq!(
+        (cases.len(), source_cases.len(), adapter_cases.len()),
+        (163, 163, 163)
+    );
     let mut ids = BTreeSet::new();
     let mut cells_seen = BTreeSet::new();
     let mut categories = [0_usize; 4];
@@ -62,10 +72,16 @@ fn all_2119_original_dialect_obligations_have_an_independent_review_and_explicit
         assert_eq!(case["sql"], adapter_cases[index]["sql"]);
         assert_eq!(case["feature_id"], source_cases[index]["feature_id"]);
         assert_eq!(case["owner"], adapter_cases[index]["owner"]);
-        assert_eq!(case["source_relations"], adapter_cases[index]["source_relations_mentioned"]);
+        assert_eq!(
+            case["source_relations"],
+            adapter_cases[index]["source_relations_mentioned"]
+        );
         assert_eq!(case["positive_fixture"], "88-C180-P");
         assert_eq!(case["negative_fixture"], "88-C180-N");
-        assert!(case["typed_oracle"].is_object(), "{id}: missing independent typed oracle");
+        assert!(
+            case["typed_oracle"].is_object(),
+            "{id}: missing independent typed oracle"
+        );
         assert!(case["owner_review_ref"]
             .as_str()
             .is_some_and(|reference| reference.starts_with("docs/task-")));
@@ -81,32 +97,51 @@ fn all_2119_original_dialect_obligations_have_an_independent_review_and_explicit
         assert_eq!(reviewed_cells.len(), 13);
 
         for (dialect_index, frozen) in frozen_cells.iter().enumerate() {
-            let name = freeze["dialects"][dialect_index]
-                .as_str()
-                .expect("dialect");
+            let name = freeze["dialects"][dialect_index].as_str().expect("dialect");
             let key = format!("{id}/{name}");
-            assert!(cells_seen.insert(key.clone()), "{key}: duplicated frozen cell");
+            assert!(
+                cells_seen.insert(key.clone()),
+                "{key}: duplicated frozen cell"
+            );
             assert_eq!(frozen["id"], key);
             assert_eq!(frozen["dialect"], name);
             assert_eq!(frozen["dialect"], source_cells[dialect_index]["dialect"]);
             assert_eq!(frozen["dialect"], reviewed_cells[dialect_index]["dialect"]);
-            assert_eq!(frozen["original_canonical_class"], source_cells[dialect_index]["observed_status"]);
-            assert_eq!(frozen["original_canonical_class"], reviewed_cells[dialect_index]["original_observation"]);
-            assert_eq!(frozen["independent_bounded_review"], reviewed_cells[dialect_index]["reviewed_semantic_disposition"]);
+            assert_eq!(
+                frozen["original_canonical_class"],
+                source_cells[dialect_index]["observed_status"]
+            );
+            assert_eq!(
+                frozen["original_canonical_class"],
+                reviewed_cells[dialect_index]["original_observation"]
+            );
+            assert_eq!(
+                frozen["independent_bounded_review"],
+                reviewed_cells[dialect_index]["reviewed_semantic_disposition"]
+            );
             assert_eq!(frozen["external_native_vendor"], "unattested");
-            assert_eq!(reviewed_cells[dialect_index]["external_native_execution"], "unattested");
+            assert_eq!(
+                reviewed_cells[dialect_index]["external_native_execution"],
+                "unattested"
+            );
 
             let class = frozen["original_canonical_class"]
                 .as_str()
                 .expect("historical canonical observation");
             let (slot, required) = match class {
-                "C" => (0, "requires_full_independent_canonical_and_physical_signoff"),
+                "C" => (
+                    0,
+                    "requires_full_independent_canonical_and_physical_signoff",
+                ),
                 "D" => (1, "divergent_canonical_requires_adjudication"),
                 "U" => (2, "mandatory_unsupported_requires_implementation"),
                 "R" => (3, "parser_rejection_requires_reviewed_disposition"),
                 other => panic!("{key}: unknown canonical observation {other}"),
             };
-            assert_eq!(frozen["release_gate"], required, "{key}: release claim upgraded");
+            assert_eq!(
+                frozen["release_gate"], required,
+                "{key}: release claim upgraded"
+            );
             if matches!(class, "D" | "U" | "R") {
                 assert_ne!(
                     reviewed_cells[dialect_index]["status"], "certified",
@@ -128,8 +163,14 @@ fn all_2119_original_dialect_obligations_have_an_independent_review_and_explicit
     assert_eq!(exceptions["reviewed_public_unsupported_cells"], 116);
     assert_eq!(exceptions["native_non_duckdb_attested"], false);
     assert_eq!(exceptions["parent_task88_signed_off"], false);
-    assert_eq!(manifest["task_191_boundary_disposition_acceptance"]["full_matrix_release_approved"], false);
-    assert_eq!(manifest["task_180_complete_dialect_gate"]["complete_matrix_release_approved"], false);
+    assert_eq!(
+        manifest["task_191_boundary_disposition_acceptance"]["full_matrix_release_approved"],
+        false
+    );
+    assert_eq!(
+        manifest["task_180_complete_dialect_gate"]["complete_matrix_release_approved"],
+        false
+    );
     assert!(TASK.contains("status: In Progress"));
     assert!(!TASK.contains("status: Done"));
 }
@@ -193,22 +234,38 @@ fn native_duplicate_null_truth_and_typed_output_are_not_parser_only_evidence() {
         not_true.extend(expected_bag(oracle, "expected_unknown_rows"));
         not_true.sort();
         assert_eq!(
-            rows(&db, &format!("SELECT id, amount FROM orders WHERE ({predicate}) IS TRUE"), 2),
+            rows(
+                &db,
+                &format!("SELECT id, amount FROM orders WHERE ({predicate}) IS TRUE"),
+                2
+            ),
             expected_bag(oracle, "expected_selected_rows"),
             "{id}: TRUE bag"
         );
         assert_eq!(
-            rows(&db, &format!("SELECT id, amount FROM orders WHERE ({predicate}) IS FALSE"), 2),
+            rows(
+                &db,
+                &format!("SELECT id, amount FROM orders WHERE ({predicate}) IS FALSE"),
+                2
+            ),
             expected_bag(oracle, "expected_false_rows"),
             "{id}: FALSE bag"
         );
         assert_eq!(
-            rows(&db, &format!("SELECT id, amount FROM orders WHERE ({predicate}) IS UNKNOWN"), 2),
+            rows(
+                &db,
+                &format!("SELECT id, amount FROM orders WHERE ({predicate}) IS UNKNOWN"),
+                2
+            ),
             expected_bag(oracle, "expected_unknown_rows"),
             "{id}: UNKNOWN bag"
         );
         assert_eq!(
-            rows(&db, &format!("SELECT id, amount FROM orders WHERE ({predicate}) IS NOT TRUE"), 2),
+            rows(
+                &db,
+                &format!("SELECT id, amount FROM orders WHERE ({predicate}) IS NOT TRUE"),
+                2
+            ),
             not_true,
             "{id}: rejected direction includes FALSE and UNKNOWN"
         );
@@ -230,7 +287,10 @@ fn native_duplicate_null_truth_and_typed_output_are_not_parser_only_evidence() {
                 };
                 assert_eq!(domain.mode(), SetMode::Include);
                 assert_eq!(domain.values().len(), 1);
-                assert_eq!(domain.values()[0].value(), &LiteralValue::Number("10".into()));
+                assert_eq!(
+                    domain.values()[0].value(),
+                    &LiteralValue::Number("10".into())
+                );
             }
             tested += 1;
         }
