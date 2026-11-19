@@ -213,7 +213,10 @@ fn sound_numeric_domain(domain: &ValueDomain, value: Option<i64>) -> bool {
                 Some(number) => LiteralValue::Number(number.to_string()),
                 None => LiteralValue::Null,
             };
-            let present = values.values().iter().any(|entry| entry.value() == &literal);
+            let present = values
+                .values()
+                .iter()
+                .any(|entry| entry.value() == &literal);
             match values.mode() {
                 SetMode::Include => present,
                 SetMode::Exclude => !present,
@@ -228,17 +231,15 @@ fn sound_numeric_domain(domain: &ValueDomain, value: Option<i64>) -> bool {
                     let LiteralValue::Number(raw) = bound.value().value() else {
                         return false;
                     };
-                    raw.parse::<i128>().is_ok_and(|edge| {
-                        number > edge || (number == edge && bound.inclusive())
-                    })
+                    raw.parse::<i128>()
+                        .is_ok_and(|edge| number > edge || (number == edge && bound.inclusive()))
                 });
                 let upper = interval.upper().is_none_or(|bound| {
                     let LiteralValue::Number(raw) = bound.value().value() else {
                         return false;
                     };
-                    raw.parse::<i128>().is_ok_and(|edge| {
-                        number < edge || (number == edge && bound.inclusive())
-                    })
+                    raw.parse::<i128>()
+                        .is_ok_and(|edge| number < edge || (number == edge && bound.inclusive()))
                 });
                 lower && upper
             })
@@ -248,11 +249,7 @@ fn sound_numeric_domain(domain: &ValueDomain, value: Option<i64>) -> bool {
     }
 }
 
-fn check_exact_bound(
-    actual: Option<&sql_semantic_protocol::Bound>,
-    expected: &Value,
-    id: &str,
-) {
+fn check_exact_bound(actual: Option<&sql_semantic_protocol::Bound>, expected: &Value, id: &str) {
     if expected.is_null() {
         assert!(actual.is_none(), "{id}: unexpected numeric interval bound");
         return;
@@ -356,11 +353,23 @@ fn native_complete_source_bags_truth_partitions_and_typed_domains_are_executed_f
         let sql = oracle["sql"].as_str().expect("original SQL");
         assert_eq!(sql, frozen["sql"].as_str().expect("frozen source SQL"));
         let complete_output = expected_bag(oracle, "expected_terminal_bag");
-        assert_eq!(rows(&db, sql, 1), complete_output, "{id}: full terminal bag");
+        assert_eq!(
+            rows(&db, sql, 1),
+            complete_output,
+            "{id}: full terminal bag"
+        );
 
         let predicate = oracle["predicate"].as_str().expect("original predicate");
-        let source = if id == "88-C177-S013" { "orders o" } else { "orders" };
-        let selection = if id == "88-C177-S013" { "o.id, o.amount" } else { "id, amount" };
+        let source = if id == "88-C177-S013" {
+            "orders o"
+        } else {
+            "orders"
+        };
+        let selection = if id == "88-C177-S013" {
+            "o.id, o.amount"
+        } else {
+            "id, amount"
+        };
         let mut not_true = expected_bag(oracle, "expected_false_rows");
         not_true.extend(expected_bag(oracle, "expected_unknown_rows"));
         not_true.sort();
@@ -369,9 +378,7 @@ fn native_complete_source_bags_truth_partitions_and_typed_domains_are_executed_f
             ("IS FALSE", "expected_false_rows"),
             ("IS UNKNOWN", "expected_unknown_rows"),
         ] {
-            let sql = format!(
-                "SELECT {selection} FROM {source} WHERE ({predicate}) {truth}"
-            );
+            let sql = format!("SELECT {selection} FROM {source} WHERE ({predicate}) {truth}");
             assert_eq!(
                 rows(&db, &sql, 2),
                 expected_bag(oracle, expectation),
@@ -432,6 +439,12 @@ fn native_complete_source_bags_truth_partitions_and_typed_domains_are_executed_f
         }
     }
     assert_eq!(cases.len(), 25);
-    assert_eq!(dialect_cells, 325, "every original predicate x 13 public dialects");
-    assert!(sound_terminal_values > 1000, "verify full output occurrences, not a count-only oracle");
+    assert_eq!(
+        dialect_cells, 325,
+        "every original predicate x 13 public dialects"
+    );
+    assert!(
+        sound_terminal_values > 1000,
+        "verify full output occurrences, not a count-only oracle"
+    );
 }
