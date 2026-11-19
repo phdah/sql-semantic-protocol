@@ -63,18 +63,26 @@ fn all_2119_original_dialect_obligations_have_an_independent_review_and_explicit
     let mut cells_seen = BTreeSet::new();
     let mut categories = [0_usize; 4];
 
-    for (index, case) in cases.iter().enumerate() {
+    for case in cases {
         let id = case["id"].as_str().expect("stable original fixture");
         assert!(ids.insert(id.to_string()), "{id}: duplicate original SQL");
-        assert_eq!(case["id"], source_cases[index]["id"]);
-        assert_eq!(case["id"], adapter_cases[index]["id"]);
-        assert_eq!(case["sql"], source_cases[index]["sql"]);
-        assert_eq!(case["sql"], adapter_cases[index]["sql"]);
-        assert_eq!(case["feature_id"], source_cases[index]["feature_id"]);
-        assert_eq!(case["owner"], adapter_cases[index]["owner"]);
+        // The original inventory and adapter ledger have different ordering.
+        // Stable SQL identities, not array positions, define reconciliation.
+        let source_case = source_cases
+            .iter()
+            .find(|entry| entry["id"] == id)
+            .expect("original SQL identity");
+        let adapter_case = adapter_cases
+            .iter()
+            .find(|entry| entry["id"] == id)
+            .expect("reviewed adapter identity");
+        assert_eq!(case["sql"], source_case["sql"]);
+        assert_eq!(case["sql"], adapter_case["sql"]);
+        assert_eq!(case["feature_id"], source_case["feature_id"]);
+        assert_eq!(case["owner"], adapter_case["owner"]);
         assert_eq!(
             case["source_relations"],
-            adapter_cases[index]["source_relations_mentioned"]
+            adapter_case["source_relations_mentioned"]
         );
         assert_eq!(case["positive_fixture"], "88-C180-P");
         assert_eq!(case["negative_fixture"], "88-C180-N");
@@ -85,10 +93,10 @@ fn all_2119_original_dialect_obligations_have_an_independent_review_and_explicit
         assert!(case["owner_review_ref"]
             .as_str()
             .is_some_and(|reference| reference.starts_with("docs/task-")));
-        let source_cells = source_cases[index]["dialect_cells"]
+        let source_cells = source_case["dialect_cells"]
             .as_array()
             .expect("13 original parser outcomes");
-        let reviewed_cells = adapter_cases[index]["cells"]
+        let reviewed_cells = adapter_case["cells"]
             .as_array()
             .expect("13 independent adapter decisions");
         let frozen_cells = case["cells"].as_array().expect("13 task-owned cells");
