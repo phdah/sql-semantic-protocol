@@ -70,7 +70,11 @@
     "typed_original_s220_parser_dialects": 13,
     "typed_original_s220_raw_unsupported_preserved": true,
     "public_api_variant_added": "ColumnAlterStep::SetDefault",
-    "final_acceptance_release_blocked": true
+    "final_acceptance_release_blocked": true,
+    "task180_ac4_bounded_parser_adapter_and_residual_signoff": true,
+    "source_applicable_adapter_paths": 2013,
+    "adapter_parity_test": "tests/task_197_exhaustive_adapter_parity.rs",
+    "vendor_boundaries_approved_explicit_residual_only": 481
   },
   "task_179_vendor_session_laws": {
     "owner": "TASK-179",
