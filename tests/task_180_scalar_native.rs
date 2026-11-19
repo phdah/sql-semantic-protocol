@@ -70,7 +70,10 @@ fn other_eleven_original_scalar_predicates_have_complete_native_three_valued_par
     let env = parse(ENV);
     let final_native = parse(FINAL);
     let mut visited = BTreeSet::new();
-    for case in native["predicates"].as_array().expect("11 additional native cases") {
+    for case in native["predicates"]
+        .as_array()
+        .expect("11 additional native cases")
+    {
         let id = case["id"].as_str().expect("stable original SQL ID");
         assert!(visited.insert(id), "{id}: repeated native fixture");
         let original = matrix["cases"]
@@ -93,7 +96,8 @@ fn other_eleven_original_scalar_predicates_have_complete_native_three_valued_par
             .expect("complete physical setup");
         let relation = group["relation"].as_str().expect("source identity");
         let db = Connection::open_in_memory().expect("isolated native input");
-        db.execute_batch(source_sql).expect("full native source materialization");
+        db.execute_batch(source_sql)
+            .expect("full native source materialization");
 
         let row_count = group["row_count"].as_u64().expect("physical source count") as i64;
         let all_ids = (0..row_count).collect::<Vec<_>>();
@@ -132,10 +136,12 @@ fn other_eleven_original_scalar_predicates_have_complete_native_three_valued_par
             all_truth_cases.extend(original_ids);
         }
         all_truth_cases.sort();
-        assert_eq!(all_truth_cases, all_ids, "{id}: every source row must be classified");
-        let rejected: Vec<i64> =
-            serde_json::from_value(case["expected_not_true_rowids"].clone())
-                .expect("independent NOT TRUE oracle");
+        assert_eq!(
+            all_truth_cases, all_ids,
+            "{id}: every source row must be classified"
+        );
+        let rejected: Vec<i64> = serde_json::from_value(case["expected_not_true_rowids"].clone())
+            .expect("independent NOT TRUE oracle");
         assert_eq!(
             sorted_ids(
                 &db,
@@ -168,13 +174,18 @@ fn three_non_predicate_originals_keep_native_error_ordering_and_struct_boundarie
             .as_str()
             .expect("SQL")
     };
-    let boundary = native["other"].as_array().expect("three original exception cases");
+    let boundary = native["other"]
+        .as_array()
+        .expect("three original exception cases");
     assert_eq!(boundary.len(), 3);
 
     let db = Connection::open_in_memory().expect("native fixed-width overflow");
     let sql = original("88-C177-S033");
     assert_eq!(
-        boundary.iter().find(|c| c["id"] == "88-C177-S033").expect("overflow")["expected"],
+        boundary
+            .iter()
+            .find(|c| c["id"] == "88-C177-S033")
+            .expect("overflow")["expected"],
         "evaluation_error"
     );
     assert!(
@@ -185,8 +196,12 @@ fn three_non_predicate_originals_keep_native_error_ordering_and_struct_boundarie
     );
 
     let db = Connection::open_in_memory().expect("NULL and duplicate ordering");
-    db.execute_batch(ordering["ordering_source_setup"].as_str().expect("source SQL"))
-        .expect("complete order source bag");
+    db.execute_batch(
+        ordering["ordering_source_setup"]
+            .as_str()
+            .expect("source SQL"),
+    )
+    .expect("complete order source bag");
     let order = original("88-C177-S042");
     let mut statement = db.prepare(order).expect("ordered output");
     let observed: Vec<Option<i64>> = statement
@@ -204,7 +219,10 @@ fn three_non_predicate_originals_keep_native_error_ordering_and_struct_boundarie
         .iter()
         .map(Value::as_i64)
         .collect();
-    assert_eq!(observed, expected, "ordered output is not just an unordered bag");
+    assert_eq!(
+        observed, expected,
+        "ordered output is not just an unordered bag"
+    );
 
     let original_struct = original("88-C177-S179");
     let db = Connection::open_in_memory().expect("native STRUCT result");
@@ -216,8 +234,14 @@ fn three_non_predicate_originals_keep_native_error_ordering_and_struct_boundarie
         .iter()
         .find(|case| case["id"] == "88-C177-S179")
         .expect("source-frozen STRUCT")["expected_fields"];
-    assert_eq!(row.get::<_, i64>(0).expect("field a"), fields["a"].as_i64().expect("int"));
-    assert_eq!(row.get::<_, String>(1).expect("field b"), fields["b"].as_str().expect("text"));
+    assert_eq!(
+        row.get::<_, i64>(0).expect("field a"),
+        fields["a"].as_i64().expect("int")
+    );
+    assert_eq!(
+        row.get::<_, String>(1).expect("field b"),
+        fields["b"].as_str().expect("text")
+    );
     assert!(rows.next().expect("native source exhausted").is_none());
 }
 
@@ -231,12 +255,23 @@ fn four_original_like_and_ilike_cases_keep_true_false_unknown_and_duplicate_valu
         .expect("complete original text inputs");
     assert_eq!(
         sorted_nullable(&db, "SELECT id FROM customers"),
-        vec![Some(1), Some(2), Some(3), Some(4), Some(5), Some(6), Some(7)]
+        vec![
+            Some(1),
+            Some(2),
+            Some(3),
+            Some(4),
+            Some(5),
+            Some(6),
+            Some(7)
+        ]
     );
 
     let mut visited = BTreeSet::new();
     let mut dialect_cases = 0;
-    for case in literals["cases"].as_array().expect("4 original pattern oracles") {
+    for case in literals["cases"]
+        .as_array()
+        .expect("4 original pattern oracles")
+    {
         let id = case["id"].as_str().expect("original SQL ID");
         assert!(visited.insert(id), "{id}: duplicate predicate review");
         let original = matrix["cases"]
@@ -247,7 +282,9 @@ fn four_original_like_and_ilike_cases_keep_true_false_unknown_and_duplicate_valu
             .expect("original predicate case");
         assert_eq!(original["owner"], "TASK-192");
         let sql = original["sql"].as_str().expect("unmodified source SQL");
-        let predicate = case["predicate"].as_str().expect("literal original predicate");
+        let predicate = case["predicate"]
+            .as_str()
+            .expect("literal original predicate");
         assert_eq!(sql, format!("SELECT id FROM customers WHERE {predicate}"));
 
         let get_ids = |field: &str| -> Vec<i64> {
@@ -263,7 +300,11 @@ fn four_original_like_and_ilike_cases_keep_true_false_unknown_and_duplicate_valu
             ids.sort();
             ids
         };
-        assert_eq!(all, (1..=7).collect::<Vec<_>>(), "{id}: full nullable text source");
+        assert_eq!(
+            all,
+            (1..=7).collect::<Vec<_>>(),
+            "{id}: full nullable text source"
+        );
         for (truth, expected) in [
             ("IS TRUE", true_ids.clone()),
             ("IS FALSE", false_ids.clone()),
@@ -297,8 +338,8 @@ fn four_original_like_and_ilike_cases_keep_true_false_unknown_and_duplicate_valu
 
         for cell in original["cells"].as_array().expect("13 dialects") {
             let name = cell["dialect"].as_str().expect("parser");
-            let parser = sql_semantic_protocol::dialect_from_name(name)
-                .expect("exposed parser dialect");
+            let parser =
+                sql_semantic_protocol::dialect_from_name(name).expect("exposed parser dialect");
             match sql_semantic_protocol::analyze_sql(sql, name, parser.as_ref()) {
                 Ok(protocol) => {
                     let [sql_semantic_protocol::ProtocolStatement::Query(query)] =
