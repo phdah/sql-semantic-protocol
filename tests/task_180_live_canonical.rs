@@ -225,7 +225,9 @@ fn all_481_original_vendor_session_law_cells_have_live_fail_closed_boundaries() 
     for case in native["cases"].as_array().expect("37 frozen vendor laws") {
         let id = case["id"].as_str().expect("stable vendor law");
         let sql = case["sql"].as_str().expect("actual vendor SQL");
-        let cells = case["dialect_cells"].as_array().expect("all 13 named dialects");
+        let cells = case["dialect_cells"]
+            .as_array()
+            .expect("all 13 named dialects");
         assert_eq!(cells.len(), 13, "{id}: absent vendor cell");
         for (index, cell) in cells.iter().enumerate() {
             let name = full["dialects"][index].as_str().expect("named parser");
@@ -243,7 +245,10 @@ fn all_481_original_vendor_session_law_cells_have_live_fail_closed_boundaries() 
             let parser = dialect_from_name(name).expect("project dialect");
             match analyze_sql(sql, name, parser.as_ref()) {
                 Err(Error::Parse(_)) => {
-                    assert_eq!(cell["parser_status"], "rejected", "{key}: original parser boundary");
+                    assert_eq!(
+                        cell["parser_status"], "rejected",
+                        "{key}: original parser boundary"
+                    );
                     assert_eq!(cell["analyzer_status"], "parser_rejected");
                     observed[2] += 1;
                 }
