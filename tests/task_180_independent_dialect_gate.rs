@@ -453,12 +453,7 @@ fn native_complete_source_bags_truth_partitions_and_typed_domains_are_executed_f
     );
 }
 
-fn verify_native_public_output(
-    sql: &str,
-    expected: &[Vec<Option<i64>>],
-    width: usize,
-    id: &str,
-) {
+fn verify_native_public_output(sql: &str, expected: &[Vec<Option<i64>>], width: usize, id: &str) {
     let parser = dialect_from_name("duckdb").expect("native dialect parser");
     let protocol = analyze_sql(sql, "duckdb", parser.as_ref())
         .unwrap_or_else(|error| panic!("{id}: public original SQL rejected: {error}"));
@@ -503,7 +498,9 @@ fn all_24_original_join_source_populations_have_exact_native_terminal_bags() {
         let id = case["id"].as_str().expect("stable SQL ID");
         assert!(visited.insert(id), "{id}: duplicate join oracle");
         let original = case["sql"].as_str().expect("original SQL");
-        let executable = case["native_duckdb_sql"].as_str().expect("reviewed native SQL");
+        let executable = case["native_duckdb_sql"]
+            .as_str()
+            .expect("reviewed native SQL");
         if case["original_duckdb_syntax_boundary"]
             .as_str()
             .is_some_and(|value| value.contains("rejected_by_duckdb_parser"))
@@ -530,8 +527,12 @@ fn all_20_native_set_bags_and_rejected_candidate_occurrences_are_replayed() {
     let freeze = read(SETS);
     let independent = read(SET_BAGS);
     let db = Connection::open_in_memory().expect("native DuckDB");
-    db.execute_batch(freeze["source_setup"].as_str().expect("source population SQL"))
-        .expect("complete source populations");
+    db.execute_batch(
+        freeze["source_setup"]
+            .as_str()
+            .expect("source population SQL"),
+    )
+    .expect("complete source populations");
     assert_eq!(
         rows(&db, "SELECT id, amount FROM orders", 2),
         expected_bag(&freeze["complete_source_bags"], "orders")
@@ -543,7 +544,10 @@ fn all_20_native_set_bags_and_rejected_candidate_occurrences_are_replayed() {
 
     let mut executable = 0;
     let mut original_boundaries = 0;
-    for case in freeze["cases"].as_array().expect("22 original set variants") {
+    for case in freeze["cases"]
+        .as_array()
+        .expect("22 original set variants")
+    {
         let id = case["id"].as_str().expect("stable original set ID");
         let source = independent["cases"]
             .as_array()
@@ -590,8 +594,7 @@ fn all_20_native_set_bags_and_rejected_candidate_occurrences_are_replayed() {
         ));
         partition.sort();
         assert_eq!(
-            partition,
-            candidates,
+            partition, candidates,
             "{id}: every unmatched/rejected source candidate is accounted for"
         );
         verify_native_public_output(
@@ -624,7 +627,10 @@ fn all_28_deterministic_native_group_window_and_ordered_bags_are_replayed() {
     let mut integer_bags = 0;
     let mut floating_bags = 0;
     let mut conditional_cases = 0;
-    for case in freeze["cases"].as_array().expect("36 original window/group/order cases") {
+    for case in freeze["cases"]
+        .as_array()
+        .expect("36 original window/group/order cases")
+    {
         let id = case["id"].as_str().expect("original SQL identity");
         let sql = case["sql"].as_str().expect("original SQL");
         let native = &case["native_oracle"];
@@ -666,10 +672,13 @@ fn all_28_deterministic_native_group_window_and_ordered_bags_are_replayed() {
                         }
                     })
                     .collect();
-                expected_values.sort_by(|a, b| {
-                    a.partial_cmp(b).expect("finite frozen float fixtures")
-                });
-                assert_eq!(actual.len(), expected_values.len(), "{id}: output multiplicity");
+                expected_values
+                    .sort_by(|a, b| a.partial_cmp(b).expect("finite frozen float fixtures"));
+                assert_eq!(
+                    actual.len(),
+                    expected_values.len(),
+                    "{id}: output multiplicity"
+                );
                 for (observed, wanted) in actual.iter().zip(expected_values.iter()) {
                     match (observed, wanted) {
                         (Some(a), Some(b)) => assert!(
@@ -682,9 +691,7 @@ fn all_28_deterministic_native_group_window_and_ordered_bags_are_replayed() {
                 }
                 floating_bags += 1;
             }
-            "native_parser_rejection"
-            | "unstable_tie_membership"
-            | "stochastic_conditional" => {
+            "native_parser_rejection" | "unstable_tie_membership" | "stochastic_conditional" => {
                 // These have no single deterministic source-to-terminal bag
                 // under the original SQL law; claiming one would be unsound.
                 assert!(native["expected_terminal_bag"].is_null());
