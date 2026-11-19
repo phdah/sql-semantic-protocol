@@ -48,3 +48,21 @@ Independent Matt skill two-axis review, exact-head CI and consumer evidence are 
 | S152 LATERAL (MSSQL) | 1 outstanding canonical drift, parser/native dialect-specific boundary |
 | S084 CORRESPONDING | 13 original parser rejections, not equivalent to independently proven BY NAME |
 | S120, S179, S189 | Named Snowflake WINDOW, structural CAST and PostgreSQL generated-column parser boundaries |
+
+## Exhaustive original native-evidence replay
+
+TASK-180's original SQL suite now covers all **163** source variants with either an executed DuckDB original / explicitly reviewed equivalent or a declared non-executable/conditional boundary:
+
+| Family | Original SQLs | Independently exercised evidence |
+| --- | ---: | --- |
+| TASK-192 scalar predicates / types | 43 | 25 baseline 3VL bags, 11 additional source-instance 3VL partitions, 4 string-pattern cases, 3 overflow / ordering / STRUCT controls |
+| TASK-193 joins / scopes | 24 | 24 complete join native bags; original SEMI/ANTI native parsing explicitly distinguished from their executable DuckDB equivalents |
+| TASK-194 sets / alignment | 22 | 20 native source/terminal and rejected-candidate bags; 2 named parser / arity boundary cases |
+| TASK-195 grouping / windows / pagination | 36 | 25 integer and 3 float deterministic complete bags; 8 native conditional / stochastic / parser boundaries |
+| TASK-196 DML / DDL / metadata | 38 | 16 complete DML before/after/RETURNING states; 18 DDL constraint/lifecycle poststates; 2 native syntax rejections and 2 metadata authority boundaries |
+
+**149 native evaluated controls plus 14 explicit unexecutable/conditional controls** cover every case, without asserting unexecuted vendor execution. The 13-dialect public/canonical matrix is separately executed across all 2,119 frozen cells by `tests/task_180_live_canonical.rs`.
+
+Executable files: `tests/task_180_independent_dialect_gate.rs`, `tests/task_180_scalar_native.rs`, `tests/task_180_original_write_states.rs`, and `tests/task_180_live_canonical.rs`.
+
+`docs/task-180-final-signoff-evidence.json` must contain an independently reviewed record for every one of the 2,119 cells, all 481 vendor/session dispositions, final-head source and pinned-consumer CI and schema/golden checks before TASK-180 may become Done. The test gate rejects a state transition lacking that evidence. Native fixture reproducibility alone is not task-wide semantic approval.
