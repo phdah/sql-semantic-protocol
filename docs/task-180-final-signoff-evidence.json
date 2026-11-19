@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "task_id": "TASK-180",
+  "state": "pending_independent_final_signoff",
+  "required_original_cases": 163,
+  "required_dialect_cells": 2119,
+  "approved_cells": [],
+  "review_policy": "Only independently reviewed original source-backed typed domain, complete physical TRUE/NOT TRUE and adapter evidence may become approved. Parser-only and unexecuted vendor claims are not accepted.",
+  "vendor_boundary_review": {
+    "reviewed_conditions": 0,
+    "independent_owner": null,
+    "approved_dispositions": [],
+    "unapproved_native_claims": 0,
+    "notes": "TASK-179 bounded vendor-law review is source input, not TASK-180 native certification."
+  },
+  "independent_reviewer": null,
+  "reviewed_code_commit": null,
+  "verification": {
+    "protocol_exact_head_ci": null,
+    "protocol_ci_jobs_passed": null,
+    "pinned_sql_tdg_consumer_ci": null,
+    "pinned_consumer_commit": null,
+    "dbt_e2e_verified": false,
+    "active_schema_golden_verified": false
+  },
+  "all_required_independent_reviews_approved": false,
+  "task180_signed_off": false,
+  "parent88_signed_off": false,
+  "release91_approved": false
+}
