@@ -7,10 +7,9 @@ use std::collections::{BTreeMap, BTreeSet};
 use duckdb::Connection;
 use serde_json::Value;
 use sql_semantic_protocol::{
-    analyze_configured_inputs_with_catalog, dialect_from_name,
-    physical_ordered_write_state_plan, ConfiguredSqlInput, LiteralValue, PhysicalWriteRow,
-    PhysicalWriteState, PhysicalWriteStatePlan, ProtocolStatement, RelationCatalog, RelationSchema,
-    SchemaColumn, SqlInput,
+    analyze_configured_inputs_with_catalog, dialect_from_name, physical_ordered_write_state_plan,
+    ConfiguredSqlInput, LiteralValue, PhysicalWriteRow, PhysicalWriteState, PhysicalWriteStatePlan,
+    ProtocolStatement, RelationCatalog, RelationSchema, SchemaColumn, SqlInput,
 };
 
 const WRITES: &str = include_str!("../docs/task-196-acceptance-freeze.json");
@@ -182,7 +181,9 @@ fn original_schema_and_write_state_bags_replay_without_vendor_overclaim() {
 }
 
 fn typed_original_source(relation: &str, literal_bag: &Value) -> PhysicalWriteState {
-    let rows = literal_bag.as_array().expect("complete native source identity bag");
+    let rows = literal_bag
+        .as_array()
+        .expect("complete native source identity bag");
     PhysicalWriteState::new(
         relation,
         rows.iter()
@@ -195,11 +196,9 @@ fn typed_original_source(relation: &str, literal_bag: &Value) -> PhysicalWriteSt
                     .map(|(index, name)| {
                         (
                             name.to_string(),
-                            source[index]
-                                .as_i64()
-                                .map_or(LiteralValue::Null, |number| {
-                                    LiteralValue::Number(number.to_string())
-                                }),
+                            source[index].as_i64().map_or(LiteralValue::Null, |number| {
+                                LiteralValue::Number(number.to_string())
+                            }),
                         )
                     })
                     .collect::<BTreeMap<_, _>>();
@@ -221,7 +220,8 @@ fn native_target_rowids(db: &Connection, sql: &str) -> Vec<i64> {
 }
 
 #[test]
-fn original_typed_update_and_delete_match_native_complete_bags_and_all_13_dialect_physical_writes() {
+fn original_typed_update_and_delete_match_native_complete_bags_and_all_13_dialect_physical_writes()
+{
     let freeze = read();
     let catalog = RelationCatalog::from_schemas(
         &["orders", "customers"]
@@ -254,7 +254,8 @@ fn original_typed_update_and_delete_match_native_complete_bags_and_all_13_dialec
             .expect("original untyped historical U case");
         let oracle = &frozen["native_oracle"];
         let native = Connection::open_in_memory().expect("native independent source");
-        native.execute_batch(oracle["source_setup"].as_str().expect("closed source"))
+        native
+            .execute_batch(oracle["source_setup"].as_str().expect("closed source"))
             .expect("source bags with duplicated keys and NULL");
         let before = oracle["complete_source_bags"]["orders"].clone();
         let customers = oracle["complete_source_bags"]["customers"].clone();
@@ -286,7 +287,9 @@ fn original_typed_update_and_delete_match_native_complete_bags_and_all_13_dialec
         );
 
         let sql = frozen["sql"].as_str().expect("original DML SQL");
-        native.execute_batch(sql).expect("original native DML outcome");
+        native
+            .execute_batch(sql)
+            .expect("original native DML outcome");
         bag(
             &native,
             "SELECT id, amount FROM orders",
@@ -315,7 +318,11 @@ fn original_typed_update_and_delete_match_native_complete_bags_and_all_13_dialec
                 panic!("{id}/{dialect}: typed original DML was silently dropped");
             };
             assert_eq!(
-                query.sources().iter().map(|source| source.name()).collect::<Vec<_>>(),
+                query
+                    .sources()
+                    .iter()
+                    .map(|source| source.name())
+                    .collect::<Vec<_>>(),
                 vec!["customers"],
                 "{id}/{dialect}: source relation identity must not be dropped"
             );
@@ -334,12 +341,16 @@ fn original_typed_update_and_delete_match_native_complete_bags_and_all_13_dialec
                 "{id}/{dialect}: only the true physical row may change"
             );
             assert_eq!(
-                final_states.iter().find(|state| state.relation() == "orders"),
+                final_states
+                    .iter()
+                    .find(|state| state.relation() == "orders"),
                 Some(&expected),
                 "{id}/{dialect}: complete native target after-state"
             );
             assert_eq!(
-                final_states.iter().find(|state| state.relation() == "customers"),
+                final_states
+                    .iter()
+                    .find(|state| state.relation() == "customers"),
                 Some(&source_states[1]),
                 "{id}/{dialect}: source duplicates are read-only"
             );
