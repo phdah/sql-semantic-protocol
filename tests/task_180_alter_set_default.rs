@@ -220,7 +220,7 @@ fn missing_authoritative_schema_and_unproved_default_expressions_fail_closed() {
         );
     }
 
-    let program = format!(
+    let program = String::from(
         "CREATE TABLE orders(id INTEGER, amount INTEGER); \
          INSERT INTO orders VALUES (1,10); \
          ALTER TABLE orders ALTER COLUMN amount SET DEFAULT 'not an integer'; \
