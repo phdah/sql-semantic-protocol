@@ -1,4 +1,26 @@
 {
+  "task_180_complete_dialect_gate": {
+    "owner": "TASK-180",
+    "parent": "TASK-88",
+    "status": "in_progress_frozen_independent_matrix_release_blocked",
+    "schema_version": 1,
+    "freeze": "docs/task-180-acceptance-freeze.json",
+    "case_count": 163,
+    "dialect_count": 13,
+    "cell_count": 2119,
+    "original_canonical_classes": {"C": 2014, "D": 23, "U": 55, "R": 27},
+    "positive_fixture_id": "88-C180-P",
+    "negative_fixture_id": "88-C180-N",
+    "independent_matrix_gate": "tests/task_180_independent_dialect_gate.rs",
+    "independent_evidence_owners": ["TASK-192", "TASK-193", "TASK-194", "TASK-195", "TASK-196", "TASK-197", "TASK-179", "TASK-191"],
+    "audit": "docs/task-180-acceptance-audit.md",
+    "all_mandatory_cells_signed_off": false,
+    "unreviewed_conditional_cells": "explicit_release_blocker",
+    "native_vendor_execution_attested": false,
+    "complete_matrix_release_approved": false,
+    "parent_task88_signed_off": false,
+    "task91_release_approved": false
+  },
   "task_179_vendor_session_laws": {
     "owner": "TASK-179",
     "parent": "TASK-88",
