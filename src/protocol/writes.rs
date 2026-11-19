@@ -181,6 +181,14 @@ pub enum ColumnAlterStep {
         /// New typed declaration with the same column name.
         column: crate::relation::SchemaColumn,
     },
+    /// Change the default for subsequent omitted-column inserts, leaving
+    /// existing physical rows unchanged. Requires authoritative target schema.
+    SetDefault {
+        /// Exact existing target column identity.
+        column: String,
+        /// Bounded scalar literal; expressions and vendor sequences remain unsupported.
+        default: LiteralValue,
+    },
 }
 
 /// A closed-world table lifecycle operation, distinct from row-level mutation.
