@@ -204,8 +204,129 @@ fn expected_bag(case: &Value, field: &str) -> Vec<Vec<Option<i64>>> {
     bag
 }
 
+fn sound_numeric_domain(domain: &ValueDomain, value: Option<i64>) -> bool {
+    match domain {
+        ValueDomain::Unbounded | ValueDomain::Unknown(_) => true,
+        ValueDomain::Empty => false,
+        ValueDomain::Set(values) => {
+            let literal = match value {
+                Some(number) => LiteralValue::Number(number.to_string()),
+                None => LiteralValue::Null,
+            };
+            let present = values.values().iter().any(|entry| entry.value() == &literal);
+            match values.mode() {
+                SetMode::Include => present,
+                SetMode::Exclude => !present,
+            }
+        }
+        ValueDomain::Ranges(values) => {
+            let Some(number) = value.map(i128::from) else {
+                return false;
+            };
+            values.ranges().iter().any(|interval| {
+                let lower = interval.lower().is_none_or(|bound| {
+                    let LiteralValue::Number(raw) = bound.value().value() else {
+                        return false;
+                    };
+                    raw.parse::<i128>().is_ok_and(|edge| {
+                        number > edge || (number == edge && bound.inclusive())
+                    })
+                });
+                let upper = interval.upper().is_none_or(|bound| {
+                    let LiteralValue::Number(raw) = bound.value().value() else {
+                        return false;
+                    };
+                    raw.parse::<i128>().is_ok_and(|edge| {
+                        number < edge || (number == edge && bound.inclusive())
+                    })
+                });
+                lower && upper
+            })
+        }
+        // A new, unexamined domain variant is not an automatic certificate.
+        _ => false,
+    }
+}
+
+fn check_exact_bound(
+    actual: Option<&sql_semantic_protocol::IntervalBound>,
+    expected: &Value,
+    id: &str,
+) {
+    if expected.is_null() {
+        assert!(actual.is_none(), "{id}: unexpected numeric interval bound");
+        return;
+    }
+    let parts = expected.as_array().expect("numeric bound + inclusivity");
+    let bound = actual.expect("missing exact bound");
+    let expected_number = parts[0].as_i64().expect("integer bound");
+    assert_eq!(
+        bound.value().value(),
+        &LiteralValue::Number(expected_number.to_string()),
+        "{id}: wrong typed bound"
+    );
+    assert_eq!(
+        bound.inclusive(),
+        parts[1].as_bool().expect("inclusive flag"),
+        "{id}: inclusive/exclusive law changed"
+    );
+}
+
+fn check_exact_projected_domain(domain: &ValueDomain, expected: &Value, id: &str) {
+    match expected["kind"].as_str().expect("explicit domain kind") {
+        "set_include" | "set_exclude" => {
+            let ValueDomain::Set(set) = domain else {
+                panic!("{id}: an exact set must not become unknown");
+            };
+            let mode = if expected["kind"] == "set_include" {
+                SetMode::Include
+            } else {
+                SetMode::Exclude
+            };
+            assert_eq!(set.mode(), mode, "{id}: set inclusion direction changed");
+            let values = expected["values"].as_array().expect("explicit numeric set");
+            assert_eq!(set.values().len(), values.len(), "{id}: missing set entry");
+            for item in values {
+                let literal = match item.as_i64() {
+                    Some(number) => LiteralValue::Number(number.to_string()),
+                    None if item.is_null() => LiteralValue::Null,
+                    None => panic!("{id}: invalid source expected value"),
+                };
+                assert!(
+                    set.values().iter().any(|entry| entry.value() == &literal),
+                    "{id}: missing typed set value {literal:?}"
+                );
+            }
+        }
+        "range" | "range_union" => {
+            let ValueDomain::Ranges(ranges) = domain else {
+                panic!("{id}: an exact numeric range must not become unknown");
+            };
+            let expected_ranges = if expected["kind"] == "range" {
+                vec![expected]
+            } else {
+                expected["ranges"]
+                    .as_array()
+                    .expect("exact union of ranges")
+                    .iter()
+                    .collect()
+            };
+            assert_eq!(
+                ranges.ranges().len(),
+                expected_ranges.len(),
+                "{id}: interval union cardinality changed"
+            );
+            for (actual, expected_range) in ranges.ranges().iter().zip(expected_ranges) {
+                check_exact_bound(actual.lower(), &expected_range["lower"], id);
+                check_exact_bound(actual.upper(), &expected_range["upper"], id);
+            }
+        }
+        other => panic!("{id}: unrecognized frozen domain kind {other}"),
+    }
+}
+
 #[test]
-fn native_duplicate_null_truth_and_typed_output_are_not_parser_only_evidence() {
+fn native_complete_source_bags_truth_partitions_and_typed_domains_are_executed_for_all_25() {
     let matrix = read(FREEZE);
     let goldens = read(PREDICATES);
     let db = Connection::open_in_memory().expect("native DuckDB");
@@ -215,14 +336,17 @@ fn native_duplicate_null_truth_and_typed_output_are_not_parser_only_evidence() {
         rows(&db, "SELECT id, amount FROM orders", 2),
         expected_bag(&goldens, "orders_source_rows")
     );
-    let mut tested = 0;
-    for id in ["88-C177-S001", "88-C177-S002", "88-C177-S003"] {
-        let oracle = goldens["cases"]
-            .as_array()
-            .expect("pinned true/false/unknown oracles")
-            .iter()
-            .find(|case| case["id"] == id)
-            .expect("original SQL case");
+    assert_eq!(
+        rows(&db, "SELECT id, amount FROM customers", 2),
+        expected_bag(&goldens, "customers_source_rows")
+    );
+
+    let mut cases = BTreeSet::new();
+    let mut dialect_cells = 0;
+    let mut sound_terminal_values = 0;
+    for oracle in goldens["cases"].as_array().expect("25 original oracles") {
+        let id = oracle["id"].as_str().expect("original SQL identity");
+        assert!(cases.insert(id), "{id}: duplicate original native oracle");
         let frozen = matrix["cases"]
             .as_array()
             .expect("163 SQL cases")
@@ -231,77 +355,83 @@ fn native_duplicate_null_truth_and_typed_output_are_not_parser_only_evidence() {
             .expect("case owned by final gate");
         let sql = oracle["sql"].as_str().expect("original SQL");
         assert_eq!(sql, frozen["sql"].as_str().expect("frozen source SQL"));
-        assert_eq!(
-            rows(&db, sql, 1),
-            expected_bag(oracle, "expected_terminal_bag"),
-            "{id}: full terminal output includes duplicate occurrences"
-        );
+        let complete_output = expected_bag(oracle, "expected_terminal_bag");
+        assert_eq!(rows(&db, sql, 1), complete_output, "{id}: full terminal bag");
 
         let predicate = oracle["predicate"].as_str().expect("original predicate");
+        let source = if id == "88-C177-S013" { "orders o" } else { "orders" };
+        let selection = if id == "88-C177-S013" { "o.id, o.amount" } else { "id, amount" };
         let mut not_true = expected_bag(oracle, "expected_false_rows");
         not_true.extend(expected_bag(oracle, "expected_unknown_rows"));
         not_true.sort();
+        for (truth, expectation) in [
+            ("IS TRUE", "expected_selected_rows"),
+            ("IS FALSE", "expected_false_rows"),
+            ("IS UNKNOWN", "expected_unknown_rows"),
+        ] {
+            let sql = format!(
+                "SELECT {selection} FROM {source} WHERE ({predicate}) {truth}"
+            );
+            assert_eq!(
+                rows(&db, &sql, 2),
+                expected_bag(oracle, expectation),
+                "{id}: independently frozen {truth} bag"
+            );
+        }
         assert_eq!(
             rows(
                 &db,
-                &format!("SELECT id, amount FROM orders WHERE ({predicate}) IS TRUE"),
-                2
-            ),
-            expected_bag(oracle, "expected_selected_rows"),
-            "{id}: TRUE bag"
-        );
-        assert_eq!(
-            rows(
-                &db,
-                &format!("SELECT id, amount FROM orders WHERE ({predicate}) IS FALSE"),
-                2
-            ),
-            expected_bag(oracle, "expected_false_rows"),
-            "{id}: FALSE bag"
-        );
-        assert_eq!(
-            rows(
-                &db,
-                &format!("SELECT id, amount FROM orders WHERE ({predicate}) IS UNKNOWN"),
-                2
-            ),
-            expected_bag(oracle, "expected_unknown_rows"),
-            "{id}: UNKNOWN bag"
-        );
-        assert_eq!(
-            rows(
-                &db,
-                &format!("SELECT id, amount FROM orders WHERE ({predicate}) IS NOT TRUE"),
+                &format!("SELECT {selection} FROM {source} WHERE ({predicate}) IS NOT TRUE"),
                 2
             ),
             not_true,
-            "{id}: rejected direction includes FALSE and UNKNOWN"
+            "{id}: FALSE and UNKNOWN must be rejected without losing occurrences"
         );
 
-        for cell in frozen["cells"].as_array().expect("13 parser dialects") {
+        for cell in frozen["cells"].as_array().expect("13 dialect parser cells") {
             let name = cell["dialect"].as_str().expect("dialect");
-            let dialect = dialect_from_name(name).expect("project parser");
-            let protocol = analyze_sql(sql, name, dialect.as_ref())
-                .unwrap_or_else(|error| panic!("{id}/{name}: {error}"));
-            let [ProtocolStatement::Query(query)] = protocol.statements() else {
-                panic!("{id}/{name}: source query lost its typed semantic output")
+            let dialect = dialect_from_name(name).expect("project dialect");
+            let analyzed = analyze_sql(sql, name, dialect.as_ref());
+            let protocol = match analyzed {
+                Ok(value) => value,
+                Err(sql_semantic_protocol::Error::Parse(_))
+                    if cell["original_canonical_class"] == "R" =>
+                {
+                    dialect_cells += 1;
+                    continue;
+                }
+                Err(error) => panic!("{id}/{name}: unexpected source error: {error}"),
             };
-            let [column] = query.output().columns() else {
-                panic!("{id}/{name}: wrong terminal projection")
-            };
-            if id == "88-C177-S001" {
-                let ValueDomain::Set(domain) = column.domain() else {
-                    panic!("{id}/{name}: exact amount=10 set missing")
-                };
-                assert_eq!(domain.mode(), SetMode::Include);
-                assert_eq!(domain.values().len(), 1);
-                assert_eq!(
-                    domain.values()[0].value(),
-                    &LiteralValue::Number("10".into())
-                );
+            match protocol.statements() {
+                [ProtocolStatement::Query(query)] => {
+                    let [column] = query.output().columns() else {
+                        panic!("{id}/{name}: original one-column output lost");
+                    };
+                    for value in &complete_output {
+                        let integer = value[0];
+                        assert!(
+                            sound_numeric_domain(column.domain(), integer),
+                            "{id}/{name}: native terminal value {integer:?} contradicted by emitted domain {:?}",
+                            column.domain()
+                        );
+                        sound_terminal_values += 1;
+                    }
+                    if !oracle["expected_projected_domain"].is_null() {
+                        check_exact_projected_domain(
+                            column.domain(),
+                            &oracle["expected_projected_domain"],
+                            id,
+                        );
+                    }
+                }
+                [ProtocolStatement::Unsupported(_)]
+                    if cell["original_canonical_class"] == "U" => {}
+                _ => panic!("{id}/{name}: original terminal is missing or unsupported without an approved boundary"),
             }
-            tested += 1;
+            dialect_cells += 1;
         }
     }
-    assert_eq!(tested, 39);
+    assert_eq!(cases.len(), 25);
+    assert_eq!(dialect_cells, 325, "every original predicate x 13 public dialects");
+    assert!(sound_terminal_values > 1000, "verify full output occurrences, not a count-only oracle");
 }
