@@ -10,6 +10,7 @@ use sql_semantic_protocol::{analyze_sql, dialect_from_name, to_json, Error, Prot
 const FREEZE: &str = include_str!("../docs/task-180-acceptance-freeze.json");
 const RECONCILIATION: &str = include_str!("../docs/task-178-canonical-reconciliation.json");
 const GAP_LEDGER: &str = include_str!("../docs/task-180-exception-and-gap-ledger.json");
+const VENDOR_MATRIX: &str = include_str!("../docs/task-179-variant-matrix-v2.json");
 
 fn read(source: &str) -> Value {
     serde_json::from_str(source).expect("versioned SQL and dialect evidence")
@@ -208,4 +209,67 @@ fn original_dialect_exceptions_have_a_complete_actionable_gap_ledger() {
     assert_eq!(gaps["historical_canonical_counts"]["original_D"], 23);
     assert_eq!(gaps["historical_canonical_counts"]["original_U"], 55);
     assert_eq!(gaps["historical_canonical_counts"]["original_R"], 27);
+}
+
+#[test]
+fn all_481_original_vendor_session_law_cells_have_live_fail_closed_boundaries() {
+    let native = read(VENDOR_MATRIX);
+    let full = read(FREEZE);
+    assert_eq!(native["case_count"], 37);
+    assert_eq!(native["dialect_cell_count"], 481);
+    assert_eq!(native["dialects"], full["dialects"]);
+    assert_eq!(native["external_vendor_runtime_proven"], false);
+
+    let mut seen = BTreeSet::new();
+    let mut observed = [0_usize; 3];
+    for case in native["cases"].as_array().expect("37 frozen vendor laws") {
+        let id = case["id"].as_str().expect("stable vendor law");
+        let sql = case["sql"].as_str().expect("actual vendor SQL");
+        let cells = case["dialect_cells"].as_array().expect("all 13 named dialects");
+        assert_eq!(cells.len(), 13, "{id}: absent vendor cell");
+        for (index, cell) in cells.iter().enumerate() {
+            let name = full["dialects"][index].as_str().expect("named parser");
+            let key = format!("{id}/{name}");
+            assert!(seen.insert(key.clone()), "{key}: duplicate vendor law cell");
+            assert_eq!(cell["dialect"], name);
+            assert_eq!(cell["native_vendor"], "unattested");
+            assert_eq!(cell["conditional_owner"], "TASK-179");
+            assert_eq!(cell["release_disposition"], "unapproved_vendor_law");
+            assert_eq!(
+                cell["review_status"],
+                "reviewed_bounded_source_semantics_with_explicit_vendor_residual"
+            );
+
+            let parser = dialect_from_name(name).expect("project dialect");
+            match analyze_sql(sql, name, parser.as_ref()) {
+                Err(Error::Parse(_)) => {
+                    assert_eq!(cell["parser_status"], "rejected", "{key}: original parser boundary");
+                    assert_eq!(cell["analyzer_status"], "parser_rejected");
+                    observed[2] += 1;
+                }
+                Err(error) => panic!("{key}: unreviewed vendor analyzer error: {error}"),
+                Ok(protocol)
+                    if protocol.statements().iter().any(|statement| {
+                        matches!(statement, ProtocolStatement::Unsupported(_))
+                    }) =>
+                {
+                    assert_eq!(cell["parser_status"], "parsed");
+                    assert_eq!(cell["analyzer_status"], "unsupported", "{key}");
+                    observed[1] += 1;
+                }
+                Ok(protocol) => {
+                    assert_eq!(cell["parser_status"], "parsed");
+                    assert_eq!(cell["analyzer_status"], "analyzed", "{key}");
+                    let wire = read(&to_json(&protocol));
+                    assert!(
+                        wire["inputs"].is_array(),
+                        "{key}: parsed vendor syntax must emit a canonical protocol"
+                    );
+                    observed[0] += 1;
+                }
+            }
+        }
+    }
+    assert_eq!(seen.len(), 481);
+    assert_eq!(observed, [442, 35, 4]);
 }
