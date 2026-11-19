@@ -9,6 +9,7 @@ use sql_semantic_protocol::{analyze_sql, dialect_from_name, to_json, Error, Prot
 
 const FREEZE: &str = include_str!("../docs/task-180-acceptance-freeze.json");
 const RECONCILIATION: &str = include_str!("../docs/task-178-canonical-reconciliation.json");
+const GAP_LEDGER: &str = include_str!("../docs/task-180-exception-and-gap-ledger.json");
 
 fn read(source: &str) -> Value {
     serde_json::from_str(source).expect("versioned SQL and dialect evidence")
@@ -98,4 +99,88 @@ fn all_2119_original_public_sql_dialect_cells_are_executed_with_reviewed_boundar
     assert_eq!(actual_counts.get(&'D'), Some(&1));
     assert_eq!(actual_counts.get(&'U'), Some(&55));
     assert_eq!(actual_counts.get(&'R'), Some(&27));
+}
+
+#[test]
+fn original_dialect_exceptions_have_a_complete_actionable_gap_ledger() {
+    let freeze = read(FREEZE);
+    let gaps = read(GAP_LEDGER);
+    let reconciliation = read(RECONCILIATION);
+    assert_eq!(gaps["schema_version"], 1);
+    assert_eq!(gaps["task_id"], "TASK-180");
+    assert_eq!(gaps["original_native_review"]["exception_count"], 23);
+    assert_eq!(gaps["independent_bounded_adapter_review"]["certified"], 1861);
+    assert_eq!(gaps["independent_bounded_adapter_review"]["conditional"], 152);
+    assert_eq!(gaps["independent_bounded_adapter_review"]["unrepresentable"], 106);
+    assert_eq!(gaps["vendor_session_laws"]["reviewed_cells"], 481);
+    assert_eq!(gaps["vendor_session_laws"]["external_native_vendor_attested"], false);
+    assert_eq!(gaps["policy"]["task180_done"], false);
+
+    let normalized: BTreeSet<String> = reconciliation["resolved_grouping_cells"]
+        .as_array()
+        .expect("reviewed original canonical normalization")
+        .iter()
+        .map(|item| {
+            format!(
+                "{}/{}",
+                item["case_id"].as_str().expect("original variant"),
+                item["dialect"].as_str().expect("reviewed dialect"),
+            )
+        })
+        .collect();
+    assert_eq!(normalized.len(), 22);
+
+    let expected: BTreeMap<_, _> = freeze["cases"]
+        .as_array()
+        .expect("original SQL")
+        .iter()
+        .flat_map(|case| case["cells"].as_array().expect("13 cells"))
+        .filter(|cell| cell["original_canonical_class"] != "C")
+        .map(|cell| {
+            (
+                cell["id"].as_str().expect("stable cell").to_string(),
+                cell["original_canonical_class"]
+                    .as_str()
+                    .expect("old parser/canonical observation")
+                    .to_string(),
+            )
+        })
+        .collect();
+    assert_eq!(expected.len(), 105, "one ledger entry for every unusual original cell");
+
+    let mut seen = BTreeSet::new();
+    let mut resolved = 0;
+    let mut still_divergent = 0;
+    for case in gaps["original_exception_cases"].as_array().expect("original families") {
+        for cell in case["cells"].as_array().expect("named exception cells") {
+            let key = cell["id"].as_str().expect("stable original ID/dialect");
+            assert!(seen.insert(key.to_string()), "{key}: duplicate exception");
+            assert_eq!(
+                cell["original_class"],
+                expected.get(key).expect("exact original non-C observation").as_str()
+            );
+            if normalized.contains(key) {
+                resolved += 1;
+                assert_eq!(cell["required_gate"], "historical_canonical_drift_normalized");
+                assert_eq!(
+                    cell["expected_release_state"],
+                    "portable_candidate_pending_final_review"
+                );
+            } else if cell["original_class"] == "D" {
+                still_divergent += 1;
+                assert_eq!(cell["required_gate"], "canonical_divergence_unapproved");
+            } else {
+                assert_eq!(
+                    cell["expected_release_state"],
+                    "unapproved_pending_independent_evidence"
+                );
+            }
+        }
+    }
+    assert_eq!(seen, expected.keys().cloned().collect());
+    assert_eq!((resolved, still_divergent), (22, 1));
+    assert_eq!(gaps["historical_canonical_counts"]["original_C"], 2014);
+    assert_eq!(gaps["historical_canonical_counts"]["original_D"], 23);
+    assert_eq!(gaps["historical_canonical_counts"]["original_U"], 55);
+    assert_eq!(gaps["historical_canonical_counts"]["original_R"], 27);
 }
