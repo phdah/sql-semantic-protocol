@@ -739,8 +739,14 @@ fn acceptance_cannot_be_marked_done_without_per_cell_independent_evidence() {
     let mut observed = BTreeSet::new();
     for review in approvals {
         let id = review["id"].as_str().expect("reviewed source case/dialect");
-        assert!(expected.contains(id), "{id}: an extra review cannot replace a required cell");
-        assert!(observed.insert(id.to_owned()), "{id}: duplicate release review");
+        assert!(
+            expected.contains(id),
+            "{id}: an extra review cannot replace a required cell"
+        );
+        assert!(
+            observed.insert(id.to_owned()),
+            "{id}: duplicate release review"
+        );
         for field in [
             "reviewer",
             "reviewed_commit",
@@ -765,7 +771,9 @@ fn acceptance_cannot_be_marked_done_without_per_cell_independent_evidence() {
             "{id}: every final classification needs an explicit physical proof status"
         );
         assert!(
-            !review["native_execution_attested"].as_bool().unwrap_or(false)
+            !review["native_execution_attested"]
+                .as_bool()
+                .unwrap_or(false)
                 || review["native_execution_evidence"]
                     .as_str()
                     .is_some_and(|evidence| !evidence.trim().is_empty()),
@@ -776,17 +784,20 @@ fn acceptance_cannot_be_marked_done_without_per_cell_independent_evidence() {
     let done = signoff["task180_signed_off"]
         .as_bool()
         .expect("explicit independent acceptance decision");
-    let manifest_done = manifest["task_180_complete_dialect_gate"]["complete_matrix_release_approved"]
+    let manifest_done = manifest["task_180_complete_dialect_gate"]
+        ["complete_matrix_release_approved"]
         .as_bool()
         .expect("explicit canonical release gate");
     assert_eq!(done, manifest_done);
     assert_eq!(
-        signoff["all_required_independent_reviews_approved"],
-        done,
+        signoff["all_required_independent_reviews_approved"], done,
         "task signoff needs a complete independent cell review"
     );
     if done {
-        assert_eq!(observed, expected, "every mandatory cell needs independent approval");
+        assert_eq!(
+            observed, expected,
+            "every mandatory cell needs independent approval"
+        );
         for field in ["independent_reviewer", "reviewed_code_commit"] {
             assert!(signoff[field].as_str().is_some_and(|s| !s.is_empty()));
         }
@@ -802,8 +813,7 @@ fn acceptance_cannot_be_marked_done_without_per_cell_independent_evidence() {
         assert_eq!(verify["dbt_e2e_verified"], true);
         assert_eq!(verify["active_schema_golden_verified"], true);
         assert_eq!(
-            signoff["vendor_boundary_review"]["reviewed_conditions"],
-            481,
+            signoff["vendor_boundary_review"]["reviewed_conditions"], 481,
             "every reviewed vendor/session cell needs a final release disposition"
         );
         assert!(signoff["vendor_boundary_review"]["independent_owner"]
@@ -818,7 +828,13 @@ fn acceptance_cannot_be_marked_done_without_per_cell_independent_evidence() {
         );
         assert!(TASK.contains("status: Done"));
     } else {
-        assert!(observed.len() < expected.len(), "all cells already have evidence but no signoff");
-        assert!(!TASK.contains("status: Done"), "task cannot close without all approvals");
+        assert!(
+            observed.len() < expected.len(),
+            "all cells already have evidence but no signoff"
+        );
+        assert!(
+            !TASK.contains("status: Done"),
+            "task cannot close without all approvals"
+        );
     }
 }
