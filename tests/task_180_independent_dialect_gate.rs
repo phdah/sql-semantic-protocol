@@ -847,8 +847,14 @@ fn acceptance_cannot_be_marked_done_without_per_cell_independent_evidence() {
             .expect("independent individual vendor-law dispositions")
         {
             let id = record["id"].as_str().expect("reviewed vendor law/dialect");
-            assert!(reviewed_vendor.insert(id.to_owned()), "{id}: duplicate vendor signoff");
-            assert!(required_vendor.contains(id), "{id}: not an original vendor-law cell");
+            assert!(
+                reviewed_vendor.insert(id.to_owned()),
+                "{id}: duplicate vendor signoff"
+            );
+            assert!(
+                required_vendor.contains(id),
+                "{id}: not an original vendor-law cell"
+            );
             assert!(record["reviewer"].as_str().is_some_and(|v| !v.is_empty()));
             assert!(record["reviewed_law_and_session"]
                 .as_str()
@@ -864,8 +870,7 @@ fn acceptance_cannot_be_marked_done_without_per_cell_independent_evidence() {
             }
         }
         assert_eq!(
-            reviewed_vendor,
-            required_vendor,
+            reviewed_vendor, required_vendor,
             "all 481 vendor laws need individually reviewed release dispositions"
         );
         assert!(TASK.contains("status: Done"));
