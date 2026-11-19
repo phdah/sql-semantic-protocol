@@ -21,6 +21,7 @@ const WINDOW: &str = include_str!("../docs/task-195-acceptance-freeze.json");
 const EXCEPTIONS: &str = include_str!("../docs/task-191-independent-review-v4.json");
 const MANIFEST: &str = include_str!("../docs/coverage-manifest.json");
 const SIGNOFF: &str = include_str!("../docs/task-180-final-signoff-evidence.json");
+const VENDOR: &str = include_str!("../docs/task-179-variant-matrix-v2.json");
 const TASK: &str = include_str!(
     "../.backlog/tasks/task-180 - independently-certify-complete-dialect-matrix-and-gate-ci.md"
 );
@@ -790,6 +791,10 @@ fn acceptance_cannot_be_marked_done_without_per_cell_independent_evidence() {
         .expect("explicit canonical release gate");
     assert_eq!(done, manifest_done);
     assert_eq!(
+        manifest["task_180_complete_dialect_gate"]["all_mandatory_cells_signed_off"],
+        signoff["all_required_independent_reviews_approved"]
+    );
+    assert_eq!(
         signoff["all_required_independent_reviews_approved"], done,
         "task signoff needs a complete independent cell review"
     );
@@ -819,12 +824,49 @@ fn acceptance_cannot_be_marked_done_without_per_cell_independent_evidence() {
         assert!(signoff["vendor_boundary_review"]["independent_owner"]
             .as_str()
             .is_some_and(|s| !s.is_empty()));
+        let vendor = read(VENDOR);
+        let required_vendor: BTreeSet<_> = vendor["cases"]
+            .as_array()
+            .expect("37 original vendor/session laws")
+            .iter()
+            .flat_map(|case| {
+                let id = case["id"].as_str().expect("original vendor law ID");
+                case["dialect_cells"]
+                    .as_array()
+                    .expect("13 named vendor dialects")
+                    .iter()
+                    .map(move |cell| {
+                        format!("{id}/{}", cell["dialect"].as_str().expect("vendor dialect"))
+                    })
+            })
+            .collect();
+        assert_eq!(required_vendor.len(), 481);
+        let mut reviewed_vendor = BTreeSet::new();
+        for record in signoff["vendor_boundary_review"]["approved_dispositions"]
+            .as_array()
+            .expect("independent individual vendor-law dispositions")
+        {
+            let id = record["id"].as_str().expect("reviewed vendor law/dialect");
+            assert!(reviewed_vendor.insert(id.to_owned()), "{id}: duplicate vendor signoff");
+            assert!(required_vendor.contains(id), "{id}: not an original vendor-law cell");
+            assert!(record["reviewer"].as_str().is_some_and(|v| !v.is_empty()));
+            assert!(record["reviewed_law_and_session"]
+                .as_str()
+                .is_some_and(|v| !v.is_empty()));
+            assert!(matches!(
+                record["release_disposition"].as_str(),
+                Some("approved_explicit_residual" | "native_execution_attested")
+            ));
+            if record["release_disposition"] == "native_execution_attested" {
+                assert!(record["native_evidence_url"]
+                    .as_str()
+                    .is_some_and(|evidence| !evidence.is_empty()));
+            }
+        }
         assert_eq!(
-            signoff["vendor_boundary_review"]["approved_dispositions"]
-                .as_array()
-                .expect("individual vendor-law dispositions")
-                .len(),
-            481
+            reviewed_vendor,
+            required_vendor,
+            "all 481 vendor laws need individually reviewed release dispositions"
         );
         assert!(TASK.contains("status: Done"));
     } else {
