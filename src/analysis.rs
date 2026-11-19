@@ -447,7 +447,7 @@ fn analyze_statement(
                     },
                 )
             } else {
-                analyze_alter_columns(name, operations, metadata.dialect_name)
+                analyze_alter_columns(name, operations, metadata.dialect_name, metadata)
             }
         }
         SqlStatement::Truncate {
