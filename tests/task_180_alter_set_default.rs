@@ -7,7 +7,7 @@ use duckdb::Connection;
 use serde_json::Value;
 use sql_semantic_protocol::{
     analyze_configured_inputs_with_catalog, analyze_inputs, dialect_from_name,
-    physical_ordered_write_state_plan, ConfiguredSqlInput, LiteralValue, PhysicalWriteStatePlan,
+    physical_ordered_write_state_plan, to_bundle_json, ConfiguredSqlInput, LiteralValue, PhysicalWriteStatePlan,
     ProtocolStatement, RelationCatalog, RelationSchema, SchemaColumn, SqlInput,
 };
 
@@ -102,6 +102,13 @@ fn scalar_set_default_changes_only_future_inserted_rows_in_all_thirteen_dialects
         let ProtocolStatement::Query(alter) = statement else {
             panic!("{name}: typed original SET DEFAULT was not represented");
         };
+        let wire: Value = serde_json::from_str(&to_bundle_json(&bundle))
+            .expect("canonical typed ALTER emission");
+        let emitted = &wire["inputs"][0]["statements"][2]["write"]["alter_columns"][0];
+        assert_eq!(emitted["kind"], "set_default", "{name}: canonical operation");
+        assert_eq!(emitted["column"], "amount");
+        assert_eq!(emitted["value"], 0);
+
         let write = alter.write().expect("typed original DDL write");
         let [sql_semantic_protocol::PhysicalColumnAlterStep::SetDefault { column, default }] =
             write.column_alter_steps()
