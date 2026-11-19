@@ -1,10 +1,10 @@
 ---
 id: TASK-180
 title: Independently certify complete dialect matrix and gate CI
-status: To Do
+status: In Progress
 assignee: []
 created_date: '2026-10-17'
-updated_date: '2026-11-09'
+updated_date: '2026-11-19'
 labels: []
 milestone: m-3
 dependencies:
@@ -62,3 +62,11 @@ For original TASK-178 predicates/types, consult [TASK-192's 43-case/559-cell exp
 ## TASK-191 bounded handoff (pending PR #205 merge)
 
 The [TASK-191 v2 independently reviewed exception decisions](../../docs/task-191-reviewed-dispositions-v2.json), [v3 TASK-178/179/197 source-fact handoff](../../docs/task-191-downstream-handoff-v3.json), and [v4 bounded signoff](../../docs/task-191-independent-review-v4.json) are inputs to TASK-180. Original 55 parser rejects, 116 Unsupported and 23 missing exact native terminal cases are source-bound classified, **not** promoted into portable mandatory support or external vendor execution. TASK-180 must independently certify the original complete release matrix, implement unresolved mandatory semantics as required, and preserve vendor/session Residual until attested. This parent remains To Do until TASK-191 is Done **and PR #205 merged**.
+
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+2026-11-19: TASK-191 and PR #205 are merged. Began TASK-180's independent final gate on `feat/task-180-dialect-release-gate`. Frozen 163 original SQL cases x 13 dialects = 2,119 explicit cells in `docs/task-180-acceptance-freeze.json`, grounded in original SQL and TASK-192..197 review evidence. `tests/task_180_independent_dialect_gate.rs` independently reconciles the frozen cells with the original inventory, adapter review and TASK-191 boundary, and replays original DuckDB positive, FALSE, UNKNOWN and rejected complete bags.
+
+This is **not final acceptance**: the original unsupported/conditional and missing native/vendor claims must be resolved or explicitly reviewed under the release policy. All five task AC remain unchecked pending exact-head CI, full independent typed semantic/physical matrix signoff, adapter/vendor review and pinned consumer evidence. TASK-88 and TASK-91 remain blocked. See `docs/task-180-acceptance-audit.md`.
+<!-- SECTION:NOTES:END -->
