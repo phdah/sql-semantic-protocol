@@ -18,8 +18,10 @@ fn typed_catalog() -> RelationCatalog {
         "orders",
         ["id", "amount"]
             .into_iter()
-            .map(|name| SchemaColumn::from_sql_type(name, "INTEGER", "duckdb")
-                .expect("independently typed column"))
+            .map(|name| {
+                SchemaColumn::from_sql_type(name, "INTEGER", "duckdb")
+                    .expect("independently typed column")
+            })
             .collect(),
     )
     .expect("complete typed relation");
@@ -43,7 +45,10 @@ fn integer_bag(db: &Connection, sql: &str) -> Vec<Vec<Option<i64>>> {
     let mut statement = db.prepare(sql).expect("native complete bag");
     let rows = statement
         .query_map([], |row| {
-            Ok(vec![row.get::<usize, Option<i64>>(0)?, row.get::<usize, Option<i64>>(1)?])
+            Ok(vec![
+                row.get::<usize, Option<i64>>(0)?,
+                row.get::<usize, Option<i64>>(1)?,
+            ])
         })
         .expect("native result rows");
     let mut bag: Vec<_> = rows.map(|row| row.expect("native nullable row")).collect();
@@ -71,7 +76,8 @@ fn scalar_set_default_changes_only_future_inserted_rows_in_all_thirteen_dialects
         vec![Some(2), None],
     ];
     let db = Connection::open_in_memory().expect("native default law");
-    db.execute_batch(&body).expect("original DuckDB SET DEFAULT followed by INSERT");
+    db.execute_batch(&body)
+        .expect("original DuckDB SET DEFAULT followed by INSERT");
     assert_eq!(
         integer_bag(&db, "SELECT id, amount FROM orders"),
         expected,
@@ -125,17 +131,24 @@ fn scalar_set_default_changes_only_future_inserted_rows_in_all_thirteen_dialects
             .map(|row| {
                 ["id", "amount"]
                     .into_iter()
-                    .map(|name| match row.values().get(name).expect("complete prestate") {
-                        LiteralValue::Null => None,
-                        LiteralValue::Number(value) => Some(value.parse().expect("signed integer")),
-                        unexpected => panic!("{name}: unexpected prestate {unexpected:?}"),
-                    })
+                    .map(
+                        |name| match row.values().get(name).expect("complete prestate") {
+                            LiteralValue::Null => None,
+                            LiteralValue::Number(value) => {
+                                Some(value.parse().expect("signed integer"))
+                            }
+                            unexpected => panic!("{name}: unexpected prestate {unexpected:?}"),
+                        },
+                    )
                     .collect()
             })
             .collect();
         let mut before = before;
         before.sort();
-        assert_eq!(before, original_before, "{name}: ALTER cannot rewrite existing NULLs");
+        assert_eq!(
+            before, original_before,
+            "{name}: ALTER cannot rewrite existing NULLs"
+        );
         assert_eq!(
             alter_transition.after().rows(),
             alter_transition.before().rows(),
@@ -152,11 +165,15 @@ fn scalar_set_default_changes_only_future_inserted_rows_in_all_thirteen_dialects
             .map(|row| {
                 ["id", "amount"]
                     .into_iter()
-                    .map(|column| match row.values().get(column).expect("complete target") {
-                        LiteralValue::Null => None,
-                        LiteralValue::Number(value) => Some(value.parse().expect("signed integer")),
-                        other => panic!("{name}: unsupported output literal {other:?}"),
-                    })
+                    .map(
+                        |column| match row.values().get(column).expect("complete target") {
+                            LiteralValue::Null => None,
+                            LiteralValue::Number(value) => {
+                                Some(value.parse().expect("signed integer"))
+                            }
+                            other => panic!("{name}: unsupported output literal {other:?}"),
+                        },
+                    )
                     .collect()
             })
             .collect();
@@ -171,14 +188,13 @@ fn scalar_set_default_changes_only_future_inserted_rows_in_all_thirteen_dialects
 fn missing_authoritative_schema_and_unproved_default_expressions_fail_closed() {
     let original = original_s220();
     let parser = dialect_from_name("duckdb").expect("project DuckDB dialect");
-    let raw = analyze_inputs(
-        &[SqlInput::inline(&original)],
-        "duckdb",
-        parser.as_ref(),
-    )
-    .expect("raw original statement remains an explicit unsupported boundary");
+    let raw = analyze_inputs(&[SqlInput::inline(&original)], "duckdb", parser.as_ref())
+        .expect("raw original statement remains an explicit unsupported boundary");
     assert!(
-        matches!(raw.inputs()[0].statements()[0], ProtocolStatement::Unsupported(_)),
+        matches!(
+            raw.inputs()[0].statements()[0],
+            ProtocolStatement::Unsupported(_)
+        ),
         "original untyped U history is immutable"
     );
 
@@ -196,7 +212,10 @@ fn missing_authoritative_schema_and_unproved_default_expressions_fail_closed() {
         let bundle = analyze_configured_inputs_with_catalog(&configured, &typed_catalog())
             .expect("unsupported shape must remain explicit");
         assert!(
-            matches!(bundle.inputs()[0].statements()[0], ProtocolStatement::Unsupported(_)),
+            matches!(
+                bundle.inputs()[0].statements()[0],
+                ProtocolStatement::Unsupported(_)
+            ),
             "{sql}: unproved column or expression cannot create an effect"
         );
     }
