@@ -17,6 +17,7 @@ const PREDICATES: &str = include_str!("../docs/task-177-predicate-oracles.json")
 const JOINS: &str = include_str!("../docs/task-193-acceptance-freeze.json");
 const SETS: &str = include_str!("../docs/task-194-acceptance-freeze.json");
 const SET_BAGS: &str = include_str!("../docs/task-194-independent-bag-review.json");
+const WINDOW: &str = include_str!("../docs/task-195-acceptance-freeze.json");
 const EXCEPTIONS: &str = include_str!("../docs/task-191-independent-review-v4.json");
 const MANIFEST: &str = include_str!("../docs/coverage-manifest.json");
 const TASK: &str = include_str!(
@@ -603,4 +604,94 @@ fn all_20_native_set_bags_and_rejected_candidate_occurrences_are_replayed() {
     }
     assert_eq!(executable, 20);
     assert_eq!(original_boundaries, 2);
+}
+
+#[test]
+fn all_28_deterministic_native_group_window_and_ordered_bags_are_replayed() {
+    let freeze = read(WINDOW);
+    let db = Connection::open_in_memory().expect("native DuckDB");
+    db.execute_batch(freeze["source_setup"].as_str().expect("physical input SQL"))
+        .expect("complete physical source bags");
+    assert_eq!(
+        rows(&db, "SELECT id, amount FROM orders", 2),
+        expected_bag(&freeze["complete_source_bags"], "orders")
+    );
+    assert_eq!(
+        rows(&db, "SELECT id, amount FROM customers", 2),
+        expected_bag(&freeze["complete_source_bags"], "customers")
+    );
+
+    let mut integer_bags = 0;
+    let mut floating_bags = 0;
+    let mut conditional_cases = 0;
+    for case in freeze["cases"].as_array().expect("36 original window/group/order cases") {
+        let id = case["id"].as_str().expect("original SQL identity");
+        let sql = case["sql"].as_str().expect("original SQL");
+        let native = &case["native_oracle"];
+        match native["kind"].as_str().expect("reviewed native law kind") {
+            "prior_original_integer_bag"
+            | "original_integer_bag"
+            | "unordered_original_source_bag" => {
+                let width = native["columns"].as_u64().expect("projection width") as usize;
+                let expected = expected_bag(native, "expected_terminal_bag");
+                assert_eq!(
+                    rows(&db, sql, width),
+                    expected,
+                    "{id}: original native terminal bag, including NULL and duplicates"
+                );
+                verify_native_public_output(sql, &expected, width, id);
+                integer_bags += 1;
+            }
+            "original_float_bag" => {
+                let expected = native["expected_terminal_bag"]
+                    .as_array()
+                    .expect("original float rows");
+                assert_eq!(native["columns"], 1, "{id}: float oracle width");
+                let mut statement = db.prepare(sql).expect("original native float SQL");
+                let native_rows = statement
+                    .query_map([], |row| row.get::<usize, Option<f64>>(0))
+                    .expect("native floating outputs");
+                let mut actual: Vec<_> = native_rows
+                    .map(|row| row.expect("native float value"))
+                    .collect();
+                actual.sort_by(|a, b| a.partial_cmp(b).expect("finite native float fixtures"));
+                let mut expected_values: Vec<Option<f64>> = expected
+                    .iter()
+                    .map(|row| {
+                        let value = &row[0];
+                        if value.is_null() {
+                            None
+                        } else {
+                            Some(value.as_f64().expect("literal expected fraction"))
+                        }
+                    })
+                    .collect();
+                expected_values.sort_by(|a, b| {
+                    a.partial_cmp(b).expect("finite frozen float fixtures")
+                });
+                assert_eq!(actual.len(), expected_values.len(), "{id}: output multiplicity");
+                for (observed, wanted) in actual.iter().zip(expected_values.iter()) {
+                    match (observed, wanted) {
+                        (Some(a), Some(b)) => assert!(
+                            (a - b).abs() <= 1e-9,
+                            "{id}: native window or aggregate scalar {a} != {b}"
+                        ),
+                        (None, None) => {}
+                        _ => panic!("{id}: native SQL NULL result differed from frozen oracle"),
+                    }
+                }
+                floating_bags += 1;
+            }
+            "native_parser_rejection"
+            | "unstable_tie_membership"
+            | "stochastic_conditional" => {
+                // These have no single deterministic source-to-terminal bag
+                // under the original SQL law; claiming one would be unsound.
+                assert!(native["expected_terminal_bag"].is_null());
+                conditional_cases += 1;
+            }
+            other => panic!("{id}: unreviewed native oracle classification {other}"),
+        }
+    }
+    assert_eq!((integer_bags, floating_bags, conditional_cases), (25, 3, 8));
 }
