@@ -303,21 +303,32 @@ fn vendor_source_review_approves_explicit_residual_only_after_reconciling_all_48
         .as_array()
         .expect("individually reviewed conditional source laws")
     {
-        let id = approved["id"].as_str().expect("reviewed original law/dialect");
-        assert!(signoff_decisions.insert(id.to_string()), "{id}: duplicate review");
-        assert_eq!(approved["release_disposition"], "approved_explicit_residual");
+        let id = approved["id"]
+            .as_str()
+            .expect("reviewed original law/dialect");
+        assert!(
+            signoff_decisions.insert(id.to_string()),
+            "{id}: duplicate review"
+        );
+        assert_eq!(
+            approved["release_disposition"],
+            "approved_explicit_residual"
+        );
         assert_eq!(approved["native_execution_attested"], false);
         assert!(approved["required_native_evidence"]
             .as_str()
             .is_some_and(|value| value.starts_with("Execute original SQL in ")));
     }
     assert_eq!(signoff_decisions.len(), 481);
-    assert_eq!(signoff["vendor_boundary_review"]["reviewed_conditions"], 481);
-    assert_eq!(signoff["vendor_boundary_review"]["unapproved_native_claims"], 0);
-    for case in source["cases"]
-        .as_array()
-        .expect("37 source vendor SQLs")
-    {
+    assert_eq!(
+        signoff["vendor_boundary_review"]["reviewed_conditions"],
+        481
+    );
+    assert_eq!(
+        signoff["vendor_boundary_review"]["unapproved_native_claims"],
+        0
+    );
+    for case in source["cases"].as_array().expect("37 source vendor SQLs") {
         let id = case["id"].as_str().expect("original vendor law");
         let sql = case["sql"].as_str().expect("original source SQL");
         for cell in case["dialect_cells"]
@@ -332,7 +343,10 @@ fn vendor_source_review_approves_explicit_residual_only_after_reconciling_all_48
                 .iter()
                 .find(|record| record["id"] == key)
                 .unwrap_or_else(|| panic!("{key}: missing independent vendor review"));
-            assert!(decisions.insert(key.clone()), "{key}: duplicate source cell");
+            assert!(
+                decisions.insert(key.clone()),
+                "{key}: duplicate source cell"
+            );
             assert_eq!(entry["original_sql"], sql);
             assert_eq!(entry["feature_id"], case["feature_id"]);
             assert_eq!(entry["named_engine_or_parser"], dialect);
@@ -340,15 +354,25 @@ fn vendor_source_review_approves_explicit_residual_only_after_reconciling_all_48
             assert_eq!(entry["analyzer_status"], cell["analyzer_status"]);
             assert_eq!(entry["owner"], "TASK-179");
             assert_eq!(entry["source_case_id"], case["source_case_id"]);
-            assert_eq!(entry["bounded_source_evidence"], case["physical_evidence_source"]);
-            assert_eq!(entry["source_terminal_disposition"], case["physical_source_terminal_disposition"]);
-            assert_eq!(entry["prior_unapproved_disposition"], "unapproved_vendor_law");
+            assert_eq!(
+                entry["bounded_source_evidence"],
+                case["physical_evidence_source"]
+            );
+            assert_eq!(
+                entry["source_terminal_disposition"],
+                case["physical_source_terminal_disposition"]
+            );
+            assert_eq!(
+                entry["prior_unapproved_disposition"],
+                "unapproved_vendor_law"
+            );
             assert_eq!(entry["release_disposition"], "approved_explicit_residual");
             assert_eq!(entry["native_execution_attested"], false);
             assert!(entry["native_evidence_url"].is_null());
             assert!(entry["required_native_evidence"]
                 .as_str()
-                .is_some_and(|required| required.contains(dialect) && required.contains("complete source and terminal row bags")));
+                .is_some_and(|required| required.contains(dialect)
+                    && required.contains("complete source and terminal row bags")));
             assert!(signoff_decisions.contains(&key));
         }
     }
