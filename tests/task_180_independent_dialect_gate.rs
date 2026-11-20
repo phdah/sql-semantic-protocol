@@ -970,14 +970,8 @@ fn all_325_original_predicate_reviews_keep_exact_bounds_and_conservative_residua
         assert_eq!(case["owner"], "TASK-192");
         assert_eq!(case["sql"], oracle["sql"]);
         let precise = !oracle["expected_projected_domain"].is_null();
-        let expected_typed = if precise {
-            format!(
-                "frozen exact SQL domain {}",
-                oracle["expected_projected_domain"]
-            )
-        } else {
-            "the original SQL projects an unbounded/unproven source id domain; no finite id population or nullable bound is asserted".to_string()
-        };
+        let expected_domain = oracle["expected_projected_domain"].clone();
+        let unbounded_review = "the original SQL projects an unbounded/unproven source id domain; no finite id population or nullable bound is asserted";
         let expected_negative = format!(
             "docs/task-177-predicate-oracles.json#{id}: expected_false_rows={}, expected_unknown_rows={}; IS NOT TRUE is complete complement",
             oracle["expected_false_rows"],
@@ -993,7 +987,16 @@ fn all_325_original_predicate_reviews_keep_exact_bounds_and_conservative_residua
             assert_eq!(cell["original_canonical_class"], "C");
             assert!(reviewed_cell_matches_frozen_source(review, case, cell));
             assert_eq!(review["native_execution_attested"], false);
-            assert_eq!(review["typed_domain_and_null_bounds"], expected_typed);
+            if precise {
+                let recorded = review["typed_domain_and_null_bounds"]
+                    .as_str()
+                    .and_then(|claim| claim.strip_prefix("frozen exact SQL domain "))
+                    .and_then(|raw| serde_json::from_str::<Value>(raw).ok())
+                    .expect("recorded exact bounds must be a typed JSON domain");
+                assert_eq!(recorded, expected_domain, "{identity}: inclusive/exclusive and NULL bounds");
+            } else {
+                assert_eq!(review["typed_domain_and_null_bounds"], unbounded_review);
+            }
             assert_eq!(review["negative_or_impossible_direction"], expected_negative);
             assert!(review["native_source_and_terminal_oracle"]
                 .as_str()
