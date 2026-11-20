@@ -469,12 +469,11 @@ fn original_mismatched_set_arity_is_impossible_for_all_dialects() {
     }
 }
 
-
 #[test]
 fn original_unattested_write_actions_cannot_disappear_from_an_ordered_program() {
     use sql_semantic_protocol::{
-        analyze_inputs, dialect_from_name, physical_ordered_write_state_plan, PhysicalWriteStatePlan,
-        ProtocolStatement, SqlInput,
+        analyze_inputs, dialect_from_name, physical_ordered_write_state_plan,
+        PhysicalWriteStatePlan, ProtocolStatement, SqlInput,
     };
 
     let freeze = read(FREEZE);
@@ -496,15 +495,15 @@ fn original_unattested_write_actions_cannot_disappear_from_an_ordered_program() 
             let parser = dialect_from_name(dialect).expect("public parser");
             // A preceding table creation and a following read must not make
             // an unknown intermediate mutation silently harmless.
-            let program = format!(
-                "CREATE TABLE orders (id INT, amount INT); {sql}; SELECT id FROM orders"
-            );
+            let program =
+                format!("CREATE TABLE orders (id INT, amount INT); {sql}; SELECT id FROM orders");
             let analyzed = analyze_inputs(&[SqlInput::inline(&program)], dialect, parser.as_ref())
                 .unwrap_or_else(|error| panic!("{id}/{dialect}: program parse: {error}"));
             assert!(
-                analyzed.inputs()[0].statements().iter().any(|statement| {
-                    matches!(statement, ProtocolStatement::Unsupported(_))
-                }),
+                analyzed.inputs()[0]
+                    .statements()
+                    .iter()
+                    .any(|statement| { matches!(statement, ProtocolStatement::Unsupported(_)) }),
                 "{id}/{dialect}: the unproved write must remain explicit"
             );
             assert!(
