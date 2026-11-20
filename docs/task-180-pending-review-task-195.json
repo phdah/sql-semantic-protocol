@@ -108,45 +108,55 @@
           "dialect": "bigquery",
           "original_canonical_class": "D",
           "independent_bounded_review": "reviewed_canonical_drift_not_claimed_equivalent_handoff_TASK_191",
-          "review_status": "reviewed_conditional_residual",
-          "review_reason": "historical drift/parser rejection or nondeterministic native sampling, pagination, or session-dependent order retains Residual",
-          "native_vendor_execution_attested": false
+          "review_status": "Exact",
+          "review_reason": "Original grouping SQL parsed via a historically divergent AST that is independently normalized to the same canonical grouping law; fixed DuckDB complete source/terminal bags and grouped source-instance multiplicities are independently reviewed, without native-vendor equivalence attestation",
+          "native_vendor_execution_attested": false,
+          "exception_resolution_ref": "docs/task-178-canonical-reconciliation.json",
+          "source_bounded_normalization_proof": "tests/task_180_live_canonical.rs::all_2119_original_public_sql_dialect_cells_are_executed_with_reviewed_boundaries"
         },
         {
           "id": "88-C177-S100/clickhouse",
           "dialect": "clickhouse",
           "original_canonical_class": "D",
           "independent_bounded_review": "reviewed_canonical_drift_not_claimed_equivalent_handoff_TASK_191",
-          "review_status": "reviewed_conditional_residual",
-          "review_reason": "historical drift/parser rejection or nondeterministic native sampling, pagination, or session-dependent order retains Residual",
-          "native_vendor_execution_attested": false
+          "review_status": "Exact",
+          "review_reason": "Original grouping SQL parsed via a historically divergent AST that is independently normalized to the same canonical grouping law; fixed DuckDB complete source/terminal bags and grouped source-instance multiplicities are independently reviewed, without native-vendor equivalence attestation",
+          "native_vendor_execution_attested": false,
+          "exception_resolution_ref": "docs/task-178-canonical-reconciliation.json",
+          "source_bounded_normalization_proof": "tests/task_180_live_canonical.rs::all_2119_original_public_sql_dialect_cells_are_executed_with_reviewed_boundaries"
         },
         {
           "id": "88-C177-S100/databricks",
           "dialect": "databricks",
           "original_canonical_class": "D",
           "independent_bounded_review": "reviewed_canonical_drift_not_claimed_equivalent_handoff_TASK_191",
-          "review_status": "reviewed_conditional_residual",
-          "review_reason": "historical drift/parser rejection or nondeterministic native sampling, pagination, or session-dependent order retains Residual",
-          "native_vendor_execution_attested": false
+          "review_status": "Exact",
+          "review_reason": "Original grouping SQL parsed via a historically divergent AST that is independently normalized to the same canonical grouping law; fixed DuckDB complete source/terminal bags and grouped source-instance multiplicities are independently reviewed, without native-vendor equivalence attestation",
+          "native_vendor_execution_attested": false,
+          "exception_resolution_ref": "docs/task-178-canonical-reconciliation.json",
+          "source_bounded_normalization_proof": "tests/task_180_live_canonical.rs::all_2119_original_public_sql_dialect_cells_are_executed_with_reviewed_boundaries"
         },
         {
           "id": "88-C177-S100/duckdb",
           "dialect": "duckdb",
           "original_canonical_class": "D",
           "independent_bounded_review": "reviewed_canonical_drift_not_claimed_equivalent_handoff_TASK_191",
-          "review_status": "reviewed_conditional_residual",
-          "review_reason": "historical drift/parser rejection or nondeterministic native sampling, pagination, or session-dependent order retains Residual",
-          "native_vendor_execution_attested": false
+          "review_status": "Exact",
+          "review_reason": "Original grouping SQL parsed via a historically divergent AST that is independently normalized to the same canonical grouping law; fixed DuckDB complete source/terminal bags and grouped source-instance multiplicities are independently reviewed, without native-vendor equivalence attestation",
+          "native_vendor_execution_attested": false,
+          "exception_resolution_ref": "docs/task-178-canonical-reconciliation.json",
+          "source_bounded_normalization_proof": "tests/task_180_live_canonical.rs::all_2119_original_public_sql_dialect_cells_are_executed_with_reviewed_boundaries"
         },
         {
           "id": "88-C177-S100/generic",
           "dialect": "generic",
           "original_canonical_class": "D",
           "independent_bounded_review": "reviewed_canonical_drift_not_claimed_equivalent_handoff_TASK_191",
-          "review_status": "reviewed_conditional_residual",
-          "review_reason": "historical drift/parser rejection or nondeterministic native sampling, pagination, or session-dependent order retains Residual",
-          "native_vendor_execution_attested": false
+          "review_status": "Exact",
+          "review_reason": "Original grouping SQL parsed via a historically divergent AST that is independently normalized to the same canonical grouping law; fixed DuckDB complete source/terminal bags and grouped source-instance multiplicities are independently reviewed, without native-vendor equivalence attestation",
+          "native_vendor_execution_attested": false,
+          "exception_resolution_ref": "docs/task-178-canonical-reconciliation.json",
+          "source_bounded_normalization_proof": "tests/task_180_live_canonical.rs::all_2119_original_public_sql_dialect_cells_are_executed_with_reviewed_boundaries"
         },
         {
           "id": "88-C177-S100/hive",
@@ -180,9 +190,11 @@
           "dialect": "postgresql",
           "original_canonical_class": "D",
           "independent_bounded_review": "reviewed_canonical_drift_not_claimed_equivalent_handoff_TASK_191",
-          "review_status": "reviewed_conditional_residual",
-          "review_reason": "historical drift/parser rejection or nondeterministic native sampling, pagination, or session-dependent order retains Residual",
-          "native_vendor_execution_attested": false
+          "review_status": "Exact",
+          "review_reason": "Original grouping SQL parsed via a historically divergent AST that is independently normalized to the same canonical grouping law; fixed DuckDB complete source/terminal bags and grouped source-instance multiplicities are independently reviewed, without native-vendor equivalence attestation",
+          "native_vendor_execution_attested": false,
+          "exception_resolution_ref": "docs/task-178-canonical-reconciliation.json",
+          "source_bounded_normalization_proof": "tests/task_180_live_canonical.rs::all_2119_original_public_sql_dialect_cells_are_executed_with_reviewed_boundaries"
         },
         {
           "id": "88-C177-S100/redshift",
@@ -198,9 +210,11 @@
           "dialect": "snowflake",
           "original_canonical_class": "D",
           "independent_bounded_review": "reviewed_canonical_drift_not_claimed_equivalent_handoff_TASK_191",
-          "review_status": "reviewed_conditional_residual",
-          "review_reason": "historical drift/parser rejection or nondeterministic native sampling, pagination, or session-dependent order retains Residual",
-          "native_vendor_execution_attested": false
+          "review_status": "Exact",
+          "review_reason": "Original grouping SQL parsed via a historically divergent AST that is independently normalized to the same canonical grouping law; fixed DuckDB complete source/terminal bags and grouped source-instance multiplicities are independently reviewed, without native-vendor equivalence attestation",
+          "native_vendor_execution_attested": false,
+          "exception_resolution_ref": "docs/task-178-canonical-reconciliation.json",
+          "source_bounded_normalization_proof": "tests/task_180_live_canonical.rs::all_2119_original_public_sql_dialect_cells_are_executed_with_reviewed_boundaries"
         },
         {
           "id": "88-C177-S100/sqlite",
@@ -311,45 +325,55 @@
           "dialect": "bigquery",
           "original_canonical_class": "D",
           "independent_bounded_review": "reviewed_canonical_drift_not_claimed_equivalent_handoff_TASK_191",
-          "review_status": "reviewed_conditional_residual",
-          "review_reason": "historical drift/parser rejection or nondeterministic native sampling, pagination, or session-dependent order retains Residual",
-          "native_vendor_execution_attested": false
+          "review_status": "Exact",
+          "review_reason": "Original grouping SQL parsed via a historically divergent AST that is independently normalized to the same canonical grouping law; fixed DuckDB complete source/terminal bags and grouped source-instance multiplicities are independently reviewed, without native-vendor equivalence attestation",
+          "native_vendor_execution_attested": false,
+          "exception_resolution_ref": "docs/task-178-canonical-reconciliation.json",
+          "source_bounded_normalization_proof": "tests/task_180_live_canonical.rs::all_2119_original_public_sql_dialect_cells_are_executed_with_reviewed_boundaries"
         },
         {
           "id": "88-C177-S101/clickhouse",
           "dialect": "clickhouse",
           "original_canonical_class": "D",
           "independent_bounded_review": "reviewed_canonical_drift_not_claimed_equivalent_handoff_TASK_191",
-          "review_status": "reviewed_conditional_residual",
-          "review_reason": "historical drift/parser rejection or nondeterministic native sampling, pagination, or session-dependent order retains Residual",
-          "native_vendor_execution_attested": false
+          "review_status": "Exact",
+          "review_reason": "Original grouping SQL parsed via a historically divergent AST that is independently normalized to the same canonical grouping law; fixed DuckDB complete source/terminal bags and grouped source-instance multiplicities are independently reviewed, without native-vendor equivalence attestation",
+          "native_vendor_execution_attested": false,
+          "exception_resolution_ref": "docs/task-178-canonical-reconciliation.json",
+          "source_bounded_normalization_proof": "tests/task_180_live_canonical.rs::all_2119_original_public_sql_dialect_cells_are_executed_with_reviewed_boundaries"
         },
         {
           "id": "88-C177-S101/databricks",
           "dialect": "databricks",
           "original_canonical_class": "D",
           "independent_bounded_review": "reviewed_canonical_drift_not_claimed_equivalent_handoff_TASK_191",
-          "review_status": "reviewed_conditional_residual",
-          "review_reason": "historical drift/parser rejection or nondeterministic native sampling, pagination, or session-dependent order retains Residual",
-          "native_vendor_execution_attested": false
+          "review_status": "Exact",
+          "review_reason": "Original grouping SQL parsed via a historically divergent AST that is independently normalized to the same canonical grouping law; fixed DuckDB complete source/terminal bags and grouped source-instance multiplicities are independently reviewed, without native-vendor equivalence attestation",
+          "native_vendor_execution_attested": false,
+          "exception_resolution_ref": "docs/task-178-canonical-reconciliation.json",
+          "source_bounded_normalization_proof": "tests/task_180_live_canonical.rs::all_2119_original_public_sql_dialect_cells_are_executed_with_reviewed_boundaries"
         },
         {
           "id": "88-C177-S101/duckdb",
           "dialect": "duckdb",
           "original_canonical_class": "D",
           "independent_bounded_review": "reviewed_canonical_drift_not_claimed_equivalent_handoff_TASK_191",
-          "review_status": "reviewed_conditional_residual",
-          "review_reason": "historical drift/parser rejection or nondeterministic native sampling, pagination, or session-dependent order retains Residual",
-          "native_vendor_execution_attested": false
+          "review_status": "Exact",
+          "review_reason": "Original grouping SQL parsed via a historically divergent AST that is independently normalized to the same canonical grouping law; fixed DuckDB complete source/terminal bags and grouped source-instance multiplicities are independently reviewed, without native-vendor equivalence attestation",
+          "native_vendor_execution_attested": false,
+          "exception_resolution_ref": "docs/task-178-canonical-reconciliation.json",
+          "source_bounded_normalization_proof": "tests/task_180_live_canonical.rs::all_2119_original_public_sql_dialect_cells_are_executed_with_reviewed_boundaries"
         },
         {
           "id": "88-C177-S101/generic",
           "dialect": "generic",
           "original_canonical_class": "D",
           "independent_bounded_review": "reviewed_canonical_drift_not_claimed_equivalent_handoff_TASK_191",
-          "review_status": "reviewed_conditional_residual",
-          "review_reason": "historical drift/parser rejection or nondeterministic native sampling, pagination, or session-dependent order retains Residual",
-          "native_vendor_execution_attested": false
+          "review_status": "Exact",
+          "review_reason": "Original grouping SQL parsed via a historically divergent AST that is independently normalized to the same canonical grouping law; fixed DuckDB complete source/terminal bags and grouped source-instance multiplicities are independently reviewed, without native-vendor equivalence attestation",
+          "native_vendor_execution_attested": false,
+          "exception_resolution_ref": "docs/task-178-canonical-reconciliation.json",
+          "source_bounded_normalization_proof": "tests/task_180_live_canonical.rs::all_2119_original_public_sql_dialect_cells_are_executed_with_reviewed_boundaries"
         },
         {
           "id": "88-C177-S101/hive",
@@ -383,9 +407,11 @@
           "dialect": "postgresql",
           "original_canonical_class": "D",
           "independent_bounded_review": "reviewed_canonical_drift_not_claimed_equivalent_handoff_TASK_191",
-          "review_status": "reviewed_conditional_residual",
-          "review_reason": "historical drift/parser rejection or nondeterministic native sampling, pagination, or session-dependent order retains Residual",
-          "native_vendor_execution_attested": false
+          "review_status": "Exact",
+          "review_reason": "Original grouping SQL parsed via a historically divergent AST that is independently normalized to the same canonical grouping law; fixed DuckDB complete source/terminal bags and grouped source-instance multiplicities are independently reviewed, without native-vendor equivalence attestation",
+          "native_vendor_execution_attested": false,
+          "exception_resolution_ref": "docs/task-178-canonical-reconciliation.json",
+          "source_bounded_normalization_proof": "tests/task_180_live_canonical.rs::all_2119_original_public_sql_dialect_cells_are_executed_with_reviewed_boundaries"
         },
         {
           "id": "88-C177-S101/redshift",
@@ -401,9 +427,11 @@
           "dialect": "snowflake",
           "original_canonical_class": "D",
           "independent_bounded_review": "reviewed_canonical_drift_not_claimed_equivalent_handoff_TASK_191",
-          "review_status": "reviewed_conditional_residual",
-          "review_reason": "historical drift/parser rejection or nondeterministic native sampling, pagination, or session-dependent order retains Residual",
-          "native_vendor_execution_attested": false
+          "review_status": "Exact",
+          "review_reason": "Original grouping SQL parsed via a historically divergent AST that is independently normalized to the same canonical grouping law; fixed DuckDB complete source/terminal bags and grouped source-instance multiplicities are independently reviewed, without native-vendor equivalence attestation",
+          "native_vendor_execution_attested": false,
+          "exception_resolution_ref": "docs/task-178-canonical-reconciliation.json",
+          "source_bounded_normalization_proof": "tests/task_180_live_canonical.rs::all_2119_original_public_sql_dialect_cells_are_executed_with_reviewed_boundaries"
         },
         {
           "id": "88-C177-S101/sqlite",
@@ -514,45 +542,55 @@
           "dialect": "bigquery",
           "original_canonical_class": "D",
           "independent_bounded_review": "reviewed_canonical_drift_not_claimed_equivalent_handoff_TASK_191",
-          "review_status": "reviewed_conditional_residual",
-          "review_reason": "historical drift/parser rejection or nondeterministic native sampling, pagination, or session-dependent order retains Residual",
-          "native_vendor_execution_attested": false
+          "review_status": "Exact",
+          "review_reason": "Original grouping SQL parsed via a historically divergent AST that is independently normalized to the same canonical grouping law; fixed DuckDB complete source/terminal bags and grouped source-instance multiplicities are independently reviewed, without native-vendor equivalence attestation",
+          "native_vendor_execution_attested": false,
+          "exception_resolution_ref": "docs/task-178-canonical-reconciliation.json",
+          "source_bounded_normalization_proof": "tests/task_180_live_canonical.rs::all_2119_original_public_sql_dialect_cells_are_executed_with_reviewed_boundaries"
         },
         {
           "id": "88-C177-S104/clickhouse",
           "dialect": "clickhouse",
           "original_canonical_class": "D",
           "independent_bounded_review": "reviewed_canonical_drift_not_claimed_equivalent_handoff_TASK_191",
-          "review_status": "reviewed_conditional_residual",
-          "review_reason": "historical drift/parser rejection or nondeterministic native sampling, pagination, or session-dependent order retains Residual",
-          "native_vendor_execution_attested": false
+          "review_status": "Exact",
+          "review_reason": "Original grouping SQL parsed via a historically divergent AST that is independently normalized to the same canonical grouping law; fixed DuckDB complete source/terminal bags and grouped source-instance multiplicities are independently reviewed, without native-vendor equivalence attestation",
+          "native_vendor_execution_attested": false,
+          "exception_resolution_ref": "docs/task-178-canonical-reconciliation.json",
+          "source_bounded_normalization_proof": "tests/task_180_live_canonical.rs::all_2119_original_public_sql_dialect_cells_are_executed_with_reviewed_boundaries"
         },
         {
           "id": "88-C177-S104/databricks",
           "dialect": "databricks",
           "original_canonical_class": "D",
           "independent_bounded_review": "reviewed_canonical_drift_not_claimed_equivalent_handoff_TASK_191",
-          "review_status": "reviewed_conditional_residual",
-          "review_reason": "historical drift/parser rejection or nondeterministic native sampling, pagination, or session-dependent order retains Residual",
-          "native_vendor_execution_attested": false
+          "review_status": "Exact",
+          "review_reason": "Original grouping SQL parsed via a historically divergent AST that is independently normalized to the same canonical grouping law; fixed DuckDB complete source/terminal bags and grouped source-instance multiplicities are independently reviewed, without native-vendor equivalence attestation",
+          "native_vendor_execution_attested": false,
+          "exception_resolution_ref": "docs/task-178-canonical-reconciliation.json",
+          "source_bounded_normalization_proof": "tests/task_180_live_canonical.rs::all_2119_original_public_sql_dialect_cells_are_executed_with_reviewed_boundaries"
         },
         {
           "id": "88-C177-S104/duckdb",
           "dialect": "duckdb",
           "original_canonical_class": "D",
           "independent_bounded_review": "reviewed_canonical_drift_not_claimed_equivalent_handoff_TASK_191",
-          "review_status": "reviewed_conditional_residual",
-          "review_reason": "historical drift/parser rejection or nondeterministic native sampling, pagination, or session-dependent order retains Residual",
-          "native_vendor_execution_attested": false
+          "review_status": "Exact",
+          "review_reason": "Original grouping SQL parsed via a historically divergent AST that is independently normalized to the same canonical grouping law; fixed DuckDB complete source/terminal bags and grouped source-instance multiplicities are independently reviewed, without native-vendor equivalence attestation",
+          "native_vendor_execution_attested": false,
+          "exception_resolution_ref": "docs/task-178-canonical-reconciliation.json",
+          "source_bounded_normalization_proof": "tests/task_180_live_canonical.rs::all_2119_original_public_sql_dialect_cells_are_executed_with_reviewed_boundaries"
         },
         {
           "id": "88-C177-S104/generic",
           "dialect": "generic",
           "original_canonical_class": "D",
           "independent_bounded_review": "reviewed_canonical_drift_not_claimed_equivalent_handoff_TASK_191",
-          "review_status": "reviewed_conditional_residual",
-          "review_reason": "historical drift/parser rejection or nondeterministic native sampling, pagination, or session-dependent order retains Residual",
-          "native_vendor_execution_attested": false
+          "review_status": "Exact",
+          "review_reason": "Original grouping SQL parsed via a historically divergent AST that is independently normalized to the same canonical grouping law; fixed DuckDB complete source/terminal bags and grouped source-instance multiplicities are independently reviewed, without native-vendor equivalence attestation",
+          "native_vendor_execution_attested": false,
+          "exception_resolution_ref": "docs/task-178-canonical-reconciliation.json",
+          "source_bounded_normalization_proof": "tests/task_180_live_canonical.rs::all_2119_original_public_sql_dialect_cells_are_executed_with_reviewed_boundaries"
         },
         {
           "id": "88-C177-S104/hive",
@@ -586,9 +624,11 @@
           "dialect": "postgresql",
           "original_canonical_class": "D",
           "independent_bounded_review": "reviewed_canonical_drift_not_claimed_equivalent_handoff_TASK_191",
-          "review_status": "reviewed_conditional_residual",
-          "review_reason": "historical drift/parser rejection or nondeterministic native sampling, pagination, or session-dependent order retains Residual",
-          "native_vendor_execution_attested": false
+          "review_status": "Exact",
+          "review_reason": "Original grouping SQL parsed via a historically divergent AST that is independently normalized to the same canonical grouping law; fixed DuckDB complete source/terminal bags and grouped source-instance multiplicities are independently reviewed, without native-vendor equivalence attestation",
+          "native_vendor_execution_attested": false,
+          "exception_resolution_ref": "docs/task-178-canonical-reconciliation.json",
+          "source_bounded_normalization_proof": "tests/task_180_live_canonical.rs::all_2119_original_public_sql_dialect_cells_are_executed_with_reviewed_boundaries"
         },
         {
           "id": "88-C177-S104/redshift",
@@ -604,9 +644,11 @@
           "dialect": "snowflake",
           "original_canonical_class": "D",
           "independent_bounded_review": "reviewed_canonical_drift_not_claimed_equivalent_handoff_TASK_191",
-          "review_status": "reviewed_conditional_residual",
-          "review_reason": "historical drift/parser rejection or nondeterministic native sampling, pagination, or session-dependent order retains Residual",
-          "native_vendor_execution_attested": false
+          "review_status": "Exact",
+          "review_reason": "Original grouping SQL parsed via a historically divergent AST that is independently normalized to the same canonical grouping law; fixed DuckDB complete source/terminal bags and grouped source-instance multiplicities are independently reviewed, without native-vendor equivalence attestation",
+          "native_vendor_execution_attested": false,
+          "exception_resolution_ref": "docs/task-178-canonical-reconciliation.json",
+          "source_bounded_normalization_proof": "tests/task_180_live_canonical.rs::all_2119_original_public_sql_dialect_cells_are_executed_with_reviewed_boundaries"
         },
         {
           "id": "88-C177-S104/sqlite",
