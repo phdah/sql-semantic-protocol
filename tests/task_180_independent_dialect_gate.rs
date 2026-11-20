@@ -757,8 +757,7 @@ fn reviewed_cell_matches_frozen_source(review: &Value, case: &Value, cell: &Valu
                 .expect("reviewed canonical normalization")
                 .iter()
                 .any(|resolved| {
-                    resolved["case_id"] == case["id"]
-                        && resolved["dialect"] == cell["dialect"]
+                    resolved["case_id"] == case["id"] && resolved["dialect"] == cell["dialect"]
                 })
                 && review["exception_resolution_ref"]
                     == "docs/task-178-canonical-reconciliation.json"
@@ -881,9 +880,8 @@ fn independently_reviewed_cell_provenance_cannot_be_substituted_or_upgraded() {
         review[field] = value.clone();
     }
     review["proof_status"] = serde_json::json!("Exact");
-    review["exception_resolution_ref"] = serde_json::json!(
-        "docs/task-178-canonical-reconciliation.json"
-    );
+    review["exception_resolution_ref"] =
+        serde_json::json!("docs/task-178-canonical-reconciliation.json");
     assert!(
         !reviewed_cell_matches_frozen_source(&review, unsupported_case, unsupported_cell),
         "historical Unsupported cannot borrow an unrelated normalized-drift review"
@@ -915,7 +913,10 @@ fn independently_reviewed_cell_provenance_cannot_be_substituted_or_upgraded() {
         ("semantic_owner", &drift_case["owner"]),
         ("owner_review_ref", &drift_case["owner_review_ref"]),
         ("adapter_review_ref", &drift_case["adapter_review_ref"]),
-        ("original_canonical_class", &drift_cell["original_canonical_class"]),
+        (
+            "original_canonical_class",
+            &drift_cell["original_canonical_class"],
+        ),
     ] {
         review[field] = value.clone();
     }
@@ -926,9 +927,7 @@ fn independently_reviewed_cell_provenance_cannot_be_substituted_or_upgraded() {
     );
     review["proof_status"] = serde_json::json!("reviewed_conditional_residual");
     assert!(reviewed_cell_matches_frozen_source(
-        &review,
-        drift_case,
-        drift_cell
+        &review, drift_case, drift_cell
     ));
 }
 
@@ -944,9 +943,19 @@ fn all_325_original_predicate_reviews_keep_exact_bounds_and_conservative_residua
         .as_array()
         .expect("25 independent native predicate bags");
     assert_eq!(oracles.len(), 25);
-    assert_eq!(reviews.len(), 325, "only reviewed originals may be recorded");
-    assert_eq!(signoff["partial_source_bounded_predicate_review"]["original_cases"], 25);
-    assert_eq!(signoff["partial_source_bounded_predicate_review"]["dialect_cells"], 325);
+    assert_eq!(
+        reviews.len(),
+        325,
+        "only reviewed originals may be recorded"
+    );
+    assert_eq!(
+        signoff["partial_source_bounded_predicate_review"]["original_cases"],
+        25
+    );
+    assert_eq!(
+        signoff["partial_source_bounded_predicate_review"]["dialect_cells"],
+        325
+    );
     assert_eq!(
         signoff["partial_source_bounded_predicate_review"]["final_acceptance_complete"],
         false
@@ -983,7 +992,10 @@ fn all_325_original_predicate_reviews_keep_exact_bounds_and_conservative_residua
                 .iter()
                 .find(|review| review["id"] == identity)
                 .unwrap_or_else(|| panic!("{identity}: no reviewed source-backed proof"));
-            assert!(identities.insert(identity), "{identity}: duplicate reviewed original");
+            assert!(
+                identities.insert(identity),
+                "{identity}: duplicate reviewed original"
+            );
             assert_eq!(cell["original_canonical_class"], "C");
             assert!(reviewed_cell_matches_frozen_source(review, case, cell));
             assert_eq!(review["native_execution_attested"], false);
@@ -993,16 +1005,21 @@ fn all_325_original_predicate_reviews_keep_exact_bounds_and_conservative_residua
                     .and_then(|claim| claim.strip_prefix("frozen exact SQL domain "))
                     .and_then(|raw| serde_json::from_str::<Value>(raw).ok())
                     .expect("recorded exact bounds must be a typed JSON domain");
-                assert_eq!(recorded, expected_domain, "{identity}: inclusive/exclusive and NULL bounds");
+                assert_eq!(
+                    recorded, expected_domain,
+                    "{identity}: inclusive/exclusive and NULL bounds"
+                );
             } else {
                 assert_eq!(review["typed_domain_and_null_bounds"], unbounded_review);
             }
-            assert_eq!(review["negative_or_impossible_direction"], expected_negative);
+            assert_eq!(
+                review["negative_or_impossible_direction"],
+                expected_negative
+            );
             assert!(review["native_source_and_terminal_oracle"]
                 .as_str()
-                .is_some_and(|evidence| evidence.starts_with(&format!(
-                    "docs/task-177-predicate-oracles.json#{id}:"
-                ))));
+                .is_some_and(|evidence| evidence
+                    .starts_with(&format!("docs/task-177-predicate-oracles.json#{id}:"))));
             assert!(review["sql_dbt_odcs_evidence"]
                 .as_str()
                 .is_some_and(|evidence| evidence.contains("task_197_exhaustive_adapter_parity")));
@@ -1022,7 +1039,8 @@ fn all_325_original_predicate_reviews_keep_exact_bounds_and_conservative_residua
         exact
     );
     assert_eq!(
-        signoff["partial_source_bounded_predicate_review"]["conservative_residual_output_domain_cells"],
+        signoff["partial_source_bounded_predicate_review"]
+            ["conservative_residual_output_domain_cells"],
         residual
     );
     assert_eq!(signoff["task180_signed_off"], false);
