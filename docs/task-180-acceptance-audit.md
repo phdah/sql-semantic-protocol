@@ -108,3 +108,14 @@ This strengthens the gate but does **not** generate or approve the 2,119 indepen
 - The release signoff gate now verifies the frontmatter status directly, and refuses to promote original parser rejections or raw Unsupported cells to `Exact` through arbitrary references. Only the separately frozen 22 normalized original D cells are eligible for such an upgrade with a matching reconciliation reference and complete per-cell physical/typed evidence.
 
 **Still blocking AC #2 and #5:** 1,794 other individual mandatory reviews, unresolved raw nonportable write/DDL/parser laws (especially original REPLACE INTO, INSERT OVERWRITE, UPDATE/DELETE membership and catalog-free SET DEFAULT), remaining strongest-sound physical/typed claims, native-vendor conditions, final exact-head CI and pinned consumer verification. These are not waived by source-bounded evidence. TASK-180, TASK-88 and TASK-91 remain unapproved.
+
+
+## Strongest-sound classification corrections and ordered-program poisoning checks (2026-11-20)
+
+The final source-review candidates now distinguish three mutually exclusive decisions for the 1,794 remaining dialect cells: **1,272 source-bounded Exact**, **509 reviewed conditional Residual**, and **13 Impossible**. These numbers are directly validated against all five task-owned reviewer files by `tests/task_180_remaining_source_reviews.rs`. The 325 original predicate review cells remain a separate finalized source-bounded subset.
+
+- **S086 (13 dialects)**: incompatible one-column / two-column UNION arms are genuinely `Impossible`, not just `Residual`. The current public API has no invented output column and emits `set_operation_arity_mismatch` for all 13 dialects. The reviewer records and regression independently require this outcome.
+- **S100/S101/S104 (21 original D cells)**: independently reviewed AST grouping normalization is connected to the same complete DuckDB source/group terminal bag. These are *source-bounded canonical Exact* candidates with an explicit `docs/task-178-canonical-reconciliation.json` proof reference, not execution attestations for any external vendor.
+- **S199/S200/S203/S206/S220 (55 original U cells)**: inserted into complete three-statement CREATE / unsupported DML / SELECT programs under the public parser. The ordered physical planner must return `Residual` because an unknown mutation cannot disappear before a later read. The new test explicitly checks all 55 historical original Unsupported observations, in addition to earlier source-typed exact physical controls.
+
+None of this supplies the missing native-vendor conflict/replacement-scope laws for REPLACE or OVERWRITE, and no untyped Unsupported/parser-rejected original is promoted to portable Exact. The source-candidate review status is not the final independently approved `approved_cells` release ledger. AC #2/#5 and TASK-88/TASK-91 remain explicitly blocked until their mandatory semantic and final release evidence passes.
