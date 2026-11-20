@@ -11192,5 +11192,27 @@
     "evidence_test": "tests/task_180_independent_dialect_gate.rs::native_complete_source_bags_truth_partitions_and_typed_domains_are_executed_for_all_25",
     "source": "docs/task-177-predicate-oracles.json",
     "final_acceptance_complete": false
+  },
+  "staged_independent_pre_signoff_review": {
+    "status": "complete_source_bounded_review_candidates_pending_separate_final_signoff",
+    "reviewed_remaining_original_cases": 138,
+    "reviewed_remaining_dialect_cells": 1794,
+    "candidate_exact_source_bounded_claims": 1251,
+    "candidate_explicit_conditional_residuals": 543,
+    "includes_existing_original_predicate_cells": 325,
+    "covers_all_original_matrix_dialect_cells": 2119,
+    "external_vendor_native_attestation": false,
+    "final_independent_approval_claimed": false,
+    "candidate_files": [
+      "docs/task-180-pending-review-task-192.json",
+      "docs/task-180-pending-review-task-193.json",
+      "docs/task-180-pending-review-task-194.json",
+      "docs/task-180-pending-review-task-195.json",
+      "docs/task-180-pending-review-task-196.json"
+    ],
+    "automated_oracle_reconciliation": "tests/task_180_remaining_source_reviews.rs",
+    "original_case_native_differential": "tests/task_180_independent_dialect_gate.rs; tests/task_180_scalar_native.rs; tests/task_180_original_write_states.rs",
+    "parser_and_adapter_evidence": "tests/task_180_live_canonical.rs; tests/task_197_exhaustive_adapter_parity.rs",
+    "approval_boundary": "The next independent agent must evaluate source-conditioned Exact claims, stronger portable output bounds and named native exceptions; these pre-reviewed candidate records do not set the final approved_cells or task Done flags."
   }
 }
