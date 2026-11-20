@@ -9,7 +9,8 @@
     "original_U": 55,
     "original_R": 27,
     "drift_resolved": 22,
-    "unresolved_D": 1
+    "unresolved_D": 1,
+    "reviewed_conditional_D": 1
   },
   "source_exception_count": {
     "parser_rejections": 55,
@@ -378,9 +379,14 @@
           "id": "88-C177-S152/mssql",
           "dialect": "mssql",
           "original_class": "D",
-          "reviewed_bounded_disposition": "explicit_unapproved_ast_drift_task_179_task_191",
-          "required_gate": "canonical_divergence_unapproved",
-          "expected_release_state": "unapproved_pending_independent_evidence"
+          "reviewed_bounded_disposition": "reviewed_identifier_versus_boolean_ast_boundary_preserves_residual",
+          "required_gate": "canonical_divergence_reviewed_residual",
+          "expected_release_state": "reviewed_conditional_residual_pending_full_cell_signoff",
+          "parser_law": "sqlparser 0.58 MSSQL parses ON TRUE as Expr::Identifier(TRUE), ANSI as Expr::Value(Boolean(true)); these are not safely equivalent without declared identifier semantics",
+          "public_proof": "both canonical local qualifying joins are Residual with distinct reasons (computed_join_comparison vs join_condition_not_single_column_comparison)",
+          "independent_proof": "tests/task_193_dialect_semantics.rs::mssql_lateral_on_true_is_an_unbound_identifier_not_a_boolean_literal",
+          "native_mssql_runtime_attested": false,
+          "required_external_evidence": "Run native SQL Server with a defined source catalog and session; verify whether TRUE resolves as a column or errors; compare complete source/terminal bags before any native equivalence claim"
         }
       ]
     },
