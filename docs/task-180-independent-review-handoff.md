@@ -13,10 +13,10 @@ The five new complete family ledgers cover the remaining **138 SQL cases, 1,794 
 | TASK-192 predicates/types | 18 | 234 | 0 | 234 |
 | TASK-193 joins/instances | 24 | 312 | 273 | 39 |
 | TASK-194 set operators | 22 | 286 | 260 | 13 Residual + 13 Impossible |
-| TASK-195 grouping/windows/order | 36 | 468 | 342 | 126 |
+| TASK-195 grouping/windows/order | 36 | 468 | 363 | 105 |
 | TASK-196 DML/DDL/schema | 38 | 494 | 376 | 118 |
-| **Remaining family reviews** | **138** | **1,794** | **1,251** | **530 Residual + 13 Impossible** |
-| **All source-bounded records including predicates** | **163** | **2,119** | **1,381** | **725 Residual + 13 Impossible** |
+| **Remaining family reviews** | **138** | **1,794** | **1,272** | **509 Residual + 13 Impossible** |
+| **All source-bounded records including predicates** | **163** | **2,119** | **1,402** | **704 Residual + 13 Impossible** |
 
 A candidate **Exact** refers only to the explicitly frozen SQL, typed/source conditions, fixed full-source DuckDB bag, and matching public portable canonical law. It **does not certify vendor-native runtime equivalence**, open-world finite output min/max, nondeterministic row-instance membership, or missing source types. The 481 named vendor/session cells have separately approved **Residual** dispositions, not native runtime attestation.
 
@@ -41,7 +41,7 @@ The original exceptional 105 SQL/dialect cells remain distinguished from their s
 - S203/S206 UPDATE/DELETE IN-subquery: the **source-typed** public physical realization is independently proven with complete original NULL/TRUE/NOT TRUE and duplicate target bags; the raw original without source authority remains **Unsupported**.
 - S220 ALTER SET DEFAULT: the **source-typed** canonical schema transition and future omitted-column default are implemented and independently replayed; raw catalog-free SQL remains **Unsupported**.
 - S084 CORRESPONDING: parser rejects the original, so borrowing BY NAME semantics would invent parser/runtime equivalence. S086 UNION incompatible 1-versus-2 column arity is proved Impossible (not a mere Residual) for all 13 parser dialects by the public zero-output plus diagnostic proof.
-- S120 Snowflake WINDOW, S179 structural CAST, S189 generated-column parser cases: retain original parser/reviewer boundaries.
+- S100/S101/S104: 21 historical grouping AST drifts independently normalized to one public canonical grouping law are source-bounded Exact candidates under the original complete DuckDB bag, with a named reconciliation witness. S120 Snowflake WINDOW, S179 structural CAST, S189 generated-column parser cases retain their remaining parser/reviewer boundaries.
 - S152 MSSQL LATERAL: actual sqlparser Boolean(TRUE) vs identifier(TRUE) semantic divergence, conditionally reviewed as **Residual**, not overwritten by ANSI semantics.
 - S198 conflict iteration order and S208 delete cascade depend on native/constraint laws; retain conditional source-boundary dispositions.
 - TASK-195 LIMIT/TOP/tie/order and TABLESAMPLE cases are conditionally reviewed whenever the physical result is non-deterministic or original native spelling unproven.
