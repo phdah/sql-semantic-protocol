@@ -12,6 +12,7 @@ use sql_semantic_protocol::{
 
 const FREEZE: &str = include_str!("../docs/task-180-acceptance-freeze.json");
 const ORIGINAL: &str = include_str!("../docs/task-178-full-variant-inventory.json");
+const RECONCILIATION: &str = include_str!("../docs/task-178-canonical-reconciliation.json");
 const ADAPTER: &str = include_str!("../docs/task-197-acceptance-ledger-v2.json");
 const PREDICATES: &str = include_str!("../docs/task-177-predicate-oracles.json");
 const JOINS: &str = include_str!("../docs/task-193-acceptance-freeze.json");
@@ -186,12 +187,19 @@ fn all_2119_original_dialect_obligations_have_an_independent_review_and_explicit
         manifest["task_180_complete_dialect_gate"]["complete_matrix_release_approved"],
         signoff["task180_signed_off"]
     );
-    if signoff["task180_signed_off"] == true {
-        assert!(TASK.contains("status: Done"));
-    } else {
-        assert!(TASK.contains("status: In Progress"));
-        assert!(!TASK.contains("status: Done"));
-    }
+    let task_status = TASK
+        .lines()
+        .find_map(|line| line.strip_prefix("status: "))
+        .expect("task YAML frontmatter status");
+    assert_eq!(
+        task_status,
+        if signoff["task180_signed_off"] == true {
+            "Done"
+        } else {
+            "In Progress"
+        },
+        "acceptance status must be the task frontmatter, not a note mentioning Done"
+    );
 }
 
 fn rows(db: &Connection, sql: &str, width: usize) -> Vec<Vec<Option<i64>>> {
@@ -731,19 +739,33 @@ fn reviewed_cell_matches_frozen_source(review: &Value, case: &Value, cell: &Valu
     .all(|(field, expected)| &review[*field] == *expected);
     let class = cell["original_canonical_class"].as_str();
     let status = review["proof_status"].as_str();
-    let exceptional_proof = review["exception_resolution_ref"]
-        .as_str()
-        .is_some_and(|reference| !reference.trim().is_empty());
-
-    provenance_matches
-        // Rejected SQL cannot acquire an Exact physical claim just by filling
-        // free-text signoff fields.
-        && !(class == Some("R") && status == Some("Exact"))
-        // Historical Unsupported or dialect-drift observations require a
-        // specific independent resolution when promoted beyond Residual.
-        && (class == Some("C")
-            || status == Some("reviewed_conditional_residual")
-            || exceptional_proof)
+    let historical_exception_is_conservatively_reviewed = match class {
+        Some("C") => true,
+        // An original parser rejection or untyped Unsupported analyzer
+        // outcome is not a physical Exact or Impossible proof. Its original
+        // SQL remains a named conditional until separately implemented and
+        // its live parser class re-certified.
+        Some("R" | "U") => status == Some("reviewed_conditional_residual"),
+        Some("D") if status == Some("reviewed_conditional_residual") => true,
+        Some("D") if status == Some("Exact") => {
+            // Only independently normalized historical grouping/STRUCT AST
+            // differences may become portable candidates. The unnormalized
+            // MSSQL LATERAL identifier/Boolean distinction is not eligible.
+            let reconciliation = read(RECONCILIATION);
+            reconciliation["resolved_grouping_cells"]
+                .as_array()
+                .expect("reviewed canonical normalization")
+                .iter()
+                .any(|resolved| {
+                    resolved["case_id"] == case["id"]
+                        && resolved["dialect"] == cell["dialect"]
+                })
+                && review["exception_resolution_ref"]
+                    == "docs/task-178-canonical-reconciliation.json"
+        }
+        _ => false,
+    };
+    provenance_matches && historical_exception_is_conservatively_reviewed
 }
 
 #[test]
@@ -859,11 +881,55 @@ fn independently_reviewed_cell_provenance_cannot_be_substituted_or_upgraded() {
         review[field] = value.clone();
     }
     review["proof_status"] = serde_json::json!("Exact");
-    review["exception_resolution_ref"] = serde_json::Value::Null;
+    review["exception_resolution_ref"] = serde_json::json!(
+        "docs/task-178-canonical-reconciliation.json"
+    );
     assert!(
         !reviewed_cell_matches_frozen_source(&review, unsupported_case, unsupported_cell),
-        "unsupported original SQL needs a separately attested semantic resolution"
+        "historical Unsupported cannot borrow an unrelated normalized-drift review"
     );
+    review["proof_status"] = serde_json::json!("reviewed_conditional_residual");
+    assert!(
+        reviewed_cell_matches_frozen_source(&review, unsupported_case, unsupported_cell),
+        "the original unsupported boundary remains conservatively reviewable"
+    );
+
+    let unnormalized_drift = cases
+        .iter()
+        .flat_map(|case| {
+            case["cells"]
+                .as_array()
+                .expect("13 parser cells")
+                .iter()
+                .map(move |cell| (case, cell))
+        })
+        .find(|(_, cell)| cell["id"] == "88-C177-S152/mssql")
+        .expect("known genuine dialect-law divergence");
+    let (drift_case, drift_cell) = unnormalized_drift;
+    for (field, value) in [
+        ("id", &drift_cell["id"]),
+        ("dialect", &drift_cell["dialect"]),
+        ("source_case_id", &drift_case["id"]),
+        ("original_sql", &drift_case["sql"]),
+        ("feature_id", &drift_case["feature_id"]),
+        ("semantic_owner", &drift_case["owner"]),
+        ("owner_review_ref", &drift_case["owner_review_ref"]),
+        ("adapter_review_ref", &drift_case["adapter_review_ref"]),
+        ("original_canonical_class", &drift_cell["original_canonical_class"]),
+    ] {
+        review[field] = value.clone();
+    }
+    review["proof_status"] = serde_json::json!("Exact");
+    assert!(
+        !reviewed_cell_matches_frozen_source(&review, drift_case, drift_cell),
+        "MSSQL LATERAL must not borrow a normalization of a different AST"
+    );
+    review["proof_status"] = serde_json::json!("reviewed_conditional_residual");
+    assert!(reviewed_cell_matches_frozen_source(
+        &review,
+        drift_case,
+        drift_cell
+    ));
 }
 
 #[test]
@@ -1046,14 +1112,18 @@ fn acceptance_cannot_be_marked_done_without_per_cell_independent_evidence() {
             reviewed_vendor, required_vendor,
             "all 481 vendor laws need individually reviewed release dispositions"
         );
-        assert!(TASK.contains("status: Done"));
+        assert_eq!(
+            TASK.lines().find_map(|line| line.strip_prefix("status: ")),
+            Some("Done")
+        );
     } else {
         assert!(
             observed.len() < expected.len(),
             "all cells already have evidence but no signoff"
         );
-        assert!(
-            !TASK.contains("status: Done"),
+        assert_eq!(
+            TASK.lines().find_map(|line| line.strip_prefix("status: ")),
+            Some("In Progress"),
             "task cannot close without all approvals"
         );
     }
