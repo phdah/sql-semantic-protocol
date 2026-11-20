@@ -197,7 +197,10 @@ fn original_dialect_exceptions_have_a_complete_actionable_gap_ledger() {
             } else if cell["original_class"] == "D" {
                 still_divergent += 1;
                 assert_eq!(key, "88-C177-S152/mssql");
-                assert_eq!(cell["required_gate"], "canonical_divergence_reviewed_residual");
+                assert_eq!(
+                    cell["required_gate"],
+                    "canonical_divergence_reviewed_residual"
+                );
                 assert_eq!(
                     cell["expected_release_state"],
                     "reviewed_conditional_residual_pending_full_cell_signoff"
