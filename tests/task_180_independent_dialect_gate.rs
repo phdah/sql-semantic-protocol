@@ -933,6 +933,100 @@ fn independently_reviewed_cell_provenance_cannot_be_substituted_or_upgraded() {
 }
 
 #[test]
+fn all_325_original_predicate_reviews_keep_exact_bounds_and_conservative_residuals() {
+    let signoff = read(SIGNOFF);
+    let freeze = read(FREEZE);
+    let goldens = read(PREDICATES);
+    let reviews = signoff["approved_cells"]
+        .as_array()
+        .expect("original reviewed predicate cells");
+    let oracles = goldens["cases"]
+        .as_array()
+        .expect("25 independent native predicate bags");
+    assert_eq!(oracles.len(), 25);
+    assert_eq!(reviews.len(), 325, "only reviewed originals may be recorded");
+    assert_eq!(signoff["partial_source_bounded_predicate_review"]["original_cases"], 25);
+    assert_eq!(signoff["partial_source_bounded_predicate_review"]["dialect_cells"], 325);
+    assert_eq!(
+        signoff["partial_source_bounded_predicate_review"]["final_acceptance_complete"],
+        false
+    );
+    assert_eq!(
+        signoff["partial_source_bounded_predicate_review"]["native_vendor_attestation"],
+        false
+    );
+
+    let mut identities = BTreeSet::new();
+    let mut exact = 0;
+    let mut residual = 0;
+    for oracle in oracles {
+        let id = oracle["id"].as_str().expect("original source SQL");
+        let case = freeze["cases"]
+            .as_array()
+            .expect("163 original queries")
+            .iter()
+            .find(|case| case["id"] == id)
+            .expect("original frozen predicate");
+        assert_eq!(case["owner"], "TASK-192");
+        assert_eq!(case["sql"], oracle["sql"]);
+        let precise = !oracle["expected_projected_domain"].is_null();
+        let expected_typed = if precise {
+            format!(
+                "frozen exact SQL domain {}",
+                oracle["expected_projected_domain"]
+            )
+        } else {
+            "the original SQL projects an unbounded/unproven source id domain; no finite id population or nullable bound is asserted".to_string()
+        };
+        let expected_negative = format!(
+            "docs/task-177-predicate-oracles.json#{id}: expected_false_rows={}, expected_unknown_rows={}; IS NOT TRUE is complete complement",
+            oracle["expected_false_rows"],
+            oracle["expected_unknown_rows"]
+        );
+        for cell in case["cells"].as_array().expect("all parser dialects") {
+            let identity = cell["id"].as_str().expect("source/dialect identity");
+            let review = reviews
+                .iter()
+                .find(|review| review["id"] == identity)
+                .unwrap_or_else(|| panic!("{identity}: no reviewed source-backed proof"));
+            assert!(identities.insert(identity), "{identity}: duplicate reviewed original");
+            assert_eq!(cell["original_canonical_class"], "C");
+            assert!(reviewed_cell_matches_frozen_source(review, case, cell));
+            assert_eq!(review["native_execution_attested"], false);
+            assert_eq!(review["typed_domain_and_null_bounds"], expected_typed);
+            assert_eq!(review["negative_or_impossible_direction"], expected_negative);
+            assert!(review["native_source_and_terminal_oracle"]
+                .as_str()
+                .is_some_and(|evidence| evidence.starts_with(&format!(
+                    "docs/task-177-predicate-oracles.json#{id}:"
+                ))));
+            assert!(review["sql_dbt_odcs_evidence"]
+                .as_str()
+                .is_some_and(|evidence| evidence.contains("task_197_exhaustive_adapter_parity")));
+            if precise {
+                assert_eq!(review["proof_status"], "Exact");
+                exact += 1;
+            } else {
+                assert_eq!(review["proof_status"], "reviewed_conditional_residual");
+                residual += 1;
+            }
+        }
+    }
+    assert_eq!(identities.len(), 325);
+    assert_eq!((exact, residual), (130, 195));
+    assert_eq!(
+        signoff["partial_source_bounded_predicate_review"]["exact_typed_output_domain_cells"],
+        exact
+    );
+    assert_eq!(
+        signoff["partial_source_bounded_predicate_review"]["conservative_residual_output_domain_cells"],
+        residual
+    );
+    assert_eq!(signoff["task180_signed_off"], false);
+    assert_eq!(signoff["all_required_independent_reviews_approved"], false);
+}
+
+#[test]
 fn acceptance_cannot_be_marked_done_without_per_cell_independent_evidence() {
     let signoff = read(SIGNOFF);
     let freeze = read(FREEZE);
