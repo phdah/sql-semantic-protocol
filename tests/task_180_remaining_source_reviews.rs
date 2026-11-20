@@ -337,15 +337,13 @@ fn remaining_138_original_case_oracles_and_1794_dialect_dispositions_are_reconci
                         .as_array()
                         .is_some_and(Vec::is_empty)
                     && source_oracle["independent_terminal_bag"].is_null()
-                    && source_oracle["source_arms"]
-                        .as_array()
-                        .is_some_and(|arms| {
-                            arms.len() == 2
-                                && arms[0]["column_order"]
-                                    .as_array()
-                                    .zip(arms[1]["column_order"].as_array())
-                                    .is_some_and(|(left, right)| left.len() != right.len())
-                        });
+                    && source_oracle["source_arms"].as_array().is_some_and(|arms| {
+                        arms.len() == 2
+                            && arms[0]["column_order"]
+                                .as_array()
+                                .zip(arms[1]["column_order"].as_array())
+                                .is_some_and(|(left, right)| left.len() != right.len())
+                    });
                 assert_eq!(
                     verdict,
                     if eligible {
@@ -435,7 +433,6 @@ fn independently_reviewed_set_cases_conserve_complete_candidate_tuple_multisets(
     );
 }
 
-
 #[test]
 fn original_mismatched_set_arity_is_impossible_for_all_dialects() {
     use sql_semantic_protocol::{
@@ -443,7 +440,9 @@ fn original_mismatched_set_arity_is_impossible_for_all_dialects() {
     };
     let review = read(REVIEW_194);
     let case = original(&review, "88-C177-S086");
-    let sql = case["original_sql"].as_str().expect("frozen incompatible set SQL");
+    let sql = case["original_sql"]
+        .as_str()
+        .expect("frozen incompatible set SQL");
     let cells = case["cells"].as_array().expect("13 original dialects");
     assert_eq!(cells.len(), 13);
     for cell in cells {
