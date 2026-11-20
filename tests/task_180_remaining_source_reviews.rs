@@ -377,10 +377,22 @@ fn remaining_138_original_case_oracles_and_1794_dialect_dispositions_are_reconci
     assert_eq!(review_counts, [1272, 509, 13]);
     assert_eq!(normalized_exact, 21);
     let staged = &signoff["staged_independent_pre_signoff_review"];
-    assert_eq!(staged["candidate_exact_source_bounded_claims"], review_counts[0]);
-    assert_eq!(staged["candidate_explicit_conditional_residuals"], review_counts[1]);
-    assert_eq!(staged["candidate_impossible_with_public_diagnostic"], review_counts[2]);
-    assert_eq!(staged["normalized_grouping_exact_candidates"], normalized_exact);
+    assert_eq!(
+        staged["candidate_exact_source_bounded_claims"],
+        review_counts[0]
+    );
+    assert_eq!(
+        staged["candidate_explicit_conditional_residuals"],
+        review_counts[1]
+    );
+    assert_eq!(
+        staged["candidate_impossible_with_public_diagnostic"],
+        review_counts[2]
+    );
+    assert_eq!(
+        staged["normalized_grouping_exact_candidates"],
+        normalized_exact
+    );
     assert_eq!(staged["final_independent_approval_claimed"], false);
     let signed = signoff["approved_cells"]
         .as_array()
