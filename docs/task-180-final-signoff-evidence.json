@@ -11198,7 +11198,7 @@
     "reviewed_remaining_original_cases": 138,
     "reviewed_remaining_dialect_cells": 1794,
     "candidate_exact_source_bounded_claims": 1251,
-    "candidate_explicit_conditional_residuals": 543,
+    "candidate_explicit_conditional_residuals": 530,
     "includes_existing_original_predicate_cells": 325,
     "covers_all_original_matrix_dialect_cells": 2119,
     "external_vendor_native_attestation": false,
@@ -11213,6 +11213,8 @@
     "automated_oracle_reconciliation": "tests/task_180_remaining_source_reviews.rs",
     "original_case_native_differential": "tests/task_180_independent_dialect_gate.rs; tests/task_180_scalar_native.rs; tests/task_180_original_write_states.rs",
     "parser_and_adapter_evidence": "tests/task_180_live_canonical.rs; tests/task_197_exhaustive_adapter_parity.rs",
-    "approval_boundary": "The next independent agent must evaluate source-conditioned Exact claims, stronger portable output bounds and named native exceptions; these pre-reviewed candidate records do not set the final approved_cells or task Done flags."
+    "approval_boundary": "The next independent agent must evaluate source-conditioned Exact claims, stronger portable output bounds and named native exceptions; these pre-reviewed candidate records do not set the final approved_cells or task Done flags.",
+    "candidate_impossible_with_public_diagnostic": 13,
+    "impossible_evidence": "tests/task_180_remaining_source_reviews.rs::original_mismatched_set_arity_is_impossible_for_all_dialects"
   }
 }
