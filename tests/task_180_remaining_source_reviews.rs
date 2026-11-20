@@ -7,6 +7,7 @@ use std::collections::BTreeSet;
 use serde_json::Value;
 
 const FREEZE: &str = include_str!("../docs/task-180-acceptance-freeze.json");
+const RECONCILIATION: &str = include_str!("../docs/task-178-canonical-reconciliation.json");
 const SIGNOFF: &str = include_str!("../docs/task-180-final-signoff-evidence.json");
 const REVIEW_192: &str = include_str!("../docs/task-180-pending-review-task-192.json");
 const REVIEW_193: &str = include_str!("../docs/task-180-pending-review-task-193.json");
@@ -49,6 +50,20 @@ fn approved_review<'a>(source: &'a Value, id: &str) -> &'a Value {
 fn remaining_138_original_case_oracles_and_1794_dialect_dispositions_are_reconciled() {
     let freeze = read(FREEZE);
     let signoff = read(SIGNOFF);
+    let reconciliation = read(RECONCILIATION);
+    let normalized: BTreeSet<_> = reconciliation["resolved_grouping_cells"]
+        .as_array()
+        .expect("independent canonical AST drift reconciliations")
+        .iter()
+        .map(|cell| {
+            format!(
+                "{}/{}",
+                cell["case_id"].as_str().expect("original case"),
+                cell["dialect"].as_str().expect("dialect")
+            )
+        })
+        .collect();
+    assert_eq!(normalized.len(), 22);
     let owners = [
         ("TASK-192", REVIEW_192, 18_usize, 234_usize),
         ("TASK-193", REVIEW_193, 24, 312),
@@ -266,8 +281,19 @@ fn remaining_138_original_case_oracles_and_1794_dialect_dispositions_are_reconci
                     ),
                     "{key}: unsupported review verdict"
                 );
+                let historical_drift_normalized = normalized.contains(key);
+                if historical_drift_normalized {
+                    assert_eq!(frozen_cell["original_canonical_class"], "D");
+                    if candidate_cell["review_status"] == "Exact" {
+                        assert_eq!(
+                            candidate_cell["exception_resolution_ref"],
+                            "docs/task-178-canonical-reconciliation.json",
+                            "{key}: Exact normalized drift requires the exact reviewed source"
+                        );
+                    }
+                }
                 let normal = frozen_cell["original_canonical_class"] == "C";
-                let eligible = normal
+                let eligible = (normal || historical_drift_normalized)
                     && match *owner {
                         "TASK-192" => false,
                         "TASK-193" => {
