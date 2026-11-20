@@ -83,8 +83,13 @@ fn remaining_138_original_case_oracles_and_1794_dialect_dispositions_are_reconci
         let cases = review["cases"].as_array().expect("original cases");
         assert_eq!(cases.len(), *case_count);
         for candidate in cases {
-            let id = candidate["id"].as_str().expect("frozen original case identity");
-            assert!(case_ids.insert(id.to_owned()), "{id}: case reviewed more than once");
+            let id = candidate["id"]
+                .as_str()
+                .expect("frozen original case identity");
+            assert!(
+                case_ids.insert(id.to_owned()),
+                "{id}: case reviewed more than once"
+            );
             let frozen = original(&freeze, id);
             assert_eq!(frozen["owner"], *owner);
             for field in [
@@ -112,77 +117,178 @@ fn remaining_138_original_case_oracles_and_1794_dialect_dispositions_are_reconci
             };
             match *owner {
                 "TASK-192" => {
-                    assert_eq!(candidate["typed_portable_law"], independent["independent_expectation"]);
+                    assert_eq!(
+                        candidate["typed_portable_law"],
+                        independent["independent_expectation"]
+                    );
                     assert_eq!(candidate["original_sql"], independent["original_sql"]);
-                    assert_eq!(candidate["original_source_terminal_oracle"], independent["native_oracle"]);
+                    assert_eq!(
+                        candidate["original_source_terminal_oracle"],
+                        independent["native_oracle"]
+                    );
                     assert_eq!(candidate["original_oracle_status"], independent["decision"]);
                 }
                 "TASK-193" => {
-                    assert_eq!(candidate["independent_sql_law"]["join_kinds"], independent["independent_expected_join_kinds"]);
-                    assert_eq!(candidate["independent_sql_law"]["dependencies"], independent["independent_expected_physical_dependencies"]);
-                    assert_eq!(candidate["independent_sql_law"]["projection_lineage"], independent["independent_expected_projection_lineage"]);
-                    assert_eq!(candidate["complete_native_terminal_bag"], source_oracle["expected_terminal_bag"]);
-                    assert_eq!(candidate["source_bounded_typed_column_domains"], source_oracle["fixture_observed_column_domains"]);
-                    assert_eq!(candidate["full_source_and_terminal_occurrences"]["expected_terminal"], independent["independent_expected_terminal_occurrences"]);
-                    assert_eq!(candidate["physical_original_syntax_boundary"], source_oracle["original_duckdb_syntax_boundary"]);
-                    assert_eq!(candidate["fixture_domains_are_not_portable_sql_bounds"], true);
+                    assert_eq!(
+                        candidate["independent_sql_law"]["join_kinds"],
+                        independent["independent_expected_join_kinds"]
+                    );
+                    assert_eq!(
+                        candidate["independent_sql_law"]["dependencies"],
+                        independent["independent_expected_physical_dependencies"]
+                    );
+                    assert_eq!(
+                        candidate["independent_sql_law"]["projection_lineage"],
+                        independent["independent_expected_projection_lineage"]
+                    );
+                    assert_eq!(
+                        candidate["complete_native_terminal_bag"],
+                        source_oracle["expected_terminal_bag"]
+                    );
+                    assert_eq!(
+                        candidate["source_bounded_typed_column_domains"],
+                        source_oracle["fixture_observed_column_domains"]
+                    );
+                    assert_eq!(
+                        candidate["full_source_and_terminal_occurrences"]["expected_terminal"],
+                        independent["independent_expected_terminal_occurrences"]
+                    );
+                    assert_eq!(
+                        candidate["physical_original_syntax_boundary"],
+                        source_oracle["original_duckdb_syntax_boundary"]
+                    );
+                    assert_eq!(
+                        candidate["fixture_domains_are_not_portable_sql_bounds"],
+                        true
+                    );
                 }
                 "TASK-194" => {
                     assert_eq!(candidate["sql_multiset_law"], independent["semantic_law"]);
-                    assert_eq!(candidate["independent_terminal_bag"], source_oracle["independent_terminal_bag"]);
-                    assert_eq!(candidate["independent_non_emitted_candidate_bag"], source_oracle["independent_non_emitted_candidate_bag"]);
-                    assert_eq!(candidate["source_arm_row_occurrences"], source_oracle["source_arms"]);
-                    assert_eq!(candidate["expected_output_names"], independent["expected_output_column_names"]);
-                    assert_eq!(candidate["expected_output_type"], independent["expected_output_type"]);
-                    assert_eq!(candidate["independent_semantic_review_status"], independent["review_disposition"]);
+                    assert_eq!(
+                        candidate["independent_terminal_bag"],
+                        source_oracle["independent_terminal_bag"]
+                    );
+                    assert_eq!(
+                        candidate["independent_non_emitted_candidate_bag"],
+                        source_oracle["independent_non_emitted_candidate_bag"]
+                    );
+                    assert_eq!(
+                        candidate["source_arm_row_occurrences"],
+                        source_oracle["source_arms"]
+                    );
+                    assert_eq!(
+                        candidate["expected_output_names"],
+                        independent["expected_output_column_names"]
+                    );
+                    assert_eq!(
+                        candidate["expected_output_type"],
+                        independent["expected_output_type"]
+                    );
+                    assert_eq!(
+                        candidate["independent_semantic_review_status"],
+                        independent["review_disposition"]
+                    );
                 }
                 "TASK-195" => {
-                    assert_eq!(candidate["independent_sql_algebra_law"], independent["independent_sql_algebra_law"]);
-                    assert_eq!(candidate["portable_typed_output_laws"], independent["public_output_laws"]);
-                    assert_eq!(candidate["positive_original_terminal_bag"], independent["expected_native_terminal_bag"]);
-                    assert_eq!(candidate["rejected_candidate_bag"], independent["expected_native_rejected_candidate_bag"]);
-                    assert_eq!(candidate["original_native_execution_disposition"], independent["original_native_execution_disposition"]);
-                    assert_eq!(candidate["original_native_fixture"], source_oracle["native_oracle"]);
-                    assert_eq!(candidate["source_instance_ids"], independent["physical_source_instance_ids"]);
+                    assert_eq!(
+                        candidate["independent_sql_algebra_law"],
+                        independent["independent_sql_algebra_law"]
+                    );
+                    assert_eq!(
+                        candidate["portable_typed_output_laws"],
+                        independent["public_output_laws"]
+                    );
+                    assert_eq!(
+                        candidate["positive_original_terminal_bag"],
+                        independent["expected_native_terminal_bag"]
+                    );
+                    assert_eq!(
+                        candidate["rejected_candidate_bag"],
+                        independent["expected_native_rejected_candidate_bag"]
+                    );
+                    assert_eq!(
+                        candidate["original_native_execution_disposition"],
+                        independent["original_native_execution_disposition"]
+                    );
+                    assert_eq!(
+                        candidate["original_native_fixture"],
+                        source_oracle["native_oracle"]
+                    );
+                    assert_eq!(
+                        candidate["source_instance_ids"],
+                        independent["physical_source_instance_ids"]
+                    );
                 }
                 "TASK-196" => {
                     assert_eq!(candidate["original_sql"], independent["original_sql"]);
-                    assert_eq!(candidate["independent_sql_law"], independent["independent_sql_law"]);
+                    assert_eq!(
+                        candidate["independent_sql_law"],
+                        independent["independent_sql_law"]
+                    );
                     assert_eq!(candidate["review_source"], independent["evidence_owner"]);
-                    assert_eq!(candidate["physical_native_class"], independent["physical_native_class"]);
+                    assert_eq!(
+                        candidate["physical_native_class"],
+                        independent["physical_native_class"]
+                    );
                     assert_eq!(candidate["native_oracle"], source_oracle["native_oracle"]);
                 }
                 _ => unreachable!("five frozen owner families"),
             }
-            let candidate_cells = candidate["cells"].as_array().expect("13 review dispositions");
+            let candidate_cells = candidate["cells"]
+                .as_array()
+                .expect("13 review dispositions");
             let frozen_cells = frozen["cells"].as_array().expect("13 dialect originals");
             assert_eq!(candidate_cells.len(), 13);
             for (candidate_cell, frozen_cell) in candidate_cells.iter().zip(frozen_cells) {
-                let key = candidate_cell["id"].as_str().expect("source/dialect review identity");
+                let key = candidate_cell["id"]
+                    .as_str()
+                    .expect("source/dialect review identity");
                 assert!(cell_ids.insert(key.to_owned()), "{key}: duplicate review");
-                for field in ["id", "dialect", "original_canonical_class", "independent_bounded_review"] {
-                    assert_eq!(candidate_cell[field], frozen_cell[field], "{key}: source status was altered");
+                for field in [
+                    "id",
+                    "dialect",
+                    "original_canonical_class",
+                    "independent_bounded_review",
+                ] {
+                    assert_eq!(
+                        candidate_cell[field], frozen_cell[field],
+                        "{key}: source status was altered"
+                    );
                 }
                 assert_eq!(candidate_cell["native_vendor_execution_attested"], false);
-                let verdict = candidate_cell["review_status"].as_str().expect("bounded verdict");
+                let verdict = candidate_cell["review_status"]
+                    .as_str()
+                    .expect("bounded verdict");
                 assert!(
                     matches!(verdict, "Exact" | "reviewed_conditional_residual"),
                     "{key}: unsupported review verdict"
                 );
                 if frozen_cell["original_canonical_class"] != "C" {
-                    assert_eq!(verdict, "reviewed_conditional_residual", "{key}: cannot promote historical exception");
+                    assert_eq!(
+                        verdict, "reviewed_conditional_residual",
+                        "{key}: cannot promote historical exception"
+                    );
                 }
-                assert!(candidate_cell["review_reason"].as_str().is_some_and(|s| !s.is_empty()));
+                assert!(candidate_cell["review_reason"]
+                    .as_str()
+                    .is_some_and(|s| !s.is_empty()));
             }
         }
     }
     assert_eq!(case_ids.len(), 138);
     assert_eq!(cell_ids.len(), 1794);
-    let signed = signoff["approved_cells"].as_array().expect("separately approved predicate cells");
+    let signed = signoff["approved_cells"]
+        .as_array()
+        .expect("separately approved predicate cells");
     assert_eq!(signed.len(), 325);
     let mut covered = cell_ids.clone();
     for cell in signed {
-        assert!(covered.insert(cell["id"].as_str().expect("approved predicate cell").to_owned()));
+        assert!(covered.insert(
+            cell["id"]
+                .as_str()
+                .expect("approved predicate cell")
+                .to_owned()
+        ));
     }
     let required: BTreeSet<_> = freeze["cases"]
         .as_array()
@@ -191,8 +297,14 @@ fn remaining_138_original_case_oracles_and_1794_dialect_dispositions_are_reconci
         .flat_map(|case| case["cells"].as_array().expect("13 parser dialects"))
         .map(|cell| cell["id"].as_str().expect("frozen ID").to_owned())
         .collect();
-    assert_eq!(covered, required, "every 2,119-cell source review must be accounted for");
-    assert_eq!(signoff["task180_signed_off"], false, "the next agent owns final signoff");
+    assert_eq!(
+        covered, required,
+        "every 2,119-cell source review must be accounted for"
+    );
+    assert_eq!(
+        signoff["task180_signed_off"], false,
+        "the next agent owns final signoff"
+    );
 }
 
 fn serialized_bag(source: &Value) -> Option<Vec<String>> {
@@ -229,5 +341,8 @@ fn independently_reviewed_set_cases_conserve_complete_candidate_tuple_multisets(
         );
         checked += 1;
     }
-    assert_eq!(checked, 20, "only the two explicit non-executable set originals are excluded");
+    assert_eq!(
+        checked, 20,
+        "only the two explicit non-executable set originals are excluded"
+    );
 }
