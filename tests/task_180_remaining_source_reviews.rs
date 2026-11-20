@@ -260,7 +260,10 @@ fn remaining_138_original_case_oracles_and_1794_dialect_dispositions_are_reconci
                     .as_str()
                     .expect("bounded verdict");
                 assert!(
-                    matches!(verdict, "Exact" | "reviewed_conditional_residual"),
+                    matches!(
+                        verdict,
+                        "Exact" | "Impossible" | "reviewed_conditional_residual"
+                    ),
                     "{key}: unsupported review verdict"
                 );
                 let normal = frozen_cell["original_canonical_class"] == "C";
@@ -300,10 +303,29 @@ fn remaining_138_original_case_oracles_and_1794_dialect_dispositions_are_reconci
                         }
                         _ => unreachable!("five independently reviewed semantic owners"),
                     };
+                let impossible = *owner == "TASK-194"
+                    && independent["semantic_law"] == "semantic_impossible_incompatible_arity"
+                    && independent["review_disposition"]
+                        == "approved_fail_closed_arity_without_fake_terminal"
+                    && candidate["expected_output_names"]
+                        .as_array()
+                        .is_some_and(Vec::is_empty)
+                    && source_oracle["independent_terminal_bag"].is_null()
+                    && source_oracle["source_arms"]
+                        .as_array()
+                        .is_some_and(|arms| {
+                            arms.len() == 2
+                                && arms[0]["column_order"]
+                                    .as_array()
+                                    .zip(arms[1]["column_order"].as_array())
+                                    .is_some_and(|(left, right)| left.len() != right.len())
+                        });
                 assert_eq!(
                     verdict,
                     if eligible {
                         "Exact"
+                    } else if impossible {
+                        "Impossible"
                     } else {
                         "reviewed_conditional_residual"
                     },
@@ -385,4 +407,39 @@ fn independently_reviewed_set_cases_conserve_complete_candidate_tuple_multisets(
         checked, 20,
         "only the two explicit non-executable set originals are excluded"
     );
+}
+
+
+#[test]
+fn original_mismatched_set_arity_is_impossible_for_all_dialects() {
+    use sql_semantic_protocol::{
+        analyze_sql, dialect_from_name, DiagnosticArea, ProtocolStatement,
+    };
+    let review = read(REVIEW_194);
+    let case = original(&review, "88-C177-S086");
+    let sql = case["original_sql"].as_str().expect("frozen incompatible set SQL");
+    let cells = case["cells"].as_array().expect("13 original dialects");
+    assert_eq!(cells.len(), 13);
+    for cell in cells {
+        let dialect = cell["dialect"].as_str().expect("supported dialect");
+        let parser = dialect_from_name(dialect).expect("public parser");
+        let protocol = analyze_sql(sql, dialect, parser.as_ref())
+            .unwrap_or_else(|error| panic!("{dialect}: original SQL: {error}"));
+        let [ProtocolStatement::Query(query)] = protocol.statements() else {
+            panic!("{dialect}: invalid set cannot be represented by another statement");
+        };
+        assert!(
+            query.output().columns().is_empty(),
+            "{dialect}: mismatched 1-vs-2 SELECT arms must have no output"
+        );
+        assert!(
+            query.diagnostics().iter().any(|diagnostic| {
+                diagnostic.area() == DiagnosticArea::Output
+                    && diagnostic.code() == "set_operation_arity_mismatch"
+            }),
+            "{dialect}: no fabricated row or typed output from incompatible set branches"
+        );
+        assert_eq!(cell["review_status"], "Impossible");
+        assert_eq!(cell["native_vendor_execution_attested"], false);
+    }
 }
