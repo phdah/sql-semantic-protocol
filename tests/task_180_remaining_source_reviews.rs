@@ -207,12 +207,12 @@ fn serialized_bag(source: &Value) -> Option<Vec<String>> {
 
 #[test]
 fn independently_reviewed_set_cases_conserve_complete_candidate_tuple_multisets() {
-    let original = read(NATIVE_194);
+    let original_bags = read(NATIVE_194);
     let reviewers = read(REVIEW_194);
     let mut checked = 0_usize;
     for case in reviewers["cases"].as_array().expect("22 original set laws") {
         let id = case["id"].as_str().expect("original SQL");
-        let bag = original(&original, id);
+        let bag = original(&original_bags, id);
         let Some(mut emitted) = serialized_bag(&case["independent_terminal_bag"]) else {
             assert!(bag["independent_terminal_bag"].is_null());
             continue;
