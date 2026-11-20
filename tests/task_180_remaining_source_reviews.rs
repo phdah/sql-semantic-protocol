@@ -468,3 +468,54 @@ fn original_mismatched_set_arity_is_impossible_for_all_dialects() {
         assert_eq!(cell["native_vendor_execution_attested"], false);
     }
 }
+
+
+#[test]
+fn original_unattested_write_actions_cannot_disappear_from_an_ordered_program() {
+    use sql_semantic_protocol::{
+        analyze_inputs, dialect_from_name, physical_ordered_write_state_plan, PhysicalWriteStatePlan,
+        ProtocolStatement, SqlInput,
+    };
+
+    let freeze = read(FREEZE);
+    let originals = ["S199", "S200", "S203", "S206", "S220"];
+    let mut exercised = 0;
+    for suffix in originals {
+        let id = format!("88-C177-{suffix}");
+        let source = original(&freeze, &id);
+        let sql = source["sql"].as_str().expect("unchanged mandatory write");
+        for cell in source["cells"].as_array().expect("all 13 parser dialects") {
+            if cell["original_canonical_class"] != "U" {
+                assert_eq!(
+                    cell["original_canonical_class"], "R",
+                    "{id}: only parser rejection can precede unsupported analysis"
+                );
+                continue;
+            }
+            let dialect = cell["dialect"].as_str().expect("supported parser");
+            let parser = dialect_from_name(dialect).expect("public parser");
+            // A preceding table creation and a following read must not make
+            // an unknown intermediate mutation silently harmless.
+            let program = format!(
+                "CREATE TABLE orders (id INT, amount INT); {sql}; SELECT id FROM orders"
+            );
+            let analyzed = analyze_inputs(&[SqlInput::inline(&program)], dialect, parser.as_ref())
+                .unwrap_or_else(|error| panic!("{id}/{dialect}: program parse: {error}"));
+            assert!(
+                analyzed.inputs()[0].statements().iter().any(|statement| {
+                    matches!(statement, ProtocolStatement::Unsupported(_))
+                }),
+                "{id}/{dialect}: the unproved write must remain explicit"
+            );
+            assert!(
+                matches!(
+                    physical_ordered_write_state_plan(&analyzed, &[]),
+                    PhysicalWriteStatePlan::Residual { .. }
+                ),
+                "{id}/{dialect}: subsequent reads cannot erase unknown mutation effects"
+            );
+            exercised += 1;
+        }
+    }
+    assert_eq!(exercised, 55, "all historical untyped write U cells");
+}
