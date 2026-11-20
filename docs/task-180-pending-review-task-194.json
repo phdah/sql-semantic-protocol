@@ -5101,117 +5101,130 @@
           "dialect": "ansi",
           "original_canonical_class": "C",
           "independent_bounded_review": "reviewed_explicit_semantic_arity_impossibility",
-          "review_status": "reviewed_conditional_residual",
-          "review_reason": "parser CORRESPONDING rejection, incompatible set arity or unproved output; preserve Residual without inventing set rows",
-          "native_vendor_execution_attested": false
+          "review_status": "Impossible",
+          "review_reason": "Original SQL projects one column from left UNION arm and two from right; public canonical Output has zero columns and diagnostic set_operation_arity_mismatch for this dialect; no executable terminal bag can be constructed",
+          "native_vendor_execution_attested": false,
+          "impossible_evidence": "tests/task_194_dialect_semantics.rs::every_accepted_set_form_has_one_canonical_public_document_and_explicit_fail_closed_arity"
         },
         {
           "id": "88-C177-S086/bigquery",
           "dialect": "bigquery",
           "original_canonical_class": "C",
           "independent_bounded_review": "reviewed_explicit_semantic_arity_impossibility",
-          "review_status": "reviewed_conditional_residual",
-          "review_reason": "parser CORRESPONDING rejection, incompatible set arity or unproved output; preserve Residual without inventing set rows",
-          "native_vendor_execution_attested": false
+          "review_status": "Impossible",
+          "review_reason": "Original SQL projects one column from left UNION arm and two from right; public canonical Output has zero columns and diagnostic set_operation_arity_mismatch for this dialect; no executable terminal bag can be constructed",
+          "native_vendor_execution_attested": false,
+          "impossible_evidence": "tests/task_194_dialect_semantics.rs::every_accepted_set_form_has_one_canonical_public_document_and_explicit_fail_closed_arity"
         },
         {
           "id": "88-C177-S086/clickhouse",
           "dialect": "clickhouse",
           "original_canonical_class": "C",
           "independent_bounded_review": "reviewed_explicit_semantic_arity_impossibility",
-          "review_status": "reviewed_conditional_residual",
-          "review_reason": "parser CORRESPONDING rejection, incompatible set arity or unproved output; preserve Residual without inventing set rows",
-          "native_vendor_execution_attested": false
+          "review_status": "Impossible",
+          "review_reason": "Original SQL projects one column from left UNION arm and two from right; public canonical Output has zero columns and diagnostic set_operation_arity_mismatch for this dialect; no executable terminal bag can be constructed",
+          "native_vendor_execution_attested": false,
+          "impossible_evidence": "tests/task_194_dialect_semantics.rs::every_accepted_set_form_has_one_canonical_public_document_and_explicit_fail_closed_arity"
         },
         {
           "id": "88-C177-S086/databricks",
           "dialect": "databricks",
           "original_canonical_class": "C",
           "independent_bounded_review": "reviewed_explicit_semantic_arity_impossibility",
-          "review_status": "reviewed_conditional_residual",
-          "review_reason": "parser CORRESPONDING rejection, incompatible set arity or unproved output; preserve Residual without inventing set rows",
-          "native_vendor_execution_attested": false
+          "review_status": "Impossible",
+          "review_reason": "Original SQL projects one column from left UNION arm and two from right; public canonical Output has zero columns and diagnostic set_operation_arity_mismatch for this dialect; no executable terminal bag can be constructed",
+          "native_vendor_execution_attested": false,
+          "impossible_evidence": "tests/task_194_dialect_semantics.rs::every_accepted_set_form_has_one_canonical_public_document_and_explicit_fail_closed_arity"
         },
         {
           "id": "88-C177-S086/duckdb",
           "dialect": "duckdb",
           "original_canonical_class": "C",
           "independent_bounded_review": "reviewed_explicit_semantic_arity_impossibility",
-          "review_status": "reviewed_conditional_residual",
-          "review_reason": "parser CORRESPONDING rejection, incompatible set arity or unproved output; preserve Residual without inventing set rows",
-          "native_vendor_execution_attested": false
+          "review_status": "Impossible",
+          "review_reason": "Original SQL projects one column from left UNION arm and two from right; public canonical Output has zero columns and diagnostic set_operation_arity_mismatch for this dialect; no executable terminal bag can be constructed",
+          "native_vendor_execution_attested": false,
+          "impossible_evidence": "tests/task_194_dialect_semantics.rs::every_accepted_set_form_has_one_canonical_public_document_and_explicit_fail_closed_arity"
         },
         {
           "id": "88-C177-S086/generic",
           "dialect": "generic",
           "original_canonical_class": "C",
           "independent_bounded_review": "reviewed_explicit_semantic_arity_impossibility",
-          "review_status": "reviewed_conditional_residual",
-          "review_reason": "parser CORRESPONDING rejection, incompatible set arity or unproved output; preserve Residual without inventing set rows",
-          "native_vendor_execution_attested": false
+          "review_status": "Impossible",
+          "review_reason": "Original SQL projects one column from left UNION arm and two from right; public canonical Output has zero columns and diagnostic set_operation_arity_mismatch for this dialect; no executable terminal bag can be constructed",
+          "native_vendor_execution_attested": false,
+          "impossible_evidence": "tests/task_194_dialect_semantics.rs::every_accepted_set_form_has_one_canonical_public_document_and_explicit_fail_closed_arity"
         },
         {
           "id": "88-C177-S086/hive",
           "dialect": "hive",
           "original_canonical_class": "C",
           "independent_bounded_review": "reviewed_explicit_semantic_arity_impossibility",
-          "review_status": "reviewed_conditional_residual",
-          "review_reason": "parser CORRESPONDING rejection, incompatible set arity or unproved output; preserve Residual without inventing set rows",
-          "native_vendor_execution_attested": false
+          "review_status": "Impossible",
+          "review_reason": "Original SQL projects one column from left UNION arm and two from right; public canonical Output has zero columns and diagnostic set_operation_arity_mismatch for this dialect; no executable terminal bag can be constructed",
+          "native_vendor_execution_attested": false,
+          "impossible_evidence": "tests/task_194_dialect_semantics.rs::every_accepted_set_form_has_one_canonical_public_document_and_explicit_fail_closed_arity"
         },
         {
           "id": "88-C177-S086/mssql",
           "dialect": "mssql",
           "original_canonical_class": "C",
           "independent_bounded_review": "reviewed_explicit_semantic_arity_impossibility",
-          "review_status": "reviewed_conditional_residual",
-          "review_reason": "parser CORRESPONDING rejection, incompatible set arity or unproved output; preserve Residual without inventing set rows",
-          "native_vendor_execution_attested": false
+          "review_status": "Impossible",
+          "review_reason": "Original SQL projects one column from left UNION arm and two from right; public canonical Output has zero columns and diagnostic set_operation_arity_mismatch for this dialect; no executable terminal bag can be constructed",
+          "native_vendor_execution_attested": false,
+          "impossible_evidence": "tests/task_194_dialect_semantics.rs::every_accepted_set_form_has_one_canonical_public_document_and_explicit_fail_closed_arity"
         },
         {
           "id": "88-C177-S086/mysql",
           "dialect": "mysql",
           "original_canonical_class": "C",
           "independent_bounded_review": "reviewed_explicit_semantic_arity_impossibility",
-          "review_status": "reviewed_conditional_residual",
-          "review_reason": "parser CORRESPONDING rejection, incompatible set arity or unproved output; preserve Residual without inventing set rows",
-          "native_vendor_execution_attested": false
+          "review_status": "Impossible",
+          "review_reason": "Original SQL projects one column from left UNION arm and two from right; public canonical Output has zero columns and diagnostic set_operation_arity_mismatch for this dialect; no executable terminal bag can be constructed",
+          "native_vendor_execution_attested": false,
+          "impossible_evidence": "tests/task_194_dialect_semantics.rs::every_accepted_set_form_has_one_canonical_public_document_and_explicit_fail_closed_arity"
         },
         {
           "id": "88-C177-S086/postgresql",
           "dialect": "postgresql",
           "original_canonical_class": "C",
           "independent_bounded_review": "reviewed_explicit_semantic_arity_impossibility",
-          "review_status": "reviewed_conditional_residual",
-          "review_reason": "parser CORRESPONDING rejection, incompatible set arity or unproved output; preserve Residual without inventing set rows",
-          "native_vendor_execution_attested": false
+          "review_status": "Impossible",
+          "review_reason": "Original SQL projects one column from left UNION arm and two from right; public canonical Output has zero columns and diagnostic set_operation_arity_mismatch for this dialect; no executable terminal bag can be constructed",
+          "native_vendor_execution_attested": false,
+          "impossible_evidence": "tests/task_194_dialect_semantics.rs::every_accepted_set_form_has_one_canonical_public_document_and_explicit_fail_closed_arity"
         },
         {
           "id": "88-C177-S086/redshift",
           "dialect": "redshift",
           "original_canonical_class": "C",
           "independent_bounded_review": "reviewed_explicit_semantic_arity_impossibility",
-          "review_status": "reviewed_conditional_residual",
-          "review_reason": "parser CORRESPONDING rejection, incompatible set arity or unproved output; preserve Residual without inventing set rows",
-          "native_vendor_execution_attested": false
+          "review_status": "Impossible",
+          "review_reason": "Original SQL projects one column from left UNION arm and two from right; public canonical Output has zero columns and diagnostic set_operation_arity_mismatch for this dialect; no executable terminal bag can be constructed",
+          "native_vendor_execution_attested": false,
+          "impossible_evidence": "tests/task_194_dialect_semantics.rs::every_accepted_set_form_has_one_canonical_public_document_and_explicit_fail_closed_arity"
         },
         {
           "id": "88-C177-S086/snowflake",
           "dialect": "snowflake",
           "original_canonical_class": "C",
           "independent_bounded_review": "reviewed_explicit_semantic_arity_impossibility",
-          "review_status": "reviewed_conditional_residual",
-          "review_reason": "parser CORRESPONDING rejection, incompatible set arity or unproved output; preserve Residual without inventing set rows",
-          "native_vendor_execution_attested": false
+          "review_status": "Impossible",
+          "review_reason": "Original SQL projects one column from left UNION arm and two from right; public canonical Output has zero columns and diagnostic set_operation_arity_mismatch for this dialect; no executable terminal bag can be constructed",
+          "native_vendor_execution_attested": false,
+          "impossible_evidence": "tests/task_194_dialect_semantics.rs::every_accepted_set_form_has_one_canonical_public_document_and_explicit_fail_closed_arity"
         },
         {
           "id": "88-C177-S086/sqlite",
           "dialect": "sqlite",
           "original_canonical_class": "C",
           "independent_bounded_review": "reviewed_explicit_semantic_arity_impossibility",
-          "review_status": "reviewed_conditional_residual",
-          "review_reason": "parser CORRESPONDING rejection, incompatible set arity or unproved output; preserve Residual without inventing set rows",
-          "native_vendor_execution_attested": false
+          "review_status": "Impossible",
+          "review_reason": "Original SQL projects one column from left UNION arm and two from right; public canonical Output has zero columns and diagnostic set_operation_arity_mismatch for this dialect; no executable terminal bag can be constructed",
+          "native_vendor_execution_attested": false,
+          "impossible_evidence": "tests/task_194_dialect_semantics.rs::every_accepted_set_form_has_one_canonical_public_document_and_explicit_fail_closed_arity"
         }
       ]
     },
