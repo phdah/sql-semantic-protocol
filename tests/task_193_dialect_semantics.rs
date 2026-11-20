@@ -153,7 +153,6 @@ fn all_shared_join_sql_forms_emit_identical_public_documents_across_13_parsers()
     assert_eq!(checked, 312);
 }
 
-
 #[test]
 fn mssql_lateral_on_true_is_an_unbound_identifier_not_a_boolean_literal() {
     // sqlparser 0.58 exposes different AST semantics for the same text.
@@ -199,8 +198,7 @@ fn mssql_lateral_on_true_is_an_unbound_identifier_not_a_boolean_literal() {
         }
         let protocol = analyze_sql(sql, name, dialect.as_ref()).expect("canonical source");
         let wire = parsed(&to_json(&protocol));
-        let qualifying = &wire["graph"]["physical_nodes"][1]["operator_witnesses"][0]
-            ["qualifying"];
+        let qualifying = &wire["graph"]["physical_nodes"][1]["operator_witnesses"][0]["qualifying"];
         assert_eq!(
             qualifying["status"], "residual",
             "{name}: no unattested native LATERAL claim"
