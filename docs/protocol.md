@@ -2106,7 +2106,7 @@ Portable `ALTER TABLE` column operations normalize to a query-backed transformat
 producer. The write's `alter_columns` array contains ordered parser-independent steps:
 `add` carries `column: {name, data_type}`, `has_default` and `default`;
 `drop` carries a column name; `rename` carries `old` and `new`; and
-`set_type` carries a typed replacement column. The `data_type` object uses the
+`set_type` carries a typed replacement column. Under an authoritative existing target schema, a scalar `ALTER COLUMN ... SET DEFAULT` produces `set_default` with the existing `column` and typed `value`; it preserves existing rows (including NULL) and changes only the default used for subsequent omitted-column inserts. Catalog-free raw SQL remains Unsupported and unproved expressions or missing columns cannot silently change state. The `data_type` object uses the
 same canonical datatype representation as `source_schemas`. A missing default
 backfills SQL NULL; an explicit SQL NULL default is distinguishable via
 `has_default`. Unsupported vendor options, expressions and conditional clauses

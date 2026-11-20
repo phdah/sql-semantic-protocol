@@ -195,6 +195,36 @@ impl AnalysisBundle {
                     )?;
                     set.replace_physical_column_default(source);
                 }
+                ColumnAlterStep::SetDefault { column, default } => {
+                    let value = match default {
+                        LiteralValue::Null => ConstraintValue::Null,
+                        LiteralValue::Boolean(value) => ConstraintValue::Boolean(*value),
+                        LiteralValue::Number(value) => {
+                            if let Ok(integer) = value.parse::<i64>() {
+                                ConstraintValue::Integer(integer)
+                            } else if let Ok(unsigned) = value.parse::<u64>() {
+                                ConstraintValue::UnsignedInteger(unsigned)
+                            } else {
+                                ConstraintValue::Number(value.clone())
+                            }
+                        }
+                        LiteralValue::Text(value) => ConstraintValue::String(value.clone()),
+                    };
+                    let provenance = ConstraintProvenance::new(
+                        ConstraintSourceKind::SqlDdl,
+                        format!("ordered_alter:{relation}:{column}"),
+                    )?;
+                    let source = ColumnValueSource::new(
+                        column,
+                        ColumnValueKind::Default,
+                        Some(value),
+                        vec![ConstraintEvidence::new(
+                            provenance,
+                            ConstraintEnforcement::Enforced,
+                        )],
+                    )?;
+                    set.replace_physical_column_default(source);
+                }
                 ColumnAlterStep::Drop { column } => {
                     set.drop_physical_column_default(column);
                 }

@@ -1,0 +1,2596 @@
+{
+  "schema_version": 1,
+  "task_id": "TASK-180",
+  "review_phase": "independent_source_bounded_pre_final_signoff",
+  "original_matrix": "docs/task-180-acceptance-freeze.json",
+  "semantic_owner": "TASK-192",
+  "case_count": 18,
+  "cell_count": 234,
+  "source_status": "checked against original immutable SQL and independent upstream reviewer/oracle records",
+  "external_vendor_native_execution_attested": false,
+  "release_ready": false,
+  "cases": [
+    {
+      "id": "88-C177-S020",
+      "original_sql": "SELECT id FROM customers WHERE name LIKE 'A%'",
+      "feature_id": "predicates.string_pattern",
+      "semantic_owner": "TASK-192",
+      "owner_review_ref": "docs/task-192-independent-semantic-review.json#88-C177-S020",
+      "adapter_review_ref": "docs/task-197-acceptance-ledger-v2.json#88-C177-S020",
+      "typed_portable_law": {
+        "physical_source": "customers",
+        "output_column": "id",
+        "where_operator": "like_prefix",
+        "projected_domain_kind": "unbounded",
+        "condition_exactness": "residual",
+        "residual_reason": "computed_expression",
+        "undeclared_session_laws": []
+      },
+      "original_oracle_status": "approved_for_bounded_TASK_192_public_parser_semantics",
+      "original_parser_mask": "CCCCCCCCCCCCC",
+      "source_type_authority": "only fixed documented source rows/schema and SQL AST; no native vendor equivalence implied",
+      "independent_positive_negative_test": "tests/task_180_scalar_native.rs; tests/task_192_typed_soundness.rs; tests/task_192_nullable_truth.rs",
+      "original_source_terminal_oracle": "docs/task-192-acceptance-freeze.json",
+      "semantic_scope": "bounded source or environmental semantics; portable exactness unproven",
+      "cells": [
+        {
+          "id": "88-C177-S020/ansi",
+          "dialect": "ansi",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S020/bigquery",
+          "dialect": "bigquery",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S020/clickhouse",
+          "dialect": "clickhouse",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S020/databricks",
+          "dialect": "databricks",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S020/duckdb",
+          "dialect": "duckdb",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S020/generic",
+          "dialect": "generic",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S020/hive",
+          "dialect": "hive",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S020/mssql",
+          "dialect": "mssql",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S020/mysql",
+          "dialect": "mysql",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S020/postgresql",
+          "dialect": "postgresql",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S020/redshift",
+          "dialect": "redshift",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S020/snowflake",
+          "dialect": "snowflake",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S020/sqlite",
+          "dialect": "sqlite",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        }
+      ],
+      "native_vendor_execution_attested": false
+    },
+    {
+      "id": "88-C177-S021",
+      "original_sql": "SELECT id FROM customers WHERE name ILIKE 'a%'",
+      "feature_id": "predicates.string_pattern",
+      "semantic_owner": "TASK-192",
+      "owner_review_ref": "docs/task-192-independent-semantic-review.json#88-C177-S021",
+      "adapter_review_ref": "docs/task-197-acceptance-ledger-v2.json#88-C177-S021",
+      "typed_portable_law": {
+        "physical_source": "customers",
+        "output_column": "id",
+        "where_operator": "boolean_expression",
+        "projected_domain_kind": "unbounded",
+        "condition_exactness": "residual",
+        "residual_reason": "computed_expression",
+        "undeclared_session_laws": []
+      },
+      "original_oracle_status": "approved_for_bounded_TASK_192_public_parser_semantics",
+      "original_parser_mask": "CCCCCCCCCCCCC",
+      "source_type_authority": "only fixed documented source rows/schema and SQL AST; no native vendor equivalence implied",
+      "independent_positive_negative_test": "tests/task_180_scalar_native.rs; tests/task_192_typed_soundness.rs; tests/task_192_nullable_truth.rs",
+      "original_source_terminal_oracle": "docs/task-192-acceptance-freeze.json",
+      "semantic_scope": "bounded source or environmental semantics; portable exactness unproven",
+      "cells": [
+        {
+          "id": "88-C177-S021/ansi",
+          "dialect": "ansi",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S021/bigquery",
+          "dialect": "bigquery",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S021/clickhouse",
+          "dialect": "clickhouse",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S021/databricks",
+          "dialect": "databricks",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S021/duckdb",
+          "dialect": "duckdb",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S021/generic",
+          "dialect": "generic",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S021/hive",
+          "dialect": "hive",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S021/mssql",
+          "dialect": "mssql",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S021/mysql",
+          "dialect": "mysql",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S021/postgresql",
+          "dialect": "postgresql",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S021/redshift",
+          "dialect": "redshift",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S021/snowflake",
+          "dialect": "snowflake",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S021/sqlite",
+          "dialect": "sqlite",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        }
+      ],
+      "native_vendor_execution_attested": false
+    },
+    {
+      "id": "88-C177-S022",
+      "original_sql": "SELECT id FROM customers WHERE name LIKE 'A!_%' ESCAPE '!'",
+      "feature_id": "predicates.string_pattern",
+      "semantic_owner": "TASK-192",
+      "owner_review_ref": "docs/task-192-independent-semantic-review.json#88-C177-S022",
+      "adapter_review_ref": "docs/task-197-acceptance-ledger-v2.json#88-C177-S022",
+      "typed_portable_law": {
+        "physical_source": "customers",
+        "output_column": "id",
+        "where_operator": "like_prefix",
+        "projected_domain_kind": "unbounded",
+        "condition_exactness": "residual",
+        "residual_reason": "computed_expression",
+        "undeclared_session_laws": []
+      },
+      "original_oracle_status": "approved_for_bounded_TASK_192_public_parser_semantics",
+      "original_parser_mask": "CCCCCCCCCCCCC",
+      "source_type_authority": "only fixed documented source rows/schema and SQL AST; no native vendor equivalence implied",
+      "independent_positive_negative_test": "tests/task_180_scalar_native.rs; tests/task_192_typed_soundness.rs; tests/task_192_nullable_truth.rs",
+      "original_source_terminal_oracle": "docs/task-192-acceptance-freeze.json",
+      "semantic_scope": "bounded source or environmental semantics; portable exactness unproven",
+      "cells": [
+        {
+          "id": "88-C177-S022/ansi",
+          "dialect": "ansi",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S022/bigquery",
+          "dialect": "bigquery",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S022/clickhouse",
+          "dialect": "clickhouse",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S022/databricks",
+          "dialect": "databricks",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S022/duckdb",
+          "dialect": "duckdb",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S022/generic",
+          "dialect": "generic",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S022/hive",
+          "dialect": "hive",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S022/mssql",
+          "dialect": "mssql",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S022/mysql",
+          "dialect": "mysql",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S022/postgresql",
+          "dialect": "postgresql",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S022/redshift",
+          "dialect": "redshift",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S022/snowflake",
+          "dialect": "snowflake",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S022/sqlite",
+          "dialect": "sqlite",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        }
+      ],
+      "native_vendor_execution_attested": false
+    },
+    {
+      "id": "88-C177-S023",
+      "original_sql": "SELECT id FROM customers WHERE name SIMILAR TO '(A|B)%'",
+      "feature_id": "predicates.string_pattern",
+      "semantic_owner": "TASK-192",
+      "owner_review_ref": "docs/task-192-independent-semantic-review.json#88-C177-S023",
+      "adapter_review_ref": "docs/task-197-acceptance-ledger-v2.json#88-C177-S023",
+      "typed_portable_law": {
+        "physical_source": "customers",
+        "output_column": "id",
+        "where_operator": "boolean_expression",
+        "projected_domain_kind": "unbounded",
+        "condition_exactness": "residual",
+        "residual_reason": "computed_expression",
+        "undeclared_session_laws": []
+      },
+      "original_oracle_status": "approved_for_bounded_TASK_192_public_parser_semantics",
+      "original_parser_mask": "CCCCCCCCCCCCC",
+      "source_type_authority": "only fixed documented source rows/schema and SQL AST; no native vendor equivalence implied",
+      "independent_positive_negative_test": "tests/task_180_scalar_native.rs; tests/task_192_typed_soundness.rs; tests/task_192_nullable_truth.rs",
+      "original_source_terminal_oracle": "docs/task-192-native-partitions.json",
+      "semantic_scope": "bounded source or environmental semantics; portable exactness unproven",
+      "cells": [
+        {
+          "id": "88-C177-S023/ansi",
+          "dialect": "ansi",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S023/bigquery",
+          "dialect": "bigquery",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S023/clickhouse",
+          "dialect": "clickhouse",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S023/databricks",
+          "dialect": "databricks",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S023/duckdb",
+          "dialect": "duckdb",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S023/generic",
+          "dialect": "generic",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S023/hive",
+          "dialect": "hive",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S023/mssql",
+          "dialect": "mssql",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S023/mysql",
+          "dialect": "mysql",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S023/postgresql",
+          "dialect": "postgresql",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S023/redshift",
+          "dialect": "redshift",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S023/snowflake",
+          "dialect": "snowflake",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S023/sqlite",
+          "dialect": "sqlite",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        }
+      ],
+      "native_vendor_execution_attested": false
+    },
+    {
+      "id": "88-C177-S024",
+      "original_sql": "SELECT id FROM customers WHERE name ~ '^A'",
+      "feature_id": "predicates.string_pattern",
+      "semantic_owner": "TASK-192",
+      "owner_review_ref": "docs/task-192-independent-semantic-review.json#88-C177-S024",
+      "adapter_review_ref": "docs/task-197-acceptance-ledger-v2.json#88-C177-S024",
+      "typed_portable_law": {
+        "physical_source": "customers",
+        "output_column": "id",
+        "where_operator": "boolean_expression",
+        "projected_domain_kind": "unbounded",
+        "condition_exactness": "residual",
+        "residual_reason": "computed_expression",
+        "undeclared_session_laws": []
+      },
+      "original_oracle_status": "approved_for_bounded_TASK_192_public_parser_semantics",
+      "original_parser_mask": "CCCCCCCCCCCCC",
+      "source_type_authority": "only fixed documented source rows/schema and SQL AST; no native vendor equivalence implied",
+      "independent_positive_negative_test": "tests/task_180_scalar_native.rs; tests/task_192_typed_soundness.rs; tests/task_192_nullable_truth.rs",
+      "original_source_terminal_oracle": "docs/task-192-native-partitions.json",
+      "semantic_scope": "bounded source or environmental semantics; portable exactness unproven",
+      "cells": [
+        {
+          "id": "88-C177-S024/ansi",
+          "dialect": "ansi",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S024/bigquery",
+          "dialect": "bigquery",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S024/clickhouse",
+          "dialect": "clickhouse",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S024/databricks",
+          "dialect": "databricks",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S024/duckdb",
+          "dialect": "duckdb",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S024/generic",
+          "dialect": "generic",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S024/hive",
+          "dialect": "hive",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S024/mssql",
+          "dialect": "mssql",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S024/mysql",
+          "dialect": "mysql",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S024/postgresql",
+          "dialect": "postgresql",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S024/redshift",
+          "dialect": "redshift",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S024/snowflake",
+          "dialect": "snowflake",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S024/sqlite",
+          "dialect": "sqlite",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        }
+      ],
+      "native_vendor_execution_attested": false
+    },
+    {
+      "id": "88-C177-S025",
+      "original_sql": "SELECT id FROM customers WHERE name LIKE 'ABC%'",
+      "feature_id": "predicates.string_pattern",
+      "semantic_owner": "TASK-192",
+      "owner_review_ref": "docs/task-192-independent-semantic-review.json#88-C177-S025",
+      "adapter_review_ref": "docs/task-197-acceptance-ledger-v2.json#88-C177-S025",
+      "typed_portable_law": {
+        "physical_source": "customers",
+        "output_column": "id",
+        "where_operator": "like_prefix",
+        "projected_domain_kind": "unbounded",
+        "condition_exactness": "residual",
+        "residual_reason": "computed_expression",
+        "undeclared_session_laws": []
+      },
+      "original_oracle_status": "approved_for_bounded_TASK_192_public_parser_semantics",
+      "original_parser_mask": "CCCCCCCCCCCCC",
+      "source_type_authority": "only fixed documented source rows/schema and SQL AST; no native vendor equivalence implied",
+      "independent_positive_negative_test": "tests/task_180_scalar_native.rs; tests/task_192_typed_soundness.rs; tests/task_192_nullable_truth.rs",
+      "original_source_terminal_oracle": "docs/task-192-acceptance-freeze.json",
+      "semantic_scope": "bounded source or environmental semantics; portable exactness unproven",
+      "cells": [
+        {
+          "id": "88-C177-S025/ansi",
+          "dialect": "ansi",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S025/bigquery",
+          "dialect": "bigquery",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S025/clickhouse",
+          "dialect": "clickhouse",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S025/databricks",
+          "dialect": "databricks",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S025/duckdb",
+          "dialect": "duckdb",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S025/generic",
+          "dialect": "generic",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S025/hive",
+          "dialect": "hive",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S025/mssql",
+          "dialect": "mssql",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S025/mysql",
+          "dialect": "mysql",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S025/postgresql",
+          "dialect": "postgresql",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S025/redshift",
+          "dialect": "redshift",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S025/snowflake",
+          "dialect": "snowflake",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S025/sqlite",
+          "dialect": "sqlite",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        }
+      ],
+      "native_vendor_execution_attested": false
+    },
+    {
+      "id": "88-C177-S026",
+      "original_sql": "SELECT id FROM customers WHERE name COLLATE en_US = 'a'",
+      "feature_id": "predicates.string_pattern",
+      "semantic_owner": "TASK-192",
+      "owner_review_ref": "docs/task-192-independent-semantic-review.json#88-C177-S026",
+      "adapter_review_ref": "docs/task-197-acceptance-ledger-v2.json#88-C177-S026",
+      "typed_portable_law": {
+        "physical_source": "customers",
+        "output_column": "id",
+        "where_operator": "comparison",
+        "projected_domain_kind": "unbounded",
+        "condition_exactness": "residual",
+        "residual_reason": "computed_expression",
+        "undeclared_session_laws": []
+      },
+      "original_oracle_status": "approved_for_bounded_TASK_192_public_parser_semantics",
+      "original_parser_mask": "CCCCCCCCCCCCC",
+      "source_type_authority": "only fixed documented source rows/schema and SQL AST; no native vendor equivalence implied",
+      "independent_positive_negative_test": "tests/task_180_scalar_native.rs; tests/task_192_typed_soundness.rs; tests/task_192_nullable_truth.rs",
+      "original_source_terminal_oracle": "docs/task-192-native-partitions.json",
+      "semantic_scope": "bounded source or environmental semantics; portable exactness unproven",
+      "cells": [
+        {
+          "id": "88-C177-S026/ansi",
+          "dialect": "ansi",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S026/bigquery",
+          "dialect": "bigquery",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S026/clickhouse",
+          "dialect": "clickhouse",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S026/databricks",
+          "dialect": "databricks",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S026/duckdb",
+          "dialect": "duckdb",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S026/generic",
+          "dialect": "generic",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S026/hive",
+          "dialect": "hive",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S026/mssql",
+          "dialect": "mssql",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S026/mysql",
+          "dialect": "mysql",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S026/postgresql",
+          "dialect": "postgresql",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S026/redshift",
+          "dialect": "redshift",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S026/snowflake",
+          "dialect": "snowflake",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S026/sqlite",
+          "dialect": "sqlite",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        }
+      ],
+      "native_vendor_execution_attested": false
+    },
+    {
+      "id": "88-C177-S033",
+      "original_sql": "SELECT 9223372036854775807 + 1 AS overflow_case",
+      "feature_id": "predicates.computed",
+      "semantic_owner": "TASK-192",
+      "owner_review_ref": "docs/task-192-independent-semantic-review.json#88-C177-S033",
+      "adapter_review_ref": "docs/task-197-acceptance-ledger-v2.json#88-C177-S033",
+      "typed_portable_law": {
+        "physical_source": null,
+        "output_column": "overflow_case",
+        "where_operator": "none",
+        "projected_domain_kind": "unknown",
+        "condition_exactness": "exact",
+        "residual_reason": null,
+        "undeclared_session_laws": []
+      },
+      "original_oracle_status": "approved_for_bounded_TASK_192_public_parser_semantics",
+      "original_parser_mask": "CCCCCCCCCCCCC",
+      "source_type_authority": "only fixed documented source rows/schema and SQL AST; no native vendor equivalence implied",
+      "independent_positive_negative_test": "tests/task_180_scalar_native.rs; tests/task_192_typed_soundness.rs; tests/task_192_nullable_truth.rs",
+      "original_source_terminal_oracle": "docs/task-192-native-partitions.json",
+      "semantic_scope": "bounded source or environmental semantics; portable exactness unproven",
+      "cells": [
+        {
+          "id": "88-C177-S033/ansi",
+          "dialect": "ansi",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S033/bigquery",
+          "dialect": "bigquery",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S033/clickhouse",
+          "dialect": "clickhouse",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S033/databricks",
+          "dialect": "databricks",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S033/duckdb",
+          "dialect": "duckdb",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S033/generic",
+          "dialect": "generic",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S033/hive",
+          "dialect": "hive",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S033/mssql",
+          "dialect": "mssql",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S033/mysql",
+          "dialect": "mysql",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S033/postgresql",
+          "dialect": "postgresql",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S033/redshift",
+          "dialect": "redshift",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S033/snowflake",
+          "dialect": "snowflake",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S033/sqlite",
+          "dialect": "sqlite",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        }
+      ],
+      "native_vendor_execution_attested": false
+    },
+    {
+      "id": "88-C177-S034",
+      "original_sql": "SELECT id FROM orders WHERE created_at >= TIMESTAMP '2020-01-01 00:00:00' + INTERVAL '1' DAY",
+      "feature_id": "predicates.temporal",
+      "semantic_owner": "TASK-192",
+      "owner_review_ref": "docs/task-192-independent-semantic-review.json#88-C177-S034",
+      "adapter_review_ref": "docs/task-197-acceptance-ledger-v2.json#88-C177-S034",
+      "typed_portable_law": {
+        "physical_source": "orders",
+        "output_column": "id",
+        "where_operator": "comparison",
+        "projected_domain_kind": "unbounded",
+        "condition_exactness": "residual",
+        "residual_reason": "computed_expression",
+        "undeclared_session_laws": []
+      },
+      "original_oracle_status": "approved_for_bounded_TASK_192_public_parser_semantics",
+      "original_parser_mask": "CCCCCCCCCCCCC",
+      "source_type_authority": "only fixed documented source rows/schema and SQL AST; no native vendor equivalence implied",
+      "independent_positive_negative_test": "tests/task_180_scalar_native.rs; tests/task_192_typed_soundness.rs; tests/task_192_nullable_truth.rs",
+      "original_source_terminal_oracle": "docs/task-192-native-partitions.json",
+      "semantic_scope": "bounded source or environmental semantics; portable exactness unproven",
+      "cells": [
+        {
+          "id": "88-C177-S034/ansi",
+          "dialect": "ansi",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S034/bigquery",
+          "dialect": "bigquery",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S034/clickhouse",
+          "dialect": "clickhouse",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S034/databricks",
+          "dialect": "databricks",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S034/duckdb",
+          "dialect": "duckdb",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S034/generic",
+          "dialect": "generic",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S034/hive",
+          "dialect": "hive",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S034/mssql",
+          "dialect": "mssql",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S034/mysql",
+          "dialect": "mysql",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S034/postgresql",
+          "dialect": "postgresql",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S034/redshift",
+          "dialect": "redshift",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S034/snowflake",
+          "dialect": "snowflake",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S034/sqlite",
+          "dialect": "sqlite",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        }
+      ],
+      "native_vendor_execution_attested": false
+    },
+    {
+      "id": "88-C177-S035",
+      "original_sql": "SELECT id FROM orders WHERE created_at AT TIME ZONE 'UTC' > TIMESTAMP '2020-01-01 00:00:00'",
+      "feature_id": "predicates.temporal",
+      "semantic_owner": "TASK-192",
+      "owner_review_ref": "docs/task-192-independent-semantic-review.json#88-C177-S035",
+      "adapter_review_ref": "docs/task-197-acceptance-ledger-v2.json#88-C177-S035",
+      "typed_portable_law": {
+        "physical_source": "orders",
+        "output_column": "id",
+        "where_operator": "comparison",
+        "projected_domain_kind": "unbounded",
+        "condition_exactness": "residual",
+        "residual_reason": "computed_expression",
+        "undeclared_session_laws": []
+      },
+      "original_oracle_status": "approved_for_bounded_TASK_192_public_parser_semantics",
+      "original_parser_mask": "CCCCCCCCCCCCC",
+      "source_type_authority": "only fixed documented source rows/schema and SQL AST; no native vendor equivalence implied",
+      "independent_positive_negative_test": "tests/task_180_scalar_native.rs; tests/task_192_typed_soundness.rs; tests/task_192_nullable_truth.rs",
+      "original_source_terminal_oracle": "docs/task-192-native-partitions.json",
+      "semantic_scope": "bounded source or environmental semantics; portable exactness unproven",
+      "cells": [
+        {
+          "id": "88-C177-S035/ansi",
+          "dialect": "ansi",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S035/bigquery",
+          "dialect": "bigquery",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S035/clickhouse",
+          "dialect": "clickhouse",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S035/databricks",
+          "dialect": "databricks",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S035/duckdb",
+          "dialect": "duckdb",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S035/generic",
+          "dialect": "generic",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S035/hive",
+          "dialect": "hive",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S035/mssql",
+          "dialect": "mssql",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S035/mysql",
+          "dialect": "mysql",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S035/postgresql",
+          "dialect": "postgresql",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S035/redshift",
+          "dialect": "redshift",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S035/snowflake",
+          "dialect": "snowflake",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S035/sqlite",
+          "dialect": "sqlite",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        }
+      ],
+      "native_vendor_execution_attested": false
+    },
+    {
+      "id": "88-C177-S036",
+      "original_sql": "SELECT id FROM orders WHERE CAST(created_at AS DATE) = DATE '2020-01-01'",
+      "feature_id": "predicates.temporal",
+      "semantic_owner": "TASK-192",
+      "owner_review_ref": "docs/task-192-independent-semantic-review.json#88-C177-S036",
+      "adapter_review_ref": "docs/task-197-acceptance-ledger-v2.json#88-C177-S036",
+      "typed_portable_law": {
+        "physical_source": "orders",
+        "output_column": "id",
+        "where_operator": "comparison",
+        "projected_domain_kind": "unbounded",
+        "condition_exactness": "residual",
+        "residual_reason": "computed_expression",
+        "undeclared_session_laws": []
+      },
+      "original_oracle_status": "approved_for_bounded_TASK_192_public_parser_semantics",
+      "original_parser_mask": "CCCCCCCCCCCCC",
+      "source_type_authority": "only fixed documented source rows/schema and SQL AST; no native vendor equivalence implied",
+      "independent_positive_negative_test": "tests/task_180_scalar_native.rs; tests/task_192_typed_soundness.rs; tests/task_192_nullable_truth.rs",
+      "original_source_terminal_oracle": "docs/task-192-native-partitions.json",
+      "semantic_scope": "bounded source or environmental semantics; portable exactness unproven",
+      "cells": [
+        {
+          "id": "88-C177-S036/ansi",
+          "dialect": "ansi",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S036/bigquery",
+          "dialect": "bigquery",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S036/clickhouse",
+          "dialect": "clickhouse",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S036/databricks",
+          "dialect": "databricks",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S036/duckdb",
+          "dialect": "duckdb",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S036/generic",
+          "dialect": "generic",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S036/hive",
+          "dialect": "hive",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S036/mssql",
+          "dialect": "mssql",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S036/mysql",
+          "dialect": "mysql",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S036/postgresql",
+          "dialect": "postgresql",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S036/redshift",
+          "dialect": "redshift",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S036/snowflake",
+          "dialect": "snowflake",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S036/sqlite",
+          "dialect": "sqlite",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        }
+      ],
+      "native_vendor_execution_attested": false
+    },
+    {
+      "id": "88-C177-S037",
+      "original_sql": "SELECT id FROM orders WHERE created_at BETWEEN TIMESTAMP '2020-03-08 01:00:00' AND TIMESTAMP '2020-03-08 03:00:00'",
+      "feature_id": "predicates.temporal",
+      "semantic_owner": "TASK-192",
+      "owner_review_ref": "docs/task-192-independent-semantic-review.json#88-C177-S037",
+      "adapter_review_ref": "docs/task-197-acceptance-ledger-v2.json#88-C177-S037",
+      "typed_portable_law": {
+        "physical_source": "orders",
+        "output_column": "id",
+        "where_operator": "between",
+        "projected_domain_kind": "unbounded",
+        "condition_exactness": "conditional",
+        "residual_reason": null,
+        "undeclared_session_laws": [
+          "session_time_zone"
+        ]
+      },
+      "original_oracle_status": "approved_for_bounded_TASK_192_public_parser_semantics",
+      "original_parser_mask": "CCCCCCCCCCCCC",
+      "source_type_authority": "only fixed documented source rows/schema and SQL AST; no native vendor equivalence implied",
+      "independent_positive_negative_test": "tests/task_180_scalar_native.rs; tests/task_192_typed_soundness.rs; tests/task_192_nullable_truth.rs",
+      "original_source_terminal_oracle": "docs/task-192-native-partitions.json",
+      "semantic_scope": "bounded source or environmental semantics; portable exactness unproven",
+      "cells": [
+        {
+          "id": "88-C177-S037/ansi",
+          "dialect": "ansi",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S037/bigquery",
+          "dialect": "bigquery",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S037/clickhouse",
+          "dialect": "clickhouse",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S037/databricks",
+          "dialect": "databricks",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S037/duckdb",
+          "dialect": "duckdb",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S037/generic",
+          "dialect": "generic",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S037/hive",
+          "dialect": "hive",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S037/mssql",
+          "dialect": "mssql",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S037/mysql",
+          "dialect": "mysql",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S037/postgresql",
+          "dialect": "postgresql",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S037/redshift",
+          "dialect": "redshift",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S037/snowflake",
+          "dialect": "snowflake",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S037/sqlite",
+          "dialect": "sqlite",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        }
+      ],
+      "native_vendor_execution_attested": false
+    },
+    {
+      "id": "88-C177-S038",
+      "original_sql": "SELECT id FROM customers WHERE name COLLATE en_US = 'abc'",
+      "feature_id": "predicates.comparison_environment",
+      "semantic_owner": "TASK-192",
+      "owner_review_ref": "docs/task-192-independent-semantic-review.json#88-C177-S038",
+      "adapter_review_ref": "docs/task-197-acceptance-ledger-v2.json#88-C177-S038",
+      "typed_portable_law": {
+        "physical_source": "customers",
+        "output_column": "id",
+        "where_operator": "comparison",
+        "projected_domain_kind": "unbounded",
+        "condition_exactness": "residual",
+        "residual_reason": "computed_expression",
+        "undeclared_session_laws": []
+      },
+      "original_oracle_status": "approved_for_bounded_TASK_192_public_parser_semantics",
+      "original_parser_mask": "CCCCCCCCCCCCC",
+      "source_type_authority": "only fixed documented source rows/schema and SQL AST; no native vendor equivalence implied",
+      "independent_positive_negative_test": "tests/task_180_scalar_native.rs; tests/task_192_typed_soundness.rs; tests/task_192_nullable_truth.rs",
+      "original_source_terminal_oracle": "docs/task-192-native-partitions.json",
+      "semantic_scope": "bounded source or environmental semantics; portable exactness unproven",
+      "cells": [
+        {
+          "id": "88-C177-S038/ansi",
+          "dialect": "ansi",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S038/bigquery",
+          "dialect": "bigquery",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S038/clickhouse",
+          "dialect": "clickhouse",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S038/databricks",
+          "dialect": "databricks",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S038/duckdb",
+          "dialect": "duckdb",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S038/generic",
+          "dialect": "generic",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S038/hive",
+          "dialect": "hive",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S038/mssql",
+          "dialect": "mssql",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S038/mysql",
+          "dialect": "mysql",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S038/postgresql",
+          "dialect": "postgresql",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S038/redshift",
+          "dialect": "redshift",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S038/snowflake",
+          "dialect": "snowflake",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S038/sqlite",
+          "dialect": "sqlite",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        }
+      ],
+      "native_vendor_execution_attested": false
+    },
+    {
+      "id": "88-C177-S039",
+      "original_sql": "SELECT id FROM customers WHERE name = 'abc '",
+      "feature_id": "predicates.comparison_environment",
+      "semantic_owner": "TASK-192",
+      "owner_review_ref": "docs/task-192-independent-semantic-review.json#88-C177-S039",
+      "adapter_review_ref": "docs/task-197-acceptance-ledger-v2.json#88-C177-S039",
+      "typed_portable_law": {
+        "physical_source": "customers",
+        "output_column": "id",
+        "where_operator": "comparison",
+        "projected_domain_kind": "unbounded",
+        "condition_exactness": "conditional",
+        "residual_reason": null,
+        "undeclared_session_laws": [
+          "binary_collation",
+          "no_char_padding"
+        ]
+      },
+      "original_oracle_status": "approved_for_bounded_TASK_192_public_parser_semantics",
+      "original_parser_mask": "CCCCCCCCCCCCC",
+      "source_type_authority": "only fixed documented source rows/schema and SQL AST; no native vendor equivalence implied",
+      "independent_positive_negative_test": "tests/task_180_scalar_native.rs; tests/task_192_typed_soundness.rs; tests/task_192_nullable_truth.rs",
+      "original_source_terminal_oracle": "docs/task-192-native-partitions.json",
+      "semantic_scope": "bounded source or environmental semantics; portable exactness unproven",
+      "cells": [
+        {
+          "id": "88-C177-S039/ansi",
+          "dialect": "ansi",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S039/bigquery",
+          "dialect": "bigquery",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S039/clickhouse",
+          "dialect": "clickhouse",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S039/databricks",
+          "dialect": "databricks",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S039/duckdb",
+          "dialect": "duckdb",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S039/generic",
+          "dialect": "generic",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S039/hive",
+          "dialect": "hive",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S039/mssql",
+          "dialect": "mssql",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S039/mysql",
+          "dialect": "mysql",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S039/postgresql",
+          "dialect": "postgresql",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S039/redshift",
+          "dialect": "redshift",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S039/snowflake",
+          "dialect": "snowflake",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S039/sqlite",
+          "dialect": "sqlite",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        }
+      ],
+      "native_vendor_execution_attested": false
+    },
+    {
+      "id": "88-C177-S040",
+      "original_sql": "SELECT id FROM orders WHERE amount = 'NaN'",
+      "feature_id": "predicates.comparison_environment",
+      "semantic_owner": "TASK-192",
+      "owner_review_ref": "docs/task-192-independent-semantic-review.json#88-C177-S040",
+      "adapter_review_ref": "docs/task-197-acceptance-ledger-v2.json#88-C177-S040",
+      "typed_portable_law": {
+        "physical_source": "orders",
+        "output_column": "id",
+        "where_operator": "comparison",
+        "projected_domain_kind": "unbounded",
+        "condition_exactness": "residual",
+        "residual_reason": "comparison_semantics",
+        "undeclared_session_laws": [
+          "binary_collation",
+          "no_char_padding"
+        ]
+      },
+      "original_oracle_status": "approved_for_bounded_TASK_192_public_parser_semantics",
+      "original_parser_mask": "CCCCCCCCCCCCC",
+      "source_type_authority": "only fixed documented source rows/schema and SQL AST; no native vendor equivalence implied",
+      "independent_positive_negative_test": "tests/task_180_scalar_native.rs; tests/task_192_typed_soundness.rs; tests/task_192_nullable_truth.rs",
+      "original_source_terminal_oracle": "docs/task-192-native-partitions.json",
+      "semantic_scope": "bounded source or environmental semantics; portable exactness unproven",
+      "cells": [
+        {
+          "id": "88-C177-S040/ansi",
+          "dialect": "ansi",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S040/bigquery",
+          "dialect": "bigquery",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S040/clickhouse",
+          "dialect": "clickhouse",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S040/databricks",
+          "dialect": "databricks",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S040/duckdb",
+          "dialect": "duckdb",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S040/generic",
+          "dialect": "generic",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S040/hive",
+          "dialect": "hive",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S040/mssql",
+          "dialect": "mssql",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S040/mysql",
+          "dialect": "mysql",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S040/postgresql",
+          "dialect": "postgresql",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S040/redshift",
+          "dialect": "redshift",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S040/snowflake",
+          "dialect": "snowflake",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S040/sqlite",
+          "dialect": "sqlite",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        }
+      ],
+      "native_vendor_execution_attested": false
+    },
+    {
+      "id": "88-C177-S041",
+      "original_sql": "SELECT id FROM orders WHERE amount = -0.0",
+      "feature_id": "predicates.comparison_environment",
+      "semantic_owner": "TASK-192",
+      "owner_review_ref": "docs/task-192-independent-semantic-review.json#88-C177-S041",
+      "adapter_review_ref": "docs/task-197-acceptance-ledger-v2.json#88-C177-S041",
+      "typed_portable_law": {
+        "physical_source": "orders",
+        "output_column": "id",
+        "where_operator": "comparison",
+        "projected_domain_kind": "unbounded",
+        "condition_exactness": "residual",
+        "residual_reason": "computed_expression",
+        "undeclared_session_laws": []
+      },
+      "original_oracle_status": "approved_for_bounded_TASK_192_public_parser_semantics",
+      "original_parser_mask": "CCCCCCCCCCCCC",
+      "source_type_authority": "only fixed documented source rows/schema and SQL AST; no native vendor equivalence implied",
+      "independent_positive_negative_test": "tests/task_180_scalar_native.rs; tests/task_192_typed_soundness.rs; tests/task_192_nullable_truth.rs",
+      "original_source_terminal_oracle": "docs/task-192-native-partitions.json",
+      "semantic_scope": "bounded source or environmental semantics; portable exactness unproven",
+      "cells": [
+        {
+          "id": "88-C177-S041/ansi",
+          "dialect": "ansi",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S041/bigquery",
+          "dialect": "bigquery",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S041/clickhouse",
+          "dialect": "clickhouse",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S041/databricks",
+          "dialect": "databricks",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S041/duckdb",
+          "dialect": "duckdb",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S041/generic",
+          "dialect": "generic",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S041/hive",
+          "dialect": "hive",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S041/mssql",
+          "dialect": "mssql",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S041/mysql",
+          "dialect": "mysql",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S041/postgresql",
+          "dialect": "postgresql",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S041/redshift",
+          "dialect": "redshift",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S041/snowflake",
+          "dialect": "snowflake",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S041/sqlite",
+          "dialect": "sqlite",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        }
+      ],
+      "native_vendor_execution_attested": false
+    },
+    {
+      "id": "88-C177-S042",
+      "original_sql": "SELECT id FROM orders ORDER BY amount NULLS LAST",
+      "feature_id": "predicates.comparison_environment",
+      "semantic_owner": "TASK-192",
+      "owner_review_ref": "docs/task-192-independent-semantic-review.json#88-C177-S042",
+      "adapter_review_ref": "docs/task-197-acceptance-ledger-v2.json#88-C177-S042",
+      "typed_portable_law": {
+        "physical_source": "orders",
+        "output_column": "id",
+        "where_operator": "none",
+        "projected_domain_kind": "unbounded",
+        "condition_exactness": "exact",
+        "residual_reason": null,
+        "undeclared_session_laws": []
+      },
+      "original_oracle_status": "approved_for_bounded_TASK_192_public_parser_semantics",
+      "original_parser_mask": "CCCCCCCCCCCCC",
+      "source_type_authority": "only fixed documented source rows/schema and SQL AST; no native vendor equivalence implied",
+      "independent_positive_negative_test": "tests/task_180_scalar_native.rs; tests/task_192_typed_soundness.rs; tests/task_192_nullable_truth.rs",
+      "original_source_terminal_oracle": "docs/task-192-native-partitions.json",
+      "semantic_scope": "bounded source or environmental semantics; portable exactness unproven",
+      "cells": [
+        {
+          "id": "88-C177-S042/ansi",
+          "dialect": "ansi",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S042/bigquery",
+          "dialect": "bigquery",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S042/clickhouse",
+          "dialect": "clickhouse",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S042/databricks",
+          "dialect": "databricks",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S042/duckdb",
+          "dialect": "duckdb",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S042/generic",
+          "dialect": "generic",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S042/hive",
+          "dialect": "hive",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S042/mssql",
+          "dialect": "mssql",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S042/mysql",
+          "dialect": "mysql",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S042/postgresql",
+          "dialect": "postgresql",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S042/redshift",
+          "dialect": "redshift",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S042/snowflake",
+          "dialect": "snowflake",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S042/sqlite",
+          "dialect": "sqlite",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        }
+      ],
+      "native_vendor_execution_attested": false
+    },
+    {
+      "id": "88-C177-S179",
+      "original_sql": "SELECT CAST(ROW(1, 'a') AS STRUCT(a INT, b VARCHAR)) AS v",
+      "feature_id": "types.structural",
+      "semantic_owner": "TASK-192",
+      "owner_review_ref": "docs/task-192-independent-semantic-review.json#88-C177-S179",
+      "adapter_review_ref": "docs/task-197-acceptance-ledger-v2.json#88-C177-S179",
+      "typed_portable_law": {
+        "physical_source": null,
+        "output_column": "v",
+        "where_operator": "none",
+        "projected_domain_kind": "unknown",
+        "condition_exactness": "exact",
+        "residual_reason": null,
+        "undeclared_session_laws": []
+      },
+      "original_oracle_status": "approved_for_bounded_TASK_192_public_parser_semantics",
+      "original_parser_mask": "CRCCDRCCCCCCC",
+      "source_type_authority": "only fixed documented source rows/schema and SQL AST; no native vendor equivalence implied",
+      "independent_positive_negative_test": "tests/task_180_scalar_native.rs; tests/task_192_typed_soundness.rs; tests/task_192_nullable_truth.rs",
+      "original_source_terminal_oracle": "docs/task-192-native-partitions.json",
+      "semantic_scope": "bounded source or environmental semantics; portable exactness unproven",
+      "cells": [
+        {
+          "id": "88-C177-S179/ansi",
+          "dialect": "ansi",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S179/bigquery",
+          "dialect": "bigquery",
+          "original_canonical_class": "R",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S179/clickhouse",
+          "dialect": "clickhouse",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S179/databricks",
+          "dialect": "databricks",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S179/duckdb",
+          "dialect": "duckdb",
+          "original_canonical_class": "D",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S179/generic",
+          "dialect": "generic",
+          "original_canonical_class": "R",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S179/hive",
+          "dialect": "hive",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S179/mssql",
+          "dialect": "mssql",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S179/mysql",
+          "dialect": "mysql",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S179/postgresql",
+          "dialect": "postgresql",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S179/redshift",
+          "dialect": "redshift",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S179/snowflake",
+          "dialect": "snowflake",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        },
+        {
+          "id": "88-C177-S179/sqlite",
+          "dialect": "sqlite",
+          "original_canonical_class": "C",
+          "independent_bounded_review": "approved_for_bounded_TASK_192_public_parser_semantics",
+          "review_status": "reviewed_conditional_residual",
+          "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
+          "native_vendor_execution_attested": false
+        }
+      ],
+      "native_vendor_execution_attested": false
+    }
+  ]
+}

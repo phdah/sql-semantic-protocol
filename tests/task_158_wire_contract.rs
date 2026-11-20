@@ -57,6 +57,7 @@ fn schema_declares_optional_alter_columns_and_new_write_kind() {
         ("drop", vec!["column"]),
         ("rename", vec!["old", "new"]),
         ("set_type", vec!["column"]),
+        ("set_default", vec!["column", "value"]),
     ] {
         let branch = variants
             .iter()

@@ -208,6 +208,11 @@ pub(super) fn write_operation_to_value(write: &WriteOperation) -> Value {
                 "kind": "set_type",
                 "column": { "name": column.name(), "data_type": data_type_to_value(column.data_type()) },
             }),
+            ColumnAlterStep::SetDefault { column, default } => json!({
+                "kind": "set_default",
+                "column": column,
+                "value": literal_value_to_value(default),
+            }),
         }).collect::<Vec<_>>());
     }
     if let Some(action) = write.lifecycle_action() {

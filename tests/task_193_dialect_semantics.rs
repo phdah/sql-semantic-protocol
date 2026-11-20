@@ -152,3 +152,65 @@ fn all_shared_join_sql_forms_emit_identical_public_documents_across_13_parsers()
     }
     assert_eq!(checked, 312);
 }
+
+#[test]
+fn mssql_lateral_on_true_is_an_unbound_identifier_not_a_boolean_literal() {
+    // sqlparser 0.58 exposes different AST semantics for the same text.
+    // Treating the identifier as Boolean(TRUE) would invent an MSSQL join
+    // condition and incorrectly promote a dialect-specific Residual to Exact.
+    let sql = "SELECT o.id FROM orders o JOIN LATERAL (SELECT o.id) l ON TRUE";
+    for name in ["ansi", "mssql"] {
+        let dialect = dialect_from_name(name).expect("supported parser");
+        let parsed_ast =
+            sqlparser::parser::Parser::parse_sql(dialect.as_ref(), sql).expect("original SQL");
+        let [sqlparser::ast::Statement::Query(query)] = parsed_ast.as_slice() else {
+            panic!("{name}: one SELECT required");
+        };
+        let sqlparser::ast::SetExpr::Select(select) = query.body.as_ref() else {
+            panic!("{name}: one SELECT body required");
+        };
+        let [from] = select.from.as_slice() else {
+            panic!("{name}: one base relation required");
+        };
+        let [join] = from.joins.as_slice() else {
+            panic!("{name}: one lateral join required");
+        };
+        let sqlparser::ast::TableFactor::Derived { lateral: true, .. } = &join.relation else {
+            panic!("{name}: correlated lateral AST must remain explicit");
+        };
+        let sqlparser::ast::JoinOperator::Join(sqlparser::ast::JoinConstraint::On(predicate)) =
+            &join.join_operator
+        else {
+            panic!("{name}: original ON expression required");
+        };
+        if name == "mssql" {
+            assert!(
+                matches!(predicate, sqlparser::ast::Expr::Identifier(identifier)
+                    if identifier.value == "TRUE"),
+                "MSSQL TRUE is parsed as a column identifier, not a Boolean constant"
+            );
+        } else {
+            assert!(
+                matches!(predicate, sqlparser::ast::Expr::Value(value)
+                    if value.value == sqlparser::ast::Value::Boolean(true)),
+                "ANSI ON TRUE has a literal Boolean value"
+            );
+        }
+        let protocol = analyze_sql(sql, name, dialect.as_ref()).expect("canonical source");
+        let wire = parsed(&to_json(&protocol));
+        let qualifying = &wire["graph"]["physical_nodes"][1]["operator_witnesses"][0]["qualifying"];
+        assert_eq!(
+            qualifying["status"], "residual",
+            "{name}: no unattested native LATERAL claim"
+        );
+        assert_eq!(
+            qualifying["reason"],
+            if name == "mssql" {
+                "computed_join_comparison"
+            } else {
+                "join_condition_not_single_column_comparison"
+            },
+            "{name}: preserve the actual parser-bound semantic distinction"
+        );
+    }
+}

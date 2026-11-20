@@ -3198,7 +3198,8 @@
                   "add",
                   "drop",
                   "rename",
-                  "set_type"
+                  "set_type",
+                  "set_default"
                 ]
               },
               "column": {
@@ -3221,6 +3222,14 @@
                 "type": "boolean"
               },
               "default": {
+                "type": [
+                  "string",
+                  "number",
+                  "boolean",
+                  "null"
+                ]
+              },
+              "value": {
                 "type": [
                   "string",
                   "number",
@@ -3300,6 +3309,26 @@
                   "properties": {
                     "column": {
                       "$ref": "#/$defs/schemaColumn"
+                    }
+                  }
+                }
+              },
+              {
+                "if": {
+                  "properties": {
+                    "kind": {
+                      "const": "set_default"
+                    }
+                  }
+                },
+                "then": {
+                  "required": [
+                    "column",
+                    "value"
+                  ],
+                  "properties": {
+                    "column": {
+                      "$ref": "#/$defs/nonEmptyString"
                     }
                   }
                 }

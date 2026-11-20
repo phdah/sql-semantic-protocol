@@ -1,10 +1,10 @@
 ---
 id: TASK-180
 title: Independently certify complete dialect matrix and gate CI
-status: To Do
+status: In Progress
 assignee: []
 created_date: '2026-10-17'
-updated_date: '2026-11-09'
+updated_date: '2026-11-19'
 labels: []
 milestone: m-3
 dependencies:
@@ -33,10 +33,10 @@ type: feature
 ## Acceptance Criteria
 
 <!-- AC:BEGIN -->
-- [ ] #1 Before implementing, freeze all named variants and fixture IDs in a task-owned versioned acceptance matrix linked from `docs/coverage-manifest.json`: SQL shape, dialect/parser equivalence, typed output domains (NULL/inclusive-exclusive), exact source and terminal snapshots, TRUE/NOT TRUE/Impossible/Residual proof, source identities, adapter and external-engine evidence. Unverified mandatory cells block Done.
+- [x] #1 Before implementing, freeze all named variants and fixture IDs in a task-owned versioned acceptance matrix linked from `docs/coverage-manifest.json`: SQL shape, dialect/parser equivalence, typed output domains (NULL/inclusive-exclusive), exact source and terminal snapshots, TRUE/NOT TRUE/Impossible/Residual proof, source identities, adapter and external-engine evidence. Unverified mandatory cells block Done.
 - [ ] #2 Implement only the finite listed mandatory families and their stated oracle behavior, preserving strongest sound value domains, cross-source correlation, whole-bag multiplicity, complete downstream outputs and deterministic canonical proof. Do not infer independent witness conjunction, silently discard data, or rely on sql-tdg reparsing.
-- [ ] #3 Add executable, public-API DuckDB differential cases for positive and rejected or impossible directions, including fixed NULL/duplicate or counterexample scenarios. Compare complete physical inputs, emitted typed protocol claims and full terminal bags/replay artifacts, not only parsing or generated expectations.
-- [ ] #4 Check the 13 project dialect parser/equivalence cases where meaningful and direct SQL/dbt/ODCS parity for available facts. Record named vendor/session or external consumer limitations, exact evidence required, stable Residual/Impossible classification and explicit review disposition. No unexecuted native-engine claim.
+- [x] #3 Add executable, public-API DuckDB differential cases for positive and rejected or impossible directions, including fixed NULL/duplicate or counterexample scenarios. Compare complete physical inputs, emitted typed protocol claims and full terminal bags/replay artifacts, not only parsing or generated expectations.
+- [x] #4 Check the 13 project dialect parser/equivalence cases where meaningful and direct SQL/dbt/ODCS parity for available facts. Record named vendor/session or external consumer limitations, exact evidence required, stable Residual/Impossible classification and explicit review disposition. No unexecuted native-engine claim.
 - [ ] #5 Verify final-head fmt, strict Clippy, full Rust tests/docs/no-default-features, dbt E2E, active schema/golden and relevant pinned sql-tdg tests. Independently sign off each frozen mandatory cell and its mapped parent AC before Done/merge; TASK-88 stays open until all children and original AC pass.
 <!-- AC:END -->
 
@@ -62,3 +62,30 @@ For original TASK-178 predicates/types, consult [TASK-192's 43-case/559-cell exp
 ## TASK-191 bounded handoff (pending PR #205 merge)
 
 The [TASK-191 v2 independently reviewed exception decisions](../../docs/task-191-reviewed-dispositions-v2.json), [v3 TASK-178/179/197 source-fact handoff](../../docs/task-191-downstream-handoff-v3.json), and [v4 bounded signoff](../../docs/task-191-independent-review-v4.json) are inputs to TASK-180. Original 55 parser rejects, 116 Unsupported and 23 missing exact native terminal cases are source-bound classified, **not** promoted into portable mandatory support or external vendor execution. TASK-180 must independently certify the original complete release matrix, implement unresolved mandatory semantics as required, and preserve vendor/session Residual until attested. This parent remains To Do until TASK-191 is Done **and PR #205 merged**.
+
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+2026-11-19: TASK-191 and PR #205 are merged. Began TASK-180's independent final gate on `feat/task-180-dialect-release-gate`. Frozen 163 original SQL cases x 13 dialects = 2,119 explicit cells in `docs/task-180-acceptance-freeze.json`, grounded in original SQL and TASK-192..197 review evidence. `tests/task_180_independent_dialect_gate.rs` independently reconciles the frozen cells with the original inventory, adapter review and TASK-191 boundary, and replays original DuckDB positive, FALSE, UNKNOWN and rejected complete bags.
+
+Expanded verification in this PR: all 25 independently frozen predicate/source truth bags now execute against DuckDB and 13 public dialects (325 observations); the current 2,119-cell public parser/canonical matrix executes live with the 22 reviewed historical grouping/STRUCT normalizations. `docs/task-180-exception-and-gap-ledger.json` enumerates the 13 original SQL exception families and 105 exceptional original dialect cells. The release-blocking status is intentional, not a test-signoff substitute.
+
+The source-backed original native/equivalent and explicitly bounded conditional evidence now covers all 163 named SQL variants in the TASK-180 tests. The independent release ledger remains unapproved for 2,119 dialect cells, 481 vendor/session review decisions and exact-head consumer evidence.
+
+The final gate also re-executes all 481 frozen TASK-179 vendor/dialect paths and requires distinct per-cell reviewed conditional/runtime dispositions before signing off. External native vendors remain unattested.
+
+Independent AC #1 audit: all 163 original SQLs, 2,119 original parser cells, owner reviews, adapter boundaries, typed/native oracle references, named fixtures and fail-closed mandatory release status are frozen and reconciled to immutable upstream source evidence by `tests/task_180_independent_dialect_gate.rs`. AC #1 is complete, not a release approval.
+
+The 481 named vendor/session parser laws are now reviewed individually as explicit Residual in `docs/task-180-vendor-residual-decisions.json`, tied to per-cell remaining native engine requirements; native execution remains unattested. With an authoritative column schema, the S220 scalar `ALTER COLUMN SET DEFAULT` now has a canonical schema transition and preserves subsequent omitted-column defaults. The catalog-free raw SQL remains Unsupported; this does not silently change its historical class or certify external vendors. The proof fixture lives in `tests/task_180_alter_set_default.rs`.
+
+Independent AC #4 audit: every one of the 2,119 parser/canonical cells is executed and reconciled against immutable TASK-197 source-fact ownership; the existing public-API exhaustive adapter parity test compares all 2,013 source-applicable, parser-accepted paths for direct DDL, dbt manifest/catalog and ODCS where available (TASK-197). The 481 separately named TASK-179 vendor/session cells now have independent per-cell approved **Residual-only** decisions and exact unexecuted native evidence requirements. Parser/native vendor compatibility has not been asserted. AC #4 is satisfied as a verified bounded classification and parity gate, not as portable certification of every vendor engine.
+
+Independent AC #3 native differential fixture signoff: the original 163-case inventory is covered by the previously frozen complete source/terminal fixture replay and independently handled 14 native conditional/nonexecutable laws. The public typed protocol is checked alongside actual native DuckDB results in the 25+18 predicate family, 24 joins, 20 set results and full candidate/rejected multisets, 28 deterministic window/grouping examples, 34 write/DDL native outcomes, S203/S206 source-typed physical state transitions and original S220 source-typed SET DEFAULT before/after/future-insert proof. All fixed NULL/duplicate/UNKNOWN/negative cases are preserved. AC #3 is a differential-test evidence criterion; it does **not** sign off the strongest portable domains required by AC #2 or the 2,119 independently verified release cells required by AC #5.
+
+This is **not final acceptance**: the original unsupported/conditional and missing native/vendor claims must be resolved or explicitly reviewed under the release policy. AC #1 (versioned task-owned acceptance freeze and fail-closed gate) is independently checked. AC #2 and #5 remain unchecked pending exact-head CI, full independent typed semantic/physical matrix signoff, adapter/vendor review and pinned consumer evidence. TASK-88 and TASK-91 remain blocked. See `docs/task-180-acceptance-audit.md`.
+
+2026-11-20 TASK-180 partial final review: independently reconciled 25 original source-typed predicate oracles with all 325 original dialect cell identities; 130 cells have frozen exact domain bounds (including NULL/exclusivity evidence) and 195 have conservative source-domain Residual while complete DuckDB physical/TRUE/NOT TRUE bags are still independently checked. The release gate now verifies the exact source/case/owner/oracle/adapter evidence for all 325, refuses forged Unsupported/parser Exact approvals, and reads YAML task status rather than searching arbitrary notes. Original S152/mssql JOIN LATERAL ON TRUE has a real sqlparser Boolean-vs-Identifier AST divergence, independently checked in the public AST and qualifying Residual protocol; it is reviewed only as an explicit conditional, without SQL Server native execution attestation. 1,794 original release cells remain unreviewed and AC #2/#5 remain open. Vendor/conditional laws are not silently declared Exact. CI and downstream consumer verification must run at the final implementation head before release signoff.
+
+2026-11-20 pre-final separate-agent handoff: the source-bounded **remaining 138 original cases / 1,794 dialect cells** now have five independently source-reconciled review-candidate files (`docs/task-180-pending-review-task-{192,193,194,195,196}.json`). Together with the existing 325 predicate reviews, all 2,119 immutable cells have evidence-bound dispositions. `tests/task_180_remaining_source_reviews.rs` requires exhaustive coverage, verifies owner SQL/typed/native evidence against independently frozen TASK-192..196 oracles, guards candidate Exact against each owner's named unapproved native/typed conditions, and checks full set-tuple source candidate conservation. See `docs/task-180-independent-review-handoff.md` for the exact separate final-agent review, migration and release procedure. **These are reviewed source-bounded candidates, not approved final release cells**: the original 325 `approved_cells`, TASK-180 AC #2/#5 unchecked status, and TASK-88/TASK-91 release blockers remain unchanged pending the separate agent's substantive final verification.
+
+<!-- SECTION:NOTES:END -->
