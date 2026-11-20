@@ -152,3 +152,22 @@ fn all_shared_join_sql_forms_emit_identical_public_documents_across_13_parsers()
     }
     assert_eq!(checked, 312);
 }
+
+
+#[test]
+fn task_180_probe_mssql_correlated_lateral_ast() {
+    let sql = "SELECT o.id FROM orders o JOIN LATERAL (SELECT o.id) l ON TRUE";
+    let mut observations = Vec::new();
+    for dialect in ["ansi", "mssql"] {
+        let parser = dialect_from_name(dialect).expect("SQL dialect");
+        let ast = sqlparser::parser::Parser::parse_sql(parser.as_ref(), sql)
+            .expect("both dialects parse original SQL");
+        let protocol = analyze_sql(sql, dialect, parser.as_ref()).expect("public protocol");
+        let wire: Value = parsed(&to_json(&protocol));
+        observations.push(format!(
+            "{dialect} AST={ast:#?} qualifying={:#?}",
+            wire["graph"]["physical_nodes"][1]["operator_witnesses"][0]["qualifying"]
+        ));
+    }
+    panic!("TASK-180 diagnostic only: {}", observations.join("\n"));
+}
