@@ -263,12 +263,52 @@ fn remaining_138_original_case_oracles_and_1794_dialect_dispositions_are_reconci
                     matches!(verdict, "Exact" | "reviewed_conditional_residual"),
                     "{key}: unsupported review verdict"
                 );
-                if frozen_cell["original_canonical_class"] != "C" {
-                    assert_eq!(
-                        verdict, "reviewed_conditional_residual",
-                        "{key}: cannot promote historical exception"
-                    );
-                }
+                let normal = frozen_cell["original_canonical_class"] == "C";
+                let eligible = normal
+                    && match *owner {
+                        "TASK-192" => false,
+                        "TASK-193" => {
+                            independent["native_original_syntax_boundary"].is_null()
+                                && !id.ends_with("S152")
+                        }
+                        "TASK-194" => {
+                            independent["review_disposition"]
+                                == "reviewed_exact_original_SQL_typed_portable_semantics"
+                                && !source_oracle["independent_terminal_bag"].is_null()
+                        }
+                        "TASK-195" => {
+                            independent["original_native_execution_disposition"]
+                                == "complete_original_DuckDB_bag_verified"
+                                && !independent["expected_native_terminal_bag"].is_null()
+                        }
+                        "TASK-196" => {
+                            let source_cell = independent["cells"]
+                                .as_array()
+                                .expect("independent DML/DDL parser reviews")
+                                .iter()
+                                .find(|cell| cell["id"] == key)
+                                .expect("original DML/DDL cell review");
+                            assert_eq!(
+                                candidate_cell["owner_cell_decision"],
+                                source_cell["reviewer_classification"],
+                                "{key}: cannot borrow another semantic reviewer decision"
+                            );
+                            independent["physical_native_class"]
+                                != "metadata_adapter_only_requires_authoritative_fixture"
+                                && source_cell["final_acceptance"]
+                                    == "bounded_portable_under_attested_source_bag_and_oracle"
+                        }
+                        _ => unreachable!("five independently reviewed semantic owners"),
+                    };
+                assert_eq!(
+                    verdict,
+                    if eligible {
+                        "Exact"
+                    } else {
+                        "reviewed_conditional_residual"
+                    },
+                    "{key}: an owner-unapproved semantic or unexecuted native proof cannot be promoted"
+                );
                 assert!(candidate_cell["review_reason"]
                     .as_str()
                     .is_some_and(|s| !s.is_empty()));
