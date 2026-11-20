@@ -150,7 +150,8 @@
           "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
           "native_vendor_execution_attested": false
         }
-      ]
+      ],
+      "native_vendor_execution_attested": false
     },
     {
       "id": "88-C177-S021",
@@ -292,7 +293,8 @@
           "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
           "native_vendor_execution_attested": false
         }
-      ]
+      ],
+      "native_vendor_execution_attested": false
     },
     {
       "id": "88-C177-S022",
@@ -434,7 +436,8 @@
           "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
           "native_vendor_execution_attested": false
         }
-      ]
+      ],
+      "native_vendor_execution_attested": false
     },
     {
       "id": "88-C177-S023",
@@ -576,7 +579,8 @@
           "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
           "native_vendor_execution_attested": false
         }
-      ]
+      ],
+      "native_vendor_execution_attested": false
     },
     {
       "id": "88-C177-S024",
@@ -718,7 +722,8 @@
           "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
           "native_vendor_execution_attested": false
         }
-      ]
+      ],
+      "native_vendor_execution_attested": false
     },
     {
       "id": "88-C177-S025",
@@ -860,7 +865,8 @@
           "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
           "native_vendor_execution_attested": false
         }
-      ]
+      ],
+      "native_vendor_execution_attested": false
     },
     {
       "id": "88-C177-S026",
@@ -1002,7 +1008,8 @@
           "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
           "native_vendor_execution_attested": false
         }
-      ]
+      ],
+      "native_vendor_execution_attested": false
     },
     {
       "id": "88-C177-S033",
@@ -1144,7 +1151,8 @@
           "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
           "native_vendor_execution_attested": false
         }
-      ]
+      ],
+      "native_vendor_execution_attested": false
     },
     {
       "id": "88-C177-S034",
@@ -1286,7 +1294,8 @@
           "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
           "native_vendor_execution_attested": false
         }
-      ]
+      ],
+      "native_vendor_execution_attested": false
     },
     {
       "id": "88-C177-S035",
@@ -1428,7 +1437,8 @@
           "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
           "native_vendor_execution_attested": false
         }
-      ]
+      ],
+      "native_vendor_execution_attested": false
     },
     {
       "id": "88-C177-S036",
@@ -1570,7 +1580,8 @@
           "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
           "native_vendor_execution_attested": false
         }
-      ]
+      ],
+      "native_vendor_execution_attested": false
     },
     {
       "id": "88-C177-S037",
@@ -1714,7 +1725,8 @@
           "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
           "native_vendor_execution_attested": false
         }
-      ]
+      ],
+      "native_vendor_execution_attested": false
     },
     {
       "id": "88-C177-S038",
@@ -1856,7 +1868,8 @@
           "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
           "native_vendor_execution_attested": false
         }
-      ]
+      ],
+      "native_vendor_execution_attested": false
     },
     {
       "id": "88-C177-S039",
@@ -2001,7 +2014,8 @@
           "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
           "native_vendor_execution_attested": false
         }
-      ]
+      ],
+      "native_vendor_execution_attested": false
     },
     {
       "id": "88-C177-S040",
@@ -2146,7 +2160,8 @@
           "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
           "native_vendor_execution_attested": false
         }
-      ]
+      ],
+      "native_vendor_execution_attested": false
     },
     {
       "id": "88-C177-S041",
@@ -2288,7 +2303,8 @@
           "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
           "native_vendor_execution_attested": false
         }
-      ]
+      ],
+      "native_vendor_execution_attested": false
     },
     {
       "id": "88-C177-S042",
@@ -2430,7 +2446,8 @@
           "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
           "native_vendor_execution_attested": false
         }
-      ]
+      ],
+      "native_vendor_execution_attested": false
     },
     {
       "id": "88-C177-S179",
@@ -2572,7 +2589,8 @@
           "review_reason": "Current source-conditioned predicate, string comparison, timestamp, collation, ordering, overflow or STRUCT claim cannot be upgraded from a fixed DuckDB fixture to a full dialect-native Exact law",
           "native_vendor_execution_attested": false
         }
-      ]
+      ],
+      "native_vendor_execution_attested": false
     }
   ]
 }
