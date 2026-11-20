@@ -87,6 +87,8 @@ fn remaining_138_original_case_oracles_and_1794_dialect_dispositions_are_reconci
     ];
     let mut case_ids = BTreeSet::new();
     let mut cell_ids = BTreeSet::new();
+    let mut review_counts = [0_usize; 3];
+    let mut normalized_exact = 0_usize;
     for (i, (owner, review_source, case_count, cell_count)) in owners.iter().enumerate() {
         let review = read(review_source);
         assert_eq!(review["task_id"], "TASK-180");
@@ -355,6 +357,15 @@ fn remaining_138_original_case_oracles_and_1794_dialect_dispositions_are_reconci
                     },
                     "{key}: an owner-unapproved semantic or unexecuted native proof cannot be promoted"
                 );
+                match verdict {
+                    "Exact" => review_counts[0] += 1,
+                    "reviewed_conditional_residual" => review_counts[1] += 1,
+                    "Impossible" => review_counts[2] += 1,
+                    _ => unreachable!("review status was checked"),
+                }
+                if historical_drift_normalized && verdict == "Exact" {
+                    normalized_exact += 1;
+                }
                 assert!(candidate_cell["review_reason"]
                     .as_str()
                     .is_some_and(|s| !s.is_empty()));
@@ -363,6 +374,14 @@ fn remaining_138_original_case_oracles_and_1794_dialect_dispositions_are_reconci
     }
     assert_eq!(case_ids.len(), 138);
     assert_eq!(cell_ids.len(), 1794);
+    assert_eq!(review_counts, [1272, 509, 13]);
+    assert_eq!(normalized_exact, 21);
+    let staged = &signoff["staged_independent_pre_signoff_review"];
+    assert_eq!(staged["candidate_exact_source_bounded_claims"], review_counts[0]);
+    assert_eq!(staged["candidate_explicit_conditional_residuals"], review_counts[1]);
+    assert_eq!(staged["candidate_impossible_with_public_diagnostic"], review_counts[2]);
+    assert_eq!(staged["normalized_grouping_exact_candidates"], normalized_exact);
+    assert_eq!(staged["final_independent_approval_claimed"], false);
     let signed = signoff["approved_cells"]
         .as_array()
         .expect("separately approved predicate cells");
